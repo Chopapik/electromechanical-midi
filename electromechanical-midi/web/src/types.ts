@@ -19,6 +19,17 @@ export interface DrumState {
   connected: boolean
   minHz: number
   maxHz: number
+  /** "midi" gdy bęben gra drugi głos z pliku, "manual" gdy sterujesz ręcznie */
+  controlledBy: 'midi' | 'manual'
+  drive: number
+  range: { minHz: number; maxHz: number }
+  transpose: string
+  strategy: string
+  midiTrack: number | null
+  midiTrackName: string | null
+  midiNote: number | null
+  midiNoteName: string | null
+  midiFrequency: number | null
 }
 
 export interface PlayerState {

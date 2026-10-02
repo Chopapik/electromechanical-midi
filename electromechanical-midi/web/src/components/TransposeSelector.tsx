@@ -4,6 +4,7 @@ interface Props {
   value: string
   range: { minHz: number; maxHz: number } | null
   onSelect: (mode: string) => void
+  label?: string
 }
 
 const MODES: Array<{ value: string; label: (range: Props['range']) => string }> = [
@@ -21,10 +22,10 @@ const MODES: Array<{ value: string; label: (range: Props['range']) => string }> 
   },
 ]
 
-export function TransposeSelector({ value, range, onSelect }: Props) {
+export function TransposeSelector({ value, range, onSelect, label = 'Transpose' }: Props) {
   return (
     <label className="field">
-      <span className="field-label">Transpose</span>
+      <span className="field-label">{label}</span>
 
       <select value={value} onChange={(event) => onSelect(event.target.value)}>
         {MODES.map((mode) => (

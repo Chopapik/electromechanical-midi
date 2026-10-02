@@ -27,6 +27,30 @@ export async function fetchFiles(): Promise<MidiFileEntry[]> {
   return data.files
 }
 
+export async function uploadMidi(
+  file: File,
+): Promise<{ name: string; files: MidiFileEntry[] }> {
+  const body = new FormData()
+  body.append('file', file)
+
+  const response = await fetch('/api/files', { method: 'POST', body })
+
+  if (!response.ok) {
+    let detail = `HTTP ${response.status}`
+
+    try {
+      const parsed = (await response.json()) as { detail?: string }
+      if (parsed?.detail) detail = parsed.detail
+    } catch {
+      /* bez JSON zostaje sam status */
+    }
+
+    throw new Error(detail)
+  }
+
+  return (await response.json()) as { name: string; files: MidiFileEntry[] }
+}
+
 export async function fetchMetadata(name: string): Promise<FileMetadata> {
   return getJson<FileMetadata>(`/api/files/${encodeURIComponent(name)}`)
 }

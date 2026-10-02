@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { fetchFiles, fetchMetadata, fetchPorts } from './api'
+import { fetchFiles, fetchMetadata, fetchPorts, uploadMidi } from './api'
 import type {
   FileMetadata,
   MidiFileEntry,
@@ -19,6 +19,7 @@ export interface PlayerApi {
   metadata: FileMetadata | null
   ports: PortInfo[]
   socketConnected: boolean
+  uploading: boolean
   error: string | null
   dismissError: () => void
   play: () => void
@@ -37,6 +38,10 @@ export interface PlayerApi {
   stopDrum: () => void
   setDrum: (value: number) => void
   setDrumTone: (hz: number) => void
+  selectDrumTrack: (track: number | null) => void
+  selectDrumTranspose: (mode: string) => void
+  selectDrumStrategy: (strategy: string) => void
+  uploadFile: (file: File) => void
 }
 
 function websocketUrl(): string {
@@ -51,6 +56,7 @@ export function usePlayer(): PlayerApi {
   const [metadata, setMetadata] = useState<FileMetadata | null>(null)
   const [ports, setPorts] = useState<PortInfo[]>([])
   const [socketConnected, setSocketConnected] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const socketRef = useRef<WebSocket | null>(null)
@@ -199,11 +205,40 @@ export function usePlayer(): PlayerApi {
 
   const dismissError = useCallback(() => setError(null), [])
 
+  // --- wgranie nowego pliku MIDI z przegladarki ---
+  const uploadFile = useCallback(
+    (file: File) => {
+      setUploading(true)
+
+      uploadMidi(file)
+        .then((result) => {
+          setFiles(result.files)
+          setMetadata(null)
+          send('set_file', { file: result.name })
+        })
+        .catch((cause: Error) => setError(cause.message))
+        .finally(() => setUploading(false))
+    },
+    [send],
+  )
+
   // --- VHS drum (manualnie, niezależnie od MIDI) ---
   const startDrum = useCallback(() => send('start_drum'), [send])
   const stopDrum = useCallback(() => send('stop_drum'), [send])
   const setDrum = useCallback((value: number) => send('set_drum', { value }), [send])
   const setDrumTone = useCallback((hz: number) => send('set_drum_tone', { hz }), [send])
+  const selectDrumTrack = useCallback(
+    (track: number | null) => send('set_drum_track', { track }),
+    [send],
+  )
+  const selectDrumTranspose = useCallback(
+    (mode: string) => send('set_drum_transpose', { mode }),
+    [send],
+  )
+  const selectDrumStrategy = useCallback(
+    (strategy: string) => send('set_drum_strategy', { strategy }),
+    [send],
+  )
 
   return {
     state,
@@ -211,6 +246,7 @@ export function usePlayer(): PlayerApi {
     metadata,
     ports,
     socketConnected,
+    uploading,
     error,
     dismissError,
     play,
@@ -229,5 +265,9 @@ export function usePlayer(): PlayerApi {
     stopDrum,
     setDrum,
     setDrumTone,
+    selectDrumTrack,
+    selectDrumTranspose,
+    selectDrumStrategy,
+    uploadFile,
   }
 }

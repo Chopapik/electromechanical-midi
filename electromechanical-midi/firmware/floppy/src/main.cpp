@@ -18,8 +18,8 @@
 //   DRUMF <hz>      -> (brak odpowiedzi) czestotliwosc kluczowania bebna;
 //                      0 = tryb DC (zwykly PWM 976 Hz). 20..2000 Hz.
 //   STATUS          -> STATUS track=<n> dir=<...> homed=<0|1> playing=<0|1>
-//                             track0=<0|1> hz=<...> drum=<0-255> drum_out=<0-255>
-//                             drumf=<0-2000>
+//                             track0=<0|1> hz=<...>
+//                             drum=<0-255> drum_out=<0-255> drumf=<0-2000>
 //   cokolwiek innego-> ERR UNKNOWN_CMD
 //
 // Bledy: ERR NOT_HOMED / ERR BUSY / ERR FREQ_RANGE / ERR MISSING_FREQ
@@ -818,18 +818,29 @@ void handleCommand(char *line)
             return;
         }
 
-        const long hz = atol(arg);
+        // Przyjmujemy tez ulamki ("DRUMF 164.81") - host wysyla Hz prosto
+        // z MIDI. Firmware i tak pracuje na calkowitych Hz (tick 0,5 us),
+        // wiec zaokraglamy.
+        const float hz = atof(arg);
 
-        if (hz > DRUM_TONE_MAX_HZ)
+        if (!(hz >= 0.0f))          // !(x>=0) lapie tez NaN
+        {
+            Serial.println(F("ERR BAD_DRUMF"));
+            return;
+        }
+
+        if (hz > static_cast<float>(DRUM_TONE_MAX_HZ))
         {
             Serial.println(F("ERR DRUMF_RANGE"));
             return;
         }
 
+        const uint16_t rounded = static_cast<uint16_t>(hz + 0.5f);
+
         // 0 = tryb DC (zwykly PWM 976 Hz). 1..19 tez traktujemy jako DC,
         // bo ponizej 20 Hz to juz nie ton, a kluczowanie mechanicznie
         // szarpaloby silnikiem.
-        drumSetTone(hz < DRUM_TONE_MIN_HZ ? 0 : static_cast<uint16_t>(hz));
+        drumSetTone(rounded < DRUM_TONE_MIN_HZ ? 0 : rounded);
         return;
     }
 

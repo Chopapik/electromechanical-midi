@@ -15,6 +15,16 @@ const DRUM: DrumState = {
   connected: true,
   minHz: 20,
   maxHz: 2000,
+  controlledBy: 'manual',
+  drive: 74,
+  range: { minHz: 110, maxHz: 880 },
+  transpose: 'auto',
+  strategy: 'highest',
+  midiTrack: null,
+  midiTrackName: null,
+  midiNote: null,
+  midiNoteName: null,
+  midiFrequency: null,
 }
 
 function setup(overrides: Partial<DrumState> = {}) {

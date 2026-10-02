@@ -50,7 +50,7 @@ Podział odpowiedzialności:
 | --- | --- |
 | `host/midi_source.py` | wczytanie MIDI, mapa tempa, nuty, monofonia |
 | `host/pitch.py` | MIDI → Hz, octave folding |
-| `host/playback/` | timeline i **silnik**: absolutny timing, play/pause/seek |
+| `host/playback/` | timeline (linie FDD + drum) i **silnik**: absolutny timing, play/pause/seek |
 | `host/web/` | backend web playera (FastAPI: REST + WebSocket) |
 | `host/player.py` | CLI (używa tego samego silnika) |
 | `web/` | frontend (React + Vite + TypeScript) |
@@ -252,6 +252,9 @@ Opcje backendu:
 ```
 
 * **Wybór pliku** - lista `.mid` / `.midi` z katalogu `midi/`.
+* **Wgrywanie MIDI** - przycisk **＋ Wgraj plik MIDI** albo **przeciągnięcie
+  pliku** na pole wyboru. Plik leci `POST /api/files` do katalogu `midi/`
+  i od razu staje się aktywnym utworem (bez restartu backendu).
 * **Wybór tracku** - z nazwą, liczbą nut i informacją „monofonia / polifonia /
   perkusja”.
 * **PLAY / PAUZA / STOP** oraz ⏮ (od początku).
@@ -335,6 +338,58 @@ które samo przełącza pin. `millis()`, `micros()` i scheduler kroków korzysta
 z Timer0 i **nie są przy tym dotykane** — przed wejściem w tryb tonu firmware
 czyści tylko bit `COM0A1`, żeby odczepić OC0A od pinu.
 
+#### Drugi głos z MIDI (FDD + VHS Drum)
+
+Bęben może grać **drugi track z tego samego pliku MIDI**, równocześnie z FDD.
+To nie są dwa odtwarzacze: obie linie są zmergowane w **jeden timeline**
+i grane przez **jeden scheduler z jednym zegarem** (monotonic origin).
+
+```
+                ┌──→ FDD   (PLAY/STOP)
+MIDI → timeline ┤
+   (jeden czas) └──→ DRUM  (DRUM 74 + DRUMF <hz> / DRUM 0)
+```
+
+| Ustawienie | Znaczenie |
+| --- | --- |
+| `VHS Drum Track` | który track gra bęben; **`None`** = bęben tylko ręczny |
+| `VHS Drum transpose` | `low` (110–220 Hz), `high` (440–880 Hz) albo `auto` (110–880 Hz) |
+| napęd | stały `DRUM 38` (**15%** wypełnienia — mniej szumu mechanicznego) |
+
+**Sprawdzona recepta („melodia + bas”)** — na *Sail to the Moon* to zabrzmiało
+rozpoznawalnie:
+
+| Ustawienie | Wartość | Dlaczego |
+| --- | --- | --- |
+| FDD Track | `Thom Vox` (partia wokalna) | melodia jest najbardziej rozpoznawalna |
+| FDD transpose | `auto` | wokal zostaje w swoim rejestrze |
+| VHS Drum Track | `Thom Piano` | partia harmoniczna |
+| VHS Drum drive | `38` (15%) | stała `DRUM_DRIVE_DEFAULT` w `timeline.py` |
+| VHS Drum strategy | `lowest` | daje **linię basową** pod melodią |
+| VHS Drum transpose | `low` (110–220 Hz) | jedno okno oktawowe = **zero skoków** |
+| start | ~158 s | najdłuższa nuta wokalna (3,3 s) |
+
+Dwie melodie w różnych rejestrach (np. bęben w `high`) brzmią jak dwa
+konkurujące głosy — dopiero **melodia + bas** zaczyna brzmieć jak utwór.
+Dlatego domyślny tryb bębna to `low`: okno dokładnie jednej oktawy
+matematycznie gwarantuje brak skoków oktawowych.
+
+Zasady działania:
+
+* nuta → `DRUMF <hz>` + `DRUM 38` (15%); **`DRUM` wysyłamy tylko raz**, bo przy
+  legato zmienia się wyłącznie wysokość (mniej ruchu po Serialu i brak
+  restartu timera tonu),
+* przerwa → `DRUM 0`,
+* nuty stykające się nie dostają `DRUM 0` — dźwięk przechodzi płynnie,
+* osobny mapper wysokości: zakres **110–880 Hz** i składanie oktawowe,
+  niezależne od zakresu FDD (130–330 Hz),
+* monofonizacja: ta sama strategia co dla FDD (`highest`/`lowest`/`last`),
+* **seek** wznawia stan **obu** linii (jeśli w danej chwili trwa nuta bębna,
+  od razu leci `DRUMF` + `DRUM 74`),
+* PLAY/PAUSE/STOP/disconnect/reconnect zawsze robią `STOP` + `DRUM 0`,
+* podczas gdy bęben gra z MIDI, **panel ręczny jest zablokowany**
+  (`MIDI CONTROLLED`); wraca po pauzie/stopie.
+
 **Fail-safe:**
 
 * start firmware → `DRUM 0`,
@@ -376,6 +431,7 @@ rzeczywistego i sterowanie.
 | `GET` | `/api/state` | aktualny stan playera (ten sam co po WebSocketcie) |
 | `GET` | `/api/files` | lista plików `.mid` z katalogu `midi/` |
 | `GET` | `/api/files/{name}` | metadane: długość, zmiany tempa, lista tracków |
+| `POST` | `/api/files` | **wgranie pliku MIDI** (`multipart/form-data`, pole `file`) |
 | `GET` | `/api/ports` | dostępne porty szeregowe + aktualny |
 | `GET` | `/api/config` | tryby transpozycji, strategie, zakres Hz |
 
@@ -433,6 +489,9 @@ Po połączeniu serwer od razu wysyła stan, a potem publikuje go cyklicznie
 { "action": "start_drum" }                    // start z ostatniej niezerowej wartosci
 { "action": "stop_drum" }                     // DRUM 0
 { "action": "set_drum_tone", "hz": 300 }      // wysokosc bebna (0 = tryb DC)
+{ "action": "set_drum_track", "track": 2 }    // drugi glos z MIDI (null = brak)
+{ "action": "set_drum_transpose", "mode": "high" }   // low/high/auto
+{ "action": "set_drum_strategy", "strategy": "highest" }
 { "action": "reconnect", "port": "/dev/cu.usbmodem14101" }   // port opcjonalny
 { "action": "disconnect" }
 { "action": "snapshot" }                                       // wymuś odświeżenie
@@ -741,8 +800,9 @@ Mechanicznie najlepiej brzmi **130-330 Hz** (stąd `COMFORT_MIN_HZ` /
 * **Web player** jest lokalny i jednodostępowy (bez logowania i bazy danych).
   Stan jest jeden dla wszystkich kart przeglądarki - dwie karty to ten sam
   odtwarzacz, a nie dwa niezależne.
-* UI nie ma wgrywania plików przez przeglądarkę - pliki `.mid` wrzuca się do
-  katalogu `midi/`.
+* Wgrywanie MIDI z przeglądarki zapisuje pliki **na stałe** w katalogu `midi/`
+  (limit 5 MB); przy kolizji nazw powstaje `nazwa (2).mid`, nic nie jest
+  nadpisywane. Walidacja: plik musi być czytelnym MIDI.
 * Wybór strategii akordów jest w API (`set_strategy`), ale nie ma go w UI.
 * **VHS Drum jest sterowany wyłącznie ręcznie** - nie ma jeszcze żadnego
   powiązania z MIDI (żadnego `MIDI → drum`, `velocity → drum`,
@@ -770,7 +830,7 @@ Kod jest tak ułożony, żeby nie trzeba było przepisywać logiki:
 
 Wszystkie testy działają bez sprzętu (Serial jest zamockowany).
 
-**Backend / host** (126 testów):
+**Backend / host** (155 testów):
 
 ```bash
 python -m unittest discover -s host/tests -t host/tests -v
@@ -787,9 +847,10 @@ python -m unittest discover -s host/tests -t host/tests -v
   starego planu, brak dryfu, rozłączenie sprzętu, keepalive, wyścigi
   (wielowątkowe młotkowanie play/pause/seek),
 * `test_web.py` - REST, WebSocket, sterowanie, bezpieczeństwo ścieżek plików,
-  wielu klientów = jeden stan, sterowanie bębnem VHS przez WebSocket.
+  wielu klientów = jeden stan, sterowanie bębnem VHS przez WebSocket,
+  wgrywanie plików MIDI (walidacja, kolizje nazw, limit rozmiaru).
 
-**Frontend** (31 testów, vitest + jsdom):
+**Frontend** (36 testów, vitest + jsdom):
 
 ```bash
 cd web

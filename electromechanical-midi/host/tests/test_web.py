@@ -295,7 +295,11 @@ class TestWebSocket(WebTestCase):
             self.assertEqual(state["noteName"], "E4")
             # Arduino dostaje STOP + PLAY tej nuty, i nic wiecej.
             self.assertEqual(
-                [event for event in self.transport.events if event != "PING"],
+                [
+                    event
+                    for event in self.transport.events
+                    if event.startswith(("PLAY", "STOP"))
+                ],
                 ["STOP", "PLAY 329.63"],
             )
 
@@ -449,8 +453,8 @@ class TestDrumWeb(WebTestCase):
         self.assertIn("DRUM 0", self.transport.events)
         self.assertEqual(self.engine.snapshot()["drum"]["value"], 0)
 
-    def test_beben_nie_przeszkadza_w_odtwarzaniu_midi(self):
-        """Jeden silnik: beben i FDD dzialaja rownoczesnie."""
+    def test_start_utworu_zeruje_reczny_beben(self):
+        """Transport jest nadrzedny: PLAY/PAUSE/STOP zawsze zeruja beben."""
         with self.client.websocket_connect("/ws") as websocket:
             read_until_state(websocket)
 
@@ -467,12 +471,119 @@ class TestDrumWeb(WebTestCase):
             state = read_until_state(websocket)
 
             self.assertEqual(state["state"], "playing")
-            self.assertEqual(state["drum"]["value"], 100)
-            self.assertEqual(state["drum"]["toneHz"], 300)
+            self.assertEqual(state["drum"]["value"], 0)
+            self.assertIn("DRUM 0", self.transport.events)
 
-            # Zatrzymanie utworu nie rusza bebna.
             websocket.send_json({"action": "stop"})
             state = read_until_state(websocket)
 
             self.assertEqual(state["state"], "stopped")
-            self.assertEqual(state["drum"]["value"], 100)
+            self.assertEqual(state["drum"]["value"], 0)
+
+
+class TestUpload(WebTestCase):
+    """Wgrywanie MIDI z przegladarki (POST /api/files)."""
+
+    def midi_bytes(self, notes=None) -> bytes:
+        import io
+
+        midi = mido.MidiFile(type=1, ticks_per_beat=TPB)
+        conductor = mido.MidiTrack()
+        midi.tracks.append(conductor)
+        conductor.append(mido.MetaMessage("set_tempo", tempo=TEMPO, time=0))
+
+        track = mido.MidiTrack()
+        midi.tracks.append(track)
+        track.append(mido.MetaMessage("track_name", name="Wgrany", time=0))
+
+        for start, end, note in (notes or [(0.0, 0.5, 60)]):
+            track.append(
+                mido.Message("note_on", note=note, velocity=100,
+                             time=round(start * TICKS_PER_SECOND))
+            )
+            track.append(
+                mido.Message("note_off", note=note, velocity=0,
+                             time=round((end - start) * TICKS_PER_SECOND))
+            )
+
+        buffer = io.BytesIO()
+        midi.save(file=buffer)
+
+        return buffer.getvalue()
+
+    def upload(self, name: str, data: bytes):
+        return self.client.post(
+            "/api/files", files={"file": (name, data, "audio/midi")}
+        )
+
+    def test_wgranie_poprawnego_pliku(self):
+        response = self.upload("nowy.mid", self.midi_bytes())
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+
+        self.assertEqual(body["name"], "nowy.mid")
+        self.assertTrue((self.midi_dir / "nowy.mid").is_file())
+
+        names = [entry["name"] for entry in body["files"]]
+        self.assertIn("nowy.mid", names)
+
+    def test_wgrany_plik_ma_metadane_i_da_sie_wybrac(self):
+        self.upload("melodia.mid", self.midi_bytes([(0.0, 1.0, 64)]))
+
+        meta = self.client.get("/api/files/melodia.mid").json()
+
+        self.assertEqual(meta["tracks"][1]["name"], "Wgrany")
+        self.assertEqual(meta["tracks"][1]["noteCount"], 1)
+
+    def test_wgrany_plik_mozna_odtworzyc(self):
+        self.upload("grany.mid", self.midi_bytes())
+
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "grany.mid", "track": 1})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["file"], "grany.mid")
+            self.assertEqual(state["track"], 1)
+
+    def test_odrzuca_inne_rozszerzenie(self):
+        response = self.upload("wirus.exe", self.midi_bytes())
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse((self.midi_dir / "wirus.exe").exists())
+
+    def test_odrzuca_plik_ktory_nie_jest_midi(self):
+        response = self.upload("fake.mid", b"to zdecydowanie nie jest MIDI")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse((self.midi_dir / "fake.mid").exists())
+
+    def test_odrzuca_pusty_plik(self):
+        response = self.upload("pusty.mid", b"")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_nie_nadpisuje_istniejacego_pliku(self):
+        first = self.upload("kolizja.mid", self.midi_bytes())
+        second = self.upload("kolizja.mid", self.midi_bytes([(0.0, 2.0, 67)]))
+
+        self.assertEqual(first.json()["name"], "kolizja.mid")
+        self.assertEqual(second.json()["name"], "kolizja (2).mid")
+        self.assertTrue((self.midi_dir / "kolizja.mid").is_file())
+        self.assertTrue((self.midi_dir / "kolizja (2).mid").is_file())
+
+    def test_sciezka_w_nazwie_jest_obcinana(self):
+        response = self.upload("../../zly.mid", self.midi_bytes())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["name"], "zly.mid")
+        self.assertTrue((self.midi_dir / "zly.mid").is_file())
+
+    def test_za_duzy_plik(self):
+        from web.server import MAX_UPLOAD_BYTES
+
+        response = self.upload("wielki.mid", b"x" * (MAX_UPLOAD_BYTES + 10))
+
+        self.assertEqual(response.status_code, 413)

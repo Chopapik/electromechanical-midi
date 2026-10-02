@@ -76,6 +76,16 @@ const STATE: PlayerState = {
     connected: true,
     minHz: 20,
     maxHz: 2000,
+  controlledBy: 'manual',
+  drive: 74,
+  range: { minHz: 110, maxHz: 880 },
+  transpose: 'auto',
+  strategy: 'highest',
+  midiTrack: null,
+  midiTrackName: null,
+  midiNote: null,
+  midiNoteName: null,
+  midiFrequency: null,
   },
 }
 
@@ -100,10 +110,12 @@ const METADATA = {
   ],
 }
 
-function mockFetch(url: string): Promise<Response> {
+function mockFetch(url: string, init?: RequestInit): Promise<Response> {
   let body: unknown = { files: FILES }
 
-  if (url.startsWith('/api/files/')) body = METADATA
+  if (url === '/api/files' && init?.method === 'POST') {
+    body = { name: 'nowy.mid', size: 999, files: [...FILES, { name: 'nowy.mid', size: 999, modified: 0 }] }
+  } else if (url.startsWith('/api/files/')) body = METADATA
   else if (url === '/api/ports') {
     body = { ports: [{ device: '/dev/cu.usbmodem14101', label: 'Arduino', usbId: '2341:0043', score: 195 }], current: '/dev/cu.usbmodem14101', connected: true }
   }
@@ -130,7 +142,7 @@ describe('App', () => {
   beforeEach(() => {
     MockWebSocket.instances = []
     vi.stubGlobal('WebSocket', MockWebSocket)
-    vi.stubGlobal('fetch', vi.fn((url: string) => mockFetch(url)))
+    vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => mockFetch(url, init)))
   })
 
   afterEach(() => {
@@ -231,13 +243,42 @@ describe('App', () => {
   it('wybor tracku i transpozycji idzie do backendu', async () => {
     const socket = await renderApp()
 
-    await waitFor(() => expect(screen.getByLabelText(/Track/i)).toBeDefined())
+    await waitFor(() => expect(screen.getByLabelText(/FDD Track/i)).toBeDefined())
 
-    fireEvent.change(screen.getByLabelText(/Track/i), { target: { value: '1' } })
-    fireEvent.change(screen.getByLabelText(/Transpose/i), { target: { value: 'high' } })
+    fireEvent.change(screen.getByLabelText(/FDD Track/i), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText(/FDD transpose/i), { target: { value: 'high' } })
 
     expect(socket.actions()).toContainEqual({ action: 'set_track', track: 1 })
     expect(socket.actions()).toContainEqual({ action: 'set_transpose', mode: 'high' })
+  })
+
+  it('wgranie pliku MIDI wysyla POST i przelacza na nowy plik', async () => {
+    const socket = await renderApp()
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    expect(input).not.toBeNull()
+
+    const file = new File([new Uint8Array([77, 84, 104, 100])], 'nowy.mid', {
+      type: 'audio/midi',
+    })
+
+    fireEvent.change(input, { target: { files: [file] } })
+
+    await waitFor(() =>
+      expect(socket.actions()).toContainEqual({ action: 'set_file', file: 'nowy.mid' }),
+    )
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/files',
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
+
+  it('selektor MIDI ma przycisk wgrywania', async () => {
+    await renderApp()
+
+    expect(screen.getByText('＋ Wgraj plik MIDI')).toBeDefined()
+    expect(screen.getByText('albo przeciągnij .mid w to miejsce')).toBeDefined()
   })
 
   it('reconnect wysyla akcje bez portu', async () => {
@@ -298,12 +339,73 @@ describe('App', () => {
         connected: true,
         minHz: 20,
         maxHz: 2000,
+        controlledBy: 'midi',
+        drive: 74,
+        range: { minHz: 110, maxHz: 880 },
+        transpose: 'high',
+        strategy: 'highest',
+        midiTrack: 2,
+        midiTrackName: 'Thom Piano',
+        midiNote: 64,
+        midiNoteName: 'E4',
+        midiFrequency: 329.63,
       },
     })
 
     expect(screen.getByText('Running')).toBeDefined()
-    // "300 Hz" widnieje i na suwaku tonu, i w readoucie
-    expect(screen.getAllByText('300 Hz').length).toBeGreaterThanOrEqual(1)
+    // W trybie MIDI panel pokazuje, kto steruje, jaka nuta i jakim tonem.
+    expect(screen.getByText('MIDI CONTROLLED')).toBeDefined()
+    expect(screen.getByText('Thom Piano')).toBeDefined()
+    expect(screen.getByText('E4')).toBeDefined()
+    expect(screen.getAllByText('300.00 Hz').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('wybor tracku bebna idzie do backendu', async () => {
+    const socket = await renderApp()
+
+    await waitFor(() => expect(screen.getByLabelText(/VHS Drum Track/i)).toBeDefined())
+
+    fireEvent.change(screen.getByLabelText(/VHS Drum Track/i), { target: { value: '1' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_drum_track', track: 1 })
+
+    fireEvent.change(screen.getByLabelText(/VHS Drum Track/i), { target: { value: '' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_drum_track', track: null })
+  })
+
+  it('tryb transpozycji bebna idzie do backendu', async () => {
+    const socket = await renderApp()
+
+    fireEvent.change(screen.getByLabelText(/VHS Drum transpose/i), { target: { value: 'high' } })
+
+    expect(socket.actions()).toContainEqual({ action: 'set_drum_transpose', mode: 'high' })
+  })
+
+  it('podczas MIDI panel bebna nie pokazuje suwakow recznych', async () => {
+    await renderApp({
+      drum: {
+        value: 74,
+        output: 74,
+        toneHz: 523,
+        lastValue: 64,
+        running: true,
+        connected: true,
+        minHz: 20,
+        maxHz: 2000,
+        controlledBy: 'midi',
+        drive: 74,
+        range: { minHz: 110, maxHz: 880 },
+        transpose: 'high',
+        strategy: 'highest',
+        midiTrack: 2,
+        midiTrackName: 'Thom Piano',
+        midiNote: 72,
+        midiNoteName: 'C5',
+        midiFrequency: 523.25,
+      },
+    })
+
+    expect(screen.queryByTitle('Start bębna')).toBeNull()
+    expect(screen.queryByLabelText('PWM (głośność)')).toBeNull()
   })
 
   it('przy rozlaczonym Arduino beben pokazuje Disconnected i jest zablokowany', async () => {
@@ -318,6 +420,16 @@ describe('App', () => {
         connected: false,
         minHz: 20,
         maxHz: 2000,
+        controlledBy: 'manual',
+        drive: 74,
+        range: { minHz: 110, maxHz: 880 },
+        transpose: 'auto',
+        strategy: 'highest',
+        midiTrack: null,
+        midiTrackName: null,
+        midiNote: null,
+        midiNoteName: null,
+        midiFrequency: null,
       },
     })
 

@@ -80,19 +80,52 @@ export default function App() {
           files={player.files}
           selected={state?.file ?? null}
           onSelect={player.selectFile}
+          onUpload={player.uploadFile}
+          uploading={player.uploading}
         />
 
         <TrackSelector
           metadata={player.metadata}
           selected={state?.track ?? null}
           onSelect={player.selectTrack}
+          label="FDD Track"
+        />
+
+        <TrackSelector
+          metadata={player.metadata}
+          selected={state?.drum.midiTrack ?? null}
+          onSelect={(index) => player.selectDrumTrack(index < 0 ? null : index)}
+          label="VHS Drum Track"
+          allowNone
+          noneLabel="None (bęben ręcznie)"
         />
 
         <TransposeSelector
           value={state?.transpose ?? 'auto'}
           range={state?.range ?? null}
           onSelect={player.selectTranspose}
+          label="FDD transpose"
         />
+
+        <TransposeSelector
+          value={state?.drum.transpose ?? 'auto'}
+          range={state?.drum.range ?? null}
+          onSelect={player.selectDrumTranspose}
+          label="VHS Drum transpose"
+        />
+
+        <label className="field">
+          <span className="field-label">VHS Drum strategy</span>
+
+          <select
+            value={state?.drum.strategy ?? 'highest'}
+            onChange={(event) => player.selectDrumStrategy(event.target.value)}
+          >
+            <option value="highest">highest — najwyższa nuta (melodia)</option>
+            <option value="lowest">lowest — najniższa nuta (bas)</option>
+            <option value="last">last — ostatni NOTE_ON</option>
+          </select>
+        </label>
       </section>
 
       <HardwareStatus

@@ -43,6 +43,10 @@ from pitch import (
 
 from .timeline import (
     DEFAULT_GATE,
+    DRUM_DRIVE_DEFAULT,
+    DRUM_MAX_HZ_DEFAULT,
+    DRUM_MIN_HZ_DEFAULT,
+    LANE_DRUM,
     Command,
     Timeline,
     make_timeline,
@@ -158,6 +162,14 @@ class PlaybackEngine:
         transpose: str = "auto",
         strategy: str = "highest",
         gate: float = DEFAULT_GATE,
+        drum_track_index: int | None = None,
+        # Domyslnie "low": to okno dokladnie jednej oktawy (110-220 Hz), wiec
+        # melodia NIGDY nie przeskakuje o oktave - zachowane sa interwaly.
+        drum_transpose: str = "low",
+        drum_strategy: str | None = None,
+        drum_min_hz: float = DRUM_MIN_HZ_DEFAULT,
+        drum_max_hz: float = DRUM_MAX_HZ_DEFAULT,
+        drum_drive: int = DRUM_DRIVE_DEFAULT,
         keepalive: float = KEEPALIVE_S,
         spin_margin: float = SPIN_MARGIN_S,
         ready_timeout: float = 12.0,
@@ -191,6 +203,15 @@ class PlaybackEngine:
         self._track_index: int | None = None
         self._timeline: Timeline | None = None
 
+        # --- druga linia: VHS drum sterowany z MIDI ---
+        self._drum_track_index = drum_track_index
+        self._drum_transpose = drum_transpose
+        self._drum_strategy = drum_strategy
+        self._drum_min_hz = drum_min_hz
+        self._drum_max_hz = drum_max_hz
+        self._drum_drive = drum_drive
+        self._drum_current: Command | None = None
+
         self._state = PlaybackState.STOPPED
         self._origin = time.monotonic()
         self._position_base = 0.0
@@ -204,9 +225,14 @@ class PlaybackEngine:
         # --- VHS drum ---
         self._drum_value = 0                 # co zadal host (0-255)
         self._drum_output: int | None = None  # co potwierdzil firmware (STATUS)
-        self._drum_tone_hz = 0               # 0 = tryb DC
+        self._drum_tone_hz = 0.0             # 0 = tryb DC
         self._drum_last_nonzero = DRUM_START_VALUE
         self._status_request_at = 0.0
+
+        # Co juz poszlo do firmware (zeby nie wysylac tego samego i nie
+        # restartowac niepotrzebnie timera tonu). -1 = nie wiemy.
+        self._drum_drive_sent = -1
+        self._drum_tone_sent = -1
 
     # ==========================================================
     # CYKL ZYCIA
@@ -231,8 +257,9 @@ class PlaybackEngine:
         with self._lock:
             self._shutdown = True
             self._safe_send_stop_locked()
-            self._send_raw_locked("DRUM 0")
+            self._apply_drum_locked(drive=0, force=True)
             self._drum_value = 0
+            self._drum_current = None
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._current = None
@@ -309,15 +336,17 @@ class PlaybackEngine:
             )
             self._last_io = time.monotonic()
             self._drum_output = None
+            self._drum_current = None
 
             # FAIL-SAFE: po (re)connect beben ma byc ZATRZYMOWANY i nie ma
             # prawa ruszyc sam. Najpierw stop, potem odtworzenie ustawien.
             self._drum_value = 0
+            self._drum_drive_sent = -1
+            self._drum_tone_sent = -1
+
             self._send_raw_locked("DRUM 0")
-
-            if self._drum_tone_hz:
-                self._send_raw_locked(f"DRUMF {self._drum_tone_hz}")
-
+            self._drum_drive_sent = 0
+            self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
             self._request_status_locked(force=True)
 
         return ready
@@ -334,10 +363,11 @@ class PlaybackEngine:
             # FAIL-SAFE: nie zostawiamy krecacego sie bebna za soba.
             if self._transport is not None:
                 self._safe_send_stop_locked()
-                self._send_raw_locked("DRUM 0")
+                self._apply_drum_locked(drive=0, force=True)
 
             self._drum_value = 0
             self._drum_output = None
+            self._drum_current = None
             self._close_transport_locked()
             self._wake.set()
 
@@ -426,6 +456,51 @@ class PlaybackEngine:
             self._rebuild_locked(keep_position=True)
             self._wake.set()
 
+    # ---------- druga linia: VHS drum z MIDI ----------
+
+    def set_drum_track(self, track_index: int | None) -> None:
+        """Przypisuje track MIDI do bebna (None = beben tylko reczny)."""
+        with self._lock:
+            if track_index is not None:
+                if self._source is None:
+                    raise EngineError("najpierw wybierz plik MIDI")
+
+                if not 0 <= track_index < len(self._source.tracks):
+                    raise EngineError(f"track {track_index} nie istnieje")
+
+            if track_index == self._drum_track_index:
+                return
+
+            self._drum_track_index = track_index
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def set_drum_transpose(self, mode: str) -> None:
+        if mode not in FOLD_MODES:
+            raise EngineError(f"nieznany tryb transpozycji {mode!r}")
+
+        with self._lock:
+            if mode == self._drum_transpose:
+                return
+
+            self._drum_transpose = mode
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def set_drum_strategy(self, strategy: str) -> None:
+        from midi_source import STRATEGIES
+
+        if strategy not in STRATEGIES:
+            raise EngineError(f"nieznana strategia {strategy!r}")
+
+        with self._lock:
+            if strategy == self._drum_strategy:
+                return
+
+            self._drum_strategy = strategy
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
     def _rebuild_locked(self, *, keep_position: bool) -> None:
         """Buduje timeline na nowo i ustawia wskaznik na wlasciwe miejsce.
 
@@ -447,6 +522,12 @@ class PlaybackEngine:
             max_hz=self._max_hz,
             mode=self._transpose,
             gate=self._gate,
+            drum_track_index=self._drum_track_index,
+            drum_strategy=self._drum_strategy,
+            drum_min_hz=self._drum_min_hz,
+            drum_max_hz=self._drum_max_hz,
+            drum_mode=self._drum_transpose,
+            drum_drive=self._drum_drive,
         )
 
         position = max(0.0, min(position, self._timeline.duration))
@@ -485,10 +566,11 @@ class PlaybackEngine:
                 return
 
             position = self._position_locked()
-            self._safe_send_stop_locked()
+            self._reset_instruments_locked()
             self._position_base = position
             self._state = PlaybackState.PAUSED
             self._current = None
+            self._drum_current = None
             self._wake.set()
 
     def resume(self) -> None:
@@ -502,13 +584,14 @@ class PlaybackEngine:
             self._begin_locked(self._position_locked())
 
     def stop(self) -> None:
-        """STOP do Arduino, playhead = 0, stan STOPPED."""
+        """STOP + DRUM 0, playhead = 0, stan STOPPED."""
         with self._lock:
-            self._safe_send_stop_locked()
+            self._reset_instruments_locked()
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._next_index = 0
             self._current = None
+            self._drum_current = None
             self._wake.set()
 
     def seek(self, position: float) -> None:
@@ -540,8 +623,9 @@ class PlaybackEngine:
             self._fail_locked("brak polaczenia z Arduino")
             return
 
-        # Zawsze STOP przed nowym planem - nigdy nie zostawiamy starej nuty.
-        if not self._send_locked(Command(0.0, "stop")):
+        # Zawsze STOP + DRUM 0 przed nowym planem - zaden instrument nie
+        # moze zostac z dzwiekiem ze starego planu.
+        if not self._reset_instruments_locked():
             return
 
         self._next_index = timeline.index_after(position)
@@ -549,15 +633,27 @@ class PlaybackEngine:
         self._position_base = position
         self._state = PlaybackState.PLAYING
         self._current = None
+        self._drum_current = None
 
-        resume = timeline.resume_command(position)
+        # Wznowienie stanu WSZYSTKICH linii w tym miejscu.
+        for command in timeline.resume_commands(position):
+            if command.lane == LANE_DRUM:
+                self._dispatch_drum_locked(command)
+            else:
+                self._send_locked(command)
+                self._current = command
 
-        if resume is not None:
-            self._send_locked(resume)
-            self._current = resume
-            self._next_index = timeline.index_after(position)
-
+        self._next_index = timeline.index_after(position)
         self._wake.set()
+
+    def _reset_instruments_locked(self) -> bool:
+        """STOP dla FDD + DRUM 0 (wspolny punkt startu po seek/pauza/stop)."""
+        stop_ok = self._safe_send_stop_locked()
+        drum_ok = self._apply_drum_locked(drive=0, force=True)
+
+        self._drum_current = None
+
+        return stop_ok and drum_ok
 
     # ==========================================================
     # VHS DRUM (manualne sterowanie - NIE jest zwiazane z MIDI)
@@ -566,24 +662,31 @@ class PlaybackEngine:
     # DRUMF = czestotliwosc kluczowania = wysokosc dzwieku (0 = tryb DC)
     # ==========================================================
 
+    def _drum_midi_active_locked(self) -> bool:
+        """Czy beben jest wlasnie sterowany przez MIDI (a nie recznie)."""
+        return self._state is PlaybackState.PLAYING and self._drum_track_index is not None
+
+    def _guard_manual_drum_locked(self) -> None:
+        if self._drum_midi_active_locked():
+            raise EngineError(
+                "beben jest sterowany przez MIDI - zatrzymaj albo wstrzymaj odtwarzanie"
+            )
+
     def set_drum(self, value: int) -> int:
-        """Ustawia amplitude bebna (0-255). 0 = stop."""
+        """Ustawia amplitude bebna (0-255). 0 = stop. Tylko tryb reczny."""
         value = int(value)
 
         if not 0 <= value <= 255:
             raise EngineError(f"PWM bebna musi byc w zakresie 0..255, jest {value}")
 
         with self._lock:
+            self._guard_manual_drum_locked()
+
             if self._transport is None:
                 raise EngineError("brak polaczenia z Arduino")
 
-            if not self._send_raw_locked(f"DRUM {value}"):
+            if not self._apply_drum_locked(drive=value, force=True):
                 raise EngineError("nie udalo sie wyslac komendy do Arduino")
-
-            self._drum_value = value
-
-            if value > 0:
-                self._drum_last_nonzero = value
 
             self._request_status_locked()
 
@@ -592,6 +695,7 @@ class PlaybackEngine:
     def start_drum(self) -> int:
         """Start z ostatnia niezerowa wartoscia (albo konserwatywnym startem)."""
         with self._lock:
+            self._guard_manual_drum_locked()
             value = self._drum_last_nonzero or DRUM_START_VALUE
 
         return self.set_drum(value)
@@ -599,9 +703,9 @@ class PlaybackEngine:
     def stop_drum(self) -> int:
         return self.set_drum(0)
 
-    def set_drum_tone(self, hz: int) -> int:
-        """Wysokosc dzwieku bebna (0 = tryb DC, 20..2000 Hz)."""
-        hz = int(hz)
+    def set_drum_tone(self, hz: float) -> float:
+        """Wysokosc dzwieku bebna (0 = tryb DC, 20..2000 Hz). Tylko recznie."""
+        hz = float(hz)
 
         if hz != 0 and not DRUM_MIN_HZ <= hz <= DRUM_MAX_HZ:
             raise EngineError(
@@ -609,16 +713,71 @@ class PlaybackEngine:
             )
 
         with self._lock:
+            self._guard_manual_drum_locked()
+
             if self._transport is None:
                 raise EngineError("brak polaczenia z Arduino")
 
-            if not self._send_raw_locked(f"DRUMF {hz}"):
+            if not self._apply_drum_locked(tone_hz=hz, force=True):
                 raise EngineError("nie udalo sie wyslac komendy do Arduino")
 
-            self._drum_tone_hz = hz
             self._request_status_locked()
 
         return hz
+
+    # ---------- wewnetrzne ----------
+
+    def _apply_drum_locked(
+        self,
+        *,
+        tone_hz: float | None = None,
+        drive: int | None = None,
+        force: bool = False,
+    ) -> bool:
+        """Wysyla do firmware tylko to, co faktycznie sie zmienilo.
+
+        Dzieki temu legato (kolejna nuta bez przerwy) wysyla sam DRUMF i nie
+        restartuje timera tonu, a powtorzona ta sama wartosc nie leci wcale.
+        """
+        if tone_hz is not None:
+            target = int(round(tone_hz))
+
+            if target < DRUM_MIN_HZ:
+                target = 0
+
+            if force or target != self._drum_tone_sent:
+                if not self._send_raw_locked(f"DRUMF {target}"):
+                    return False
+
+                self._drum_tone_sent = target
+                self._drum_tone_hz = float(target) if target else 0.0
+
+        if drive is not None and (force or drive != self._drum_drive_sent):
+            if not self._send_raw_locked(f"DRUM {drive}"):
+                return False
+
+            self._drum_drive_sent = drive
+            self._drum_value = drive
+
+            if drive > 0:
+                self._drum_last_nonzero = drive
+
+        return True
+
+    def _dispatch_drum_locked(self, command: Command) -> bool:
+        """Wykonuje komende linii bebna z timeline'u."""
+        if command.kind == "drum_on":
+            if not self._apply_drum_locked(tone_hz=command.hz, drive=self._drum_drive):
+                return False
+
+            self._drum_current = command
+            return True
+
+        if not self._apply_drum_locked(drive=0):
+            return False
+
+        self._drum_current = None
+        return True
 
     # ==========================================================
     # ODCZYT STANU
@@ -660,16 +819,32 @@ class PlaybackEngine:
 
     def _drum_snapshot_locked(self) -> dict:
         connected = self._transport is not None
+        midi_active = self._drum_midi_active_locked()
+        current = self._drum_current if midi_active else None
+
+        tone = float(self._drum_tone_hz)
+        played_note = int(round(hz_to_midi(tone))) if tone > 0 else None
 
         return {
             "value": self._drum_value,
             "output": self._drum_output if connected else None,
-            "toneHz": self._drum_tone_hz,
+            "toneHz": round(tone, 2),
             "lastValue": self._drum_last_nonzero,
             "running": bool(self._drum_value > 0 and connected),
             "connected": connected,
             "minHz": DRUM_MIN_HZ,
             "maxHz": DRUM_MAX_HZ,
+            # --- tryb pracy: reczny czy z MIDI ---
+            "controlledBy": "midi" if midi_active else "manual",
+            "drive": self._drum_drive,
+            "range": {"minHz": self._drum_min_hz, "maxHz": self._drum_max_hz},
+            "transpose": self._drum_transpose,
+            "strategy": self._drum_strategy or self._strategy,
+            "midiTrack": self._drum_track_index,
+            "midiTrackName": self.drum_track_name,
+            "midiNote": current.note if current is not None else None,
+            "midiNoteName": note_name(played_note) if played_note is not None else None,
+            "midiFrequency": round(current.hz, 2) if current is not None and current.hz else None,
         }
 
     @property
@@ -695,6 +870,13 @@ class PlaybackEngine:
         track = self._source.tracks[self._track_index]
 
         return track.name
+
+    @property
+    def drum_track_name(self) -> str | None:
+        if self._source is None or self._drum_track_index is None:
+            return None
+
+        return self._source.tracks[self._drum_track_index].name
 
     @property
     def source(self) -> MidiSource | None:
@@ -816,6 +998,12 @@ class PlaybackEngine:
             self._state = PlaybackState.PAUSED
 
         self._current = None
+        self._drum_current = None
+
+        # Stan bebna jest teraz nieznany - po reconnect wszystko pojdzie od nowa.
+        self._drum_value = 0
+        self._drum_drive_sent = -1
+        self._drum_tone_sent = -1
         self._wake.set()
 
     def _poll_lines_locked(self) -> None:
@@ -925,10 +1113,15 @@ class PlaybackEngine:
             if command.time > position + 1e-9:
                 break
 
-            if not self._send_locked(command):
-                return None
+            if command.lane == LANE_DRUM:
+                if not self._dispatch_drum_locked(command):
+                    return None
+            else:
+                if not self._send_locked(command):
+                    return None
 
-            self._current = command if command.kind == "play" else None
+                self._current = command if command.kind == "play" else None
+
             self._next_index += 1
 
             if self._realtime:

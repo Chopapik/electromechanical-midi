@@ -34,20 +34,46 @@ ARTICULATION_S = 0.012
 
 DEFAULT_GATE = 1.0
 
+# --- linie instrumentalne (jeden wspolny timeline, jeden zegar) ---
+LANE_FDD = "fdd"
+LANE_DRUM = "drum"
+LANES = (LANE_FDD, LANE_DRUM)
+
+# Napęd bębna VHS w trybie MIDI (0-255).
+# 38 = 15% wypełnienia - ciszej i mniej szumu mechanicznego niz przy 74 (~29%).
+# To jedna stala do strojenia: podniesienie jej = głośniejszy, ale bardziej
+# "brzęczący" bęben.
+DRUM_DRIVE_DEFAULT = 38
+
+# Muzyczny zakres bębna VHS (osobny mapper, niezależny od FDD).
+DRUM_MIN_HZ_DEFAULT = 110.0
+DRUM_MAX_HZ_DEFAULT = 880.0
+
 
 @dataclasses.dataclass(frozen=True)
 class Command:
     """Jedna komenda do Arduino w absolutnym czasie odtwarzania."""
 
     time: float
-    kind: str                      # "play" | "stop"
+    kind: str                      # "play" | "stop" | "drum_on" | "drum_off"
     hz: float | None = None
     note: int | None = None        # nuta zrodlowa z pliku MIDI
+    lane: str = LANE_FDD           # "fdd" | "drum"
+
+    @property
+    def is_note_on(self) -> bool:
+        return self.kind in ("play", "drum_on")
 
     @property
     def text(self) -> str:
         if self.kind == "play":
             return f"PLAY {self.hz:.2f}"
+
+        if self.kind == "drum_on":
+            return f"DRUM {DRUM_DRIVE_DEFAULT} + DRUMF {self.hz:.2f}"
+
+        if self.kind == "drum_off":
+            return "DRUM 0"
 
         return "STOP"
 
@@ -166,24 +192,33 @@ def build_schedule(
 
 @dataclasses.dataclass(frozen=True)
 class Timeline:
-    """Niemutowalny plan odtwarzania jednego tracku."""
+    """Niemutowalny plan odtwarzania (wszystkie linie, jeden zegar)."""
 
     commands: tuple[Command, ...] = ()
     stats: ScheduleStats = dataclasses.field(default_factory=ScheduleStats)
     times: tuple[float, ...] = ()
+
+    # --- konfiguracja, z ktora timeline powstal (do UI/seek) ---
+    track_index: int | None = None
+    drum_track_index: int | None = None
 
     @classmethod
     def from_commands(
         cls,
         commands: list[Command] | tuple[Command, ...],
         stats: ScheduleStats | None = None,
+        *,
+        track_index: int | None = None,
+        drum_track_index: int | None = None,
     ) -> "Timeline":
-        frozen = tuple(commands)
+        frozen = tuple(sorted(commands, key=lambda command: command.time))
 
         return cls(
             commands=frozen,
             stats=stats or ScheduleStats(),
             times=tuple(command.time for command in frozen),
+            track_index=track_index,
+            drum_track_index=drum_track_index,
         )
 
     def __len__(self) -> int:
@@ -208,35 +243,142 @@ class Timeline:
 
         return self.commands[index - 1] if index > 0 else None
 
-    def sounding_at(self, position: float) -> Command | None:
-        """Komenda PLAY, ktora powinna wlasnie grac (None = cisza)."""
-        command = self.command_at(position)
+    def last_command_at(self, lane: str, position: float) -> Command | None:
+        """Ostatnia komenda DANEJ LINII o czasie <= position."""
+        last = None
 
-        return command if command is not None and command.kind == "play" else None
+        for command in self.commands:
+            if command.time > position:
+                break
 
-    def resume_command(self, position: float) -> Command | None:
-        """PLAY do wyslania NATYCHMIAST po seeku.
+            if command.lane == lane:
+                last = command
+
+        return last
+
+    def sounding_at(self, position: float, lane: str = LANE_FDD) -> Command | None:
+        """Komenda 'note on' danej linii, ktora powinna wlasnie grac."""
+        command = self.last_command_at(lane, position)
+
+        return command if command is not None and command.is_note_on else None
+
+    def resume_command(self, position: float, lane: str = LANE_FDD) -> Command | None:
+        """Komenda do wyslania NATYCHMIAST po seeku dla danej linii.
 
         Jesli w danej chwili trwa nuta (NOTE_ON byl wczesniej, NOTE_OFF
         jeszcze nie), zwracamy ja z czasem rownym pozycji - dzieki temu
         seek w srodek nuty od razu ja gra, zamiast czekac na nastepny
         NOTE_ON. Zwraca None, gdy w tym miejscu jest cisza.
         """
-        playing = self.sounding_at(position)
+        playing = self.sounding_at(position, lane)
 
         if playing is None:
             return None
 
         return dataclasses.replace(playing, time=position)
 
-    def note_at(self, position: float) -> tuple[int | None, float | None]:
+    def resume_commands(self, position: float) -> list[Command]:
+        """Stan WSZYSTKICH linii w danej chwili (do wznowienia po seeku)."""
+        resumed = []
+
+        for lane in LANES:
+            command = self.resume_command(position, lane)
+
+            if command is not None:
+                resumed.append(command)
+
+        return resumed
+
+    def note_at(self, position: float, lane: str = LANE_FDD) -> tuple[int | None, float | None]:
         """(nuta zrodlowa, Hz) brzmiace w danej chwili albo (None, None)."""
-        playing = self.sounding_at(position)
+        playing = self.sounding_at(position, lane)
 
         if playing is None:
             return (None, None)
 
         return (playing.note, playing.hz)
+
+
+def build_drum_schedule(
+    spans: list[NoteSpan],
+    *,
+    min_hz: float = DRUM_MIN_HZ_DEFAULT,
+    max_hz: float = DRUM_MAX_HZ_DEFAULT,
+    mode: str = "auto",
+    drive: int = DRUM_DRIVE_DEFAULT,
+) -> tuple[list[Command], ScheduleStats]:
+    """Nuty (monofoniczne) -> komendy bebna VHS.
+
+    Zasady:
+      * nuta -> DRUM <drive> + DRUMF <hz> (wyslanie robi dispatcher),
+      * przerwa w zapisie -> DRUM 0 na koncu poprzedniej nuty,
+      * nuty stykajace sie (takze o tej samej wysokosci) NIE dostaja
+        DRUM 0 - dzwiek przechodzi plynnie w nastepny, bez klika.
+        Przy zmianie wysokosci dispatcher wysle sam DRUMF.
+    """
+    commands: list[Command] = []
+    stats = ScheduleStats()
+
+    last_end = 0.0
+    last_hz: float | None = None
+
+    for span in spans:
+        start = max(0.0, span.start, last_end)
+        end = start + span.duration
+
+        if (end - start) < MIN_NOTE_S:
+            stats.skipped += 1
+            continue
+
+        folded = fold_note(span.note, min_hz, max_hz, mode)
+
+        stats.notes += 1
+
+        if folded.octave_shift:
+            stats.folded += 1
+
+        if not folded.in_range:
+            stats.out_of_range += 1
+
+        if stats.min_hz == 0.0 or folded.hz < stats.min_hz:
+            stats.min_hz = folded.hz
+
+        if folded.hz > stats.max_hz:
+            stats.max_hz = folded.hz
+
+        touching = last_hz is not None and start <= last_end + TIME_EPS
+        same_pitch = touching and abs((last_hz or 0.0) - folded.hz) <= SAME_HZ_EPS
+
+        if touching and not same_pitch:
+            # Nuta bez przerwy zmienia wysokosc - dispatcher wysle tylko DRUMF.
+            pass
+        elif last_hz is not None and not touching:
+            commands.append(
+                Command(last_end, "drum_off", lane=LANE_DRUM)
+            )
+
+        if not same_pitch:
+            commands.append(
+                Command(
+                    start,
+                    "drum_on",
+                    hz=folded.hz,
+                    note=span.note,
+                    lane=LANE_DRUM,
+                )
+            )
+
+        last_hz = folded.hz
+        last_end = end
+
+    if last_hz is not None:
+        commands.append(Command(last_end, "drum_off", lane=LANE_DRUM))
+
+    stats.play_commands = sum(1 for command in commands if command.kind == "drum_on")
+    stats.stop_commands = len(commands) - stats.play_commands
+    stats.duration = commands[-1].time if commands else 0.0
+
+    return commands, stats
 
 
 def make_timeline(
@@ -248,16 +390,65 @@ def make_timeline(
     max_hz: float = COMFORT_MAX_HZ,
     mode: str = "auto",
     gate: float = DEFAULT_GATE,
+    drum_track_index: int | None = None,
+    drum_strategy: str | None = None,
+    drum_min_hz: float = DRUM_MIN_HZ_DEFAULT,
+    drum_max_hz: float = DRUM_MAX_HZ_DEFAULT,
+    drum_mode: str = "auto",
+    drum_drive: int = DRUM_DRIVE_DEFAULT,
 ) -> Timeline:
-    """Nuty tracku -> monofonia -> komendy PLAY/STOP -> Timeline."""
-    spans = source.selected_notes(track_index, strategy)
+    """Buduje WSPOLNY timeline: linia FDD + (opcjonalnie) linia bebna VHS.
 
-    commands, stats = build_schedule(
-        spans,
+    Obie linie sa zmergowane w jedna, posortowana liste komend, wiec gra
+    je jeden scheduler z jednym zegarem - nie ma dwoch niezaleznych
+    odtwarzaczy, ktore moglyby sie rozjechac.
+    """
+    fdd_spans = source.selected_notes(track_index, strategy)
+
+    fdd_commands, fdd_stats = build_schedule(
+        fdd_spans,
         min_hz=min_hz,
         max_hz=max_hz,
         mode=mode,
         gate=gate,
     )
 
-    return Timeline.from_commands(commands, stats)
+    drum_commands: list[Command] = []
+    drum_stats = ScheduleStats()
+
+    if drum_track_index is not None:
+        drum_spans = source.selected_notes(
+            drum_track_index,
+            drum_strategy or strategy,
+        )
+
+        drum_commands, drum_stats = build_drum_schedule(
+            drum_spans,
+            min_hz=drum_min_hz,
+            max_hz=drum_max_hz,
+            mode=drum_mode,
+            drive=drum_drive,
+        )
+
+    merged = list(fdd_commands) + list(drum_commands)
+
+    stats = ScheduleStats(
+        notes=fdd_stats.notes + drum_stats.notes,
+        skipped=fdd_stats.skipped + drum_stats.skipped,
+        folded=fdd_stats.folded + drum_stats.folded,
+        out_of_range=fdd_stats.out_of_range + drum_stats.out_of_range,
+        play_commands=fdd_stats.play_commands + drum_stats.play_commands,
+        stop_commands=fdd_stats.stop_commands + drum_stats.stop_commands,
+        duration=max(fdd_stats.duration, drum_stats.duration),
+        min_hz=min(
+            [value for value in (fdd_stats.min_hz, drum_stats.min_hz) if value] or [0.0]
+        ),
+        max_hz=max(fdd_stats.max_hz, drum_stats.max_hz),
+    )
+
+    return Timeline.from_commands(
+        merged,
+        stats,
+        track_index=track_index,
+        drum_track_index=drum_track_index,
+    )

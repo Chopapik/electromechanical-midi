@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import contextlib
+import io
 import json
 import sys
 import time
@@ -34,7 +35,15 @@ REPO_ROOT = HOST_DIR.parent
 if str(HOST_DIR) not in sys.path:
     sys.path.insert(0, str(HOST_DIR))
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect  # noqa: E402
+import mido  # noqa: E402
+from fastapi import (  # noqa: E402
+    FastAPI,
+    File,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import HTMLResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from starlette.websockets import WebSocketState  # noqa: E402
@@ -50,6 +59,9 @@ STATE_INTERVAL_S = 0.15
 HEARTBEAT_S = 1.0
 
 MIDI_SUFFIXES = (".mid", ".midi")
+
+# Upload z przegladarki: pliki MIDI sa malutkie, wiec 5 MB to i tak duzo.
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 
 def _is_polyphonic(notes) -> bool:
@@ -87,6 +99,55 @@ class MidiLibrary:
             raise HTTPException(status_code=404, detail=f"nie ma pliku {name}")
 
         return path
+
+    def save_upload(self, filename: str, data: bytes) -> Path:
+        """Zapisuje wgrany plik MIDI do katalogu biblioteki.
+
+        Nazwa jest czyszczona (bez sciezek), a przy kolizji dokladamy
+        " (2)", " (3)"... - nigdy nie nadpisujemy istniejacego utworu.
+        """
+        name = Path(filename or "").name.strip()
+
+        if not name or name.startswith("."):
+            raise HTTPException(status_code=400, detail="niepoprawna nazwa pliku")
+
+        suffix = Path(name).suffix.lower()
+
+        if suffix not in MIDI_SUFFIXES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"dozwolone rozszerzenia: {', '.join(MIDI_SUFFIXES)}",
+            )
+
+        if not data:
+            raise HTTPException(status_code=400, detail="pusty plik")
+
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"plik wiekszy niz {MAX_UPLOAD_BYTES // (1024 * 1024)} MB",
+            )
+
+        # Walidacja: plik musi byc czytelnym MIDI (zanim cokolwiek zapiszemy).
+        try:
+            mido.MidiFile(file=io.BytesIO(data))
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400, detail=f"to nie wyglada na plik MIDI: {exc}"
+            ) from exc
+
+        self.directory.mkdir(parents=True, exist_ok=True)
+
+        target = self.directory / name
+        stem, index = Path(name).stem, 2
+
+        while target.exists():
+            target = self.directory / f"{stem} ({index}){suffix}"
+            index += 1
+
+        target.write_bytes(data)
+
+        return target
 
     def list_files(self) -> list[dict]:
         if not self.directory.is_dir():
@@ -257,7 +318,16 @@ def create_app(
         elif action == "stop_drum":
             await asyncio.to_thread(engine.stop_drum)
         elif action == "set_drum_tone":
-            await asyncio.to_thread(engine.set_drum_tone, int(message.get("hz", 0)))
+            await asyncio.to_thread(engine.set_drum_tone, float(message.get("hz", 0)))
+        elif action == "set_drum_track":
+            track = message.get("track", None)
+            await asyncio.to_thread(
+                engine.set_drum_track, None if track is None else int(track)
+            )
+        elif action == "set_drum_transpose":
+            await asyncio.to_thread(engine.set_drum_transpose, str(message.get("mode")))
+        elif action == "set_drum_strategy":
+            await asyncio.to_thread(engine.set_drum_strategy, str(message.get("strategy")))
         elif action == "snapshot":
             pass
         else:
@@ -306,6 +376,18 @@ def create_app(
     @app.get("/api/files/{name}")
     def api_file(name: str) -> dict:
         return library.metadata(name)
+
+    @app.post("/api/files")
+    async def api_upload(file: UploadFile = File(...)) -> dict:
+        """Wgranie pliku MIDI z przegladarki do katalogu midi/."""
+        data = await file.read(MAX_UPLOAD_BYTES + 1)
+        path = library.save_upload(file.filename or "", data)
+
+        return {
+            "name": path.name,
+            "size": len(data),
+            "files": library.list_files(),
+        }
 
     @app.get("/api/ports")
     def api_ports() -> dict:
@@ -424,6 +506,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-hz", type=float, default=COMFORT_MAX_HZ)
     parser.add_argument("--transpose", choices=FOLD_MODES, default="auto")
     parser.add_argument(
+        "--drum-transpose",
+        choices=FOLD_MODES,
+        default="low",
+        help="tryb skladania oktawowego bebna (low = bez skokow)",
+    )
+    parser.add_argument(
+        "--drum-strategy",
+        choices=("highest", "lowest", "last"),
+        default="highest",
+        help="strategia monofonizacji bebna (lowest = linia basowa)",
+    )
+    parser.add_argument(
         "--strategy", choices=("highest", "lowest", "last"), default="highest"
     )
 
@@ -451,6 +545,8 @@ def main(argv: list[str] | None = None) -> int:
         max_hz=args.max_hz,
         transpose=args.transpose,
         strategy=args.strategy,
+        drum_transpose=args.drum_transpose,
+        drum_strategy=args.drum_strategy,
     )
 
     app = create_app(
