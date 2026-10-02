@@ -345,6 +345,11 @@ class MidiSource:
     def file_type(self) -> int:
         return self._midi.type
 
+    @property
+    def duration(self) -> float:
+        """Dlugosc pliku w sekundach (najdluzszy track, wraz z meta)."""
+        return float(self._midi.length)
+
     def _describe(self, index: int) -> TrackInfo:
         track = self._midi.tracks[index]
 

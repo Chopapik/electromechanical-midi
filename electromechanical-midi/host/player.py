@@ -9,18 +9,19 @@ Podstawowe uzycie:
     python host/player.py midi/test.mid --track 2
     python host/player.py midi/test.mid --dry-run
 
-Caly timing muzyczny liczy ten program. Arduino dostaje tylko
-"PLAY <hz>" i "STOP" i ma je wykonac natychmiast.
+Caly timing muzyczny liczy ten program (a konkretnie wspolny silnik z
+``host/playback``). Arduino dostaje tylko "PLAY <hz>" i "STOP" i ma je
+wykonac natychmiast.
 
-Timing opiera sie na zegarze monotonicznym i BEZWZGLEDNYM czasie
-startu odtwarzania, dlatego opoznienia Serial nie kumuluja sie
-w trakcie utworu (brak narastajacego dryfu).
+Timing opiera sie na zegarze monotonicznym i BEZWZGLEDNYM czasie startu
+odtwarzania, dlatego opoznienia Serial nie kumuluja sie w trakcie utworu.
+Ten sam silnik obsluguje web player (``host/web/server.py``), wiec seek,
+pauza i zmiana tracku dzialaja identycznie w obu trybach.
 """
 
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import sys
 import time
 from pathlib import Path
@@ -34,276 +35,38 @@ from floppy_link import (
     resolve_port,
     scan_ports,
 )
-from midi_source import STRATEGIES, MidiSource, MidiSourceError, NoteSpan
-from pitch import (
-    COMFORT_MAX_HZ,
-    COMFORT_MIN_HZ,
-    FOLD_MODES,
-    fold_note,
+from midi_source import STRATEGIES, MidiSource, MidiSourceError
+from pitch import COMFORT_MAX_HZ, COMFORT_MIN_HZ, FOLD_MODES
+from playback.engine import (
+    SPIN_MARGIN_S,
+    EngineError,
+    PlaybackEngine,
+    PlaybackState,
 )
 
-# ------------------------------------------------------------
-# Strojenie harmonogramu
-# ------------------------------------------------------------
-
-TIME_EPS = 1e-4        # 0.1 ms - ponizej tego traktujemy czasy jako rowne
-SAME_HZ_EPS = 0.01     # ponizej tego to ta sama wysokosc dzwieku
-MIN_NOTE_S = 0.010     # krotszych nut mechanika i tak nie zagra
-
-# Powtorka tej samej nuty musi miec realna przerwe. Samo STOP+PLAY w tej
-# samej chwili nic nie daje: obie komendy dochodza do Arduino razem, wiec
-# glowica nie zdazy sie zatrzymac i slychac jedna ciagla nuta. Dlatego
-# STOP leci ARTICULATION_S przed poczatkiem powtorki.
-ARTICULATION_S = 0.012
-
-SPIN_MARGIN_S = 0.0015  # ostatnie 1.5 ms czekamy aktywnie, nie przez sleep
-
-# Bledy Arduino, po ktorych przerywamy utwor: stan mechaniki wymaga homingu.
-FATAL_ERRORS = ("ERR NOT_HOMED", "ERR POS_LOST", "ERR HOME_FAILED", "ERR HOST_TIMEOUT")
-
-# Co ile sekund wysylamy PING, gdy do nastepnej komendy jest daleko.
-# Arduino ma watchdog: bez komend przez dluzsza chwile zatrzymuje kroki.
-KEEPALIVE_S = 1.0
-
-
-class ArduinoFault(RuntimeError):
-    """Kontroler zglosil blad, po ktorym dalsze granie nie ma sensu."""
-
-
-# ============================================================
-# HARMONOGRAM
-# ============================================================
-
-
-@dataclasses.dataclass(frozen=True)
-class Command:
-    """Jedna komenda do Arduino w absolutnym czasie odtwarzania."""
-
-    time: float
-    kind: str                      # "play" | "stop"
-    hz: float | None = None
-    note: int | None = None
-
-    @property
-    def text(self) -> str:
-        if self.kind == "play":
-            return f"PLAY {self.hz:.2f}"
-
-        return "STOP"
-
-
-@dataclasses.dataclass
-class ScheduleStats:
-    """Co sie stalo z nutami przy budowaniu harmonogramu."""
-
-    notes: int = 0
-    skipped: int = 0
-    folded: int = 0
-    out_of_range: int = 0
-    play_commands: int = 0
-    stop_commands: int = 0
-    duration: float = 0.0
-    min_hz: float = 0.0
-    max_hz: float = 0.0
-
-    def summary(self) -> str:
-        range_text = ""
-
-        if self.notes:
-            range_text = f", wyslane {self.min_hz:.1f}-{self.max_hz:.1f} Hz"
-
-        return (
-            f"nut: {self.notes} "
-            f"(zlozone oktawowo: {self.folded}, pominiete: {self.skipped}"
-            f"{range_text})\n"
-            f"   komendy: {self.play_commands} PLAY / {self.stop_commands} STOP\n"
-            f"   dlugosc utworu: {self.duration:.2f} s"
-        )
-
-
-def build_schedule(
-    spans: list[NoteSpan],
-    *,
-    min_hz: float = COMFORT_MIN_HZ,
-    max_hz: float = COMFORT_MAX_HZ,
-    mode: str = "auto",
-    gate: float = 1.0,
-) -> tuple[list[Command], ScheduleStats]:
-    """Zamienia nuty (juz monofoniczne) na liste komend PLAY/STOP.
-
-    Zasady:
-      * kazda nuta -> PLAY <hz> zlozone oktawowo do [min_hz, max_hz],
-      * przerwa w zapisie -> STOP na koncu poprzedniej nuty,
-      * nuty stykajace sie -> tylko PLAY (legato, bez sztucznej przerwy),
-      * powtorka tej samej wysokosci -> STOP ARTICULATION_S przed powtorka
-        i PLAY w jej poczatku, bo inaczej mechanika zagralaby jedna
-        ciagla nuta zamiast dwoch.
-    """
-    commands: list[Command] = []
-    stats = ScheduleStats()
-
-    current_hz: float | None = None
-    current_start = 0.0
-    last_end = 0.0
-
-    for span in spans:
-        start = max(0.0, span.start, last_end)
-        end = start + span.duration * gate
-
-        if (end - start) < MIN_NOTE_S:
-            stats.skipped += 1
-            continue
-
-        folded = fold_note(span.note, min_hz, max_hz, mode)
-
-        stats.notes += 1
-
-        if folded.octave_shift:
-            stats.folded += 1
-
-        if not folded.in_range:
-            stats.out_of_range += 1
-
-        if stats.min_hz == 0.0 or folded.hz < stats.min_hz:
-            stats.min_hz = folded.hz
-
-        if folded.hz > stats.max_hz:
-            stats.max_hz = folded.hz
-
-        if current_hz is not None and start > last_end + TIME_EPS:
-            commands.append(Command(last_end, "stop"))
-            current_hz = None
-
-        if current_hz is not None and abs(folded.hz - current_hz) <= SAME_HZ_EPS:
-            # Powtorka tej samej wysokosci wymaga realnej przerwy, ale nie
-            # mozemy przy tym skrocic poprzedniej nuty ponizej MIN_NOTE_S.
-            gap_start = min(
-                start,
-                max(start - ARTICULATION_S, current_start + MIN_NOTE_S),
-            )
-
-            commands.append(Command(gap_start, "stop"))
-            current_hz = None
-
-        commands.append(Command(start, "play", hz=folded.hz, note=span.note))
-
-        current_hz = folded.hz
-        current_start = start
-        last_end = end
-
-    if current_hz is not None:
-        commands.append(Command(last_end, "stop"))
-
-    stats.play_commands = sum(1 for command in commands if command.kind == "play")
-    stats.stop_commands = len(commands) - stats.play_commands
-    stats.duration = commands[-1].time if commands else 0.0
-
-    return commands, stats
-
-
-# ============================================================
-# ZEGAR
-# ============================================================
-
-
-def wait_until(target: float, busy_wait: bool = True) -> None:
-    """Czeka do BEZWZGLEDNEGO czasu (zegar monotoniczny).
-
-    Dzieki temu, ze cel jest absolutny, kazde opoznienie (Serial, GIL,
-    system) przesuwa tylko te jedna komende - nie kumuluje sie.
-    """
-    while True:
-        remaining = target - time.monotonic()
-
-        if remaining <= 0.0:
-            return
-
-        if busy_wait and remaining <= SPIN_MARGIN_S:
-            while time.monotonic() < target:
-                pass
-
-            return
-
-        time.sleep(remaining - SPIN_MARGIN_S if busy_wait else remaining)
-
-
-def wait_with_keepalive(target: float, link, busy_wait: bool = True) -> int:
-    """Czeka do celu, wysylajac PING gdy przerwa jest dluga.
-
-    Arduino ma watchdog: jesli host zamilknie na dluzej niz kilka sekund
-    (np. zawiesi sie albo ktos wyjmie USB), firmware sam zatrzymuje kroki.
-    Dlatego przy dlugich nutach i przerwach podtrzymujemy lacze.
-
-    Zwraca liczbe wyslanych PING.
-    """
-    pings = 0
-
-    while True:
-        remaining = target - time.monotonic()
-
-        if remaining <= 0.0:
-            return pings
-
-        if remaining <= KEEPALIVE_S:
-            wait_until(target, busy_wait=busy_wait)
-            return pings
-
-        time.sleep(KEEPALIVE_S)
-        link.ping()
-        link.poll_lines()  # PONG nie moze zapchac bufora TX Arduino
-        pings += 1
-
-
-def play_schedule(
-    commands: list[Command],
-    link,
-    *,
-    verbose: bool = False,
-    busy_wait: bool = True,
-    wait: bool = True,
-    echo=print,
-) -> tuple[float, float, int]:
-    """Odtwarza harmonogram.
-
-    Zwraca (czas zaplanowany, czas rzeczywisty, liczba bledow niekrytycznych).
-    """
-    origin = time.monotonic()
-    warnings = 0
-
-    for command in commands:
-        target = origin + command.time
-
-        if verbose:
-            echo(f"   {command.time:8.3f}s  {command.text}")
-
-        if wait:
-            wait_with_keepalive(target, link, busy_wait=busy_wait)
-
-        # Nieblokujacy przeglad odpowiedzi Arduino - nigdy nie opoznia PLAY.
-        for line in link.poll_lines():
-            if not line.startswith("ERR"):
-                if verbose:
-                    echo(f"   arduino: {line}")
-
-                continue
-
-            echo(f"   arduino: {line}")
-
-            if line.startswith(FATAL_ERRORS):
-                raise ArduinoFault(line)
-
-            warnings += 1
-
-        if command.kind == "play":
-            link.play(command.hz)
-        else:
-            link.stop()
-
-    return (
-        commands[-1].time if commands else 0.0,
-        time.monotonic() - origin,
-        warnings,
-    )
+# Re-eksport dla kompatybilnosci (CLI i testy uzywaly tych nazw z player.py).
+from playback.timeline import (  # noqa: F401
+    ARTICULATION_S,
+    MIN_NOTE_S,
+    SAME_HZ_EPS,
+    TIME_EPS,
+    Command,
+    ScheduleStats,
+    Timeline,
+    build_schedule,
+    make_timeline,
+)
+
+__all__ = [
+    "ARTICULATION_S",
+    "MIN_NOTE_S",
+    "Command",
+    "ScheduleStats",
+    "Timeline",
+    "build_schedule",
+    "main",
+    "make_timeline",
+]
 
 
 # ============================================================
@@ -482,30 +245,15 @@ def main(argv: list[str] | None = None) -> int:
             print(f"BLAD: track {track_index} nie ma nut", file=sys.stderr)
             return 2
 
-    # ---------- harmonogram ----------
-    try:
-        spans = source.selected_notes(track_index, args.strategy)
-        commands, stats = build_schedule(
-            spans,
-            min_hz=args.min_hz,
-            max_hz=args.max_hz,
-            mode=args.transpose,
-            gate=args.gate,
-        )
-    except (MidiSourceError, ValueError) as exc:
-        print(f"BLAD: {exc}", file=sys.stderr)
-        return 2
-
-    if not commands:
-        print("BLAD: ten track nie daje sie zagrac (brak nut o sensownej dlugosci).", file=sys.stderr)
-        return 2
-
     # ---------- port ----------
     candidate = None
 
     if args.dry_run:
         print("Serial:")
         print("(dry-run - sprzet nietkniety)")
+
+        def connect_fn(port, _args=args):
+            return DryRunLink()
     else:
         try:
             candidate = resolve_port(args.port, interactive=sys.stdin.isatty())
@@ -515,6 +263,51 @@ def main(argv: list[str] | None = None) -> int:
 
         print("Serial:")
         print(f"{candidate.label} @ {candidate.device}")
+
+        def connect_fn(port, _args=args, _candidate=candidate):
+            link = FloppyLink(_candidate.device, _args.baud)
+            link.label = _candidate.label
+            return link
+
+    # ---------- silnik ----------
+    def on_command(command):
+        if args.verbose:
+            print(f"   {command.time:8.3f}s  {command.text}", flush=True)
+
+    engine = PlaybackEngine(
+        connect_fn=connect_fn,
+        min_hz=args.min_hz,
+        max_hz=args.max_hz,
+        transpose=args.transpose,
+        strategy=args.strategy,
+        gate=args.gate,
+        spin_margin=0.0 if args.no_busy_wait else SPIN_MARGIN_S,
+        on_command=on_command,
+        on_handshake=lambda line: print(f"  arduino: {line}", flush=True),
+        wait_ready=not args.no_handshake and not args.dry_run,
+        realtime=not args.no_wait,
+    )
+
+    try:
+        engine.load_file(args.midi_file, track_index)
+    except (EngineError, MidiSourceError) as exc:
+        print(f"BLAD: {exc}", file=sys.stderr)
+        return 2
+
+    timeline = make_timeline(
+        source,
+        track_index,
+        strategy=args.strategy,
+        min_hz=args.min_hz,
+        max_hz=args.max_hz,
+        mode=args.transpose,
+        gate=args.gate,
+    )
+    stats = timeline.stats
+
+    if not timeline.commands:
+        print("BLAD: ten track nie daje sie zagrac (brak nut o sensownej dlugosci).", file=sys.stderr)
+        return 2
 
     # ---------- podsumowanie ----------
     print()
@@ -543,74 +336,66 @@ def main(argv: list[str] | None = None) -> int:
 
     print()
 
-    if args.print_schedule or args.dry_run:
+    if args.print_schedule:
         print("Schedule:")
 
-        for command in commands[:400]:
+        for command in timeline.commands[:400]:
             print(f"  {command.time:9.3f}s  {command.text}")
 
-        if len(commands) > 400:
-            print(f"  ... i {len(commands) - 400} wiecej")
+        if len(timeline.commands) > 400:
+            print(f"  ... i {len(timeline.commands) - 400} wiecej")
 
         print()
 
     # ---------- sprzet ----------
-    link = DryRunLink() if args.dry_run else None
+    print("Lacze z Arduino...", flush=True)
+    connected = engine.connect(candidate.device if candidate else None)
 
-    if not args.dry_run:
-        try:
-            link = FloppyLink(candidate.device, args.baud)
-        except SerialLinkError as exc:
-            print(f"BLAD: {exc}", file=sys.stderr)
-            return 2
-
-        # Otwarcie portu na Uno powoduje reset, po ktorym firmware sam
-        # robi homing i wysyla READY. Czekamy na to, zanim zaczniemy grac.
-        if not args.no_handshake:
-            print("Czekam na READY po homingu...", flush=True)
-
-            try:
-                if not link.wait_ready(timeout=12.0, echo=lambda text: print(text, flush=True)):
-                    print(
-                        "UWAGA: brak READY - gram mimo to. "
-                        "Sprawdz zasilanie stacji i czy TRACK0 jest podlaczony.",
-                        file=sys.stderr,
-                    )
-            except SerialLinkError as exc:
-                print(f"BLAD: {exc}", file=sys.stderr)
-                link.close()
-                return 2
+    if not connected and not args.dry_run:
+        snapshot = engine.snapshot()
+        print(
+            f"BLAD: {snapshot['hardware']['error'] or 'brak polaczenia'}",
+            file=sys.stderr,
+        )
+        engine.shutdown()
+        return 2
 
     if not args.dry_run and sys.stdin.isatty() and not args.yes and not args.no_wait:
         wait_for_enter()
 
     # ---------- odtwarzanie ----------
-    busy_wait = not args.no_busy_wait
-    wait = not args.no_wait
-
+    engine.start()
+    planned = timeline.duration
     print("Gram. Ctrl+C przerywa.", flush=True)
 
     exit_code = 0
-    started = time.monotonic()
 
     try:
         while True:
-            planned, actual, warnings = play_schedule(
-                commands,
-                link,
-                verbose=args.verbose,
-                busy_wait=busy_wait,
-                wait=wait,
-            )
+            started = time.monotonic()
 
-            print(f"Koniec utworu. Zaplanowane {planned:.3f} s, realnie {actual:.3f} s.")
+            try:
+                engine.play()
+            except EngineError as exc:
+                print(f"BLAD: {exc}", file=sys.stderr)
+                exit_code = 2
+                break
 
-            if warnings:
+            if engine.state is not PlaybackState.PLAYING:
+                snapshot = engine.snapshot()
                 print(
-                    f"UWAGA: Arduino odrzucil {warnings} komend "
-                    "(patrz linie 'arduino: ERR ...' powyzej).",
+                    f"BLAD: nie udalo sie wystartowac "
+                    f"({snapshot['hardware']['error'] or 'nieznany powod'})",
                     file=sys.stderr,
                 )
+                exit_code = 3
+                break
+
+            while engine.state is PlaybackState.PLAYING:
+                time.sleep(0.05)
+
+            actual = time.monotonic() - started
+            print(f"Koniec utworu. Zaplanowane {planned:.3f} s, realnie {actual:.3f} s.")
 
             if not args.loop:
                 break
@@ -620,37 +405,15 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("\nPrzerwano z klawiatury.")
 
-    except ArduinoFault as exc:
-        print(f"\nPrzerwano: kontroler zgloszil {exc}.", file=sys.stderr)
-        print("Robie ponowny homing...", file=sys.stderr)
-        exit_code = 4
-
-        # Zgodnie z zalozeniem: przy niepewnej pozycji wracamy do TRACK0,
-        # zeby maszyna nie zostala w nieznanym stanie.
-        try:
-            link.home()
-
-            if link.wait_ready(timeout=10.0, echo=lambda text: print(f"  {text}", file=sys.stderr)):
-                print("Homing OK - pozycja pewna.", file=sys.stderr)
-            else:
-                print("UWAGA: homing nie potwierdzil gotowosci.", file=sys.stderr)
-        except (SerialLinkError, ArduinoFault) as homing_error:
-            print(f"UWAGA: nie udalo sie zrobic homingu: {homing_error}", file=sys.stderr)
-
-    except SerialLinkError as exc:
-        print(f"BLAD Serial: {exc}", file=sys.stderr)
-        exit_code = 3
-
     finally:
-        try:
-            link.stop()
-        except Exception:
-            pass
+        engine.shutdown()
 
-        link.close()
+    snapshot = engine.snapshot()
+
+    if snapshot["hardware"]["error"]:
+        print(f"UWAGA sprzet: {snapshot['hardware']['error']}", file=sys.stderr)
 
     print(f"Podsumowanie: {stats.summary()}")
-    print(f"Razem z uzbrojeniem sprzetu: {time.monotonic() - started:.2f} s")
 
     return exit_code
 
