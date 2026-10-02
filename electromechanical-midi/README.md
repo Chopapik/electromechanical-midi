@@ -1,18 +1,25 @@
 # electromechanical-midi
 
 Odtwarzanie plików MIDI na **mechanicznej stacji dyskietek 3.5"** sterowanej
-przez **Arduino Uno**.
+przez **Arduino Uno**. Dwa interfejsy, jeden silnik odtwarzania:
+
+* **web player** - lokalny odtwarzacz w przeglądarce (play/pause/seek/progress bar),
+* **CLI** - `python host/player.py song.mid`.
 
 ```
 plik .mid
    ↓
-host/player.py        (Python: MIDI, timing, transpozycja)
+Python: MIDI → monofonia → octave folding → timeline (PLAY/STOP)
+   ↓
+silnik odtwarzania (absolutny timing, seek, pauza, keepalive)
    ↓
 USB Serial 115200
    ↓
 Arduino Uno           (prosty kontroler wykonawczy: STEP/DIR)
    ↓
 stacja dyskietek 3.5" (jedna nuta naraz)
+
+przeglądarka  ↕  HTTP + WebSocket  ↕  backend FastAPI
 ```
 
 Nie trzeba już przepisywać nut do C++ ani rekompilować firmware dla każdego
@@ -20,6 +27,8 @@ utworu. Firmware wgrywa się raz, a utwory wybiera się z plików `.mid`.
 
 **Arduino NIE udaje urządzenia USB MIDI i nie parsuje MIDI.** Dostaje po
 Serialu gotową częstotliwość w Hz (`PLAY 196.00`) i ma ją zagrać natychmiast.
+Nie zna długości utworu ani pozycji - **seek, pauza i progress bar istnieją
+wyłącznie po stronie hosta**.
 
 ---
 
@@ -39,7 +48,12 @@ Podział odpowiedzialności:
 
 | Warstwa | Odpowiada za |
 | --- | --- |
-| `host/player.py` | wczytanie MIDI, tempo, monofonia, octave folding, **cały timing** |
+| `host/midi_source.py` | wczytanie MIDI, mapa tempa, nuty, monofonia |
+| `host/pitch.py` | MIDI → Hz, octave folding |
+| `host/playback/` | timeline i **silnik**: absolutny timing, play/pause/seek |
+| `host/web/` | backend web playera (FastAPI: REST + WebSocket) |
+| `host/player.py` | CLI (używa tego samego silnika) |
+| `web/` | frontend (React + Vite + TypeScript) |
 | `firmware/floppy` | odbiór komend, homing, licznik pozycji, generowanie kroków, STOP |
 
 Firmware **nie ma pojęcia o długości nuty** - to host wysyła `PLAY` i `STOP`
@@ -56,15 +70,28 @@ electromechanical-midi/
 │       ├── platformio.ini
 │       └── src/main.cpp
 ├── host/
-│   ├── player.py               # CLI + harmonogram + timing
+│   ├── player.py               # CLI (cienka warstwa nad silnikiem)
 │   ├── midi_source.py          # MIDI: tracki, mapa tempa, nuty, monofonia
 │   ├── pitch.py                # MIDI → Hz, octave folding
 │   ├── floppy_link.py          # Serial + wykrywanie Arduino
+│   ├── playback/
+│   │   ├── timeline.py         # nuty -> komendy PLAY/STOP + obsługa pozycji
+│   │   └── engine.py           # silnik: play/pause/resume/stop/seek, keepalive
+│   ├── web/
+│   │   └── server.py           # FastAPI: REST + WebSocket + serwowanie frontendu
 │   ├── requirements.txt
 │   └── tests/                  # testy bez sprzętu (unittest)
-├── midi/
-│   ├── test.mid                # przykładowy utwór (melodia + akordy)
-│   └── range-test.mid          # chromatyka C1-C7 (test składania oktawowego)
+├── web/                        # frontend (React + Vite + TS)
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── App.tsx
+│       ├── usePlayer.ts        # WebSocket + stan playera
+│       ├── useThrottled.ts     # dławienie suwaków sprzętowych
+│       └── components/         # ProgressBar, DrumPanel, PlayerControls...
+├── midi/                       # pliki .mid dla playera (tu wrzucasz swoje)
+├── scripts/
+│   └── dev.sh                  # backend + frontend jednym poleceniem
 └── README.md
 ```
 
@@ -78,6 +105,7 @@ electromechanical-midi/
 | pin 20 `/STEP` | **D3** |
 | pin 26 `/TRACK0` | **D4** |
 | Drive Select | **D5** |
+| (VHS drum ICTL przez 100 kΩ) | **D6** |
 | GND | **GND** |
 
 Ustalenia dla tej konkretnej stacji:
@@ -97,7 +125,7 @@ Programowy licznik pozycji: `0 = TRACK0`, bezpieczny zakres
 
 ## 4. Instalacja
 
-### 4.1. Zależności Pythona (host)
+### 4.1. Zależności Pythona (host + backend web)
 
 ```bash
 python3 -m venv .venv
@@ -105,12 +133,23 @@ source .venv/bin/activate
 python -m pip install -r host/requirements.txt
 ```
 
-Zależności: `mido` (parsowanie MIDI) i `pyserial` (Serial).
+Zależności: `mido` (parsowanie MIDI), `pyserial` (Serial), `fastapi` +
+`uvicorn` (web player).
 
 > Na macOS port Arduino nazywa się zwykle `/dev/cu.usbmodemXXXX`.
 > Program wykrywa go sam - nigdzie nie ma zaszytego numeru portu.
 
-### 4.2. Firmware (PlatformIO)
+### 4.2. Frontend (Node 18+)
+
+```bash
+cd web
+npm install
+```
+
+`npm install` jest potrzebny raz. Dalej wystarczy `./scripts/dev.sh` albo
+zbudowany frontend (`npm run build`) serwowany przez backend.
+
+### 4.3. Firmware (PlatformIO)
 
 ```bash
 # instalacja PlatformIO (jeśli nie ma)
@@ -147,7 +186,272 @@ monitor_speed = 115200
 
 ---
 
-## 5. Uruchomienie
+## 5. Web player (przeglądarka)
+
+### 5.1. Tryb dev - jedno polecenie
+
+```bash
+./scripts/dev.sh
+```
+
+Skrypt uruchamia:
+
+* backend FastAPI na `http://127.0.0.1:8000` (`python -m host.web.server`),
+* frontend Vite na `http://127.0.0.1:5173` (proxy `/api` i `/ws` → backend).
+
+Otwórz **http://127.0.0.1:5173**. `Ctrl+C` kończy oba procesy.
+
+Przydatne warianty:
+
+```bash
+./scripts/dev.sh --no-hardware     # bez Arduino: PLAY zgłosi brak połączenia
+./scripts/dev.sh --fake-hardware   # atrapa Serial: UI gra "na sucho" (demo, testy)
+./scripts/dev.sh --port 9000       # inny port backendu
+```
+
+### 5.2. Tryb produkcyjny (jeden proces, bez Node)
+
+```bash
+cd web && npm run build && cd ..     # raz (albo po każdej zmianie frontendu)
+python -m host.web.server            # http://127.0.0.1:8000
+```
+
+Backend sam serwuje `web/dist`, więc wystarczy jeden proces i jedna strona.
+Jeśli `web/dist` nie istnieje, backend pokaże instrukcję, a API i tak działa.
+
+Opcje backendu:
+
+| Opcja | Znaczenie |
+| --- | --- |
+| `--host`, `--port` | adres nasłuchu (domyślnie `127.0.0.1:8000`) |
+| `--midi-dir` | katalog z plikami `.mid` (domyślnie `midi/`) |
+| `--serial-port` | wskaż port Arduino ręcznie (domyślnie autodetekcja) |
+| `--no-hardware` | nie łączy się z Arduino |
+| `--fake-hardware` | bez Serial, ale silnik gra na atrapie (demo UI) |
+| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130–330 Hz) |
+| `--transpose` | tryb składania oktawowego na start (`auto`/`low`/`high`) |
+| `--strategy` | strategia akordów (`highest`/`lowest`/`last`) |
+
+### 5.3. Co potrafi UI
+
+```
+┌──────────────────────────────────────────────┐
+│ Electromechanical MIDI                       │
+│ Sail to the Moon                             │
+│ Thom Vox                                      │
+│                 E3                            │
+│              164.81 Hz                        │
+│        ⏮      ▶ / ❚❚      ■                   │
+│  1:17 ━━━━━━━━●━━━━━━━━━━━━━━━ 4:03          │
+│ MIDI     [ Sail to the Moon.mid        ▾ ]   │
+│ Track    [ Thom Vox                    ▾ ]   │
+│ Transpose[ LOW 130–260 Hz              ▾ ]   │
+│ ● Arduino connected                          │
+│   /dev/cu.usbmodem14101            Reconnect │
+└──────────────────────────────────────────────┘
+```
+
+* **Wybór pliku** - lista `.mid` / `.midi` z katalogu `midi/`.
+* **Wybór tracku** - z nazwą, liczbą nut i informacją „monofonia / polifonia /
+  perkusja”.
+* **PLAY / PAUZA / STOP** oraz ⏮ (od początku).
+* **Aktualna nuta** (`E3`) i **częstotliwość** (`164.81 Hz`), a w ciszy `REST`.
+  Jeśli nuta została złożona oktawowo, UI pokazuje też nutę źródłową.
+* **Progress bar** z czasem `1:17 / 4:03`.
+* **Transpose** - `AUTO` / `LOW 130–260 Hz` / `HIGH 165–330 Hz`
+  (patrz sekcja 9).
+* **Status sprzętu** - zielona/czerwona kropka, port, komunikat błędu i
+  przycisk **Reconnect** (plus wybór portu, gdy jest ich kilka).
+* **VHS Drum** - osobna sekcja z ręcznym sterowaniem bębnem: `Start` / `Stop`,
+  status (`Running` / `Stopped` / `Disconnected`), suwak **PWM** (0-255,
+  głośność) i suwak **Ton** (20-2000 Hz, wysokość dźwięku). Szczegóły i
+  wyniki pomiarów: sekcja 5.6.
+
+### 5.4. Progress bar i seek
+
+* Backend publikuje autorytatywny stan **co ~150 ms**.
+* Frontend **interpoluje pozycję lokalnie** (`requestAnimationFrame`), więc
+  pasek płynie płynnie, a WebSocket nie jest spamowany 60 razy na sekundę.
+* **Przeciąganie** pokazuje tylko lokalny podgląd pozycji - **żadne komendy
+  nie lecą do Arduino**.
+* Dopiero **puszczenie** (albo klawisz) wysyła **jeden** `seek`.
+* Kliknięcie w pasku = jedno `seek`.
+* Klawiatura: `←` / `→` = ±5 s, `Shift`+strzałka = ±30 s, `Home` / `End`.
+
+Seek po stronie hosta oznacza: `STOP` → ustaw playhead → **wznów nutę, która
+w tym miejscu trwa** → graj dalej. Dla Arduino to najwyżej `STOP` i
+`PLAY <hz>` - nie ma żadnego „SEEK” w protokole.
+
+Przykład: nuta `102.00–103.09 s`. Seek na `102.55 s` natychmiast gra jej
+środkiem i kończy ją o `103.09 s` (zweryfikowane na sprzęcie).
+
+### 5.5. Zachowanie przy zmianach w trakcie grania
+
+| Akcja | Zachowanie |
+| --- | --- |
+| **Play** | od `0` (po STOP) albo od bieżącej pozycji (po pauzie lub seeku) |
+| **Pause** | `STOP` do Arduino, playhead zamrożony, stan `paused` |
+| **Resume** | wznawia nutę, która w tym miejscu trwa, nowy origin czasu |
+| **Stop** | `STOP`, playhead = 0, stan `stopped` |
+| **Seek** | `STOP` + natychmiastowe wznowienie nuty w nowym miejscu |
+| **Zmiana tracku / transpose / strategii** | timeline liczony od nowa, **pozycja i stan zachowane** - gra dalej od tego samego miejsca |
+| **Zmiana pliku** | `STOP`, pozycja 0, stan `stopped` (przewidywalne) |
+| **Koniec utworu** | stan `stopped`, playhead na końcu; Play startuje od 0 |
+
+Zmiana tracku zachowuje pozycję (zamiast pauzować) - dzięki temu przełączanie
+„Thom Vox ↔ Thom Piano” w trakcie odtwarzania działa jak zmiana instrumentu.
+
+### 5.6. VHS Drum (ręczne sterowanie dodatkowym silnikiem)
+
+Do web playera dołożony jest **jeden sprawny silnik bębna VHS** (PCB VTDMT04D,
+driver KA8328D). To na razie **nie jest połączone z MIDI** — to osobny,
+ręcznie sterowany instrument.
+
+```
+Arduino D6 ──[100 kΩ]── CN5 (ICTL)        CN3 = GND (wspólna masa)
+                                          CN6 = +12 V (przez bezpiecznik ~1 A)
+```
+
+Sterowanie idzie po istniejącym Serialu, więc Arduino nadal jest tylko
+kontrolerem wykonawczym:
+
+| Komenda | Znaczenie | Zakres |
+| --- | --- | --- |
+| `DRUM <0-255>` | amplituda (wypełnienie PWM) — **głośność**; `0` = stop | 0–255 |
+| `DRUMF <hz>` | częstotliwość kluczowania — **wysokość dźwięku**; `0` = tryb DC (zwykły PWM ~976 Hz) | 20–2000 Hz |
+
+Co ustaliliśmy **empirycznie na tym egzemplarzu**:
+
+* silnik rusza od około **24/255** (~9% wypełnienia),
+* **wypełnienie zmienia głośność, a nie wysokość** (napęd ma regulowane obroty),
+* **wysokość dźwięku steruje `DRUMF`** — sprawdzone od 100 Hz do 1600 Hz:
+  każdy krok brzmiał wyżej, a silnik kręcił się przy każdej częstotliwości,
+* bęben i stacja dyskietek **grają równocześnie** (kluczowanie bębna idzie
+  z wolnego Timer1, więc nie rusza `millis()`/`micros()` ani kroków FDD).
+
+Jak to jest zrobione w firmware: w trybie tonu D6 nie jest już napędzany przez
+Timer0 (`analogWrite`), tylko przez przerwanie **Timer1** (CTC, prescaler 8),
+które samo przełącza pin. `millis()`, `micros()` i scheduler kroków korzystają
+z Timer0 i **nie są przy tym dotykane** — przed wejściem w tryb tonu firmware
+czyści tylko bit `COM0A1`, żeby odczepić OC0A od pinu.
+
+**Fail-safe:**
+
+* start firmware → `DRUM 0`,
+* połączenie / **reconnect** Arduino → `DRUM 0` (bęben nie może ruszyć sam),
+* rozłączenie w UI → `DRUM 0`, stan `disconnected`, suwaki zablokowane,
+* restart backendu → `DRUM 0` przy pierwszym połączeniu.
+
+W UI suwak PWM jest **dławiony (~80 ms)**, a po puszczeniu zawsze leci wartość
+finalna — Serial nie jest zalewany. Backend wysyła dodatkowo `STATUS`, żeby
+pokazać `PWM` **potwierdzone przez firmware** (a nie tylko wartość zadaną).
+
+Uwaga: bęben nie jest objęty watchdogiem kroków FDD. Jeśli host zginie
+(np. wyjęty kabel), bęben **kręci się dalej** — to świadoma decyzja (ręczne
+sterowanie), do zmiany razem z ewentualnym watchdogiem bębna.
+
+### 5.7. Sprzęt: reconnect i awarie
+
+* Port Arduino wykrywany jest automatycznie (po VID/opisie); gdy jest kilka
+  kandydatów, UI pozwala wybrać port.
+* Po otwarciu portu Uno resetuje się, robi homing i wysyła `READY` - backend
+  czeka na to i pokazuje wynik.
+* **Awaria w trakcie grania** (np. wyjęty kabel) → utwór przechodzi w `paused`
+  z komunikatem błędu; playback **nie udaje, że gra dalej w ciszy**.
+* Po podłączeniu sprzętu wciśnij **Reconnect** i wznów (`▶`).
+* Błędy krytyczne z Arduino (`ERR POS_LOST`, `ERR NOT_HOMED`, `ERR HOME_FAILED`,
+  `ERR HOST_TIMEOUT`) przerywają utwór; backend robi wtedy ponowny homing.
+
+---
+
+## 6. API backendu
+
+Podział: **REST** = rzeczy bezstanowe, **WebSocket** = stan czasu
+rzeczywistego i sterowanie.
+
+### 6.1. REST
+
+| Metoda | Ścieżka | Opis |
+| --- | --- | --- |
+| `GET` | `/api/state` | aktualny stan playera (ten sam co po WebSocketcie) |
+| `GET` | `/api/files` | lista plików `.mid` z katalogu `midi/` |
+| `GET` | `/api/files/{name}` | metadane: długość, zmiany tempa, lista tracków |
+| `GET` | `/api/ports` | dostępne porty szeregowe + aktualny |
+| `GET` | `/api/config` | tryby transpozycji, strategie, zakres Hz |
+
+Metadane pliku zawierają dla każdego tracku: `index`, `name`, `noteCount`,
+`channels`, `isDrums`, `polyphonic` (czy cokolwiek brzmi jednocześnie).
+
+### 6.2. WebSocket `/ws`
+
+Po połączeniu serwer od razu wysyła stan, a potem publikuje go cyklicznie
+(~150 ms, a gdy nic się nie zmienia - co 1 s jako heartbeat).
+
+```jsonc
+// serwer -> klient
+{ "type": "state", "state": {
+    "state": "playing",          // "stopped" | "playing" | "paused"
+    "position": 126.47,
+    "duration": 241.38,
+    "file": "song.mid",
+    "track": 3,
+    "trackName": "Thom Vox",
+    "midiNote": 52,
+    "noteName": "E3",
+    "sourceNote": 64,            // nuta z pliku (przed złożeniem oktawowym)
+    "frequency": 164.81,
+    "transpose": "low",
+    "strategy": "highest",
+    "range": { "minHz": 130, "maxHz": 330 },
+    "stats": { "notes": 84, "folded": 80, "skipped": 0, "playCommands": 84 },
+    "hardware": { "connected": true, "port": "/dev/cu.usbmodem14101",
+                  "label": "Arduino", "error": null, "log": [] },
+    "drum": {
+      "value": 100,        // zadane PWM (0-255); 0 = stop
+      "output": 100,       // potwierdzone przez firmware (STATUS); null = brak
+      "toneHz": 300,       // 0 = tryb DC, inaczej wysokosc dzwieku
+      "lastValue": 100,    // pamiec do przycisku Start
+      "running": true,
+      "connected": true,
+      "minHz": 20,
+      "maxHz": 2000
+    }
+} }
+
+{ "type": "error", "message": "opis problemu" }   // np. zła akcja / brak pliku
+```
+
+```jsonc
+// klient -> serwer
+{ "action": "play" }  { "action": "pause" }  { "action": "resume" }  { "action": "stop" }
+{ "action": "seek", "position": 120.0 }
+{ "action": "set_file", "file": "song.mid", "track": 3 }
+{ "action": "set_track", "track": 3 }
+{ "action": "set_transpose", "mode": "low" }
+{ "action": "set_strategy", "strategy": "highest" }
+{ "action": "set_drum", "value": 100 }        // PWM bebna 0-255 (0 = stop)
+{ "action": "start_drum" }                    // start z ostatniej niezerowej wartosci
+{ "action": "stop_drum" }                     // DRUM 0
+{ "action": "set_drum_tone", "hz": 300 }      // wysokosc bebna (0 = tryb DC)
+{ "action": "reconnect", "port": "/dev/cu.usbmodem14101" }   // port opcjonalny
+{ "action": "disconnect" }
+{ "action": "snapshot" }                                       // wymuś odświeżenie
+```
+
+Szybkie sprawdzenie z terminala:
+
+```bash
+curl -s localhost:8000/api/state | python -m json.tool
+curl -s localhost:8000/api/files | python -m json.tool
+```
+
+---
+
+## 7. Uruchomienie (CLI)
+
+CLI korzysta z **tego samego silnika** co web player (`host/playback/`), więc
+timing, monofonia i transpozycja zachowują się identycznie. Różnica to brak
+seek/pauzy - CLI gra utwór od początku do końca.
 
 ```bash
 # 1. wypisz tracki w pliku
@@ -217,7 +521,7 @@ host czeka na to, zanim zacznie grać.
 
 ---
 
-## 6. Protokół Serial
+## 8. Protokół Serial
 
 Tekstowy, 115200 8N1, linie zakończone `\n`.
 
@@ -227,14 +531,18 @@ Tekstowy, 115200 8N1, linie zakończone `\n`.
 | `PLAY <hz>` | *(cisza - patrz niżej)* |
 | `STOP` | *(cisza - patrz niżej)* |
 | `HOME` | `OK`, a po dojechaniu `READY` |
-| `STATUS` | `STATUS track=.. dir=.. homed=.. playing=.. track0=.. hz=..` |
+| `DRUM <0-255>` | *(cisza)* PWM bębna VHS; `0` = stop (patrz sekcja 5.6) |
+| `DRUMF <hz>` | *(cisza)* częstotliwość kluczowania = wysokość dźwięku; `0` = tryb DC (sekcja 5.6) |
+| `STATUS` | `STATUS track=.. dir=.. homed=.. playing=.. track0=.. hz=.. drum=.. drum_out=.. drumf=..` |
 | cokolwiek innego | `ERR UNKNOWN_CMD` |
 
 Możliwe błędy: `ERR NOT_HOMED` (brak homingu), `ERR BUSY` (trwa homing/odjazd),
 `ERR FREQ_RANGE` (częstotliwość poza `MIN_PLAY_HZ`..`MAX_PLAY_HZ`),
 `ERR MISSING_FREQ`, `ERR BAD_FREQ`, `ERR HOME_FAILED`, `ERR POS_LOST`
-(utrata pozycji - host robi ponowny homing), `ERR HOST_TIMEOUT` (watchdog:
-host przestał się odzywać), `ERR LINE_TOO_LONG`, `ERR UNKNOWN_CMD`.
+(utrata pozycji - host robi ponowny homing), `ERR HOST_TIMEOUT` (watchdog: host
+przestał się odzywać), `ERR MISSING_PWM`, `ERR BAD_PWM`, `ERR PWM_RANGE`,
+`ERR MISSING_DRUMF`, `ERR BAD_DRUMF`, `ERR DRUMF_RANGE`
+(sterowanie bębnem VHS), `ERR LINE_TOO_LONG`, `ERR UNKNOWN_CMD`.
 
 **Dlaczego `PLAY`/`STOP` nie odpowiadają `OK`?**
 Host wysyła nuty asynchronicznie i nie czyta portu w trakcie gry. Gdyby Arduino
@@ -267,7 +575,7 @@ STATUS track=10 dir=away homed=1 playing=1 track0=0 hz=196.00
 
 ---
 
-## 7. Automatyczne składanie oktawowe (octave folding)
+## 9. Automatyczne składanie oktawowe (octave folding)
 
 Każda nuta jest sprowadzana do zakresu stacji **wyłącznie przesunięciem
 o całe oktawy** - klasa wysokości dźwięku (C, C#, D…) nigdy się nie zmienia.
@@ -316,7 +624,7 @@ oktawa. Wtedy program:
 
 ---
 
-## 8. Monofonia (jedna stacja = jedna nuta)
+## 10. Monofonia (jedna stacja = jedna nuta)
 
 Po wczytaniu tracku wszystkie nuty są redukowane do ciągu nut rozłącznych
 w czasie. Strategię wybiera `--strategy`:
@@ -349,23 +657,30 @@ Nową strategię dodaje się w jednym miejscu - `STRATEGIES` w
 
 ---
 
-## 9. Timing
+## 11. Timing
 
-Cały timing liczy host, a Arduino tylko wykonuje. Host:
+Cały timing liczy host, a Arduino tylko wykonuje. Silnik
+(`host/playback/engine.py`) działa w osobnym wątku i:
 
 * korzysta z **zegara monotonicznego** (`time.monotonic()`),
-* wylicza czas każdej komendy **względem absolutnego startu odtwarzania**,
+* trzyma **absolutny origin**: `origin = monotonic() - pozycja`, a czas każdej
+  komendy to `origin + czas eventu`,
 * śpi do konkretnej chwili (`sleep` + krótkie aktywne doczekanie ostatnich
-  1.5 ms), a nie "przez czas trwania nuty".
+  1.5 ms), a nie „przez czas trwania nuty”,
+* **seek przestawia origin**, a nie przesuwa kolejnych opóźnień - dlatego
+  po seeku dryf nadal się nie kumuluje,
+* wysyła `PING` (keepalive) tylko wtedy, gdy przez ~1 s nie poszła żadna
+  komenda - dzięki temu długie nuty nie wyzwalają watchdoga w Arduino.
 
 Dzięki temu opóźnienia Serial **nie kumulują się** - każde opóźnienie
 przesuwa tylko jedną komendę, a nie cały utwór. Zmierzony dryf:
 
 | Test | Zaplanowane | Rzeczywiste | Dryf |
 | --- | --- | --- | --- |
-| `range-test.mid` (73 nuty) | 9.125 s | 9.125 s | **0 ms** |
+| `range-test.mid` (73 nuty), CLI | 9.125 s | 9.125 s | **0 ms** |
 | to samo, `--no-busy-wait` | 9.125 s | 9.130 s | +5 ms (stały, nie narasta) |
 | `test.mid` track 1, na sprzęcie | 16.873 s | 16.877 s | +4 ms całości |
+| `test.mid` track 1, web player + FDD | 16.873 s | 16.873 s | 0 ms |
 
 To dryf **harmonogramu hosta**, mierzony na jego zegarze. Dochodzi do tego
 stałe opóźnienie transmisji USB (~1-3 ms), którego ten pomiar nie obejmuje -
@@ -381,7 +696,7 @@ nowy okres jest od razu uwzględniany.
 
 ---
 
-## 10. Bezpieczeństwo mechaniki
+## 12. Bezpieczeństwo mechaniki
 
 * Firmware prowadzi programowy licznik ścieżek i **zawraca przed końcami**
   (`MIN_TRACK = 4`, `MAX_TRACK = 72`). Dopóki licznik zgadza się
@@ -413,24 +728,32 @@ Mechanicznie najlepiej brzmi **130-330 Hz** (stąd `COMFORT_MIN_HZ` /
 
 ---
 
-## 11. Aktualne ograniczenia
+## 13. Aktualne ograniczenia
 
 * **Jedna stacja = jedna nuta naraz.** Akordy są redukowane do pojedynczej
-  linii (patrz sekcja 8).
+  linii (patrz sekcja 10).
 * Jedna stacja obsługiwana jednocześnie (`FloppyDrive drive` w firmware).
 * Zakres 130-330 Hz; poza nim trzeba zmienić `--min-hz` / `--max-hz`
   (świadomie) albo liczyć się z gubieniem kroków.
 * Głowica cały czas jeździ - długie nuty to kilka przejazdów po ścieżkach,
   co słychać jako zmianę barwy.
-* Brak GUI - jest CLI.
 * Firmware nie wie nic o nutach MIDI: wysokość musi przyjść jako Hz.
+* **Web player** jest lokalny i jednodostępowy (bez logowania i bazy danych).
+  Stan jest jeden dla wszystkich kart przeglądarki - dwie karty to ten sam
+  odtwarzacz, a nie dwa niezależne.
+* UI nie ma wgrywania plików przez przeglądarkę - pliki `.mid` wrzuca się do
+  katalogu `midi/`.
+* Wybór strategii akordów jest w API (`set_strategy`), ale nie ma go w UI.
+* **VHS Drum jest sterowany wyłącznie ręcznie** - nie ma jeszcze żadnego
+  powiązania z MIDI (żadnego `MIDI → drum`, `velocity → drum`,
+  `BPM → drum`, beat sync). To kolejny etap.
 
 Świadomie **nie** zaimplementowano: ESP32, Wi-Fi, MQTT, VFD, HDD, DVD, VHS,
-wielu instrumentów naraz.
+wielu instrumentów naraz, logowania, Dockera i chmury.
 
 ---
 
-## 12. Rozszerzanie na wiele instrumentów
+## 14. Rozszerzanie na wiele instrumentów
 
 Kod jest tak ułożony, żeby nie trzeba było przepisywać logiki:
 
@@ -443,25 +766,43 @@ Kod jest tak ułożony, żeby nie trzeba było przepisywać logiki:
 
 ---
 
-## 13. Testy
+## 15. Testy
 
-Testy hosta nie wymagają sprzętu ani Arduino:
+Wszystkie testy działają bez sprzętu (Serial jest zamockowany).
+
+**Backend / host** (126 testów):
 
 ```bash
 python -m unittest discover -s host/tests -t host/tests -v
 ```
 
-Sprawdzają: konwersje MIDI↔Hz, składanie oktawowe (wszystkie 128 nut,
-tryby `auto`/`low`/`high`), mapę tempa ze zmianami BPM, redukcję do monofonii,
-scalanie unisono i budowanie harmonogramu `PLAY`/`STOP`.
+* `test_pitch.py` - konwersje MIDI↔Hz, składanie oktawowe (wszystkie 128 nut,
+  tryby `auto`/`low`/`high`),
+* `test_midi_source.py` - mapa tempa ze zmianami BPM, redukcja do monofonii,
+  scalanie unisono, nuty bez `NOTE_OFF`,
+* `test_player.py` - budowanie harmonogramu `PLAY`/`STOP`, artykulacja,
+  walidacja CLI,
+* `test_engine.py` - **seek** (w ciszę, w środek nuty, w trakcie grania i
+  pauzy), pauza/wznowienie, stop, zmiana tracku i transpozycji, anulowanie
+  starego planu, brak dryfu, rozłączenie sprzętu, keepalive, wyścigi
+  (wielowątkowe młotkowanie play/pause/seek),
+* `test_web.py` - REST, WebSocket, sterowanie, bezpieczeństwo ścieżek plików,
+  wielu klientów = jeden stan, sterowanie bębnem VHS przez WebSocket.
 
-Kontrola składni:
+**Frontend** (31 testów, vitest + jsdom):
 
 ```bash
-python -m compileall -q host
+cd web
+npm test           # testy
+npm run typecheck  # sama kontrola typów
+npm run build      # typecheck + build produkcyjny
 ```
 
-Firmware kompiluje się dla `uno`:
+Testy frontendu sprawdzają m.in., że **przeciąganie paska nie wysyła niczego**,
+a po puszczeniu leci **dokładnie jeden** `seek`, oraz że stan z WebSocketa
+trafia na ekran (nuta, Hz, status sprzętu).
+
+**Firmware**:
 
 ```bash
 pio run -d firmware/floppy
@@ -469,7 +810,7 @@ pio run -d firmware/floppy
 
 ---
 
-## 14. Rozwiązywanie problemów
+## 16. Rozwiązywanie problemów
 
 | Objaw | Przyczyna / rozwiązanie |
 | --- | --- |
@@ -480,3 +821,16 @@ pio run -d firmware/floppy
 | po `Ctrl+C` głowica stoi | to normalne - `STOP` zatrzymuje kroki, głowica zostaje na miejscu |
 | gubi kroki / brzydki dźwięk | zjedź niżej: `--max-hz 300` albo `--transpose low` |
 | dźwięk przerywany w szybkich nutach | `--no-busy-wait` zamień na domyślne (busy-wait) na maszynie obciążonej innymi procesami |
+
+### Web player
+
+| Objaw | Przyczyna / rozwiązanie |
+| --- | --- |
+| `Brak połączenia z backendem` w UI | backend nie działa - uruchom `python -m host.web.server` (albo `./scripts/dev.sh`) |
+| strona pokazuje „Brak zbudowanego frontendu” | uruchom `cd web && npm run build` albo używaj Vite dev (`npm run dev`) |
+| UI działa, ale `PLAY` nic nie robi | tryb `--no-hardware`; uruchom backend bez tej flagi albo z `--fake-hardware` do demo |
+| `Arduino disconnected` mimo podłączonego kabla | port zajęty przez inny program (Serial Monitor) albo `ERR HOME_FAILED` - patrz wyżej |
+| po `Reconnect` nadal brak `READY` | napęd nie odpowiada mechanicznie; sprawdź zasilanie stacji i taśmę |
+| pasek stoi, choć stan to `playing` | brak interpolacji? sprawdź konsolę przeglądarki; backend i tak wysyła stan co ~150 ms |
+| `seek` nie działa na bardzo krótkich utworach | pozycja jest klamrowana do długości timeline |
+| zmiany frontendu nie widać | w trybie produkcyjnym po zmianach uruchom `npm run build` (Vite dev przeładowuje sam) |
