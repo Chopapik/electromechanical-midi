@@ -14,12 +14,22 @@
 //   PLAY <hz>       -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
 //   STOP            -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
 //   HOME            -> OK ... po dojechaniu -> READY
-//   STATUS          -> STATUS track=<n> dir=<...> homed=<0|1> playing=<0|1> track0=<0|1> hz=<...>
+//   DRUM <0-255>    -> (brak odpowiedzi) amplituda bebna VHS; 0 = stop
+//   DRUMF <hz>      -> (brak odpowiedzi) czestotliwosc kluczowania bebna;
+//                      0 = tryb DC (zwykly PWM 976 Hz). 20..2000 Hz.
+//   STATUS          -> STATUS track=<n> dir=<...> homed=<0|1> playing=<0|1>
+//                             track0=<0|1> hz=<...> drum=<0-255> drum_out=<0-255>
+//                             drumf=<0-2000>
 //   cokolwiek innego-> ERR UNKNOWN_CMD
 //
 // Bledy: ERR NOT_HOMED / ERR BUSY / ERR FREQ_RANGE / ERR MISSING_FREQ
 //        ERR BAD_FREQ / ERR HOME_FAILED / ERR POS_LOST / ERR HOST_TIMEOUT
+//        ERR MISSING_PWM / ERR BAD_PWM / ERR PWM_RANGE
+//        ERR MISSING_DRUMF / ERR BAD_DRUMF / ERR DRUMF_RANGE
 //        ERR LINE_TOO_LONG / ERR UNKNOWN_CMD
+//
+// VHS DRUM: to NIE jest zwiazane z MIDI ani z FDD - to zwykle manualne
+// sterowanie PWM jednym sprawnym silnikiem bebna VHS (patrz sekcja nizej).
 //
 // Uwaga o ACK_PLAY_STOP:
 //   PLAY/STOP sa celowo CICHE. Odpowiadanie "OK" na kazda nuta zwieksza
@@ -51,11 +61,64 @@ constexpr uint8_t PIN_DIR     = 2;  // FDD pin 18 DIR
 constexpr uint8_t PIN_STEP    = 3;  // FDD pin 20 /STEP
 constexpr uint8_t PIN_TRACK0  = 4;  // FDD pin 26 /TRACK0
 constexpr uint8_t PIN_SELECT  = 5;  // FDD Drive Select
+constexpr uint8_t PIN_DRUM    = 6;  // VHS drum: D6 --[100 kOhm]--> CN5 (ICTL)
 
 // Ustalone eksperymentalnie dla tej stacji:
 constexpr uint8_t DIR_TOWARD_TRACK0 = HIGH;  // DIR HIGH = w strone TRACK0
 constexpr uint8_t DIR_AWAY_TRACK0   = LOW;   // DIR LOW  = od TRACK0
 constexpr uint8_t SELECT_ACTIVE     = LOW;   // Drive Select aktywny LOW
+
+// ============================================================
+// VHS DRUM MOTOR (mamy JEDEN sprawny egzemplarz - obchodzic sie ostroznie)
+//
+// Tor:  D6 --[100 kOhm]--> CN5 (ICTL)
+//       CN6 = +12 V (przez bezpiecznik ~1 A, bez zmian)
+//       CN3 = GND (wspolna masa z Arduino - bez tego sterowanie nie ma
+//                  odniesienia)
+//
+// DLACZEGO D6 JEST BEZPIECZNE DLA SCHEDULERA KROKOW:
+//   D6 to PD6 = OC0A, czyli kanal A Timer0. Timer0 napedza millis()/micros()
+//   (prescaler 64, Fast PWM 8-bit, przerwanie TOIE0), a scheduler STEP liczy
+//   wlasnie na micros(). Dlatego NIE WOLNO:
+//     * zmieniac preskalera Timer0 ani bitow WGM - to zepsuloby millis()/micros()
+//       i caly timing krokow,
+//     * wolac analogWrite(5, ...) - D5 to PD5 = OC0B = FDD Drive Select.
+//   analogWrite(PIN_DRUM, x) zmienia tylko COM0A1 i OCR0A. W TIMSK0 wlaczone
+//   jest wylacznie TOIE0 (bez OCIE0A), wiec OCR0A jest wolnym rejestrem
+//   porownania: zapis nie generuje przerwania i nie rusza licznika milisekund.
+//   PWM na D6: 16 MHz / (64 * 256) = 976,5625 Hz, 8 bitow.
+//
+// DLACZEGO TO JEST BEZPIECZNE DLA SILNIKA:
+//   Sprawdzony recznie warunek to "+5 V -> 100 kOhm -> CN5" i silnik ruszyl.
+//   Wypelnienie 255 odtwarza DOKLADNIE ten warunek, wiec ten tor nie jest
+//   w stanie podac na CN5 wiecej, niz to, co juz zadzialalo. Prad jest
+//   ograniczony przez 100 kOhm do ~50 uA.
+// ============================================================
+
+// Limit programowy PWM bebna.
+//
+// 255 = 100% wypelnienia = D6 podane na stale +5 V, czyli DOKLADNIE ten
+// warunek, ktory zostal sprawdzony recznie ("+5 V -> 100 kOhm -> CN5" i
+// beben sie kreci). Powyzej 255 nic nie istnieje, wiec ten tor nie moze
+// podac na CN5 wiecej, niz to, co juz zadzialalo.
+constexpr uint8_t DRUM_MAX_PWM = 255;
+
+// --- Tryb tonu (kluczowanie na audio) -------------------------------
+//
+// Pomiar wykazal: wypelnienie zmienia GLOSNOSC, a nie wysokosc. Silnik ma
+// regulowane obroty, wiec wysokosc musi pochodzic z samego kluczowania.
+// W trybie tonu D6 nie jest juz napedzany przez Timer0, tylko przez
+// przerwanie Timer1 (CTC), ktore samo przelacza pin:
+//
+//   * Timer1 jest w tym firmware calkowicie wolny (Timer0 = millis/micros,
+//     Timer2 nieuzywany), wiec NIC nie psuje timingu krokow FDD,
+//   * przed wejsciem w tryb tonu czyscimy COM0A1, zeby odlaczyc OC0A od
+//     pinu - inaczej Timer0 i nasz ISR walczylyby o D6,
+//   * tick Timer1 = 0,5 us (prescaler 8), wiec rozdzielczosc okresu jest
+//     bardzo dobra w calym zakresie 20..2000 Hz.
+constexpr uint32_t DRUM_TICK_HZ = F_CPU / 8UL;   // 2 000 000
+constexpr uint16_t DRUM_TONE_MIN_HZ = 20;
+constexpr uint16_t DRUM_TONE_MAX_HZ = 2000;
 
 // ============================================================
 // MECHANIKA
@@ -471,6 +534,141 @@ char cmdBuf[CMD_BUF_SIZE];
 uint8_t cmdLen = 0;
 bool discarding = false;   // odrzucamy reszte za dlugiej linii
 
+// ============================================================
+// VHS DRUM - STAN
+//
+// Trzymamy DWIE wartosci:
+//   drumRequested - co przyszlo z hosta (0-255), to widzi UI,
+//   drumOutput    - co realnie poszlo na PWM (po limicie DRUM_MAX_PWM).
+//
+// UWAGA: beben NIE jest objety watchdogiem HOST_TIMEOUT_MS. Tamten watchdog
+// zatrzymuje KROKI FDD, gdy host zamilknie - gdyby zatrzymywal tez beben,
+// to po 3 s bez komend (a przy recznym sterowaniu tak wlasnie jest) silnik
+// stawalby sam. Beben kreci sie do jawnego "DRUM 0", resetu plytki albo
+// utraty zasilania.
+// ============================================================
+
+uint8_t drumRequested = 0;
+uint8_t drumOutput = 0;
+uint16_t drumToneHz = 0;        // 0 = tryb DC (Timer0 PWM), >0 = tryb tonu
+
+volatile uint16_t drumPeriodTicks = 0;
+volatile uint16_t drumHighTicks = 0;
+volatile bool drumPhaseHigh = false;
+
+// Przerwanie od Timer1 przelacza D6: najpierw HIGH na `drumHighTicks`,
+// potem LOW na reszte okresu. Dwa przerwania na okres.
+ISR(TIMER1_COMPA_vect)
+{
+    if (drumPhaseHigh)
+    {
+        PORTD &= static_cast<uint8_t>(~(1 << PD6));
+        drumPhaseHigh = false;
+        OCR1A = static_cast<uint16_t>(drumPeriodTicks - drumHighTicks - 1);
+    }
+    else
+    {
+        PORTD |= static_cast<uint8_t>(1 << PD6);
+        drumPhaseHigh = true;
+        OCR1A = static_cast<uint16_t>(drumHighTicks - 1);
+    }
+}
+
+// Przelicza okres/wypelnienie dla aktualnego drumToneHz + drumOutput.
+void drumToneRecalc()
+{
+    uint32_t period = DRUM_TICK_HZ / drumToneHz;
+
+    if (period < 8UL)
+        period = 8UL;
+
+    if (period > 60000UL)
+        period = 60000UL;
+
+    uint32_t high = (period * drumOutput) / 255UL;
+
+    if (high < 1UL)
+        high = 1UL;
+
+    if (high > period - 1UL)
+        high = period - 1UL;
+
+    noInterrupts();
+    drumPeriodTicks = static_cast<uint16_t>(period);
+    drumHighTicks = static_cast<uint16_t>(high);
+    interrupts();
+}
+
+// Wlacza tryb tonu (D6 napedzany przez Timer1).
+void drumToneEnable()
+{
+    // Odczep OC0A od pinu - inaczej Timer0 nadpisywalby nasz ISR.
+    TCCR0A &= static_cast<uint8_t>(~(1 << COM0A1));
+
+    pinMode(PIN_DRUM, OUTPUT);
+    digitalWrite(PIN_DRUM, LOW);
+
+    drumToneRecalc();
+
+    noInterrupts();
+    TCCR1A = 0;
+    TCCR1B = static_cast<uint8_t>((1 << WGM12) | (1 << CS11));  // CTC, /8
+    TCNT1 = 0;
+    OCR1A = static_cast<uint16_t>(drumHighTicks - 1);
+    TIFR1 = static_cast<uint8_t>(1 << OCF1A);
+    TIMSK1 = static_cast<uint8_t>(1 << OCIE1A);
+    drumPhaseHigh = false;
+    interrupts();
+}
+
+// Wylacza tryb tonu i wraca do sprzetowego PWM Timer0.
+void drumToneDisable()
+{
+    TIMSK1 = 0;
+    TCCR1B = 0;
+    drumPhaseHigh = false;
+
+    digitalWrite(PIN_DRUM, LOW);
+    analogWrite(PIN_DRUM, drumOutput);   // z powrotem COM0A1 + OCR0A
+}
+
+// Ustawia amplitude (0 = stop). Dziala w obu trybach.
+uint8_t drumSet(uint8_t requested)
+{
+    drumRequested = requested;
+    drumOutput = (requested > DRUM_MAX_PWM) ? DRUM_MAX_PWM : requested;
+
+    if (drumToneHz == 0)
+    {
+        analogWrite(PIN_DRUM, drumOutput);
+        return drumOutput;
+    }
+
+    if (drumOutput == 0)
+        drumToneDisable();      // cisza, ale czestotliwosc zostaje w pamieci
+    else
+        drumToneEnable();
+
+    return drumOutput;
+}
+
+// Ustawia czestotliwosc kluczowania (0 = tryb DC).
+uint16_t drumSetTone(uint16_t hz)
+{
+    drumToneHz = hz;
+
+    if (hz == 0)
+    {
+        drumToneDisable();
+        return 0;
+    }
+
+    if (drumOutput > 0)
+        drumToneEnable();
+
+    return drumToneHz;
+}
+
 void printStatus()
 {
     Serial.print(F("STATUS track="));
@@ -489,7 +687,16 @@ void printStatus()
     Serial.print(drive.track0Active() ? 1 : 0);
 
     Serial.print(F(" hz="));
-    Serial.println(drive.currentHz(), 2);
+    Serial.print(drive.currentHz(), 2);
+
+    Serial.print(F(" drum="));
+    Serial.print(drumRequested);
+
+    Serial.print(F(" drum_out="));
+    Serial.print(drumOutput);
+
+    Serial.print(F(" drumf="));
+    Serial.println(drumToneHz);
 }
 
 void handleCommand(char *line)
@@ -564,6 +771,68 @@ void handleCommand(char *line)
         return;
     }
 
+    if (strcasecmp(cmd, "DRUM") == 0)
+    {
+        const char *arg = strtok(nullptr, " \t");
+
+        if (arg == nullptr)
+        {
+            Serial.println(F("ERR MISSING_PWM"));
+            return;
+        }
+
+        // "abc" nie moze przypadkiem znaczyc "DRUM 0" - odrzucamy.
+        if (arg[0] < '0' || arg[0] > '9')
+        {
+            Serial.println(F("ERR BAD_PWM"));
+            return;
+        }
+
+        const long value = atol(arg);
+
+        if (value > 255)
+        {
+            Serial.println(F("ERR PWM_RANGE"));
+            return;
+        }
+
+        // Celowo cicho (jak PLAY/STOP): to komenda sterujaca z suwaka,
+        // a stan odczytasz przez STATUS. Limit DRUM_MAX_PWM dziala w drumSet().
+        drumSet(static_cast<uint8_t>(value));
+        return;
+    }
+
+    if (strcasecmp(cmd, "DRUMF") == 0)
+    {
+        const char *arg = strtok(nullptr, " \t");
+
+        if (arg == nullptr)
+        {
+            Serial.println(F("ERR MISSING_DRUMF"));
+            return;
+        }
+
+        if (arg[0] < '0' || arg[0] > '9')
+        {
+            Serial.println(F("ERR BAD_DRUMF"));
+            return;
+        }
+
+        const long hz = atol(arg);
+
+        if (hz > DRUM_TONE_MAX_HZ)
+        {
+            Serial.println(F("ERR DRUMF_RANGE"));
+            return;
+        }
+
+        // 0 = tryb DC (zwykly PWM 976 Hz). 1..19 tez traktujemy jako DC,
+        // bo ponizej 20 Hz to juz nie ton, a kluczowanie mechanicznie
+        // szarpaloby silnikiem.
+        drumSetTone(hz < DRUM_TONE_MIN_HZ ? 0 : static_cast<uint16_t>(hz));
+        return;
+    }
+
     if (strcasecmp(cmd, "STATUS") == 0)
     {
         printStatus();
@@ -627,6 +896,13 @@ void pollSerial()
 
 void setup()
 {
+    // NAJPIERW uspokajamy beben VHS. Po resecie D6 jest wejsciem (high-Z),
+    // wiec zanim cokolwiek innego sie wydarzy, ustawiamy je twardo na 0:
+    // najpierw jako zwykly pin, potem jako PWM z OCR0A = 0.
+    pinMode(PIN_DRUM, OUTPUT);
+    digitalWrite(PIN_DRUM, LOW);
+    analogWrite(PIN_DRUM, 0);
+
     Serial.begin(SERIAL_BAUD);
 
     drive.begin();
@@ -635,7 +911,7 @@ void setup()
     delay(500);
 
     Serial.println(F("electromechanical-midi floppy controller v1"));
-    Serial.println(F("COMFORT 130-330 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS"));
+    Serial.println(F("COMFORT 130-330 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS, DRUM <0-255>"));
 
     drive.requestHome();
 }
