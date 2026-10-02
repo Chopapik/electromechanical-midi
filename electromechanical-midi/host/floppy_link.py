@@ -324,12 +324,16 @@ class FloppyLink:
         return None
 
     def wait_ready(self, timeout: float = 10.0, echo=print) -> bool:
-        """Czeka az kontroler po resecie zrobi homing i zglosi READY."""
+        """Czeka az kontroler po resecie zrobi homing i zglosi READY.
+
+        ``echo`` dostaje surowe linie z Arduino - formatowanie nalezy do
+        wywolujacego (CLI dodaje prefiks, web player wrzuca je do logu).
+        """
         deadline = time.monotonic() + timeout
 
         while time.monotonic() < deadline:
             for line in self.poll_lines():
-                echo(f"  arduino: {line}")
+                echo(line)
 
                 if line.startswith("ERR"):
                     raise SerialLinkError(f"Arduino zgloszil blad: {line}")
@@ -384,6 +388,9 @@ class DryRunLink:
 
     def home(self) -> None:
         self.send("HOME")
+
+    def ping(self) -> None:
+        self.send("PING")
 
     def poll_lines(self) -> list[str]:
         return []

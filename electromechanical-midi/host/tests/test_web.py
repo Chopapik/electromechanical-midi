@@ -1,0 +1,478 @@
+"""Testy warstwy webowej: REST, WebSocket i sterowanie silnikiem.
+
+Uzywaja TestClient (bez sieci) i FakeTransport (bez Arduino).
+"""
+
+from __future__ import annotations
+
+import sys
+import tempfile
+import time
+import unittest
+from pathlib import Path
+
+import mido
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from playback.engine import PlaybackEngine, PlaybackState  # noqa: E402
+from web.server import create_app  # noqa: E402
+
+TPB = 480
+TEMPO = 500_000
+TICKS_PER_SECOND = TPB * 1_000_000 // TEMPO
+
+
+class FakeTransport:
+    def __init__(self):
+        self.port = "/dev/fake"
+        self.label = "Fake"
+        self.events: list[str] = []
+
+    def send(self, command: str) -> None:
+        self.events.append(command)
+
+    def play(self, hz: float) -> None:
+        self.events.append(f"PLAY {hz:.2f}")
+
+    def stop(self) -> None:
+        self.events.append("STOP")
+
+    def ping(self) -> None:
+        self.events.append("PING")
+
+    def poll_lines(self) -> list[str]:
+        return []
+
+    def close(self) -> None:
+        pass
+
+
+def write_midi(path: Path, notes, name: str = "Test") -> Path:
+    midi = mido.MidiFile(type=1, ticks_per_beat=TPB)
+    conductor = mido.MidiTrack()
+    midi.tracks.append(conductor)
+    conductor.append(mido.MetaMessage("set_tempo", tempo=TEMPO, time=0))
+
+    track = mido.MidiTrack()
+    midi.tracks.append(track)
+    track.append(mido.MetaMessage("track_name", name=name, time=0))
+
+    events = []
+
+    for start, end, note in notes:
+        events.append((round(start * TICKS_PER_SECOND), 0, note))
+        events.append((round(end * TICKS_PER_SECOND), 1, note))
+
+    events.sort(key=lambda event: (event[0], event[1]))
+
+    previous = 0
+
+    for tick, kind, note in events:
+        delta = tick - previous
+        previous = tick
+        track.append(
+            mido.Message(
+                "note_on" if kind == 0 else "note_off",
+                note=note,
+                velocity=100 if kind == 0 else 0,
+                time=delta,
+            )
+        )
+
+    midi.save(path)
+
+    return path
+
+
+def read_until_state(websocket, timeout: float = 3.0) -> dict:
+    """Czyta wiadomosci z WS az trafi na stan (albo zwraca ostatni blad)."""
+    deadline = time.monotonic() + timeout
+    last = None
+
+    while time.monotonic() < deadline:
+        message = websocket.receive_json()
+
+        if message.get("type") == "state":
+            return message["state"]
+
+        last = message
+
+        if message.get("type") == "error":
+            raise AssertionError(f"blad z serwera: {message}")
+
+    raise AssertionError(f"nie doczekalem sie stanu (ostatnie: {last})")
+
+
+class WebTestCase(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.midi_dir = Path(self._tmp.name)
+        self.transport = FakeTransport()
+
+        write_midi(
+            self.midi_dir / "song.mid",
+            [(0.0, 1.0, 60), (2.0, 3.0, 64), (3.0, 3.5, 67)],
+            name="Piano",
+        )
+        write_midi(self.midi_dir / "other.midi", [(0.0, 4.0, 48)], name="Bas")
+        (self.midi_dir / "notatka.txt").write_text("to nie midi")
+
+        self.engine = PlaybackEngine(connect_fn=lambda port: self.transport, keepalive=0.2)
+        self.app = create_app(
+            midi_dir=self.midi_dir,
+            engine=self.engine,
+            connect_on_start=False,
+        )
+
+        self._client = TestClient(self.app)
+        self.client = self._client.__enter__()
+        self.assertTrue(self.engine.connect())
+
+    def tearDown(self):
+        self._client.__exit__(None, None, None)
+        self._tmp.cleanup()
+
+
+class TestRest(WebTestCase):
+    def test_lista_plikow(self):
+        response = self.client.get("/api/files")
+
+        self.assertEqual(response.status_code, 200)
+        names = [entry["name"] for entry in response.json()["files"]]
+
+        self.assertEqual(names, ["other.midi", "song.mid"])
+
+    def test_metadane_pliku(self):
+        response = self.client.get("/api/files/song.mid")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertEqual(data["name"], "song.mid")
+        self.assertAlmostEqual(data["duration"], 3.5, places=2)
+        self.assertEqual(len(data["tracks"]), 2)
+
+        # Track 0 to konduktor (bez nut), track 1 to Piano.
+        piano = data["tracks"][1]
+        self.assertEqual(piano["name"], "Piano")
+        self.assertEqual(piano["noteCount"], 3)
+        self.assertFalse(piano["polyphonic"])
+
+    def test_plik_poza_katalogiem_jest_odrzucany(self):
+        for name in ("../host/player.py", "..%2Fsecret", ".ukryty"):
+            response = self.client.get(f"/api/files/{name}")
+
+            self.assertIn(response.status_code, (400, 404), name)
+
+    def test_brak_pliku(self):
+        self.assertEqual(self.client.get("/api/files/nie-ma.mid").status_code, 404)
+
+    def test_stan_poczatkowy(self):
+        state = self.client.get("/api/state").json()
+
+        self.assertEqual(state["state"], "stopped")
+        self.assertEqual(state["position"], 0.0)
+        self.assertTrue(state["hardware"]["connected"])
+
+    def test_porty(self):
+        data = self.client.get("/api/ports").json()
+
+        self.assertIn("ports", data)
+        self.assertIn("current", data)
+
+    def test_konfiguracja(self):
+        data = self.client.get("/api/config").json()
+
+        self.assertIn("low", data["transposeModes"])
+        self.assertIn("highest", data["strategies"])
+
+
+class TestWebSocket(WebTestCase):
+    def test_pierwsza_wiadomosc_to_stan(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["state"], "stopped")
+
+    def test_wybor_pliku_i_tracku(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["file"], "song.mid")
+            self.assertEqual(state["track"], 1)
+            self.assertEqual(state["trackName"], "Piano")
+            self.assertAlmostEqual(state["duration"], 3.5, places=2)
+
+    def test_play_seek_pause_stop_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "play"})
+            state = read_until_state(websocket)
+            self.assertEqual(state["state"], "playing")
+
+            websocket.send_json({"action": "seek", "position": 2.5})
+            state = read_until_state(websocket)
+            self.assertEqual(state["state"], "playing")
+            self.assertGreaterEqual(state["position"], 2.4)
+            # 2.5 s to srodek nuty E4 (2.0-3.0) - musi byc slyszalna.
+            self.assertEqual(state["noteName"], "E4")
+
+            websocket.send_json({"action": "pause"})
+            state = read_until_state(websocket)
+            self.assertEqual(state["state"], "paused")
+            self.assertIsNone(state["noteName"])
+
+            websocket.send_json({"action": "resume"})
+            state = read_until_state(websocket)
+            self.assertEqual(state["state"], "playing")
+
+            websocket.send_json({"action": "stop"})
+            state = read_until_state(websocket)
+            self.assertEqual(state["state"], "stopped")
+            self.assertEqual(state["position"], 0.0)
+
+    def test_zmiana_transpozycji(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_transpose", "mode": "low"})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["transpose"], "low")
+
+    def test_nieznana_akcja_daje_blad(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "zagraj_to"})
+            message = websocket.receive_json()
+
+            self.assertEqual(message["type"], "error")
+
+    def test_zly_json_daje_blad(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_text("to nie jest json")
+            message = websocket.receive_json()
+
+            self.assertEqual(message["type"], "error")
+
+    def test_brak_pliku_w_set_file(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "nie-ma.mid"})
+            message = websocket.receive_json()
+
+            self.assertEqual(message["type"], "error")
+
+    def test_seek_w_trakcie_grania_gra_nute_w_toku(self):
+        """Najwazniejszy przypadek: seek w srodek trwajacej nuty."""
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "play"})
+            read_until_state(websocket)
+
+            self.transport.events.clear()
+            websocket.send_json({"action": "seek", "position": 2.4})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["noteName"], "E4")
+            # Arduino dostaje STOP + PLAY tej nuty, i nic wiecej.
+            self.assertEqual(
+                [event for event in self.transport.events if event != "PING"],
+                ["STOP", "PLAY 329.63"],
+            )
+
+
+class TestSilnikWWeb(WebTestCase):
+    def test_stan_jest_jeden_dla_wielu_klientow(self):
+        """Dwa WebSockety nie moga uruchomic dwoch niezaleznych schedulerow."""
+        with self.client.websocket_connect("/ws") as first:
+            read_until_state(first)
+
+            with self.client.websocket_connect("/ws") as second:
+                read_until_state(second)
+
+                first.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+                read_until_state(first)
+
+                first.send_json({"action": "play"})
+                read_until_state(first)
+
+                self.assertIs(self.engine.state, PlaybackState.PLAYING)
+
+                # Drugi klient widzi ten sam stan (nie ma drugiego playera).
+                second.send_json({"action": "snapshot"})
+                state = read_until_state(second)
+
+                self.assertEqual(state["state"], "playing")
+                self.assertEqual(state["file"], "song.mid")
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+class TestDrumWeb(WebTestCase):
+    """Sterowanie VHS drum przez WebSocket + stan w /api/state."""
+
+    def drum_actions(self) -> list[str]:
+        return [event for event in self.transport.events if event.startswith("DRUM")]
+
+    def test_stan_poczatkowy_zawiera_drum(self):
+        state = self.client.get("/api/state").json()
+
+        self.assertIn("drum", state)
+
+        drum = state["drum"]
+        self.assertEqual(drum["value"], 0)
+        self.assertFalse(drum["running"])
+        self.assertTrue(drum["connected"])
+        self.assertEqual(drum["minHz"], 20)
+        self.assertEqual(drum["maxHz"], 2000)
+
+    def test_polaczenie_zeruje_beben(self):
+        self.assertIn("DRUM 0", self.transport.events)
+
+    def test_set_drum_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum", "value": 80})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["drum"]["value"], 80)
+            self.assertTrue(state["drum"]["running"])
+            self.assertIn("DRUM 80", self.transport.events)
+
+    def test_stop_drum_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum", "value": 90})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "stop_drum"})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["drum"]["value"], 0)
+            self.assertFalse(state["drum"]["running"])
+            self.assertEqual(self.transport.events[-1], "DRUM 0")
+
+    def test_start_drum_uzywa_ostatniej_wartosci(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum", "value": 110})
+            read_until_state(websocket)
+            websocket.send_json({"action": "stop_drum"})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "start_drum"})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["drum"]["value"], 110)
+
+    def test_set_drum_poza_zakresem_daje_blad(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum", "value": 999})
+            message = websocket.receive_json()
+
+            self.assertEqual(message["type"], "error")
+            self.assertNotIn("DRUM 999", self.transport.events)
+
+    def test_set_drum_tone_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum_tone", "hz": 400})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["drum"]["toneHz"], 400)
+            self.assertIn("DRUMF 400", self.transport.events)
+
+    def test_set_drum_tone_zero_to_dc(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum_tone", "hz": 0})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["drum"]["toneHz"], 0)
+            self.assertIn("DRUMF 0", self.transport.events)
+
+    def test_set_drum_tone_poza_zakresem_daje_blad(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum_tone", "hz": 9999})
+            message = websocket.receive_json()
+
+            self.assertEqual(message["type"], "error")
+
+    def test_rozłączenie_zeruje_stan_bebna_w_api(self):
+        self.engine.set_drum(120)
+        self.engine.disconnect()
+
+        state = self.client.get("/api/state").json()["drum"]
+
+        self.assertFalse(state["connected"])
+        self.assertFalse(state["running"])
+        self.assertEqual(state["value"], 0)
+        self.assertIsNone(state["output"])
+
+    def test_reconnect_zeruje_beben(self):
+        self.engine.set_drum(120)
+        self.engine.disconnect()
+
+        self.transport.events.clear()
+        self.assertTrue(self.engine.connect())
+
+        self.assertIn("DRUM 0", self.transport.events)
+        self.assertEqual(self.engine.snapshot()["drum"]["value"], 0)
+
+    def test_beben_nie_przeszkadza_w_odtwarzaniu_midi(self):
+        """Jeden silnik: beben i FDD dzialaja rownoczesnie."""
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum", "value": 100})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_drum_tone", "hz": 300})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "play"})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["state"], "playing")
+            self.assertEqual(state["drum"]["value"], 100)
+            self.assertEqual(state["drum"]["toneHz"], 300)
+
+            # Zatrzymanie utworu nie rusza bebna.
+            websocket.send_json({"action": "stop"})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["state"], "stopped")
+            self.assertEqual(state["drum"]["value"], 100)
