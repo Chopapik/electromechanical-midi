@@ -1,0 +1,327 @@
+/**
+ * Test integracyjny UI: mockujemy WebSocket i fetch, a potem sprawdzamy,
+ * czy stan z backendu trafia na ekran i czy przyciski wysylaja dobre akcje.
+ */
+
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import App from './App'
+import type { PlayerState } from './types'
+
+class MockWebSocket {
+  static instances: MockWebSocket[] = []
+  static readonly OPEN = 1
+  static readonly CLOSED = 3
+
+  readyState = MockWebSocket.OPEN
+  url: string
+  sent: string[] = []
+
+  onopen: ((event: Event) => void) | null = null
+  onmessage: ((event: MessageEvent) => void) | null = null
+  onclose: ((event: CloseEvent) => void) | null = null
+  onerror: ((event: Event) => void) | null = null
+
+  constructor(url: string) {
+    this.url = url
+    MockWebSocket.instances.push(this)
+  }
+
+  send(data: string): void {
+    this.sent.push(data)
+  }
+
+  close(): void {
+    this.readyState = MockWebSocket.CLOSED
+  }
+
+  emit(payload: unknown): void {
+    this.onmessage?.({ data: JSON.stringify(payload) } as MessageEvent)
+  }
+
+  actions(): Array<Record<string, unknown>> {
+    return this.sent.map((raw) => JSON.parse(raw) as Record<string, unknown>)
+  }
+}
+
+const STATE: PlayerState = {
+  state: 'playing',
+  position: 12.5,
+  duration: 60,
+  file: 'song.mid',
+  track: 1,
+  trackName: 'Thom Vox',
+  midiNote: 52,
+  noteName: 'E3',
+  sourceNote: 64,
+  frequency: 164.81,
+  transpose: 'low',
+  strategy: 'highest',
+  range: { minHz: 130, maxHz: 330 },
+  stats: { notes: 84, skipped: 0, folded: 80, out_of_range: 0 },
+  hardware: {
+    connected: true,
+    port: '/dev/cu.usbmodem14101',
+    label: 'Arduino',
+    error: null,
+    log: [],
+  },
+  drum: {
+    value: 0,
+    output: 0,
+    toneHz: 0,
+    lastValue: 64,
+    running: false,
+    connected: true,
+    minHz: 20,
+    maxHz: 2000,
+  },
+}
+
+const FILES = [{ name: 'song.mid', size: 1234, modified: 0 }]
+
+const METADATA = {
+  name: 'song.mid',
+  duration: 60,
+  tempoChanges: 0,
+  type: 1,
+  ticksPerBeat: 480,
+  tracks: [
+    {
+      index: 1,
+      name: 'Thom Vox',
+      label: 'Thom Vox - 84 nut',
+      noteCount: 84,
+      channels: [3],
+      isDrums: false,
+      polyphonic: false,
+    },
+  ],
+}
+
+function mockFetch(url: string): Promise<Response> {
+  let body: unknown = { files: FILES }
+
+  if (url.startsWith('/api/files/')) body = METADATA
+  else if (url === '/api/ports') {
+    body = { ports: [{ device: '/dev/cu.usbmodem14101', label: 'Arduino', usbId: '2341:0043', score: 195 }], current: '/dev/cu.usbmodem14101', connected: true }
+  }
+
+  return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response)
+}
+
+async function renderApp(overrides: Partial<PlayerState> = {}): Promise<MockWebSocket> {
+  render(<App />)
+
+  await waitFor(() => expect(MockWebSocket.instances.length).toBe(1))
+
+  const socket = MockWebSocket.instances[0]
+
+  await act(async () => {
+    socket.onopen?.(new Event('open'))
+    socket.emit({ type: 'state', state: { ...STATE, ...overrides } })
+  })
+
+  return socket
+}
+
+describe('App', () => {
+  beforeEach(() => {
+    MockWebSocket.instances = []
+    vi.stubGlobal('WebSocket', MockWebSocket)
+    vi.stubGlobal('fetch', vi.fn((url: string) => mockFetch(url)))
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllGlobals()
+  })
+
+  it('pokazuje plik, track i status sprzetu', async () => {
+    await renderApp()
+
+    expect(screen.getByText('song.mid')).toBeDefined()
+    expect(screen.getByText('Thom Vox')).toBeDefined()
+    expect(screen.getByText('/dev/cu.usbmodem14101')).toBeDefined()
+    expect(screen.getByText('Arduino connected')).toBeDefined()
+  })
+
+  it('pokazuje aktualna nuta i czestotliwosc z WebSocketa', async () => {
+    await renderApp()
+
+    expect(screen.getByText('E3')).toBeDefined()
+    expect(screen.getByText('164.81 Hz')).toBeDefined()
+    // nuta zrodlowa (E4) rozni sie od granej (E3) - pokazujemy transpozycje
+    expect(screen.getByText(/z E4/)).toBeDefined()
+  })
+
+  it('przycisk play (stan stopped) wysyla akcje play', async () => {
+    const socket = await renderApp({ state: 'stopped', noteName: null, frequency: null })
+
+    fireEvent.click(screen.getByTitle('Play'))
+
+    expect(socket.actions()).toContainEqual({ action: 'play' })
+  })
+
+  it('przycisk pauzy (stan playing) wysyla akcje pause', async () => {
+    const socket = await renderApp()
+
+    fireEvent.click(screen.getByTitle('Pauza'))
+
+    expect(socket.actions()).toContainEqual({ action: 'pause' })
+  })
+
+  it('przycisk play (stan paused) wysyla akcje resume', async () => {
+    const socket = await renderApp({ state: 'paused', noteName: null, frequency: null })
+
+    fireEvent.click(screen.getByTitle('Play'))
+
+    expect(socket.actions()).toContainEqual({ action: 'resume' })
+  })
+
+  it('przycisk stop wysyla akcje stop', async () => {
+    const socket = await renderApp()
+
+    fireEvent.click(screen.getByTitle('Stop'))
+
+    expect(socket.actions()).toContainEqual({ action: 'stop' })
+  })
+
+  it('klikniecie paska wysyla dokladnie jeden seek', async () => {
+    const socket = await renderApp()
+
+    const slider = screen.getByRole('slider', { name: /Pozycja utworu/i })
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 10, right: 200, bottom: 10, x: 0, y: 0 }) as DOMRect
+    slider.setPointerCapture = () => {}
+    slider.releasePointerCapture = () => {}
+
+    fireEvent.pointerDown(slider, { clientX: 100, pointerId: 1 })
+    fireEvent.pointerUp(slider, { clientX: 100, pointerId: 1 })
+
+    const seeks = socket.actions().filter((action) => action.action === 'seek')
+
+    expect(seeks).toHaveLength(1)
+    expect(seeks[0].position).toBeCloseTo(30, 0)
+  })
+
+  it('przeciaganie paska nie spamuje backendu', async () => {
+    const socket = await renderApp()
+
+    const slider = screen.getByRole('slider', { name: /Pozycja utworu/i })
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 10, right: 200, bottom: 10, x: 0, y: 0 }) as DOMRect
+    slider.setPointerCapture = () => {}
+    slider.releasePointerCapture = () => {}
+
+    fireEvent.pointerDown(slider, { clientX: 10, pointerId: 1 })
+
+    for (const x of [20, 40, 60, 80, 100, 120]) {
+      fireEvent.pointerMove(slider, { clientX: x, pointerId: 1 })
+    }
+
+    expect(socket.actions().filter((action) => action.action === 'seek')).toHaveLength(0)
+
+    fireEvent.pointerUp(slider, { clientX: 120, pointerId: 1 })
+
+    expect(socket.actions().filter((action) => action.action === 'seek')).toHaveLength(1)
+  })
+
+  it('wybor tracku i transpozycji idzie do backendu', async () => {
+    const socket = await renderApp()
+
+    await waitFor(() => expect(screen.getByLabelText(/Track/i)).toBeDefined())
+
+    fireEvent.change(screen.getByLabelText(/Track/i), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText(/Transpose/i), { target: { value: 'high' } })
+
+    expect(socket.actions()).toContainEqual({ action: 'set_track', track: 1 })
+    expect(socket.actions()).toContainEqual({ action: 'set_transpose', mode: 'high' })
+  })
+
+  it('reconnect wysyla akcje bez portu', async () => {
+    const socket = await renderApp()
+
+    fireEvent.click(screen.getByText('Reconnect'))
+
+    expect(socket.actions()).toContainEqual({ action: 'reconnect' })
+  })
+
+  it('Start i Stop bebna wysylaja akcje', async () => {
+    const socket = await renderApp()
+
+    fireEvent.click(screen.getByTitle('Start bębna'))
+    fireEvent.click(screen.getByTitle('Stop bębna'))
+
+    expect(socket.actions()).toContainEqual({ action: 'start_drum' })
+    expect(socket.actions()).toContainEqual({ action: 'stop_drum' })
+  })
+
+  it('suwak PWM wysyla set_drum z finalna wartoscia', async () => {
+    const socket = await renderApp()
+
+    const slider = screen.getByLabelText('PWM (głośność)')
+
+    fireEvent.pointerDown(slider)
+    fireEvent.change(slider, { target: { value: '120' } })
+    fireEvent.pointerUp(slider)
+
+    const sent = socket.actions().filter((action) => action.action === 'set_drum')
+
+    expect(sent.length).toBeGreaterThanOrEqual(1)
+    expect(sent[sent.length - 1]).toEqual({ action: 'set_drum', value: 120 })
+  })
+
+  it('suwak tonu wysyla set_drum_tone', async () => {
+    const socket = await renderApp()
+
+    const slider = screen.getByLabelText('Ton (wysokość)')
+
+    fireEvent.pointerDown(slider)
+    fireEvent.change(slider, { target: { value: '440' } })
+    fireEvent.pointerUp(slider)
+
+    const sent = socket.actions().filter((action) => action.action === 'set_drum_tone')
+
+    expect(sent[sent.length - 1]).toEqual({ action: 'set_drum_tone', hz: 440 })
+  })
+
+  it('pokazuje stan bebna z WebSocketa', async () => {
+    await renderApp({
+      drum: {
+        value: 128,
+        output: 128,
+        toneHz: 300,
+        lastValue: 128,
+        running: true,
+        connected: true,
+        minHz: 20,
+        maxHz: 2000,
+      },
+    })
+
+    expect(screen.getByText('Running')).toBeDefined()
+    // "300 Hz" widnieje i na suwaku tonu, i w readoucie
+    expect(screen.getAllByText('300 Hz').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('przy rozlaczonym Arduino beben pokazuje Disconnected i jest zablokowany', async () => {
+    await renderApp({
+      hardware: { connected: false, port: null, label: null, error: 'brak', log: [] },
+      drum: {
+        value: 0,
+        output: null,
+        toneHz: 0,
+        lastValue: 64,
+        running: false,
+        connected: false,
+        minHz: 20,
+        maxHz: 2000,
+      },
+    })
+
+    expect(screen.getByText('Disconnected')).toBeDefined()
+    expect((screen.getByTitle('Start bębna') as HTMLButtonElement).disabled).toBe(true)
+  })
+})
