@@ -390,6 +390,28 @@ Zasady działania:
 * podczas gdy bęben gra z MIDI, **panel ręczny jest zablokowany**
   (`MIDI CONTROLLED`); wraca po pauzie/stopie.
 
+#### Homing: czujnik TRACK0 i awaryjny homing „na ślepo"
+
+Poprawny homing opiera się na czujniku TRACK0. Jeśli czujnik (albo taśma)
+przestanie odpowiadać, firmware melduje `ERR HOME_FAILED` i **nic nie da się
+grać** — `PLAY` wymaga znanej pozycji głowicy. Dlatego host schodzi po
+drabince:
+
+1. `HOME` — normalny homing z czujnikiem (90 kroków),
+2. `HOME` × 2 — kolejne pełne budżety kroków w stronę TRACK0,
+3. `HOME BLIND` — **homing bez czujnika**: głowica jedzie pełną szerokość
+   stacji (95 kroków) do oporu, potem odjeżdża `START_TRACK`. Pozycja jest
+   znana „z założenia", więc granie wraca.
+
+Gdy zadziała wariant 3, UI pokazuje żółte ostrzeżenie:
+
+> ⚠ homing NA ŚLEPO: czujnik TRACK0 stacji nie odpowiada (sprawdź taśmę /
+> czujnik) — pozycja liczona z dojazdu do oporu
+
+To jest obejście, nie naprawa: przy padniętym czujniku stacja traci
+kontrolę pozycji (kontrola `POS_LOST` też nie działa) i dalej gra, ale
+warto wymienić taśmę/czujnik.
+
 **Fail-safe:**
 
 * start firmware → `DRUM 0`,
