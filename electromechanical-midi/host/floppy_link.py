@@ -323,19 +323,53 @@ class FloppyLink:
 
         return None
 
-    def wait_ready(self, timeout: float = 10.0, echo=print) -> bool:
+    def wait_ready(
+        self,
+        timeout: float = 10.0,
+        echo=print,
+        home_retries: int = 2,
+        blind_fallback: bool = True,
+    ) -> bool:
         """Czeka az kontroler po resecie zrobi homing i zglosi READY.
 
         ``echo`` dostaje surowe linie z Arduino - formatowanie nalezy do
         wywolujacego (CLI dodaje prefiks, web player wrzuca je do logu).
+
+        ``home_retries``: ile razy powtorzyc homing po ``ERR HOME_FAILED``.
+        Kazda proba to znowu pelny budzet krokow w strone TRACK0, wiec
+        glowica odjechana dalej niz budzet i tak w koncu dojedzie.
+
+        ``blind_fallback``: gdy nawet to nie pomoze, zrob homing BEZ czujnika
+        TRACK0 (``HOME BLIND``) - stacja dojezdza do oporu i odjezdza na
+        pozycje startowa. Ratuje granie, gdy czujnik/tasma TRACK0 padla.
         """
         deadline = time.monotonic() + timeout
+        retries_left = home_retries
+        blind_left = 1 if blind_fallback else 0
 
         while time.monotonic() < deadline:
             for line in self.poll_lines():
                 echo(line)
 
                 if line.startswith("ERR"):
+                    if "HOME_FAILED" in line and retries_left > 0:
+                        retries_left -= 1
+                        echo(
+                            f"[homing] nie udalo sie - ponawiam "
+                            f"({retries_left} prob zostalo)"
+                        )
+                        self.send("HOME")
+                        continue
+
+                    if "HOME_FAILED" in line and blind_left > 0:
+                        blind_left -= 1
+                        echo(
+                            "[homing] czujnik TRACK0 nie odpowiada - homing "
+                            "NA SLEPO (sprawdz tasme/czujnik stacji)"
+                        )
+                        self.send("HOME BLIND")
+                        continue
+
                     raise SerialLinkError(f"Arduino zgloszil blad: {line}")
 
                 if line.startswith("READY"):
