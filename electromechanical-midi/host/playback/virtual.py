@@ -214,6 +214,160 @@ class VirtualOrchestra:
     def config(self) -> dict:
         return {'name': self.name, 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
+    def load_plan(self, plan) -> 'VirtualOrchestra':
+        """Podmienia sklad orkiestry na ten z planu wykonania."""
+        self.name = plan.name
+        self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
+        self.report = {}
+        self.events = []
+        self.activity = {device.id: [] for device in self.devices}
+        self.decisions = {}
+
+        return self
+
+    def render_plan(self, plan) -> Timeline:
+        """Wykonuje GOTOWY plan: symuluje mechanike, nie podejmuje decyzji.
+
+        To jest granica miedzy aranzerem a sprzetem. Plan juz wie, ktore
+        urzadzenie gra jaka nute i od kiedy; tutaj sprawdzamy tylko, jak
+        zachowa sie mechanika (kroki, travel, zawracanie, cykl uderzenia)
+        i produkujemy zdarzenia dla audio oraz dla schedulera sprzetowego.
+
+        Nie ma tu ani jednego "dropu z powodu polifonii" - jesli plan jest
+        poprawny, kazde jego zdarzenie jest zagrane.
+        """
+        self.load_plan(plan)
+        by_device: dict[str, list] = {device.id: [] for device in self.devices}
+
+        for event in plan.events:
+            if event.device_id is not None and event.outcome != 'DROPPED':
+                by_device.setdefault(event.device_id, []).append(event)
+
+        for device in self.devices:
+            by_device[device.id].sort(key=lambda item: (item.actual_start, item.id))
+
+        audible_solo = any(d.solo and not d.mute for d in self.devices)
+        durations = [event.actual_duration for event in plan.events if event.played]
+
+        for device in self.devices:
+            profile = effective_profile(device)
+            state = MechanicalState(profile)
+            counts = dict(accepted=0, played=0, dropped=0, folded=0, delayed=0,
+                          busyConflicts=0, polyphonyConflicts=0, retriggerConflicts=0,
+                          steps=0, reversals=0, travel=0, activeTime=0.0,
+                          requestedHits=0, acceptedHits=0, droppedWhileBusy=0,
+                          busyTime=0.0, maxDensity=0.0)
+            reasons: dict[str, int] = {}
+            phases: list[dict] = []
+            audible = not device.mute and (not audible_solo or device.solo)
+            last_hit: float | None = None
+
+            for event in by_device.get(device.id, []):
+                counts['accepted'] += 1
+                counts['played'] += 1
+                reasons[event.outcome] = reasons.get(event.outcome, 0) + 1
+
+                if event.folded:
+                    counts['folded'] += 1
+
+                if event.outcome == 'DELAYED':
+                    counts['delayed'] += 1
+                elif event.outcome == 'ARPEGGIATED':
+                    counts['delayed'] += 1
+                    counts['retriggerConflicts'] += 1
+
+                start = event.actual_start
+                duration = event.actual_duration
+                self.decisions.setdefault(event.id, []).append({
+                    'deviceId': device.id, 'ruleId': event.rule_id,
+                    'articulation': event.articulation, 'status': event.status,
+                    'reason': event.outcome, 'outcome': event.outcome,
+                    'originalNote': event.note, 'playedNote': event.played_note,
+                    'deviceAvailableAt': None,
+                })
+
+                if device.type in ('HDD_VCM', 'SOLENOID_RESONATOR'):
+                    counts['requestedHits'] += 1
+                    counts['acceptedHits'] += 1
+                    cycle = max(duration, 0.0)
+                    counts['busyTime'] += cycle
+
+                    if last_hit is not None and start > last_hit:
+                        counts['maxDensity'] = max(counts['maxDensity'], 1 / (start - last_hit))
+
+                    last_hit = start
+
+                    if device.type == 'HDD_VCM':
+                        park = float(profile.get('parkMs') or 0) / 1000
+                        settle = float(profile.get('settleMs') or 0) / 1000
+                        strike = float(profile.get('strikeMs') or 0) / 1000
+                        phases.extend([
+                            {'time': start, 'phase': 'PARK'},
+                            {'time': start + park, 'phase': 'SETTLE'},
+                            {'time': start + park + settle, 'phase': 'STRIKE'},
+                            {'time': start + park + settle + strike, 'phase': 'COOLDOWN'},
+                        ])
+
+                    if audible:
+                        self.activity[device.id].append((start, max(start + cycle, start + .22)))
+                        self.events.append(AcousticEvent(
+                            start + float(profile.get('parkMs') or 0) / 1000
+                            + float(profile.get('settleMs') or 0) / 1000,
+                            'hit', device.id, 0.0, duration, event.velocity))
+
+                    continue
+
+                hz = event.played_hz or 0.0
+                counts['activeTime'] += duration
+                state.playing = state.running = True
+                state.current_frequency = state.target_frequency = hz
+
+                if device.type in ('FDD', 'DVD_SLED', 'STEPPER_FREE') and hz > 0:
+                    steps = int(duration * hz)
+                    counts['steps'] += steps
+                    counts['travel'] += steps
+                    low, high = profile.get('minPosition'), profile.get('maxPosition')
+
+                    if low is not None and high is not None and high > low:
+                        for step in range(steps):
+                            if ((state.direction > 0 and state.position >= high)
+                                    or (state.direction < 0 and state.position <= low)):
+                                state.direction *= -1
+                                counts['reversals'] += 1
+                                reasons['DIRECTION_REVERSAL'] = reasons.get('DIRECTION_REVERSAL', 0) + 1
+
+                                if audible:
+                                    self.events.append(AcousticEvent(
+                                        start + step / hz, 'reversal', device.id))
+
+                            state.position += state.direction
+
+                if audible:
+                    self.activity[device.id].append((start, start + duration))
+                    self.events.append(AcousticEvent(start, 'tone', device.id, hz,
+                                                     duration, event.velocity))
+
+            state.playing = state.running = False
+            state.phase = 'IDLE'
+            self.report[device.id] = {'name': device.name, 'type': device.type, **counts,
+                                      'reasons': reasons, 'state': vars(state).copy(),
+                                      'phases': phases}
+
+        end = max(float(getattr(plan, 'duration', 0.0)),
+                  max((e.time + (e.duration if e.kind == 'tone' else .12)
+                       for e in self.events), default=0.0),
+                  max((interval[1] for intervals in self.activity.values()
+                       for interval in intervals), default=0.0))
+        commands = [Command(e.time, 'virtual', lane='virtual') for e in self.events]
+
+        if end:
+            if not commands:
+                commands.append(Command(0, 'virtual', lane='virtual'))
+
+            commands.append(Command(end, 'virtual', lane='virtual'))
+
+        return Timeline.from_commands(commands)
+
     def simulate(self, source: MidiSource, routes_by_device: dict | None = None) -> Timeline:
         self.events = []
         self.activity = {device.id: [] for device in self.devices}

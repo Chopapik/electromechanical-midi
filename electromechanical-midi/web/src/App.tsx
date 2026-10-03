@@ -81,6 +81,12 @@ export default function App() {
 
         <div className="status-line">
           <span className={`pill ${state?.state ?? 'stopped'}`}>{state?.state ?? 'stopped'}</span>
+          {state?.arrangementTotals && (
+            <span className="pill" title="Auto Arranger: zagrane / wszystkie zdarzenia">
+              arranger {state.arrangementOrigin === 'manual' ? 'manual' : 'auto'} ·{' '}
+              {(100 - state.arrangementTotals.dropRate * 100).toFixed(0)}% zagrane
+            </span>
+          )}
           {state?.hardware?.pendingPlay && (
             <span className="pill waiting" role="status">
               czekam na Arduino (homing) — ruszy po READY

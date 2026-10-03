@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ArrangementDocument, ArrangementRule, ArrangementView, PlayerState } from '../types'
 import { ArrangementImport } from './ArrangementImport'
+import { AutoArrangerReport } from './AutoArrangerReport'
 import { PianoRoll, deviceColor, sourceColor, type ViewMode } from './PianoRoll'
 
 const STATUS = ['ACCEPTED', 'FOLDED', 'DELAYED', 'DROPPED', 'UNASSIGNED']
@@ -167,6 +168,8 @@ export function ArrangementEditor({ file, state, seek }: Props) {
 
   return <section className="arrangement">
     <header className="arrangement-header"><h2>Arrangement</h2><span>{doc.name} · {view.notes.length} MIDI notes</span></header>
+    <AutoArrangerReport report={view.report} origin={doc.origin} />
+
     <div className="arrangement-actions">
       <button type="button" onClick={save}>Save Arrangement</button>
       <button type="button" onClick={loadSaved}>Load Arrangement</button>
@@ -204,9 +207,14 @@ export function ArrangementEditor({ file, state, seek }: Props) {
       </aside>
       <div className="arrangement-inspector"><h3>Note Inspector</h3>
         {selected ? <><p><strong>{selected.name ?? `MIDI ${selected.note}`}</strong> · MIDI {selected.note} · {selected.isDrum ? 'drum' : 'tonal'}</p>
-          <p>Track {selected.track} — {selected.trackName} · channel {selected.channel} · velocity {selected.velocity}</p>
-          <p>Start {formatTime(selected.start)} · duration {selected.duration.toFixed(3)}s</p>
-          <p>Status: <strong>{selected.status}</strong></p>
+          <p>SOURCE: track {selected.track} — {selected.trackName} · channel {selected.channel} · velocity {selected.velocity}{selected.role ? ` · rola ${selected.role}` : ''}</p>
+          <p>AUTO ARRANGER: <strong>{selected.deviceId ?? 'DROP'}</strong>
+            {selected.reassigned ? ' (reassigned)' : ''}{selected.folded ? ' (folded)' : ''}</p>
+          <p>OUTCOME: <strong className={selected.outcome === 'DROPPED' ? 'report-bad' : ''}>{selected.outcome ?? selected.status}</strong>{selected.reason ? ` · ${selected.reason}` : ''}</p>
+          <p>TIMING: start {formatTime(selected.start)} → {formatTime(selected.actualStart ?? selected.start)}
+            {(selected.delayMs ?? 0) > 0.01 ? ` · +${(selected.delayMs ?? 0).toFixed(1)} ms` : ' · on time'}</p>
+          <p>Duration {selected.duration.toFixed(3)}s{(selected.actualDuration ?? selected.duration) < selected.duration - 1e-3
+            ? ` → ${(selected.actualDuration ?? selected.duration).toFixed(3)}s (shortened)` : ''}</p>
           {selected.routes.length ? selected.routes.map((r, i) => <p key={`${r.ruleId}-${i}`} className="inspector-route">
             Rule {r.ruleId} → {doc.devices.find(d => d.id === r.deviceId)?.name ?? 'DROP'} · {r.status}
             {r.reason ? ` · ${r.reason}` : ''}{r.articulation ? ` · ${r.articulation}` : ''}

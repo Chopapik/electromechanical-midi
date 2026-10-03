@@ -65,6 +65,8 @@ export interface PlayerState {
   virtual?: VirtualState
   arrangementRevision?: number
   arrangementActive?: boolean
+  arrangementOrigin?: 'auto' | 'manual' | 'hybrid' | null
+  arrangementTotals?: ArrangementReport['totals'] | null
   arrangementHardware?: ArrangementHardware
   state: PlaybackStateValue
   position: number
@@ -192,17 +194,79 @@ export interface ArrangementDocument {
   midi: { file: string; sha256: string; tracks: Array<{ index: number; name: string }> }
   devices: VirtualDevice[]
   rules: ArrangementRule[]
+  /** Auto Arranger: polityka wykonania; rules sa wtedy tylko recznym overridem */
+  policy?: Record<string, number | string | boolean>
+  origin?: 'auto' | 'manual' | 'hybrid'
 }
 export interface ArrangementRouteResult {
   ruleId: string; deviceId: string | null; status: 'PENDING' | 'ACCEPTED' | 'FOLDED' | 'DELAYED' | 'DROPPED' | 'UNASSIGNED'
   articulation?: string | null; reason?: string | null; originalNote?: number
   playedNote?: number | null; deviceAvailableAt?: number | null
 }
+/** Wynik Auto Arrangera dla jednej nuty - patrz host/playback/performance.py */
+export type PerformanceOutcome =
+  | 'ACCEPTED' | 'REASSIGNED' | 'DELAYED' | 'ARPEGGIATED'
+  | 'SHORTENED' | 'STOLEN' | 'FOLDED' | 'DROPPED'
+
+export type NoteRole = 'lead' | 'bass' | 'harmony' | 'percussion'
+
 export interface ArrangementNote {
   id: string; track: number; trackName: string; channel: number
   note: number; name: string | null; start: number; duration: number
   velocity: number; isDrum: boolean; routes: ArrangementRouteResult[]
   status: 'ACCEPTED' | 'FOLDED' | 'DELAYED' | 'DROPPED' | 'UNASSIGNED'
+  /** rozszerzenia Auto Arrangera */
+  outcome?: PerformanceOutcome
+  role?: NoteRole
+  deviceId?: string | null
+  preferredDevice?: string | null
+  actualStart?: number
+  actualDuration?: number
+  delayMs?: number
+  reassigned?: boolean
+  folded?: boolean
+  reason?: string | null
+}
+
+export interface ReportBucket {
+  kind: string
+  requested: number; played: number; dropped: number; onTime: number
+  reassigned: number; delayed: number; arpeggiated: number
+  stolen: number; shortened: number; folded: number
+  dropRate: number; meanDelayMs: number; maxDelayMs: number
+  retention: number; activeTime: number; utilization: number
+}
+
+export interface ReportDevice {
+  deviceId: string; type: string; notes: number; dropped: number
+  activeTime: number; utilization: number
+}
+
+export interface ArrangementReport {
+  sourceEvents: number
+  lead: {
+    requested: number; played: number; dropped: number
+    delayed: number; preservation: number
+  }
+  leadDevices: {
+    devices: string[]; notes: number; nonLeadEvents: number; clean: boolean
+  }
+  tonal: ReportBucket
+  percussion: ReportBucket
+  devices: ReportDevice[]
+  totals: {
+    requested: number; played: number; dropped: number; dropRate: number
+    retention: number; delayed: number; arpeggiated: number; reassigned: number
+    voiceSteals: number; shortened: number; folded: number
+    meanDelayMs: number; maxDelayMs: number
+  }
+  duration: number
+}
+
+export interface OrchestraView {
+  name: string
+  policy: Record<string, number | string | boolean>
+  devices: Array<{ id: string; type: string; name: string }>
 }
 export interface ArrangementView {
   arrangement: ArrangementDocument | null
@@ -210,4 +274,6 @@ export interface ArrangementView {
   midiIdentity: ArrangementDocument['midi'] | null
   tracks: Array<{ index: number; name: string; isDrums: boolean; noteCount: number }>
   revision: number
+  report?: ArrangementReport | null
+  orchestra?: OrchestraView
 }

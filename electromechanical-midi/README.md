@@ -998,6 +998,151 @@ pio run -d firmware/floppy
 
 ---
 
+## Auto Arranger (domyślny przepływ)
+
+MIDI → analiza → **voice allocator** → **Performance Plan** → Virtual Orchestra
+(a później ten sam plan → hardware scheduler).
+
+Użytkownik wrzuca plik MIDI i naciska Play. **Nie musi przygotowywać żadnego
+JSON-a**, wybierać pitchy ani ręcznie rozdzielać akordów. Orkiestra domyślna v1
+to 3 × FDD + 1 × VHS + 3 × HDD VCM (7 urządzeń), bez Arduino gra to Virtual
+Orchestra.
+
+### Dlaczego to powstało
+
+Poprzedni model przypisywał konkretny pitch do konkretnego urządzenia na stałe.
+Pojedynczy FDD/VHS jest monofoniczny, więc nuta skierowana do zajętego
+urządzenia była **odrzucana, mimo że inne kompatybilne urządzenie stało puste**.
+Na tym samym pliku i tej samej 7-urządzeniowej orkiestrze
+(`.venv/bin/python scripts/benchmark.py`):
+
+| | static (dawny routing) | auto (pula głosów) |
+| --- | --- | --- |
+| zagrane | 2890 | **5344** (+85%) |
+| drop rate | 61.3% | **28.4%** |
+| reassigned | 0 | 3805 |
+| delayed | 0 | 247 (śr. 15 ms) |
+| arpeggiated | 0 | 19 |
+| voice steals | 0 | 48 |
+| **lead preservation** | – | **310/310 = 100%** |
+| **non-lead events na VHS** | – | **0** |
+| VHS utilization | – | 0.61 (dedykowany) |
+| wykorzystanie FDD | – | 0.69–0.71 (równomiernie) |
+
+Podział pul kosztował ~7% zagranych nut (5730 → 5344) względem wspólnej puli,
+ale VHS przestał przełączać się między wokalem, basem i harmonią. Świadoma
+wymiana: czysta linia melodyczna zamiast kilku dodatkowych harmoniach nut.
+
+### Warstwy
+
+| plik | odpowiedzialność |
+| --- | --- |
+| `playback/analysis.py` | profil tracków, detekcja lead/bas, role nut |
+| `playback/capabilities.py` | co potrafi typ urządzenia (tonalne/perkusyjne, monofonia, zakres, cykl) |
+| `playback/orchestra.py` | konfiguracja orkiestry + polityka (preset `BALANCED`) |
+| `playback/allocator.py` | **voice allocator** → decyzje, timing, overflow policies |
+| `playback/performance.py` | `PerformancePlan` + raport (jedno źródło prawdy) |
+| `playback/virtual.py` | `render_plan()` – wykonuje plan, **nie decyduje ponownie** |
+
+`VirtualOrchestra.render_plan(plan)` symuluje mechanikę (kroki, travel,
+zawracanie, cykl uderzenia) i produkuje zdarzenia audio oraz komendy sprzętowe.
+Nie ma tam ani jednego „dropu z powodu polifonii” – plan już rozstrzygnął, co
+gra. Dzięki temu wirtualizacja i sprzęt nie mogą się rozjechać.
+
+### Podstawowy invariant
+
+> Nuta nie może dostać DROP tylko dlatego, że jej *preferowane* urządzenie jest
+> zajęte, jeśli istnieje inne kompatybilne, wolne i zdolne ją zagrać urządzenie.
+
+Kolejność ratowania nuty:
+
+1. wolne preferowane urządzenie → `ACCEPTED`
+2. wolne inne kompatybilne → `REASSIGNED`
+3. zwalnia się w oknie `maxMicroDelayMs` → `DELAYED`
+4. zwalnia się w oknie `maxArpeggioMs` → `ARPEGGIATED`
+5. głos słabszej nuty (grającej ≥ minimalną nutę) → `STOLEN` / `SHORTENED`
+6. dopiero teraz → `DROPPED`
+
+`REASSIGNED`, `DELAYED`, `ARPEGGIATED`, `STOLEN`, `SHORTENED` to jawne wyniki
+widoczne w inspektorze nuty i w raporcie.
+
+### VHS = DEDICATED_LEAD_ONLY
+
+VHS **nie należy do puli tonalnej**. Urządzenia tonalne dzielą się na dwie
+rozłączne pule:
+
+| pula | urządzenia | role |
+| --- | --- | --- |
+| **lead** | VHS | wyłącznie wykryty lead / vocal |
+| **accompaniment** | FDD1–3 | bas, gitary, harmonia, chord tones |
+
+To jest **twarda kwalifikacja, nie punktacja**. VHS nie występuje na liście
+kandydatów akompaniamentu (`DeviceCapability.accepts()`), więc nie da się go
+wybrać, nie może być fallbackiem dla zajętych FDD, nie może ratować
+`DROPPED` nut akompaniamentu, nie może dostać nuty przez `REASSIGNED` i nie
+może zostać obrabowany przez voice steal akompaniamentu. Gdy lead milczy,
+**VHS pozostaje cichy** – świadomie, mimo że stoi bezczynnie.
+
+Ścieżka leadu ma własne reguły (`_allocate_lead`): brak arpeggio, brak
+reassignmentu do FDD, `leadMaxMicroDelayMs` = 12 ms. Gdy dwie nuty leadu na
+siebie nachodzą, poprzednia jest **skracana**, żeby melodia szła dalej —
+nigdy nie oddajemy jej na FDD.
+
+Budżety długości nut liczone są **osobno dla każdej puli** (`maxNoteSeconds`
+dla akompaniamentu, `leadMaxNoteSeconds` dla leadu), więc akompaniament nie
+zjada pojemności zarezerwowanej dla melodii.
+
+Raport zawiera sekcję `lead` (requested / played / dropped / preservation)
+oraz `leadDevices` z licznikiem `nonLeadEvents` — invariant
+**`assignedDevice == VHS ⇒ role == LEAD`** jest widoczny w API i w UI, a
+testy pilnują, że wynosi dokładnie `0`. Ręczna reguła wskazująca VHS dla
+basu/harmonii jest ignorowana.
+
+### Detekcja lead / bas
+
+Lead wybierany jest heurystycznie (bez twardych założeń o trackach): monofonia,
+wyższy rejestr, dłuższe nuty, głośność, ciągłość melodii (małe interwały),
+gęstość, a nazwa tracku to **wyłącznie słaba podpowiedź**. Dla polifonicznego
+tracku za linię melodiczną uznawany jest górny głos. Gdy wynik jest zbyt płaski
+(`leadConfidence`), lead nie jest chroniony na siłę.
+
+VHS preferuje lead, ale gdy FDD są zajęte, przejmie harmonię – byle nie
+dropować. Bas jest wykrywany po najniższym rejestrze i chroniony priorytetem.
+
+### Pule perkusyjne
+
+Trzy HDD to pula, nie przypisanie „kick → HDD1”. Preferencja wynika z klasy
+brzmienia (stopa / werbel / blachy), ale gdy preferowany młotek jest zajęty,
+uderzenie idzie na **dowolny wolny**. Drop dopiero gdy wszystkie trzy są zajęte
+dłużej niż okno micro-delayu.
+
+### Budżet długości nuty
+
+Monofoniczna orkiestra ma skończoną przepustowość: N głosów × długość utworu.
+Gdy suma długości nut ją przekracza, część materiału **musi** wypaść – chyba że
+skrócimy nuty, tak jak robi to każdy instrument monofoniczny grający akordy.
+Allocator liczy budżet sam (`tonalOverflow: "adaptive"`), a `capacitySafety`
+(domyślnie 1.15) przechyla kompromis: **niżej = mniej dropów, rzadsza
+faktura; wyżej = gęściej, więcej dropów**.
+
+### Raport
+
+`GET /api/report` (oraz `report` w `GET /api/arrangement`) zwraca:
+
+* `requested / played / dropped / dropRate / retention`,
+* `onTime / reassigned / delayed / arpeggiated / stolen / shortened / folded`,
+* `meanDelayMs / maxDelayMs`,
+* osobno dla tonalnych i perkusyjnych,
+* per urządzenie: `notes`, `activeTime`, `utilization`.
+
+### Arrangement JSON to teraz override, nie wejście
+
+Zapisany `<nazwa>.orchestra.json` obok pliku MIDI jest wczytywany jako
+**opcjonalny override** (reguły stają się *preferencjami* allocatora, nie
+przybiciem na stałe). Brak pliku = czysta auto-aranżacja. `Save`/`Export`
+zapisują orkiestrę + politykę + ewentualne ręczne reguły – bez tysięcy
+przypisań nuta-po-nucie, bo plan jest deterministyczny.
+
 ## Virtual Orchestra (pierwszy etap)
 
 Uruchom backend i frontend jak wyżej, np. `./scripts/dev.sh`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.

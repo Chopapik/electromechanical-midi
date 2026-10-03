@@ -694,3 +694,19 @@ select:disabled {
 .virtual-hardware ul { margin: 4px 0 0; padding-left: 18px; }
 .hardware-lane { margin: 3px 0; }
 @media (max-width: 780px) { .arrangement-bottom { grid-template-columns: 1fr; }.drum-route-row { grid-template-columns: 1fr; }.main-tabs button { padding: 8px; font-size: 12px; } }
+
+/* ---- Auto Arranger: raport i inspekcja decyzji ---- */
+.auto-report { margin: 12px 0; padding: 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-2); }
+.auto-report-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.auto-report-head h3 { margin: 0; }
+.report-buckets { display: flex; flex-wrap: wrap; gap: 18px; }
+.report-bucket h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+.report-bucket dl { display: grid; grid-template-columns: auto auto; gap: 2px 12px; margin: 0; }
+.report-bucket dt { color: var(--muted); font-size: 12px; }
+.report-bucket dd { margin: 0; font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+.report-bad { color: var(--danger); font-weight: 700; }
+.report-devices { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: 12px; }
+.report-devices th { text-align: left; color: var(--muted); font-weight: 600; padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); }
+.report-devices td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.util-bar { display: inline-block; height: 7px; min-width: 2px; margin-right: 7px; vertical-align: middle;
+  border-radius: 4px; background: var(--accent); opacity: .75; }

@@ -497,13 +497,10 @@ def create_app(
 
     @app.post('/api/arrangement/initialize')
     def api_initialize_arrangement() -> dict:
+        """Auto Arranger: MIDI + orkiestra -> plan. Zapisany JSON jest tylko
+        opcjonalnym overridem i wczytuje sie razem z plikiem MIDI."""
         try:
-            if engine.arrangement_view()['arrangement'] is None:
-                path = arrangement_path()
-                if path.is_file():
-                    engine.set_arrangement(json.loads(path.read_text(encoding='utf-8')))
-                else:
-                    engine.initialize_arrangement()
+            engine.initialize_arrangement()
         except ArrangementMismatch as exc:
             raise HTTPException(status_code=409, detail={'mismatches': exc.mismatches}) from exc
         except (ArrangementError, ValueError, TypeError, OSError) as exc:
@@ -511,6 +508,28 @@ def create_app(
         except EngineError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return engine.arrangement_view()
+
+    @app.get('/api/orchestra')
+    def api_orchestra() -> dict:
+        view = engine.arrangement_view()
+
+        return {'orchestra': view['orchestra'],
+                'report': view['report'],
+                'origin': view['arrangement']['origin'] if view['arrangement'] else None}
+
+    @app.put('/api/orchestra')
+    def api_set_orchestra(payload: dict) -> dict:
+        try:
+            engine.set_orchestra(payload)
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except EngineError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return engine.arrangement_view()
+
+    @app.get('/api/report')
+    def api_report() -> dict:
+        return engine.arrangement_view()['report'] or {}
 
     @app.put('/api/arrangement')
     def api_update_arrangement(document: dict) -> dict:
@@ -678,6 +697,8 @@ def main(argv: list[str] | None = None) -> int:
             return link
 
     engine = PlaybackEngine(
+        # GUI: MIDI -> Auto Arranger -> plan -> orkiestra. Bez JSON-a.
+        auto_arrange=True,
         connect_fn=connect_fn,
         min_hz=args.min_hz,
         max_hz=args.max_hz,
