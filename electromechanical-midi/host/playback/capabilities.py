@@ -35,6 +35,18 @@ _ROLE_POLICY = {
     'SOLENOID_RESONATOR': 'percussion',
 }
 
+# Jaka artykulacje mechaniczna stosuje dany typ urzadzenia. To wlasciwosc
+# SPRZETU, nie utworu: FDD nie ma naturalnego wybrzmienia, wiec krotkie nuty
+# trzeba przedluzyc. VHS i HDD tego nie potrzebuja.
+_ARTICULATION = {
+    'FDD': 'sustain',
+    'DVD_SLED': 'none',
+    'STEPPER_FREE': 'none',
+    'VHS': 'none',
+    'HDD_VCM': 'none',
+    'SOLENOID_RESONATOR': 'none',
+}
+
 LEAD_ONLY = 'lead-only'
 ACCOMPANIMENT = 'accompaniment'
 PERCUSSION_POLICY = 'percussion'
@@ -62,6 +74,7 @@ class DeviceCapability:
     retrigger_s: float                          # odstep do nastepnej nuty/uderzenia
     overflow: str                               # 'fold' | 'drop'
     role_policy: str = ACCOMPANIMENT            # LEAD_ONLY | ACCOMPANIMENT | PERCUSSION_POLICY
+    articulation: str = 'none'                  # 'sustain' | 'none'
 
     @property
     def tonal(self) -> bool:
@@ -130,6 +143,7 @@ def capability_for(device: VirtualDeviceInstance) -> DeviceCapability:
         retrigger_s=retrigger,
         overflow=profile.overflow,
         role_policy=_ROLE_POLICY.get(kind, ACCOMPANIMENT),
+        articulation=_ARTICULATION.get(kind, 'none'),
     )
 
 

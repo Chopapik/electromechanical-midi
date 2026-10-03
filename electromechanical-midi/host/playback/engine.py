@@ -58,6 +58,7 @@ from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePrev
 from .arrangement import Arrangement, ArrangementError, midi_identity
 from .hardware import bind_devices, build_commands
 from .allocator import allocate, manual_pins
+from .duplicates import normalize
 from .orchestra import OrchestraConfig, default_orchestra, parse_orchestra
 
 # Ostatnie 1.5 ms czekania to aktywne krecenie - dzieki temu komendy
@@ -269,6 +270,7 @@ class PlaybackEngine:
         self._arrangement: Arrangement | None = None      # reczny override (JSON)
         self._orchestra: OrchestraConfig = default_orchestra()
         self._plan = None                                  # PerformancePlan
+        self._normalized = None                            # NormalizedSource
         self._plan_report: dict | None = None
         self._arrangement_notes: list[dict] = []
         self._arrangement_revision = 0
@@ -607,6 +609,7 @@ class PlaybackEngine:
             self._arrangement = None
             self._plan = None
             self._plan_report = None
+            self._normalized = None
             self._arrangement_notes = []
             self._arrangement_revision += 1
             self._safe_send_stop_locked()
@@ -867,9 +870,14 @@ class PlaybackEngine:
 
             return
 
-        pins = manual_pins(self._arrangement, self._source) if self._arrangement is not None else {}
+        if self._normalized is None:
+            # Double-tracking -> partie logiczne. Liczone raz na plik.
+            self._normalized = normalize(self._source)
+
+        pins = (manual_pins(self._arrangement, self._normalized)
+                if self._arrangement is not None else {})
         self._plan = allocate(
-            self._source, self._orchestra, pins=pins,
+            self._normalized, self._orchestra, pins=pins,
             name=self._source.path.stem,
             origin='manual' if self._arrangement is not None else 'auto')
 
@@ -904,6 +912,8 @@ class PlaybackEngine:
                 'folded': event.folded,
                 'preferredDevice': event.preferred_device,
                 'reason': event.reason,
+                'sourceTracks': list(event.source_tracks),
+                'duplicateGroupId': event.duplicate_group_id,
                 'routes': [] if event.device_id is None else [{
                     'ruleId': event.rule_id or 'auto',
                     'deviceId': event.device_id,
@@ -1029,6 +1039,13 @@ class PlaybackEngine:
             if not self._virtual_mode:
                 self._reset_instruments_locked()
             self._virtual = candidate
+            # UI Virtual Orchestra jest edytorem rzeczywistego OrchestraConfig.
+            # Bez synchronizacji Auto Arranger nadal alokowalby stara pule.
+            self._orchestra = parse_orchestra({
+                'name': candidate.name,
+                'devices': candidate.config()['devices'],
+                'policy': self._orchestra.policy,
+            })
             self._virtual_mode = enabled
             if not enabled:
                 self._preview.close()
@@ -1119,6 +1136,13 @@ class PlaybackEngine:
             'origin': self._plan.origin,
         }
 
+    def _source_tracks(self) -> list:
+        """Partie logiczne, jesli zrodlo jest juz znormalizowane."""
+        if self._normalized is not None:
+            return self._normalized.tracks
+
+        return list(self._source.tracks) if self._source is not None else []
+
     def arrangement_view(self) -> dict:
         with self._lock:
             return {
@@ -1126,7 +1150,11 @@ class PlaybackEngine:
                 'notes': self._arrangement_notes,
                 'midiIdentity': midi_identity(self._source) if self._source else None,
                 'tracks': [{'index': t.index, 'name': t.name, 'isDrums': t.is_drums,
-                            'noteCount': t.note_count} for t in self._source.tracks] if self._source else [],
+                            'noteCount': t.note_count,
+                            'sourceTracks': list(getattr(t, 'source_tracks', (t.index,))),
+                            'groupId': getattr(t, 'group_id', None),
+                            'duplicateConfidence': getattr(t, 'duplicate_confidence', None)}
+                           for t in self._source_tracks()],
                 'revision': self._arrangement_revision,
                 'report': self._plan.report() if self._plan is not None else None,
                 'orchestra': {

@@ -16,6 +16,9 @@ import dataclasses
 # Mozliwe wyniki dla pojedynczego zdarzenia. Kolejnosc = precedencja przy
 # raportowaniu: gdy nuta byla i przesunieta, i przypisana do innego
 # urzadzenia, raportujemy ten wczesniejszy (bardziej "ratunkowy") stan.
+# Przerwa dluzsza niz to slychac jako dziure, nie artykulacje.
+LONG_GAP_S = 0.150
+
 OUTCOMES = (
     'DROPPED',       # nie bylo gdzie zagrac - ostatecznosc
     'STOLEN',        # wziela glos urzadzeniu o nizszym priorytecie
@@ -66,6 +69,12 @@ class PerformanceEvent:
     stolen_from: str | None = None
     reason: str | None = None
     rule_id: str | None = None     # ustawione, gdy decyzja pochodzi z recznej reguly
+    # --- pochodzenie: partia logiczna po sklejeniu double-trackingu ---
+    source_tracks: tuple[int, ...] = ()
+    duplicate_group_id: str | None = None
+    duplicate_confidence: float | None = None
+    # Ile sekund dodala mechaniczna artykulacja (0 = nuta grala tyle, ile w MIDI).
+    sustain_added: float = 0.0
 
     @property
     def delay(self) -> float:
@@ -102,6 +111,14 @@ class PerformanceEvent:
             'playedHz': round(self.played_hz, 3) if self.played_hz else None,
             'actualStart': round(self.actual_start, 6),
             'actualDuration': round(self.actual_duration, 6),
+            # Jawny podzial: co bylo w MIDI vs co zagra mechanika.
+            'sourceDuration': round(self.duration, 6),
+            'performedDuration': round(self.actual_duration, 6),
+            'sustainExtendedMs': round(self.sustain_added * 1000, 2),
+            # UWAGA: 'articulation' to artykulacja z recznej reguly (np. LEFT_HARD).
+            # Mechaniczny sustain to osobne pole, zeby sie nie nadpisywaly.
+            'mechanicalArticulation': ('mechanical-sustain'
+                                       if self.sustain_added > 1e-6 else None),
             'outcome': self.outcome, 'status': self.status, 'role': self.role,
             'preferredDevice': self.preferred_device,
             'delay': round(self.delay, 6),
@@ -109,6 +126,9 @@ class PerformanceEvent:
             'reassigned': self.reassigned, 'folded': self.folded,
             'articulation': self.articulation, 'stolenFrom': self.stolen_from,
             'reason': self.reason, 'ruleId': self.rule_id,
+            'sourceTracks': list(self.source_tracks),
+            'duplicateGroupId': self.duplicate_group_id,
+            'duplicateConfidence': self.duplicate_confidence,
         }
 
 
@@ -124,6 +144,8 @@ class PerformancePlan:
     source_ref: dict = dataclasses.field(default_factory=dict)
     origin: str = 'auto'          # 'auto' | 'manual' | 'hybrid'
     lead_devices: tuple[str, ...] = ()   # urzadzenia DEDICATED_LEAD_ONLY
+    duplicates: dict = dataclasses.field(default_factory=dict)
+    articulation: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -178,6 +200,126 @@ def _summary(bucket: dict, total_duration: float, device_count: int,
         'activeTime': round(active_time, 3),
         'utilization': (round(active_time / (total_duration * device_count), 4)
                         if total_duration > 0 and device_count else 0.0),
+    }
+
+
+def _merge(intervals: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    """Scala nachodzace na siebie przedzialy czasu."""
+    merged: list[list[float]] = []
+
+    for start, stop in sorted(intervals):
+        if merged and start <= merged[-1][1] + 1e-9:
+            merged[-1][1] = max(merged[-1][1], stop)
+        else:
+            merged.append([start, stop])
+
+    return [(start, stop) for start, stop in merged]
+
+
+def _intersection(left: list[tuple[float, float]],
+                  right: list[tuple[float, float]]) -> float:
+    total = 0.0
+    index = 0
+
+    for start, stop in left:
+        while index < len(right) and right[index][1] <= start:
+            index += 1
+
+        position = index
+
+        while position < len(right) and right[position][0] < stop:
+            total += min(stop, right[position][1]) - max(start, right[position][0])
+            position += 1
+
+    return max(0.0, total)
+
+
+def continuity(plan: PerformancePlan, *, tonal_only: bool = False) -> dict:
+    """Kiedy orkiestra MILCZY - miara ciaglosci odtwarzania.
+
+    Plan moze wygladac dobrze w metrykach dropow, a mimo to miec dziury:
+    krotsze nuty i przesuniecia zostawiaja okna bez dzwieku. Liczymy je
+    wprost na sumie przedzialow wszystkich zagranych zdarzen.
+    """
+    events = [event for event in plan.events
+              if event.played and (not tonal_only or event.role != 'percussion')]
+    end_of_song = max((event.actual_start for event in plan.events), default=0.0)
+
+    if not events:
+        return {'orchestraSilentTime': round(end_of_song, 3), 'silentGapCount': 1 if end_of_song else 0,
+                'meanSilentGapMs': round(end_of_song * 1000, 1), 'maxSilentGapMs': round(end_of_song * 1000, 1),
+                'plannedCoverage': 0.0}
+
+    intervals = sorted((event.actual_start, event.end) for event in events)
+    merged: list[list[float]] = []
+
+    for start, stop in intervals:
+        if merged and start <= merged[-1][1] + 1e-9:
+            merged[-1][1] = max(merged[-1][1], stop)
+        else:
+            merged.append([start, stop])
+
+    gaps = []
+    cursor = 0.0
+
+    for start, stop in merged:
+        if start - cursor > 1e-3:
+            gaps.append(start - cursor)
+
+        cursor = max(cursor, stop)
+
+    if end_of_song - cursor > 1e-3:
+        gaps.append(end_of_song - cursor)
+
+    sounding = sum(stop - start for start, stop in merged)
+    source_tonal = sum(event.duration for event in plan.events
+                       if event.role != 'percussion' and event.played)
+
+    fdd = [event for event in plan.events
+           if event.played and event.device_type == 'FDD']
+    accompaniment = [event for event in plan.events
+                     if event.role not in ('lead', 'percussion')]
+    intended_accompaniment = _merge([(event.start, event.start + event.duration)
+                                     for event in accompaniment])
+    played_fdd = _merge([(event.actual_start, event.end) for event in fdd])
+    played_accompaniment = _merge([
+        (event.actual_start, event.end) for event in plan.events
+        if event.played and event.role in ('bass', 'harmony')
+    ])
+    active_accompaniment = sum(stop - start for start, stop in intended_accompaniment)
+    covered_accompaniment = _intersection(intended_accompaniment, played_accompaniment)
+
+    ordered = sorted(gaps)
+    long_gaps = [value for value in ordered if value > LONG_GAP_S]
+
+    def percentile(fraction: float) -> float:
+        if not ordered:
+            return 0.0
+
+        return ordered[min(len(ordered) - 1, int(len(ordered) * fraction))] * 1000
+
+    return {
+        'orchestraSilentTime': round(sum(gaps), 3),
+        'silentGapCount': len(gaps),
+        'meanSilentGapMs': round(sum(gaps) / len(gaps) * 1000, 1) if gaps else 0.0,
+        'medianSilentGapMs': round(percentile(0.5), 1),
+        'p90SilentGapMs': round(percentile(0.9), 1),
+        'maxSilentGapMs': round(max(gaps) * 1000, 1) if gaps else 0.0,
+        # Dziury, ktore slychac jako "gra - cisza - gra". Krotkie przerwy to
+        # artykulacja, nie blad planu.
+        'longGapCount': len(long_gaps),
+        'longGapSeconds': round(sum(long_gaps), 3),
+        'plannedCoverage': round(sounding / end_of_song, 4) if end_of_song > 0 else 0.0,
+        'soundingSeconds': round(sounding, 3),
+        'sourceSoundingSeconds': round(source_tonal, 3),
+        # Czy akompaniament sie "niesie": ile czasu, w ktorym zrodlo ma
+        # material akompaniamentu, rzeczywiscie gra FDD lub dodatkowy DVD.
+        'accompanimentActiveSeconds': round(active_accompaniment, 3),
+        'accompanimentCoveredSeconds': round(covered_accompaniment, 3),
+        'accompanimentContinuity': (round(covered_accompaniment / active_accompaniment, 4)
+                                    if active_accompaniment > 0 else 0.0),
+        'fddCoverage': (round(sum(stop - start for start, stop in played_fdd) / end_of_song, 4)
+                        if end_of_song > 0 else 0.0),
     }
 
 
@@ -277,6 +419,7 @@ def build_report(plan: PerformancePlan) -> dict:
 
     return {
         'sourceEvents': total_requested,
+        'trackClassification': plan.analysis.get('trackClassification', []),
         'lead': {
             'requested': len(lead_events),
             'played': len(lead_played),
@@ -311,4 +454,8 @@ def build_report(plan: PerformancePlan) -> dict:
             'maxDelayMs': round(max((bucket['delayMaxMs'] for bucket in kinds.values()), default=0.0), 2),
         },
         'duration': round(duration, 3),
+        'continuity': continuity(plan),
+        'continuityTonal': continuity(plan, tonal_only=True),
+        'duplicates': plan.duplicates,
+        'articulation': plan.articulation,
     }

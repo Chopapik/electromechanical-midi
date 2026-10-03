@@ -37,6 +37,14 @@ BALANCED = {
     'percussionOverflow': 'nearest-free',
     'foldMode': 'auto',
     'softenRepeats': True,
+    # FDD mechanical sustain: MIDI gitary to krotkie szarpniecia, a stacja
+    # nie ma naturalnego wybrzmienia. Krotkie nuty dostaja dluzszy NOTE_OFF
+    # (bez ruszania NOTE_ON) wypelniajacy przerwe do nastepnej nuty.
+    'mechanicalSustain': True,
+    'minMechanicalSustainMs': 120.0,
+    'preferredMechanicalSustainMs': 190.0,
+    'releaseGapMs': 3.0,
+    'maxSustainExtensionMs': 200.0,
     'maxNoteSeconds': 0.0,      # 0 = arranger wylicza sam (akompaniament)
     'leadMaxNoteSeconds': 0.0,  # 0 = arranger wylicza sam (lead na VHS)
     # Budzet dlugosci nut: ile pojemnosci orkiestry moze zajac suma nut.
@@ -51,7 +59,7 @@ _POLICY_KEYS = frozenset(BALANCED)
 class OrchestraConfig:
     """Dostepne urzadzenia + polityka wykonania."""
 
-    name: str = 'Balanced 3FDD + VHS + 3HDD'
+    name: str = 'Balanced 3FDD + 4DVD + VHS + 3HDD'
     devices: list[dict] = dataclasses.field(default_factory=list)
     policy: dict = dataclasses.field(default_factory=lambda: dict(BALANCED))
 
@@ -64,17 +72,22 @@ class OrchestraConfig:
 
 def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual') -> dict:
     return {'id': ident, 'type': kind, 'name': name, 'track': None, 'role': '',
-            'volume': 0.6, 'pan': 0.0, 'mute': False, 'solo': False,
+            'volume': 0.2 if kind == 'DVD_SLED' else 0.6,
+            'pan': 0.0, 'mute': False, 'solo': False,
             'transpose': 0, 'gate': 1.0, 'profile': profile, 'mode': mode,
             'overrides': {}}
 
 
-def default_orchestra() -> OrchestraConfig:
-    """Orkiestra v1: 3x FDD, 1x VHS, 3x HDD VCM - bez zadnego JSON-a."""
+def default_orchestra(*, dvd_count: int = 4) -> OrchestraConfig:
+    """Testowa orkiestra; dvd_count=0 odtwarza bazowe siedem urządzeń."""
+    if not 0 <= dvd_count <= 57:
+        raise ValueError('dvd_count poza zakresem 0..57')
     devices: list[dict] = []
     counters: dict[str, int] = {}
 
-    for kind, count, profile in DEFAULT_INVENTORY:
+    inventory = (DEFAULT_INVENTORY[0], ('DVD_SLED', dvd_count, 'DVD_REFERENCE'),
+                 *DEFAULT_INVENTORY[1:])
+    for kind, count, profile in inventory:
         if profile not in PROFILES:
             raise ValueError(f'brak profilu {profile} dla {kind}')
 
@@ -83,7 +96,10 @@ def default_orchestra() -> OrchestraConfig:
             ident = f'{kind.lower()}-{counters[kind]}'
             devices.append(_device(ident, kind, profile, f'{kind} #{counters[kind]}'))
 
-    return OrchestraConfig(devices=devices, policy=dict(BALANCED))
+    return OrchestraConfig(
+        name=('Balanced 3FDD + 4DVD + VHS + 3HDD' if dvd_count == 4
+              else f'Balanced 3FDD + {dvd_count}DVD + VHS + 3HDD'),
+        devices=devices, policy=dict(BALANCED))
 
 
 def parse_policy(payload: dict | None) -> dict:
@@ -97,13 +113,16 @@ def parse_policy(payload: dict | None) -> dict:
         policy[key] = value
 
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
-                   'leadMaxMicroDelayMs', 'capacitySafety'):
+                   'leadMaxMicroDelayMs', 'capacitySafety',
+                   'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
+                   'releaseGapMs', 'maxSustainExtensionMs'):
         policy[key] = float(policy[key])
 
         if policy[key] < 0:
             raise ValueError(f'{key} nie moze byc ujemny')
 
-    for key in ('preserveLead', 'preserveBass', 'allowVoiceSteal', 'softenRepeats'):
+    for key in ('preserveLead', 'preserveBass', 'allowVoiceSteal', 'softenRepeats',
+                'mechanicalSustain'):
         policy[key] = bool(policy[key])
 
     if policy['mode'] not in ('balanced', 'melody', 'rhythm', 'strict'):
@@ -113,10 +132,10 @@ def parse_policy(payload: dict | None) -> dict:
 
 
 def parse_orchestra(payload: dict | None) -> OrchestraConfig:
-    """Buduje konfiguracje z JSON-a; brak urzadzen = domyslna orkiestra v1."""
+    """Buduje konfiguracje z JSON-a; brak pola devices = domyslna orkiestra."""
     payload = payload or {}
 
-    if not payload.get('devices'):
+    if 'devices' not in payload or payload['devices'] is None:
         config = default_orchestra()
         config.policy = parse_policy(payload.get('policy'))
         config.name = str(payload.get('name') or config.name)

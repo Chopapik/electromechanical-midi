@@ -54,7 +54,7 @@ class TestDefaultFlow(unittest.TestCase):
             self.assertEqual(document['origin'], 'auto')
             self.assertEqual(document['rules'], [], 'auto-aranzacja nie wymaga regul')
             self.assertEqual(sorted(d['type'] for d in document['devices']),
-                             ['FDD', 'FDD', 'FDD', 'HDD_VCM', 'HDD_VCM', 'HDD_VCM', 'VHS'])
+                             ['DVD_SLED'] * 4 + ['FDD'] * 3 + ['HDD_VCM'] * 3 + ['VHS'])
             self.assertGreater(len(view['notes']), 0)
             self.assertIsNotNone(view['report'])
         finally:

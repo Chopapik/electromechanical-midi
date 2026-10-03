@@ -14,5 +14,6 @@ __pycache__/
 .pytest_cache/
 
 
-.mid
-.midi
+# Local MIDI imports and benchmark songs. Existing tracked fixtures stay tracked.
+*.mid
+*.midi

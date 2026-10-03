@@ -173,6 +173,20 @@ class TestRest(WebTestCase):
         self.assertEqual(self.client.delete('/api/virtual/presets/Two FDD').status_code, 200)
         self.assertEqual(self.client.get('/api/virtual/presets').json()['presets'], {})
 
+    def test_four_dvd_instances_survive_virtual_preset_save_and_load(self):
+        config = {'name': 'DVD overflow', 'devices': [
+            {'id': f'dvd-{number}', 'type': 'DVD_SLED', 'profile': 'DVD_REFERENCE',
+             'mode': 'virtual', 'volume': .2}
+            for number in range(1, 5)
+        ]}
+        response = self.client.put('/api/virtual/presets/DVD overflow', json=config)
+        self.assertEqual(response.status_code, 200)
+        saved = self.client.get('/api/virtual/presets').json()['presets']['DVD overflow']
+        self.assertEqual([item['id'] for item in saved['devices']],
+                         ['dvd-1', 'dvd-2', 'dvd-3', 'dvd-4'])
+        self.assertTrue(all(item['volume'] == .2 and item['mode'] == 'virtual'
+                            for item in saved['devices']))
+
     def test_lista_plikow(self):
         response = self.client.get("/api/files")
 

@@ -5,7 +5,8 @@ Ten modul nie decyduje o zadnym urzadzeniu. Odpowiada tylko na pytania:
   * ktory niesie bas,
   * jaka role ma kazda nuta.
 
-Nazwy trackow sa WYLACZNIE slaba podpowiedzia - nigdy wymogiem.
+Klasyfikacja semantyczna uzywa nazw jako mocnej wskazowki oraz GM, lyrics
+i zachowania nut. Gdy nie ma pewnego wokalu, lead wybiera stara heurystyka.
 """
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import dataclasses
 import statistics
 
 from midi_source import MidiSource, NoteSpan
+from . import semantic
 
 # Role muzyczne nut. Allocator tlumaczy je na priorytety i preferencje sprzetu.
 LEAD = 'lead'
@@ -67,6 +69,8 @@ class MidiAnalysis:
     bass_confidence: float
     roles: dict[str, str]                 # note id "track:order" -> rola
     lead_notes: tuple[str, ...] = ()      # nuty wybrane jako linia lead
+    classifications: tuple[semantic.TrackClassification, ...] = ()
+    lead_source: str = 'heuristic'
 
     def as_dict(self) -> dict:
         return {
@@ -76,6 +80,8 @@ class MidiAnalysis:
             'bassTrack': self.bass_track,
             'bassConfidence': round(self.bass_confidence, 3),
             'leadNotes': len(self.lead_notes),
+            'leadSelection': self.lead_source,
+            'trackClassification': [item.as_dict() for item in self.classifications],
         }
 
 
@@ -134,8 +140,10 @@ def _step_ratio(notes: list[NoteSpan]) -> float:
     return steps / (len(ordered) - 1)
 
 
-def _profile(source: MidiSource, index: int) -> TrackProfile:
-    track = source.tracks[index]
+def _profile(source, track) -> TrackProfile:
+    """Profil jednego tracku. ``track`` moze pochodzic z MidiSource albo
+    z NormalizedSource (partia logiczna po sklejeniu dubli)."""
+    index = track.index
     notes = source.notes(index)
 
     if not notes:
@@ -208,14 +216,17 @@ def _lead_scores(profiles: list[TrackProfile]) -> list[float]:
     return scores
 
 
-def _pick_lead(profiles: list[TrackProfile]) -> tuple[int | None, float]:
-    candidates = [p for p in profiles if not p.is_drums and p.note_count >= 20]
+def _pick_lead(profiles: list[TrackProfile], classifications=()) -> tuple[int | None, float]:
+    excluded = {item.index for item in classifications
+                if item.final_role in ('BASS', 'PERCUSSION') and item.confidence >= .65}
+    candidates = [p for p in profiles if not p.is_drums and p.note_count >= 20
+                  and p.index not in excluded]
 
     if not candidates:
         return None, 0.0
 
-    scores = _lead_scores(profiles)
-    scored = [p for p in profiles if not p.is_drums and p.note_count >= 4]
+    scores = _lead_scores(candidates)
+    scored = candidates
     ranked = sorted(zip(scored, scores), key=lambda item: (-item[1], item[0].index))
 
     if not ranked:
@@ -234,8 +245,16 @@ def _pick_lead(profiles: list[TrackProfile]) -> tuple[int | None, float]:
     return winner.index, round(confidence, 3)
 
 
-def _pick_bass(profiles: list[TrackProfile]) -> tuple[int | None, float]:
-    candidates = [p for p in profiles if not p.is_drums and p.note_count >= 8]
+def _pick_bass(profiles: list[TrackProfile], classifications=()) -> tuple[int | None, float]:
+    named_bass = [item for item in classifications
+                  if item.final_role == 'BASS' and item.confidence >= .65]
+    if named_bass:
+        winner = min(named_bass, key=lambda item: (-item.confidence, -item.note_count, item.index))
+        return winner.index, winner.confidence
+    excluded = {item.index for item in classifications
+                if item.final_role in ('VOCAL', 'BACKING_VOCAL') and item.confidence >= .65}
+    candidates = [p for p in profiles if not p.is_drums and p.note_count >= 8
+                  and p.index not in excluded]
 
     if not candidates:
         return None, 0.0
@@ -285,20 +304,37 @@ def _lead_line(source: MidiSource, profile: TrackProfile) -> set[str]:
 
 def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysis:
     """Profiluje tracki i wyznacza role nut. Czysta funkcja - brak stanu."""
-    profiles = [_profile(source, index) for index in range(len(source.tracks))]
-
-    detected_lead, lead_confidence = _pick_lead(profiles)
+    profiles = [_profile(source, track) for track in source.tracks]
+    classifications = semantic.classify(source, profiles)
+    confident_vocals = [item for item in classifications
+                        if item.final_role == 'VOCAL'
+                        and item.confidence >= semantic.VOCAL_LEAD_THRESHOLD
+                        and item.role_scores['VOCAL']
+                        - max(score for role, score in item.role_scores.items() if role != 'VOCAL')
+                        >= semantic.VOCAL_MARGIN]
+    lead_source = 'semantic-vocal' if confident_vocals else 'heuristic'
+    if confident_vocals:
+        winner = min(confident_vocals,
+                     key=lambda item: (-item.confidence, -item.note_count, item.index))
+        detected_lead, lead_confidence = winner.index, winner.confidence
+    else:
+        detected_lead, lead_confidence = _pick_lead(profiles, classifications)
 
     if lead_track is not None and 0 <= lead_track < len(source.tracks):
         detected_lead, lead_confidence = lead_track, 1.0
+        lead_source = 'manual'
 
-    bass_track, bass_confidence = _pick_bass(profiles)
+    bass_track, bass_confidence = _pick_bass(profiles, classifications)
     lead_notes: set[str] = set()
+    # Po normalizacji dubli lista profili NIE jest juz indeksowana numerem
+    # tracku (czesc trackow zniknela), wiec szukamy po `.index`.
+    by_index = {profile.index: profile for profile in profiles}
 
-    if detected_lead is not None:
-        lead_notes = _lead_line(source, profiles[detected_lead])
+    if detected_lead is not None and detected_lead in by_index:
+        lead_notes = _lead_line(source, by_index[detected_lead])
 
     roles: dict[str, str] = {}
+    by_classification = {item.index: item for item in classifications}
 
     for profile in profiles:
         if profile.note_count == 0:
@@ -307,11 +343,13 @@ def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysi
         for span in source.notes(profile.index):
             note_id = f'{profile.index}:{span.order}'
 
-            if profile.is_drums:
+            classification = by_classification[profile.index]
+            if profile.is_drums or classification.final_role == 'PERCUSSION':
                 roles[note_id] = PERCUSSION
             elif detected_lead == profile.index and note_id in lead_notes:
                 roles[note_id] = LEAD
-            elif bass_track == profile.index:
+            elif (classification.final_role == 'BASS' and classification.confidence >= .65
+                  or bass_track == profile.index):
                 roles[note_id] = BASS
             else:
                 roles[note_id] = HARMONY
@@ -324,4 +362,6 @@ def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysi
         bass_confidence=bass_confidence,
         roles=roles,
         lead_notes=tuple(sorted(lead_notes)),
+        classifications=classifications,
+        lead_source=lead_source,
     )

@@ -667,7 +667,9 @@ class WavePreview:
     def render(self, orchestra: VirtualOrchestra, duration: float):
         self.close()
         n = int((duration + .25) * self.RATE)
-        mix_count = len([d for d in orchestra.devices if d.in_preview])
+        # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
+        mix_count = max(1, len([d for d in orchestra.devices
+                                if d.in_preview and d.type != 'DVD_SLED']))
         plan = self._plan(orchestra, n)
 
         try:

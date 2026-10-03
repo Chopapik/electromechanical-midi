@@ -32,6 +32,8 @@ from midi_source import MidiSource, NoteSpan, drum_name
 from pitch import fold_note, midi_to_hz, note_name
 from . import analysis as analysis_module
 from .analysis import BASS, HARMONY, LEAD, PERCUSSION, MidiAnalysis
+from .articulation import apply as apply_articulation
+from .articulation import params_from_policy
 from .capabilities import MIN_NOTE_S, DeviceCapability, capabilities_for
 from .orchestra import OrchestraConfig, parse_policy
 from .performance import PerformanceEvent, PerformancePlan
@@ -183,8 +185,8 @@ def _adaptive_cap(notes: list[dict], slots: list[_Slot], policy: dict,
     end = max(note['span'].end for note in tonal)
     capacity = max(1e-6, end - start) * len(slots)
 
-    if sum(durations) <= capacity:
-        return 0.0                       # material i tak sie miesci - nie skracamy
+    if roles == frozenset({LEAD}) and sum(durations) <= capacity:
+        return 0.0                       # nie skracamy rzadkiej linii leadu
 
     # Doswiadczalny zapas: glosy nigdy nie wypelniaja 100% czasu (artykulacja,
     # fragmentacja, nuty krotsze od limitu).
@@ -215,6 +217,9 @@ def _source_notes(source: MidiSource, midi_analysis: MidiAnalysis, policy: dict)
                 'track_name': track.name, 'role': role, 'order': span.order,
                 'priority': _priority(role, span.velocity, span.duration, policy),
                 'name': drum_name(span.note) if track.is_drums else note_name(span.note),
+                'source_tracks': tuple(getattr(track, 'source_tracks', (track.index,))),
+                'group_id': getattr(track, 'group_id', None),
+                'duplicate_confidence': getattr(track, 'duplicate_confidence', None),
             })
 
     # W obrebie jednego uderzenia: najpierw wazniejsze role (lead, bas, perkusja),
@@ -262,7 +267,10 @@ def _dropped(note: dict, outcome_reason: str, role: str,
         device_id=None, device_type=None, played_note=None, played_hz=None,
         actual_start=span.start, actual_duration=0.0, outcome='DROPPED',
         role=role, preferred_device=preferred,
-        rule_id=pin.rule_id if pin else None, reason=outcome_reason)
+        rule_id=pin.rule_id if pin else None, reason=outcome_reason,
+        source_tracks=note.get('source_tracks', ()),
+        duplicate_group_id=note.get('group_id'),
+        duplicate_confidence=note.get('duplicate_confidence'))
 
 
 def _commit(slot: _Slot, events: list[PerformanceEvent], event: PerformanceEvent,
@@ -291,7 +299,10 @@ def _place(slot: _Slot, candidate: _Candidate, note: dict, outcome: str,
         actual_start=actual_start, actual_duration=duration,
         outcome=final, role=role, preferred_device=preferred,
         articulation=pin.articulation if pin else None,
-        rule_id=pin.rule_id if pin else None)
+        rule_id=pin.rule_id if pin else None,
+        source_tracks=note.get('source_tracks', ()),
+        duplicate_group_id=note.get('group_id'),
+        duplicate_confidence=note.get('duplicate_confidence'))
     _commit(slot, events, event, actual_start, duration)
 
     return event
@@ -303,8 +314,11 @@ def _choose_preferred(candidates: list[_Candidate], role: str) -> _Candidate:
     Lista kandydatow jest juz zawezona do wlasciwej puli, wiec nie ma tu
     zadnego odsiewania VHS - on po prostu nie moze sie tu znalezc.
     """
-    # Ciaglosc glosu (voice leading): to samo urzadzenie, najblizsza wysokosc.
-    return min(candidates, key=lambda c: (abs(c.slot.headroom - c.played), c.slot.device.id))
+    # FDD jest glownym instrumentem akompaniamentu; DVD to dodatkowy glos.
+    # W obrebie typu zachowujemy dotychczasowe prowadzenie glosow.
+    return min(candidates, key=lambda c: (
+        0 if role != LEAD and c.slot.device.type == 'FDD' else 1,
+        abs(c.slot.headroom - c.played), c.slot.device.id))
 
 
 def _allocate_lead(note: dict, slots: list[_Slot], events: list[PerformanceEvent],
@@ -459,8 +473,9 @@ def _allocate_tonal(note: dict, slots: list[_Slot], events: list[PerformanceEven
         else:
             # Preferowane zajete - bierzemy wolne, najblizsze poprzedniej
             # wysokosci na tym urzadzeniu (mniej mechanicznego travelu).
-            chosen = min(free, key=lambda c: (abs(c.slot.headroom - c.played),
-                                              c.slot.device.id))
+            chosen = min(free, key=lambda c: (
+                0 if c.slot.device.type == 'FDD' else 1,
+                abs(c.slot.headroom - c.played), c.slot.device.id))
             outcome = 'REASSIGNED'
 
         _place(chosen.slot, chosen, note, outcome, start, duration, role, pin,
@@ -604,6 +619,56 @@ def _allocate_percussion(note: dict, slots: list[_Slot], events: list[Performanc
                            preferred.device.id, pin))
 
 
+def _duplicate_kpis(source, notes: list[dict], accompaniment_slots: list[_Slot],
+                    report) -> dict:
+    """Ile falszywej polifonii zniknelo i jak bardzo odciazylo to FDD."""
+    tonal = [note for note in notes if note['role'] != PERCUSSION]
+
+    if not tonal:
+        return {}
+
+    start = min(note['span'].start for note in tonal)
+    end = max(note['span'].end for note in tonal)
+    span = max(1e-6, end - start)
+    capacity = span * max(1, len(accompaniment_slots))
+    lead_tracks = {note['track'] for note in tonal if note['role'] == LEAD}
+    logical_accompaniment = sum(note['span'].duration for note in tonal
+                                if note['role'] != LEAD)
+    lead_group: set[int] = set()
+
+    for track in lead_tracks:
+        group = report.group_of(track)
+        lead_group |= set(group.tracks) if group is not None else {track}
+
+    raw = getattr(source, 'source', None)
+    raw_accompaniment = logical_accompaniment
+
+    if raw is not None:
+        raw_accompaniment = sum(
+            span_.duration
+            for track in raw.tracks
+            if not track.is_drums and track.index not in lead_group
+            for span_ in raw.notes(track.index))
+
+    def clamp_demand(value: float) -> float:
+        return value / capacity if capacity > 0 else 0.0
+
+    return {
+        'groupsFound': len(report.groups),
+        'tracksCollapsed': report.collapsed_tracks,
+        'rawTonalEvents': report.raw_tonal_events,
+        'logicalTonalEvents': report.logical_tonal_events,
+        'duplicateEventsCollapsed': report.events_removed,
+        'accompanimentDemandSecondsBefore': round(raw_accompaniment, 1),
+        'accompanimentDemandSecondsAfter': round(logical_accompaniment, 1),
+        'demandCapacityBefore': round(clamp_demand(raw_accompaniment), 3),
+        'demandCapacityAfter': round(clamp_demand(logical_accompaniment), 3),
+        'capacitySeconds': round(capacity, 1),
+        'groups': [group.as_dict() for group in report.groups],
+        'pairs': [pair.as_dict() for pair in report.pairs],
+    }
+
+
 def manual_pins(arrangement, source: MidiSource) -> dict[str, ManualPin]:
     """Zamienia reczne reguly Arrangement na preferencje allokatora.
 
@@ -693,14 +758,18 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
             # VHS jest zarezerwowany WYLACZNIE dla wykrytego leadu.
             _allocate_lead(note, lead_slots, events, policy, pin)
         else:
-            # Bas, gitara, harmonia, chord tones - wylacznie pula FDD.
-            # Gdy nie ma zadnego FDD, akompaniament nie gra (VHS milczy).
+            # Bas, gitara i harmonia: FDD oraz dodatkowe tonalne DVD/steppery.
+            # VHS pozostaje poza ta pula, o ile istnieje dedykowany lead.
             _allocate_tonal(note, accompaniment_slots or (lead_slots if note['role'] == LEAD else []),
                             events, policy, pin)
 
+    duplicate_report = getattr(source, 'duplicate_report', None)
+    duplicates = (_duplicate_kpis(source, notes, accompaniment_slots, duplicate_report)
+                  if duplicate_report is not None else {})
+
     events.sort(key=lambda event: (event.actual_start, event.track, event.id))
 
-    return PerformancePlan(
+    plan = PerformancePlan(
         name=name or source.path.stem,
         events=events,
         devices=[dataclasses.asdict(device) for device in devices],
@@ -708,4 +777,13 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
         analysis=midi_analysis.as_dict(),
         origin=origin,
         lead_devices=tuple(slot.device.id for slot in lead_slots),
+        duplicates=duplicates,
     )
+
+    # Warstwa wykonawcza: sourceDuration -> performedDuration. Wirtualizacja
+    # i sprzet czytaja pozniej dokladnie ten sam plan, wiec musza dostac
+    # identyczna dlugosc wykonawcza.
+    plan.articulation = apply_articulation(plan, capabilities_for(devices),
+                                           params_from_policy(policy))
+
+    return plan
