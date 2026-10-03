@@ -58,6 +58,9 @@ export interface HddState {
 }
 
 export interface PlayerState {
+  virtual?: VirtualState
+  arrangementRevision?: number
+  arrangementActive?: boolean
   state: PlaybackStateValue
   position: number
   duration: number
@@ -75,6 +78,40 @@ export interface PlayerState {
   hardware: HardwareState
   drum: DrumState
   hdd: HddState
+}
+
+export interface VirtualDevice {
+  id: string
+  type: string
+  name: string
+  track: number | null
+  role: string
+  volume: number
+  pan: number
+  mute: boolean
+  solo: boolean
+  transpose: number
+  gate: number
+  profile: string
+  mode: string
+  overrides: Record<string, { value: number | null; provenance: string; source: string }>
+}
+
+export interface VirtualConfig { name: string; devices: VirtualDevice[] }
+export interface VirtualReport {
+  name: string; type: string; accepted: number; played: number; dropped: number
+  folded: number; delayed: number; busyConflicts: number; steps: number
+  reversals: number; travel: number; activeTime: number; requestedHits: number
+  acceptedHits: number; droppedWhileBusy: number; busyTime: number
+  maxDensity: number
+  reasons: Record<string, number>; state: Record<string, number | boolean>
+}
+export interface VirtualState {
+  enabled: boolean
+  config: VirtualConfig
+  report: Record<string, VirtualReport>
+  activity: Record<string, boolean>
+  profiles: Array<{ id: string; kind: string; parameters: Record<string, { value: number | null; provenance: string; source: string }> }>
 }
 
 export interface MidiFileEntry {
@@ -119,4 +156,42 @@ export interface ServerMessage {
   type: 'state' | 'error'
   state?: PlayerState
   message?: string
+}
+
+export interface ArrangementRule {
+  id: string
+  source: {
+    track?: number; tracks?: number[]; channel?: number; channels?: number[]
+    includeNotes?: number[]; excludeNotes?: number[]
+    noteRange?: { min?: number; max?: number }
+    velocityRange?: { min?: number; max?: number }
+  }
+  destination: { deviceId: string | null }
+  transform: { gate: number; transpose: number; octaveFold: boolean; strategy: 'first' | 'highest' | 'lowest' | 'last' }
+  articulation?: string | null
+}
+export interface ArrangementDocument {
+  schemaVersion: number
+  name: string
+  midi: { file: string; sha256: string; tracks: Array<{ index: number; name: string }> }
+  devices: VirtualDevice[]
+  rules: ArrangementRule[]
+}
+export interface ArrangementRouteResult {
+  ruleId: string; deviceId: string | null; status: 'PENDING' | 'ACCEPTED' | 'FOLDED' | 'DELAYED' | 'DROPPED' | 'UNASSIGNED'
+  articulation?: string | null; reason?: string | null; originalNote?: number
+  playedNote?: number | null; deviceAvailableAt?: number | null
+}
+export interface ArrangementNote {
+  id: string; track: number; trackName: string; channel: number
+  note: number; name: string | null; start: number; duration: number
+  velocity: number; isDrum: boolean; routes: ArrangementRouteResult[]
+  status: 'ACCEPTED' | 'FOLDED' | 'DELAYED' | 'DROPPED' | 'UNASSIGNED'
+}
+export interface ArrangementView {
+  arrangement: ArrangementDocument | null
+  notes: ArrangementNote[]
+  midiIdentity: ArrangementDocument['midi'] | null
+  tracks: Array<{ index: number; name: string; isDrums: boolean; noteCount: number }>
+  revision: number
 }

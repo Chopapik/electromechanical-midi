@@ -983,3 +983,61 @@ pio run -d firmware/floppy
 | pasek stoi, choć stan to `playing` | brak interpolacji? sprawdź konsolę przeglądarki; backend i tak wysyła stan co ~150 ms |
 | `seek` nie działa na bardzo krótkich utworach | pozycja jest klamrowana do długości timeline |
 | zmiany frontendu nie widać | w trybie produkcyjnym po zmianach uruchom `npm run build` (Vite dev przeładowuje sam) |
+
+---
+
+## Virtual Orchestra (pierwszy etap)
+
+Uruchom backend i frontend jak wyżej, np. `./scripts/dev.sh`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.
+Zielona dioda w prawym górnym rogu każdej karty pokazuje, że dana instancja jest aktywna w bieżącej pozycji odtwarzania. Długie nuty świecą przez czas trwania, a uderzenia dają krótki błysk obejmujący pracę mechanizmu. Pauza i stop gaszą wszystkie diody.
+
+Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Realny tor Serial pozostaje dostępny po wyłączeniu trybu wirtualnego. Pole `mode` w instancji jest zarezerwowane dla przyszłego adaptera hybrydowego; pierwsza wersja przyjmuje tylko `virtual`.
+
+Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/25 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
+Każda instancja może mieć własne nadpisania parametrów wraz z provenance i notatką źródłową. W UI są pod rozwijanym **Device profile**.
+
+Renderer generuje przybliżony stereofoniczny WAV po stronie Pythona i na macOS odtwarza go przez systemowy `afplay`. `pyo` nie jest zainstalowane w obecnym środowisku Python 3.14, więc nie jest obowiązkową zależnością; interfejs `WavePreview` można zastąpić później backendem `pyo` lub PortAudio. Audio zawiera impulsy kroków, zdarzenia zawracania, prosty rezonans, uderzenia HDD/solenoidu i ton silnika VHS. Rezonatory i krzywa velocity są przybliżeniami do odsłuchu orkiestracji. Nie ma jeszcze próbek SFZ, artykulacji HDD, wzajemnych blokad zasobów ani modelu przyspieszenia silnika.
+
+Testy: `.venv/bin/python -m unittest discover -s host/tests`, `cd web && npm test && npm run build`. Mechanikę można testować bez urządzenia audio.
+
+## Song Arrangement Editor
+
+Po wczytaniu MIDI otwórz zakładkę **ARRANGEMENT**. Edytor ładuje zapisany `<nazwa>.orchestra.json`, jeśli istnieje; w przeciwnym razie inicjalizuje aranżację z istniejącego składu Virtual Orchestra. Pokazuje wszystkie nuty pochodzące z `MidiSource`. W zakładce **ORCHESTRA** dodaj urządzenia i ustaw ich profile oraz miks; w **ARRANGEMENT** przypisz do nich źródła MIDI. Transport u góry strony, seek i playhead korzystają z tego samego `PlaybackEngine` co dotychczas. Edycja reguł podczas Play zachowuje pozycję i stan odtwarzania, a nowy podgląd audio jest podmieniany po przygotowaniu. Zakładka zajmuje całą szerokość okna, a piano roll automatycznie przewija się za playheadem podczas Play.
+
+Dioda przy urządzeniu w **ORCHESTRA** świeci podczas Play, gdy to urządzenie faktycznie wykonuje przyjętą nutę lub uderzenie. Krótkie uderzenia są podtrzymane na ekranie przez 250 ms, żeby były widoczne między aktualizacjami WebSocket. Po Stop/Pause diody gasną; Mute i Solo wpływają na to, które urządzenia są słyszalne i sygnalizowane.
+
+Piano roll ma przewijanie czasu i wysokości, zoom poziomy oraz trzy widoki: źródło MIDI, urządzenie docelowe i wynik symulacji. Pasek po lewej stronie nuty oznacza track, obramowanie oznacza urządzenie. `UNASSIGNED` to nuta bez urządzenia po routingu; `DROPPED` to nuta skierowana do urządzenia, ale odrzucona przez jego model mechaniczny. Statusy mają również symbole i wzory. Kliknięcie nuty pokazuje źródło, regułę, urządzenie, artykulację, wynik, przyczynę odrzucenia, zagrany pitch po złożeniu oktawowym i czas zwolnienia zajętego urządzenia.
+
+Reguły obsługują `track`/`tracks`, `channel`/`channels`, `includeNotes`, `excludeNotes`, `noteRange`, `velocityRange` oraz transformacje `gate`, `transpose`, `octaveFold`, `strategy`. Jedna nuta może trafić do wielu urządzeń. Reguła obejmująca dokładnie jeden pitch w jednym tracku ma pierwszeństwo przed ogólną regułą tracku; dzięki temu lista perkusyjna może wyłączyć hi-hat lub skierować werbel do innego urządzenia bez usuwania ogólnego routingu. Artykulacja jest zapisywana jako metadane i widoczna w inspektorze; obecny renderer audio nie tworzy jeszcze jej wariantów.
+
+**Save Arrangement** zapisuje obok MIDI plik `<nazwa>.orchestra.json` w katalogu `midi/`. **Load Arrangement** odczytuje ten plik. Import/eksport pozwalają przenieść JSON jako osobny plik. Backend sprawdza `schemaVersion`, nazwę i SHA-256 MIDI oraz indeksy i nazwy tracków. Przy niezgodności import pokazuje mapowanie tracków do aktualnego pliku przed zastosowaniem. Format wersji 1:
+
+Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json`](midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json). Wybierz odpowiadający mu MIDI bez dopisku `(2)` lub `(3)`, a potem otwórz **ARRANGEMENT**. Przykład przypisuje wokal i gitarę do dwóch FDD, bas do VHS, stopę/werbel do HDD, talerze do solenoidu i smyczki do steppera; hi-hat 42 pozostaje nieprzypisany. To demonstracja routingu, nie skalibrowana recepta dla fizycznych urządzeń.
+
+```json
+{
+  "schemaVersion": 1,
+  "name": "My arrangement",
+  "midi": {
+    "file": "song.mid",
+    "sha256": "<SHA-256 MIDI>",
+    "tracks": [{ "index": 0, "name": "Drums" }]
+  },
+  "devices": [{
+    "id": "hdd-1", "type": "HDD_VCM", "name": "HDD #1",
+    "profile": "WD_CAVIAR_CURRENT", "mode": "virtual",
+    "volume": 0.6, "pan": 0, "gate": 1, "transpose": 0
+  }],
+  "rules": [{
+    "id": "kick-to-hdd",
+    "source": { "track": 0, "includeNotes": [36] },
+    "destination": { "deviceId": "hdd-1" },
+    "transform": { "gate": 1, "transpose": 0, "octaveFold": true, "strategy": "first" },
+    "articulation": "LEFT_HARD"
+  }]
+}
+```
+
+`devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware; routing wirtualnej orkiestry po włączeniu aranżacji pochodzi z jej reguł.
+
+Piano roll używa cienkiego renderera Canvas bez nowego parsera MIDI ani zegara odtwarzania. Oceniono [react-piano-roll](https://github.com/PlayfulCreations/react-piano-roll), [@minagishl/react-piano-roll](https://www.npmjs.com/package/%40minagishl/react-piano-roll), [tween-midi-editor](https://github.com/tuomashatakka/tween-midi-editor) i [@tonejs/midi](https://www.npmjs.com/package/%40tonejs/midi). Gotowe edytory dodają własne odtwarzanie lub model MIDI i utrudniają niestandardowe kolory, wielokierunkowy routing oraz diagnostykę pojedynczej nuty; ostatnia biblioteka jest parserem, który powielałby `MidiSource`. Canvas rysuje tylko nuty widoczne w oknie, więc duży plik nie tworzy tysięcy elementów DOM. Loop range, fizyczny/hybrid adapter routingu i faktyczne warianty artykulacji pozostają kolejnym etapem.

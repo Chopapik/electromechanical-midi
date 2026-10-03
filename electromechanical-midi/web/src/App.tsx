@@ -1,5 +1,7 @@
 /** Glowny widok lokalnego playera. */
 
+import { useState } from 'react'
+import { ArrangementEditor } from './components/ArrangementEditor'
 import { DrumPanel } from './components/DrumPanel'
 import { HardwareStatus } from './components/HardwareStatus'
 import { MidiFileSelector } from './components/MidiFileSelector'
@@ -8,10 +10,12 @@ import { PlayerControls } from './components/PlayerControls'
 import { ProgressBar } from './components/ProgressBar'
 import { TrackSelector } from './components/TrackSelector'
 import { TransposeSelector } from './components/TransposeSelector'
+import { VirtualOrchestra } from './components/VirtualOrchestra'
 import { usePlayer } from './usePlayer'
 
 export default function App() {
   const player = usePlayer()
+  const [tab, setTab] = useState<'player' | 'orchestra' | 'arrangement'>('player')
   const { state } = player
 
   const duration = state?.duration ?? 0
@@ -20,13 +24,19 @@ export default function App() {
   const stats = state?.stats
 
   return (
-    <div className="app">
+    <div className={`app ${tab === 'arrangement' ? 'arrangement-open' : ''}`}>
       <header className="header">
         <h1>Electromechanical MIDI</h1>
         <p className="subtitle">
           MIDI → Python → Serial → Arduino Uno → stacja dyskietek 3.5″
         </p>
       </header>
+
+      <nav className="main-tabs" aria-label="Main sections">
+        {(['player', 'orchestra', 'arrangement'] as const).map(value =>
+          <button key={value} type="button" aria-current={tab === value ? 'page' : undefined}
+            onClick={() => setTab(value)}>{value.toUpperCase()}</button>)}
+      </nav>
 
       {player.error && (
         <div className="banner error">
@@ -75,7 +85,7 @@ export default function App() {
         </div>
       </section>
 
-      <section className="selectors">
+      {tab === 'player' && <section className="selectors">
         <MidiFileSelector
           files={player.files}
           selected={state?.file ?? null}
@@ -192,9 +202,13 @@ export default function App() {
             </p>
           </>
         )}
-      </section>
+      </section>}
 
-      <HardwareStatus
+      {tab === 'orchestra' && <VirtualOrchestra virtual={state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={state?.arrangementActive} />}
+
+      {tab === 'arrangement' && <ArrangementEditor file={state?.file ?? null} state={state} seek={player.seek} />}
+
+      {tab === 'player' && <><HardwareStatus
         hardware={state?.hardware ?? null}
         ports={player.ports}
         onReconnect={player.reconnect}
@@ -207,7 +221,7 @@ export default function App() {
         onStop={player.stopDrum}
         onPwm={player.setDrum}
         onTone={player.setDrumTone}
-      />
+      /></>}
 
       <footer className="footer">
         <span>

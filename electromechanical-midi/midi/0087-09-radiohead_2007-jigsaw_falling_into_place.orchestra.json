@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "midi": {
+    "file": "0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "tracks": [
+      {
+        "index": 0,
+        "name": "09-radiohead_2007-jigsaw_falling_into_place"
+      },
+      {
+        "index": 1,
+        "name": "Yorke"
+      },
+      {
+        "index": 2,
+        "name": "C. Greenwood"
+      },
+      {
+        "index": 3,
+        "name": "Yorke"
+      },
+      {
+        "index": 4,
+        "name": "J. Greenwood"
+      },
+      {
+        "index": 5,
+        "name": "J. Greenwood"
+      },
+      {
+        "index": 6,
+        "name": "O'Brien"
+      },
+      {
+        "index": 7,
+        "name": "Selway"
+      },
+      {
+        "index": 8,
+        "name": "Strings Add"
+      },
+      {
+        "index": 9,
+        "name": "Johnny Greenwood (El. Gtr Add)"
+      },
+      {
+        "index": 10,
+        "name": "Ed O´Brien (El. Gtr Add)"
+      }
+    ]
+  },
+  "name": "Jigsaw · test orchestra",
+  "devices": [
+    {
+      "id": "fdd-vocal",
+      "type": "FDD",
+      "name": "FDD · Yorke",
+      "track": 1,
+      "role": "vocal melody",
+      "volume": 0.72,
+      "pan": -0.35,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "FDD_CURRENT",
+      "mode": "virtual",
+      "overrides": {}
+    },
+    {
+      "id": "fdd-guitar",
+      "type": "FDD",
+      "name": "FDD · Greenwood",
+      "track": 2,
+      "role": "guitar accents",
+      "volume": 0.64,
+      "pan": 0.35,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "FDD_CURRENT",
+      "mode": "virtual",
+      "overrides": {}
+    },
+    {
+      "id": "vhs-bass",
+      "type": "VHS",
+      "name": "VHS · bass",
+      "track": 3,
+      "role": "bass",
+      "volume": 0.75,
+      "pan": 0.0,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "VHS_CURRENT",
+      "mode": "virtual",
+      "overrides": {}
+    },
+    {
+      "id": "hdd-drums",
+      "type": "HDD_VCM",
+      "name": "HDD · kick/snare",
+      "track": 7,
+      "role": "kick and snare",
+      "volume": 0.8,
+      "pan": -0.15,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "WD_CAVIAR_CURRENT",
+      "mode": "virtual",
+      "overrides": {}
+    },
+    {
+      "id": "solenoid-cymbals",
+      "type": "SOLENOID_RESONATOR",
+      "name": "Solenoid · cymbals",
+      "track": 7,
+      "role": "cymbal accents",
+      "volume": 0.48,
+      "pan": 0.3,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "SOLENOID_REFERENCE",
+      "mode": "virtual",
+      "overrides": {}
+    },
+    {
+      "id": "stepper-strings",
+      "type": "STEPPER_FREE",
+      "name": "Stepper · strings",
+      "track": 8,
+      "role": "string layer",
+      "volume": 0.45,
+      "pan": 0.1,
+      "mute": false,
+      "solo": false,
+      "transpose": 0,
+      "gate": 1.0,
+      "profile": "STEPPER_REFERENCE",
+      "mode": "virtual",
+      "overrides": {}
+    }
+  ],
+  "rules": [
+    {
+      "id": "yorke-vocal",
+      "source": {
+        "track": 1
+      },
+      "destination": {
+        "deviceId": "fdd-vocal"
+      },
+      "transform": {
+        "gate": 0.72,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "highest"
+      },
+      "articulation": null
+    },
+    {
+      "id": "greenwood-guitar",
+      "source": {
+        "track": 2
+      },
+      "destination": {
+        "deviceId": "fdd-guitar"
+      },
+      "transform": {
+        "gate": 0.65,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "highest"
+      },
+      "articulation": null
+    },
+    {
+      "id": "bass-vhs",
+      "source": {
+        "track": 3
+      },
+      "destination": {
+        "deviceId": "vhs-bass"
+      },
+      "transform": {
+        "gate": 0.88,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "lowest"
+      },
+      "articulation": null
+    },
+    {
+      "id": "strings-stepper",
+      "source": {
+        "track": 8
+      },
+      "destination": {
+        "deviceId": "stepper-strings"
+      },
+      "transform": {
+        "gate": 0.7,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "first"
+      },
+      "articulation": null
+    },
+    {
+      "id": "drums-kick",
+      "source": {
+        "track": 7,
+        "includeNotes": [
+          36
+        ]
+      },
+      "destination": {
+        "deviceId": "hdd-drums"
+      },
+      "transform": {
+        "gate": 1.0,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "first"
+      },
+      "articulation": "LEFT_HARD"
+    },
+    {
+      "id": "drums-snare",
+      "source": {
+        "track": 7,
+        "includeNotes": [
+          40
+        ]
+      },
+      "destination": {
+        "deviceId": "hdd-drums"
+      },
+      "transform": {
+        "gate": 1.0,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "first"
+      },
+      "articulation": "RIGHT_HARD"
+    },
+    {
+      "id": "drums-cymbals",
+      "source": {
+        "track": 7,
+        "includeNotes": [
+          49,
+          52,
+          55,
+          57
+        ]
+      },
+      "destination": {
+        "deviceId": "solenoid-cymbals"
+      },
+      "transform": {
+        "gate": 1.0,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "first"
+      },
+      "articulation": null
+    },
+    {
+      "id": "drums-hi-hat-unused",
+      "source": {
+        "track": 7,
+        "includeNotes": [
+          42
+        ]
+      },
+      "destination": {
+        "deviceId": null
+      },
+      "transform": {
+        "gate": 1.0,
+        "transpose": 0,
+        "octaveFold": true,
+        "strategy": "first"
+      },
+      "articulation": null
+    }
+  ]
+}

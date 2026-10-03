@@ -9,6 +9,7 @@ import type {
   PlayerState,
   PortInfo,
   ServerMessage,
+  VirtualConfig,
 } from './types'
 
 const RECONNECT_MS = 1200
@@ -46,6 +47,7 @@ export interface PlayerApi {
   selectHddNote: (note: number | null) => void
   selectHddRate: (rate: number | null) => void
   uploadFile: (file: File) => void
+  configureVirtual: (config: VirtualConfig, enabled: boolean) => void
 }
 
 function websocketUrl(): string {
@@ -177,6 +179,7 @@ export function usePlayer(): PlayerApi {
 
   // --- akcje ---
   const play = useCallback(() => send('play'), [send])
+  const configureVirtual = useCallback((config: VirtualConfig, enabled: boolean) => send('set_virtual', { config: { ...config, enabled } }), [send])
   const pause = useCallback(() => send('pause'), [send])
   const resume = useCallback(() => send('resume'), [send])
   const stop = useCallback(() => send('stop'), [send])
@@ -297,5 +300,6 @@ export function usePlayer(): PlayerApi {
     selectHddNote,
     selectHddRate,
     uploadFile,
+    configureVirtual,
   }
 }

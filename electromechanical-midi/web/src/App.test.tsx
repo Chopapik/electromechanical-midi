@@ -164,6 +164,49 @@ describe('App', () => {
     vi.unstubAllGlobals()
   })
 
+  it('adds a virtual device without Arduino and sends its track to the backend', async () => {
+    const socket = await renderApp({
+      virtual: {
+        enabled: false,
+        config: { name: 'Test', devices: [] },
+        report: {},
+        activity: {},
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    await waitFor(() => expect(screen.getByText('Virtual Orchestra')).toBeDefined())
+    fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'FDD' } })
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual',
+      config: { enabled: true, devices: [{ type: 'FDD', track: 1 }] },
+    })
+  })
+
+  it('shows each device LED from backend activity state', async () => {
+    const socket = await renderApp({
+      virtual: {
+        enabled: true,
+        config: { name: 'Test', devices: [{ id: 'a', type: 'FDD', name: 'FDD #1', track: 1,
+          role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+          profile: 'FDD_CURRENT', mode: 'virtual', overrides: {} }] },
+        report: {}, activity: { a: false },
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    expect(screen.getByLabelText('FDD #1: idle').classList.contains('is-active')).toBe(false)
+    await act(async () => {
+      socket.emit({ type: 'state', state: { ...STATE, virtual: {
+        enabled: true, config: { name: 'Test', devices: [{ id: 'a', type: 'FDD', name: 'FDD #1', track: 1,
+          role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+          profile: 'FDD_CURRENT', mode: 'virtual', overrides: {} }] }, report: {}, activity: { a: true },
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      } } })
+    })
+    expect(screen.getByLabelText('FDD #1: active').classList.contains('is-active')).toBe(true)
+  })
+
   it('pokazuje plik, track i status sprzetu', async () => {
     await renderApp()
 

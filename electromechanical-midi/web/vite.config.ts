@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import { loadEnv } from 'vite'
 
 // W trybie dev Vite podaje frontend, a /api i /ws przekazuje do FastAPI
 // (python -m host.web.server na porcie 8000).
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
     // Jawnie IPv4: domyslne "localhost" na macOS potrafi sluchac tylko ::1,
@@ -12,8 +13,8 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     proxy: {
-      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
-      '/ws': { target: 'ws://127.0.0.1:8000', ws: true },
+      '/api': { target: `http://127.0.0.1:${loadEnv(mode, '.', '').BACKEND_PORT || 8000}`, changeOrigin: true },
+      '/ws': { target: `ws://127.0.0.1:${loadEnv(mode, '.', '').BACKEND_PORT || 8000}`, ws: true },
     },
   },
   build: {
@@ -27,4 +28,4 @@ export default defineConfig({
     include: ['src/**/*.test.tsx', 'src/**/*.test.ts'],
     css: false,
   },
-})
+}))
