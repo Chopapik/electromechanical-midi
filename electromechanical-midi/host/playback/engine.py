@@ -118,12 +118,19 @@ class Transport(Protocol):
     def close(self) -> None: ...
 
 
+BLIND_HOME_WARNING = (
+    "homing NA ŚLEPO: czujnik TRACK0 stacji nie odpowiada "
+    "(sprawdź taśmę / czujnik) — pozycja liczona z dojazdu do oporu"
+)
+
+
 @dataclasses.dataclass
 class HardwareStatus:
     connected: bool = False
     port: str | None = None
     label: str | None = None
     error: str | None = None
+    warning: str | None = None
     log: list[str] = dataclasses.field(default_factory=list)
 
     def as_dict(self) -> dict:
@@ -132,6 +139,7 @@ class HardwareStatus:
             "port": self.port,
             "label": self.label,
             "error": self.error,
+            "warning": self.warning,
             "log": self.log[-3:],
         }
 
@@ -194,6 +202,11 @@ class PlaybackEngine:
         self._ready_timeout = ready_timeout
         self._on_command = on_command
         self._on_handshake = on_handshake
+        # Trwa blokujacy handshake (connect/home) - wtedy linie z Seriala
+        # naleza WYLACZNIE do wait_ready(). Bez tego watek roboczy podkradal
+        # ERR/READY, oznaczal sprzet jako awaryjny ("Arduino disconnected")
+        # i retry homingu nigdy nie dochodzil do skutku.
+        self._handshake = False
         self._wait_ready = wait_ready
         # realtime=False: wysylaj wszystko od razu (tylko --dry-run / testy)
         self._realtime = realtime
@@ -297,9 +310,14 @@ class PlaybackEngine:
         log: list[str] = []
         ready = True
         error: str | None = None
+        blind = False
 
         def echo(line: str) -> None:
+            nonlocal blind
             log.append(line)
+
+            if "NA SLEPO" in line:
+                blind = True
 
             if self._on_handshake is not None:
                 try:
@@ -308,6 +326,9 @@ class PlaybackEngine:
                     pass
 
         if self._wait_ready and hasattr(transport, "wait_ready"):
+            with self._lock:
+                self._handshake = True
+
             try:
                 ready = bool(
                     transport.wait_ready(
@@ -318,6 +339,9 @@ class PlaybackEngine:
             except Exception as exc:
                 ready = False
                 error = str(exc)
+            finally:
+                with self._lock:
+                    self._handshake = False
 
             if not ready and error is None:
                 error = "brak READY po homingu (stacja nie odpowiedziala)"
@@ -332,6 +356,7 @@ class PlaybackEngine:
                 port=str(device) if device else port,
                 label=label,
                 error=error,
+                warning=BLIND_HOME_WARNING if blind else None,
                 log=log,
             )
             self._last_io = time.monotonic()
@@ -350,6 +375,73 @@ class PlaybackEngine:
             self._request_status_locked(force=True)
 
         return ready
+
+    def home(self) -> bool:
+        """Ponowny homing BEZ zrywania polaczenia. BLOKUJE - wolac z watku.
+
+        Locka trzymamy tylko na czas zatrzymania i sprzatania; sam homing
+        (moze potrwac kilka sekund) leci bez niego, zeby API i WebSocket
+        dalej odpowiadaly.
+        """
+        with self._lock:
+            transport = self._transport
+
+            if transport is None:
+                raise EngineError("brak polaczenia z Arduino")
+
+            self._safe_send_stop_locked()
+            self._apply_drum_locked(drive=0, force=True)
+            self._state = PlaybackState.STOPPED
+            self._position_base = 0.0
+            self._next_index = 0
+            self._current = None
+            self._drum_current = None
+
+        log: list[str] = []
+        blind = False
+
+        def note(line: str) -> None:
+            nonlocal blind
+            log.append(line)
+
+            if "NA SLEPO" in line:
+                blind = True
+
+        try:
+            transport.send("HOME")
+        except Exception as exc:
+            with self._lock:
+                self._fail_locked(f"nie udalo sie wyslac HOME: {exc}")
+
+            return False
+
+        wait = getattr(transport, "wait_ready", None)
+        ok = True
+        error: str | None = None
+
+        if wait is not None:
+            with self._lock:
+                self._handshake = True
+
+            try:
+                ok = bool(wait(timeout=self._ready_timeout, echo=note))
+            except Exception as exc:
+                ok, error = False, str(exc)
+            finally:
+                with self._lock:
+                    self._handshake = False
+
+            if not ok and error is None:
+                error = "brak READY po homingu (stacja nie odpowiedziala)"
+
+        with self._lock:
+            self._hardware.error = error
+            self._hardware.log = log
+
+            if ok and blind:
+                self._hardware.warning = BLIND_HOME_WARNING
+
+        return ok
 
     def disconnect(self) -> None:
         with self._lock:
@@ -1080,8 +1172,10 @@ class PlaybackEngine:
             if timeout is None:
                 # Nic nie gramy - ale i tak trzeba odbierac Serial: przy
                 # recznym sterowaniu bebna przychodza tu STATUS-y i bledy.
+                # Podczas handshake'u NIE dotykamy bufora (patrz _handshake).
                 with self._lock:
-                    self._poll_lines_locked()
+                    if not self._handshake:
+                        self._poll_lines_locked()
 
                 self._wake.wait(timeout=WORKER_IDLE_POLL_S)
                 self._wake.clear()

@@ -46,7 +46,10 @@ from fastapi import (  # noqa: E402
 )
 from fastapi.responses import HTMLResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
-from starlette.websockets import WebSocketState  # noqa: E402
+from starlette.websockets import (  # noqa: E402
+    WebSocketDisconnected,
+    WebSocketState,
+)
 
 from floppy_link import SerialLinkError, describe_ports, scan_ports  # noqa: E402
 from midi_source import MidiSource, MidiSourceError  # noqa: E402
@@ -239,7 +242,9 @@ def create_app(
             return
 
         with contextlib.suppress(Exception):
-            await websocket.send_json({"type": "state", "state": engine.snapshot()})
+            await websocket.send_json(
+                {"type": "state", "state": await asyncio.to_thread(engine.snapshot)}
+            )
 
     async def broadcast(payload: dict) -> None:
         for websocket in list(clients):
@@ -254,7 +259,14 @@ def create_app(
 
         while True:
             try:
-                payload = {"type": "state", "state": engine.snapshot()}
+                # snapshot() bierze lock silnika; connect()/home() trzymaja go
+                # podczas homingu, wiec MUSI isc w watek - inaczej blokujemy
+                # petle zdarzen i WebSocket przestaje nadawac (UI zglasza
+                # "brak polaczenia z backendem").
+                payload = {
+                    "type": "state",
+                    "state": await asyncio.to_thread(engine.snapshot),
+                }
                 encoded = json.dumps(payload, sort_keys=True)
                 now = time.monotonic()
 
@@ -309,6 +321,8 @@ def create_app(
             await asyncio.to_thread(engine.set_strategy, str(message.get("strategy")))
         elif action == "reconnect":
             asyncio.create_task(connect_hardware(message.get("port")))
+        elif action == "home":
+            await asyncio.to_thread(engine.home)
         elif action == "disconnect":
             await asyncio.to_thread(engine.disconnect)
         elif action == "set_drum":
@@ -451,7 +465,11 @@ def create_app(
                     await websocket.send_json({"type": "error", "message": str(exc)})
 
                 await send_state(websocket)
-        except WebSocketDisconnect:
+        except (WebSocketDisconnect, WebSocketDisconnected):
+            # Starlette potrafi rzucic oba warianty: WebSocketDisconnect (klient
+            # przyslal disconnect) i WebSocketDisconnected (stan gniazda).
+            # Bez tego rozlaczenie karty leci do logu jako "Exception in ASGI
+            # application".
             pass
         finally:
             clients.discard(websocket)

@@ -32,6 +32,7 @@ export interface PlayerApi {
   selectTrack: (index: number) => void
   selectTranspose: (mode: string) => void
   reconnect: (port?: string) => void
+  home: () => void
   refreshPorts: () => void
   refreshFiles: () => void
   startDrum: () => void
@@ -82,7 +83,13 @@ export function usePlayer(): PlayerApi {
       const socket = new WebSocket(websocketUrl())
       socketRef.current = socket
 
-      socket.onopen = () => setSocketConnected(true)
+      socket.onopen = () => {
+        setSocketConnected(true)
+        // Backend wrocil - nie trzymajmy starego modala "brak polaczenia".
+        setError((current) =>
+          current === 'Brak połączenia z backendem' ? null : current,
+        )
+      }
 
       socket.onclose = () => {
         setSocketConnected(false)
@@ -195,6 +202,8 @@ export function usePlayer(): PlayerApi {
   const selectTrack = useCallback((index: number) => send('set_track', { track: index }), [send])
   const selectTranspose = useCallback((mode: string) => send('set_transpose', { mode }), [send])
 
+  const home = useCallback(() => send('home'), [send])
+
   const reconnect = useCallback(
     (port?: string) => {
       send('reconnect', port ? { port } : {})
@@ -259,6 +268,7 @@ export function usePlayer(): PlayerApi {
     selectTrack,
     selectTranspose,
     reconnect,
+    home,
     refreshPorts,
     refreshFiles,
     startDrum,

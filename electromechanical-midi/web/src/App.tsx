@@ -132,6 +132,7 @@ export default function App() {
         hardware={state?.hardware ?? null}
         ports={player.ports}
         onReconnect={player.reconnect}
+        onHome={player.home}
       />
 
       <DrumPanel

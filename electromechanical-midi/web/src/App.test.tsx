@@ -65,6 +65,7 @@ const STATE: PlayerState = {
     port: '/dev/cu.usbmodem14101',
     label: 'Arduino',
     error: null,
+    warning: null,
     log: [],
   },
   drum: {
@@ -410,7 +411,14 @@ describe('App', () => {
 
   it('przy rozlaczonym Arduino beben pokazuje Disconnected i jest zablokowany', async () => {
     await renderApp({
-      hardware: { connected: false, port: null, label: null, error: 'brak', log: [] },
+      hardware: {
+        connected: false,
+        port: null,
+        label: null,
+        error: 'brak',
+        warning: null,
+        log: [],
+      },
       drum: {
         value: 0,
         output: null,

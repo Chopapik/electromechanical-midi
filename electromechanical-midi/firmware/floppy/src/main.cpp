@@ -14,6 +14,10 @@
 //   PLAY <hz>       -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
 //   STOP            -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
 //   HOME            -> OK ... po dojechaniu -> READY
+//   HOME BLIND      -> jak HOME, ale BEZ czujnika TRACK0: jedzie pelna
+//                      szerokosc stacji do oporu i odjezdza START_TRACK.
+//                      Awaryjne, gdy czujnik TRACK0 nie odpowiada (uszkodzona
+//                      tasma/czujnik) - inaczej ERR HOME_FAILED na zawsze.
 //   DRUM <0-255>    -> (brak odpowiedzi) amplituda bebna VHS; 0 = stop
 //   DRUMF <hz>      -> (brak odpowiedzi) czestotliwosc kluczowania bebna;
 //                      0 = tryb DC (zwykly PWM 976 Hz). 20..2000 Hz.
@@ -129,6 +133,9 @@ constexpr int MAX_TRACK = 72;   // (0 == TRACK0, licznik idzie w gore)
 
 constexpr int START_TRACK       = 10;  // ile sciezek odjechac po homingu
 constexpr int HOMING_MAX_STEPS  = 90;  // 80 sciezek + zapas
+// Homing na slepo: wiecej niz cala szerokosc stacji (80 sciezek), zeby
+// dojechac do oporu niezaleznie od tego, gdzie glowica byla.
+constexpr int BLIND_HOME_STEPS  = 95;
 
 constexpr uint16_t HOMING_STEP_MS = 5;  // tempo dojazdu do TRACK0
 constexpr uint16_t START_STEP_MS  = 5;  // tempo odjazdu od TRACK0
@@ -232,13 +239,23 @@ public:
     }
 
     // --- homing + odjazd na pozycje startowa (nieblokujaco) ---
-    void requestHome()
+    void requestHome(bool blind = false)
     {
         stopNote();
 
         positionKnown_ = false;
-        directionAway_ = false;
+        directionAway_ = false;      // zawsze w strone TRACK0
         applyDirection();
+
+        if (blind)
+        {
+            motionStepsLeft_ = BLIND_HOME_STEPS;
+            motionNextMs_ = millis();
+            motion_ = Motion::BlindHoming;
+
+            Serial.println(F("HOMING_BLIND"));
+            return;
+        }
 
         motionStepsLeft_ = HOMING_MAX_STEPS;
         motionNextMs_ = millis();
@@ -322,7 +339,7 @@ public:
     }
 
 private:
-    enum class Motion : uint8_t { Idle, Homing, SeekingStart };
+    enum class Motion : uint8_t { Idle, Homing, BlindHoming, SeekingStart };
 
     // ---------- niskopoziomowe ----------
 
@@ -379,6 +396,31 @@ private:
                 motion_ = Motion::Idle;
                 positionKnown_ = false;
                 Serial.println(F("ERR HOME_FAILED"));
+                return;
+            }
+
+            stepPulse();
+            motionStepsLeft_--;
+            motionNextMs_ = now + HOMING_STEP_MS;
+            return;
+        }
+
+        if (motion_ == Motion::BlindHoming)
+        {
+            // Bez czujnika: jedziemy cala szerokosc stacji. Glowica dojedzie
+            // do opory (TRACK0) niezaleznie od punktu startu, wiec pozycja
+            // jest znana "z zalozenia". Opór jest tu normalnym elementem
+            // homingu - tak samo konczy sie homing z czujnikiem.
+            if (motionStepsLeft_ <= 0)
+            {
+                track_ = 0;
+                positionKnown_ = true;
+                directionAway_ = true;
+                applyDirection();
+
+                motionStepsLeft_ = START_TRACK;
+                motionNextMs_ = now + START_STEP_MS;
+                motion_ = Motion::SeekingStart;
                 return;
             }
 
@@ -767,6 +809,14 @@ void handleCommand(char *line)
     if (strcasecmp(cmd, "HOME") == 0)
     {
         Serial.println(F("OK"));
+        const char *arg = strtok(nullptr, " \t");
+
+        if (arg != nullptr && strcasecmp(arg, "BLIND") == 0)
+        {
+            drive.requestHome(true);
+            return;
+        }
+
         drive.requestHome();
         return;
     }

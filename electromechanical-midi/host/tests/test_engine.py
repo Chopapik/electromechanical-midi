@@ -1255,3 +1255,137 @@ class TestTransportDwochLinii(DualVoiceTestCase):
 
         self.assertIsNone(snapshot["drum"]["midiTrack"])
         self.assertIs(snapshot["state"], "playing")
+
+
+class FakeSerial:
+    """Minimalny zamiennik serial.Serial - do testow FloppyLink."""
+
+    def __init__(self):
+        self.written: list[str] = []
+        self._incoming = b""
+
+    @property
+    def in_waiting(self) -> int:
+        return len(self._incoming)
+
+    def read(self, size: int) -> bytes:
+        chunk, self._incoming = self._incoming[:size], self._incoming[size:]
+        return chunk
+
+    def write(self, data: bytes) -> int:
+        self.written.append(data.decode("ascii").strip())
+        return len(data)
+
+    def close(self) -> None:
+        pass
+
+    def feed(self, *lines: str) -> None:
+        self._incoming += ("".join(line + "\n" for line in lines)).encode("ascii")
+
+
+def make_link() -> tuple:
+    from floppy_link import FloppyLink
+
+    link = FloppyLink.__new__(FloppyLink)     # bez otwierania portu
+    link.port = "/dev/fake"
+    link.baud = 115200
+    link._buffer = ""
+    link._serial = FakeSerial()
+
+    return link, link._serial
+
+
+class TestHomingRetry(EngineTestCase):
+    """Retry homingu: kazda proba to znowu pelny budzet krokow w strone TRACK0."""
+
+    def test_retry_po_home_failed(self):
+        link, serial = make_link()
+        serial.feed("HOMING", "ERR HOME_FAILED", "HOMING", "READY")
+
+        self.assertTrue(link.wait_ready(timeout=2.0, echo=lambda line: None))
+        self.assertEqual(serial.written.count("HOME"), 1)
+
+    def test_dwa_razy_failed_potem_ready(self):
+        link, serial = make_link()
+        serial.feed(
+            "HOMING", "ERR HOME_FAILED",
+            "HOMING", "ERR HOME_FAILED",
+            "HOMING", "READY",
+        )
+
+        self.assertTrue(link.wait_ready(timeout=2.0, echo=lambda line: None))
+        self.assertEqual(serial.written.count("HOME"), 2)
+
+    def test_po_wyczerpaniu_prob_podnosi_blad(self):
+        link, serial = make_link()
+        serial.feed(*(["ERR HOME_FAILED"] * 10))
+
+        from floppy_link import SerialLinkError
+
+        with self.assertRaises(SerialLinkError):
+            link.wait_ready(timeout=2.0, echo=lambda line: None)
+
+        self.assertEqual(serial.written.count("HOME"), 2)
+
+    def test_inny_blad_nie_jest_ponawiany(self):
+        link, serial = make_link()
+        serial.feed("ERR POS_LOST")
+
+        from floppy_link import SerialLinkError
+
+        with self.assertRaises(SerialLinkError):
+            link.wait_ready(timeout=2.0, echo=lambda line: None)
+
+        self.assertEqual(serial.written, [])
+
+
+class TestHomingAction(EngineTestCase):
+    def test_metoda_home_w_silniku(self):
+        self.transport.queue_line("HOMING")
+        self.transport.queue_line("READY")
+
+        self.assertTrue(self.engine.home())
+        self.assertIn("HOME", self.transport.raw_texts())
+        self.assertIsNone(self.engine.snapshot()["hardware"]["error"])
+
+    def test_home_bez_polaczenia(self):
+        self.engine.disconnect()
+
+        with self.assertRaises(EngineError):
+            self.engine.home()
+
+
+class TestBlindHomingFallback(EngineTestCase):
+    """Gdy czujnik TRACK0 padnie, stacja i tak musi wstac (HOME BLIND)."""
+
+    def test_fallback_na_slepo_po_wyczerpaniu_prob(self):
+        link, serial = make_link()
+        serial.feed(
+            "HOMING", "ERR HOME_FAILED",
+            "HOMING", "ERR HOME_FAILED",
+            "HOMING", "ERR HOME_FAILED",
+            "HOMING_BLIND", "READY",
+        )
+
+        self.assertTrue(link.wait_ready(timeout=3.0, echo=lambda line: None))
+        self.assertEqual(serial.written.count("HOME"), 2)
+        self.assertEqual(serial.written.count("HOME BLIND"), 1)
+
+    def test_fallback_mozna_wylaczyc(self):
+        link, serial = make_link()
+        serial.feed(*(["ERR HOME_FAILED"] * 8))
+
+        from floppy_link import SerialLinkError
+
+        with self.assertRaises(SerialLinkError):
+            link.wait_ready(timeout=2.0, echo=lambda line: None, blind_fallback=False)
+
+        # Retry czujnika dziala dalej, ale NIE ma awaryjnego homingu na slepo.
+        self.assertEqual(serial.written, ["HOME", "HOME"])
+        self.assertNotIn("HOME BLIND", serial.written)
+
+    def test_sam_home_blind_tez_dziala(self):
+        link, serial = make_link()
+        serial.feed("OK", "HOMING_BLIND", "READY")
+
+        self.assertTrue(link.wait_ready(timeout=2.0, echo=lambda line: None))

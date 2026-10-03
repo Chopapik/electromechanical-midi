@@ -6,11 +6,13 @@ interface Props {
   hardware: HardwareState | null
   ports: PortInfo[]
   onReconnect: (port?: string) => void
+  onHome: () => void
 }
 
-export function HardwareStatus({ hardware, ports, onReconnect }: Props) {
+export function HardwareStatus({ hardware, ports, onReconnect, onHome }: Props) {
   const connected = hardware?.connected ?? false
   const current = hardware?.port ?? null
+  const warning = hardware?.warning ?? null
 
   return (
     <div className="hardware">
@@ -40,10 +42,22 @@ export function HardwareStatus({ hardware, ports, onReconnect }: Props) {
           </select>
         )}
 
+        <button
+          type="button"
+          className="button"
+          onClick={onHome}
+          disabled={!connected}
+          title="Powtórz homing stacji (gdy ERR HOME_FAILED)"
+        >
+          Home
+        </button>
+
         <button type="button" className="button" onClick={() => onReconnect()}>
           Reconnect
         </button>
       </div>
+
+      {warning && <p className="hardware-warning">⚠ {warning}</p>}
     </div>
   )
 }

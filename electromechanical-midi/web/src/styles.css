@@ -579,3 +579,10 @@ select:disabled {
   font-size: 12px;
   color: var(--muted);
 }
+
+.hardware-warning {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fcd34d;
+}

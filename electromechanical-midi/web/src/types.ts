@@ -7,6 +7,7 @@ export interface HardwareState {
   port: string | null
   label: string | null
   error: string | null
+  warning: string | null
   log: string[]
 }
 
