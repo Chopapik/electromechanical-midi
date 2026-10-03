@@ -37,7 +37,13 @@ DEFAULT_GATE = 1.0
 # --- linie instrumentalne (jeden wspolny timeline, jeden zegar) ---
 LANE_FDD = "fdd"
 LANE_DRUM = "drum"
-LANES = (LANE_FDD, LANE_DRUM)
+LANE_HDD = "hdd"
+LANES = (LANE_FDD, LANE_DRUM, LANE_HDD)
+
+# HDD to instrument UDERZENIOWY (one-shot): ramie po kazdym uderzeniu trzeba
+# odwiezc do parku, wiec pelny cykl trwa ~105 ms. Nuty blizsze niz to
+# zlewamy w jedno uderzenie (mechanika i tak by ich nie oddzielila).
+HDD_MIN_PERIOD_S = 0.11
 
 # Napęd bębna VHS w trybie MIDI (0-255).
 # 38 = 15% wypełnienia - ciszej i mniej szumu mechanicznego niz przy 74 (~29%).
@@ -55,13 +61,15 @@ class Command:
     """Jedna komenda do Arduino w absolutnym czasie odtwarzania."""
 
     time: float
-    kind: str                      # "play" | "stop" | "drum_on" | "drum_off"
+    kind: str                      # "play" | "stop" | "drum_on" | "drum_off" | "hit"
     hz: float | None = None
     note: int | None = None        # nuta zrodlowa z pliku MIDI
-    lane: str = LANE_FDD           # "fdd" | "drum"
+    lane: str = LANE_FDD           # "fdd" | "drum" | "hdd"
 
     @property
     def is_note_on(self) -> bool:
+        # "hit" to zdarzenie jednorazowe (one-shot), nie nuta brzmiaca -
+        # dlatego nie wznawiamy go po seeku (seek w srodek nie uderza).
         return self.kind in ("play", "drum_on")
 
     @property
@@ -74,6 +82,9 @@ class Command:
 
         if self.kind == "drum_off":
             return "DRUM 0"
+
+        if self.kind == "hit":
+            return "HIT"
 
         return "STOP"
 
@@ -201,6 +212,7 @@ class Timeline:
     # --- konfiguracja, z ktora timeline powstal (do UI/seek) ---
     track_index: int | None = None
     drum_track_index: int | None = None
+    hdd_track_index: int | None = None
 
     @classmethod
     def from_commands(
@@ -210,6 +222,7 @@ class Timeline:
         *,
         track_index: int | None = None,
         drum_track_index: int | None = None,
+        hdd_track_index: int | None = None,
     ) -> "Timeline":
         frozen = tuple(sorted(commands, key=lambda command: command.time))
 
@@ -219,6 +232,7 @@ class Timeline:
             times=tuple(command.time for command in frozen),
             track_index=track_index,
             drum_track_index=drum_track_index,
+            hdd_track_index=hdd_track_index,
         )
 
     def __len__(self) -> int:
@@ -242,6 +256,17 @@ class Timeline:
         index = self.index_after(position)
 
         return self.commands[index - 1] if index > 0 else None
+
+    def commands_at(self, position: float) -> tuple[Command, ...]:
+        """Komendy wypadajace dokladnie w danej chwili (w granicach TIME_EPS).
+
+        Potrzebne do one-shot'ow (np. uderzenie HDD), ktore nie sa nutami
+        i nie sa obejmowane wznowieniem stanu po play/seek.
+        """
+        left = bisect.bisect_left(self.times, position - TIME_EPS)
+        right = bisect.bisect_right(self.times, position + TIME_EPS)
+
+        return self.commands[left:right]
 
     def last_command_at(self, lane: str, position: float) -> Command | None:
         """Ostatnia komenda DANEJ LINII o czasie <= position."""
@@ -381,6 +406,50 @@ def build_drum_schedule(
     return commands, stats
 
 
+def build_hdd_schedule(
+    notes: list[NoteSpan],
+    *,
+    min_period_s: float = HDD_MIN_PERIOD_S,
+    note_filter: int | None = None,
+) -> tuple[list[Command], ScheduleStats]:
+    """Nuty tracku -> uderzenia perkusyjne HDD (one-shot).
+
+    HDD jest instrumentem bez wysokosci dzwieku: nuta (NOTE_ON) to jedno
+    uderzenie "hit". Akordy i szybkie powtorki (blizsze niz
+    ``min_period_s``) zlewaja sie w jedno uderzenie, bo mechanika ma
+    cykl ~105 ms i i tak by ich nie oddzielila.
+
+    ``note_filter``: gdy podane, tylko nuty o tym numerze uderzaja.
+    Caly track perkusyjny na jeden instrument brzmi jak terkot (hi-hat ma
+    ~3,5 uderzenia/s i zagluszcza rytm), dlatego wybiera sie JEDNA nuta
+    o charakterze rytmicznym - np. werbel (40) albo stopa (36).
+    """
+    commands: list[Command] = []
+    stats = ScheduleStats()
+    last_time = -1.0e9
+
+    for span in notes:
+        if note_filter is not None and span.note != note_filter:
+            stats.skipped += 1
+            continue
+
+        start = max(0.0, span.start)
+
+        if start < last_time + min_period_s - TIME_EPS:
+            stats.skipped += 1
+            continue
+
+        commands.append(Command(start, "hit", note=span.note, lane=LANE_HDD))
+
+        stats.notes += 1
+        last_time = start
+
+    stats.play_commands = len(commands)
+    stats.duration = commands[-1].time if commands else 0.0
+
+    return commands, stats
+
+
 def make_timeline(
     source: MidiSource,
     track_index: int,
@@ -396,12 +465,16 @@ def make_timeline(
     drum_max_hz: float = DRUM_MAX_HZ_DEFAULT,
     drum_mode: str = "auto",
     drum_drive: int = DRUM_DRIVE_DEFAULT,
+    hdd_track_index: int | None = None,
+    hdd_note: int | None = None,
+    hdd_rate: float | None = None,
+    hdd_min_period_s: float = HDD_MIN_PERIOD_S,
 ) -> Timeline:
-    """Buduje WSPOLNY timeline: linia FDD + (opcjonalnie) linia bebna VHS.
+    """Buduje WSPOLNY timeline: FDD + (opcjonalnie) VHS drum + (opcjonalnie) HDD.
 
-    Obie linie sa zmergowane w jedna, posortowana liste komend, wiec gra
-    je jeden scheduler z jednym zegarem - nie ma dwoch niezaleznych
-    odtwarzaczy, ktore moglyby sie rozjechac.
+    Wszystkie linie sa zmergowane w jedna, posortowana liste komend, wiec gra
+    je jeden scheduler z jednym zegarem - nie ma niezaleznych odtwarzaczy,
+    ktore moglyby sie rozjechac.
     """
     fdd_spans = source.selected_notes(track_index, strategy)
 
@@ -430,16 +503,36 @@ def make_timeline(
             drive=drum_drive,
         )
 
-    merged = list(fdd_commands) + list(drum_commands)
+    hdd_commands: list[Command] = []
+    hdd_stats = ScheduleStats()
+
+    if hdd_track_index is not None:
+        # Limit gestosci: nigdy nie schodzimy ponizej limitu mechaniki
+        # (pelny cykl park+strike), a hdd_rate pozwala przerzedzic uderzenia
+        # jeszcze bardziej (np. "max 1 uderzenie na sekunde").
+        min_period = hdd_min_period_s
+
+        if hdd_rate:
+            min_period = max(min_period, 1.0 / float(hdd_rate))
+
+        hdd_commands, hdd_stats = build_hdd_schedule(
+            source.notes(hdd_track_index),
+            min_period_s=min_period,
+            note_filter=hdd_note,
+        )
+
+    merged = list(fdd_commands) + list(drum_commands) + list(hdd_commands)
 
     stats = ScheduleStats(
-        notes=fdd_stats.notes + drum_stats.notes,
-        skipped=fdd_stats.skipped + drum_stats.skipped,
-        folded=fdd_stats.folded + drum_stats.folded,
-        out_of_range=fdd_stats.out_of_range + drum_stats.out_of_range,
-        play_commands=fdd_stats.play_commands + drum_stats.play_commands,
+        notes=fdd_stats.notes + drum_stats.notes + hdd_stats.notes,
+        skipped=fdd_stats.skipped + drum_stats.skipped + hdd_stats.skipped,
+        folded=fdd_stats.folded + drum_stats.folded + hdd_stats.folded,
+        out_of_range=fdd_stats.out_of_range + drum_stats.out_of_range + hdd_stats.out_of_range,
+        play_commands=(
+            fdd_stats.play_commands + drum_stats.play_commands + hdd_stats.play_commands
+        ),
         stop_commands=fdd_stats.stop_commands + drum_stats.stop_commands,
-        duration=max(fdd_stats.duration, drum_stats.duration),
+        duration=max(fdd_stats.duration, drum_stats.duration, hdd_stats.duration),
         min_hz=min(
             [value for value in (fdd_stats.min_hz, drum_stats.min_hz) if value] or [0.0]
         ),
@@ -451,4 +544,5 @@ def make_timeline(
         stats,
         track_index=track_index,
         drum_track_index=drum_track_index,
+        hdd_track_index=hdd_track_index,
     )

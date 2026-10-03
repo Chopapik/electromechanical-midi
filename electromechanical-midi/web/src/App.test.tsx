@@ -88,6 +88,19 @@ const STATE: PlayerState = {
   midiNoteName: null,
   midiFrequency: null,
   },
+  hdd: {
+    connected: true,
+    busy: false,
+    count: 0,
+    controlledBy: 'off',
+    midiTrack: null,
+    midiTrackName: null,
+    note: null,
+    rate: null,
+    notes: [],
+    lastNote: null,
+    lastNoteName: null,
+  },
 }
 
 const FILES = [{ name: 'song.mid', size: 1234, modified: 0 }]
@@ -379,6 +392,92 @@ describe('App', () => {
     fireEvent.change(screen.getByLabelText(/VHS Drum transpose/i), { target: { value: 'high' } })
 
     expect(socket.actions()).toContainEqual({ action: 'set_drum_transpose', mode: 'high' })
+  })
+
+  it('wybor tracku HDD idzie do backendu', async () => {
+    const socket = await renderApp()
+
+    await waitFor(() => expect(screen.getByLabelText(/HDD Track/i)).toBeDefined())
+
+    fireEvent.change(screen.getByLabelText(/HDD Track/i), { target: { value: '1' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_track', track: 1 })
+
+    fireEvent.change(screen.getByLabelText(/HDD Track/i), { target: { value: '' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_track', track: null })
+  })
+
+  it('wybor nuty HDD idzie do backendu', async () => {
+    const socket = await renderApp({
+      hdd: {
+        connected: true,
+        busy: false,
+        count: 0,
+        controlledBy: 'midi',
+        midiTrack: 1,
+        midiTrackName: 'Bębny',
+        note: null,
+        rate: null,
+        notes: [
+          { note: 40, name: 'Werbel', count: 339 },
+          { note: 36, name: 'Stopa', count: 421 },
+        ],
+        lastNote: null,
+        lastNoteName: null,
+      },
+    })
+
+    fireEvent.change(screen.getByLabelText(/HDD Note/i), { target: { value: '40' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_note', note: 40 })
+
+    fireEvent.change(screen.getByLabelText(/HDD Note/i), { target: { value: '' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_note', note: null })
+  })
+
+  it('gestosc HDD idzie do backendu', async () => {
+    const socket = await renderApp({
+      hdd: {
+        connected: true,
+        busy: false,
+        count: 0,
+        controlledBy: 'midi',
+        midiTrack: 1,
+        midiTrackName: 'Selway',
+        note: 40,
+        rate: null,
+        notes: [{ note: 40, name: 'Werbel', count: 339 }],
+        lastNote: null,
+        lastNoteName: null,
+      },
+    })
+
+    fireEvent.change(screen.getByLabelText(/HDD Gęstość/i), { target: { value: '1' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_rate', rate: 1 })
+
+    fireEvent.change(screen.getByLabelText(/HDD Gęstość/i), { target: { value: '' } })
+    expect(socket.actions()).toContainEqual({ action: 'set_hdd_rate', rate: null })
+  })
+
+  it('status HDD widoczny gdy track wybrany', async () => {
+    await renderApp({
+      hdd: {
+        connected: true,
+        busy: false,
+        count: 12,
+        controlledBy: 'midi',
+        midiTrack: 1,
+        midiTrackName: 'Bębny',
+        note: 40,
+        rate: null,
+        notes: [
+          { note: 42, name: 'Hi-hat zamk.', count: 839 },
+          { note: 40, name: 'Werbel', count: 339 },
+        ],
+        lastNote: 36,
+        lastNoteName: 'C2',
+      },
+    })
+
+    expect(screen.getByText(/HDD: Bębny · Werbel · 12 uderzeń/i)).toBeDefined()
   })
 
   it('podczas MIDI panel bebna nie pokazuje suwakow recznych', async () => {

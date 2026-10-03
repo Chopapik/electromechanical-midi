@@ -21,6 +21,41 @@ DEFAULT_TEMPO = 500_000  # 120 BPM, gdyby plik nie mial zadnego set_tempo
 # zadnego zdarzenia okreslajacego koniec (inaczej nuta mialaby 0 s).
 DANGLING_NOTE_S = 1.0
 
+# Nazwy nut perkusyjnych wg General MIDI (kanal 10). Uzywane m.in. przez
+# perkusje HDD: to JEDEN instrument uderzeniowy, wiec z calego zestawu
+# wybiera sie jedna-nute, ktora ma charakter rytmiczny (werbel, stopa).
+DRUM_NAMES = {
+    35: "Stopa",
+    36: "Stopa",
+    37: "Side stick",
+    38: "Werbel",
+    39: "Klaśnięcie",
+    40: "Werbel",
+    41: "Tom niski",
+    42: "Hi-hat zamk.",
+    43: "Tom niski",
+    44: "Hi-hat pedal",
+    45: "Tom średni",
+    46: "Hi-hat otw.",
+    47: "Tom średni",
+    48: "Tom wysoki",
+    49: "Crash",
+    50: "Tom wysoki",
+    51: "Ride",
+    52: "China",
+    53: "Ride bell",
+    54: "Tamburyn",
+    55: "Splash",
+    56: "Cowbell",
+    57: "Crash 2",
+    59: "Ride 2",
+}
+
+
+def drum_name(note: int) -> str | None:
+    """GM-owa nazwa nuty perkusyjnej (None, jesli to nie nuta perkusyjna)."""
+    return DRUM_NAMES.get(note)
+
 
 class MidiSourceError(Exception):
     """Plik MIDI nie nadaje sie do odtworzenia."""

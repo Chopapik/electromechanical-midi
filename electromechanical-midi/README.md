@@ -412,6 +412,69 @@ To jest obejście, nie naprawa: przy padniętym czujniku stacja traci
 kontrolę pozycji (kontrola `POS_LOST` też nie działa) i dalej gra, ale
 warto wymienić taśmę/czujnik.
 
+#### Trzecia linia: HDD perkusja (VCM)
+
+HDD jest instrumentem **uderzeniowym bez wysokości dźwięku**: każda nuta
+wybranego tracku = jedno uderzenie. Nadaje się więc do tracku perkusyjnego
+(np. `Drums`, kanał 9/10).
+
+```
+FDD   (PLAY/STOP)          <- melodia
+VHS   (DRUM/DRUMF)         <- bas / druga linia
+HDD   (HIT)                <- perkusja
+        ^ wszystko z JEDNEGO timeline'u i jednego zegara
+```
+
+**Mechanika (ustalona empirycznie w testach strojenia):**
+
+| parametr | wartość | znaczenie |
+| --- | --- | --- |
+| `PARK` | 40 ms (D7 LOW + D10 HIGH) | odwozi ramię do parku |
+| `SETTLE` | 40 ms | ramię osiada w parku |
+| `STRIKE` | 25 ms (D8 LOW + D9 HIGH) | **uderzenie** |
+
+Ramię **nie wraca samo** — dlatego każdy hit zaczyna się od aktywnego
+parkowania. Pełny cykl to ~105 ms, więc maksymalna gęstość to ~9,5
+uderzenia/s; nuty bliższe niż `HDD_MIN_PERIOD_S = 0,11 s` są zlewane
+w jedno uderzenie (akord = jedno uderzenie).
+
+**Jedna nuta, nie cały zestaw.** HDD ma JEDEN dźwięk uderzeniowy, więc
+wrzucenie na niego całego tracku perkusyjnego brzmi jak terkot: hi-hat sam
+ma ~3,5 uderzenia/s i zagłusza rytm. Dlatego wybiera się **jedną nutę
+perkusyjną** (selektor `HDD Note`), np.:
+
+| nuta | nazwa | gęstość w *Jigsaw* | efekt |
+| --- | --- | --- | --- |
+| 42 | Hi-hat zamk. | 3,56/s | terkot (za gęsto) |
+| 51 | Ride | 1,71/s | szum |
+| 36 | Stopa | 1,79/s | czytelny puls |
+| **40** | **Werbel** | **1,41/s** | **czytelny rytm (2 i 4)** |
+
+Bez filtra *Jigsaw* daje 5,56 uderzenia/s (powyżej możliwości mechaniki),
+z filtrem werbla — 1,41/s. Lista dostępnych nut (z licznikami) jest
+wyliczana z wybranego tracku i podawana w stanie `hdd.notes`.
+
+**Gęstość.** Sam wybór nuty nie zawsze wystarcza: *Jigsaw* ma 170 BPM,
+więc werbel (backbeat na 2 i 4) i tak wypada 1,29 raza na sekundę. Selektor
+`HDD Gęstość` dokłada limiter (`hdd_rate`, uderzeń/s):
+
+| ustawienie | werbel w *Jigsaw* |
+| --- | --- |
+| bez limitu | 1,41/s |
+| max 2/s | 1,29/s (bez zmian — uderzenia są rzadsze) |
+| max 1/s | 0,64/s (half-time) |
+| max 0,5/s | 0,43/s |
+
+Limiter nigdy nie schodzi poniżej limitu mechaniki (cykl park+strike
+~105 ms), więc nie da się „przeciągnąć" HDD ponad ~9 uderzeń/s.
+
+**Protokół:** `HIT` = jedno uderzenie (cisza, stan w `STATUS hdd=<0|1>`),
+`HDD 0` = awaryjne przerwanie sekwencji. HDD jest niezależny od FDD —
+działa nawet gdy stacja nie zrobiła homingu.
+
+**Fail-safe:** `STOP`/`PAUZA`/`seek`/`disconnect`/`shutdown` wysyłają
+`HDD 0`, więc żadne uderzenie nie „wisi" po zatrzymaniu.
+
 **Fail-safe:**
 
 * start firmware → `DRUM 0`,
@@ -514,6 +577,9 @@ Po połączeniu serwer od razu wysyła stan, a potem publikuje go cyklicznie
 { "action": "set_drum_track", "track": 2 }    // drugi glos z MIDI (null = brak)
 { "action": "set_drum_transpose", "mode": "high" }   // low/high/auto
 { "action": "set_drum_strategy", "strategy": "highest" }
+{ "action": "set_hdd_track", "track": 8 }    // track perkusji HDD (null = brak)
+{ "action": "set_hdd_note", "note": 40 }     // jedna nuta perkusyjna (null = wszystkie)
+{ "action": "set_hdd_rate", "rate": 1 }      // max uderzen/s (null = bez limitu)
 { "action": "reconnect", "port": "/dev/cu.usbmodem14101" }   // port opcjonalny
 { "action": "disconnect" }
 { "action": "snapshot" }                                       // wymuś odświeżenie
@@ -852,7 +918,7 @@ Kod jest tak ułożony, żeby nie trzeba było przepisywać logiki:
 
 Wszystkie testy działają bez sprzętu (Serial jest zamockowany).
 
-**Backend / host** (155 testów):
+**Backend / host** (185 testów):
 
 ```bash
 python -m unittest discover -s host/tests -t host/tests -v
@@ -869,10 +935,10 @@ python -m unittest discover -s host/tests -t host/tests -v
   starego planu, brak dryfu, rozłączenie sprzętu, keepalive, wyścigi
   (wielowątkowe młotkowanie play/pause/seek),
 * `test_web.py` - REST, WebSocket, sterowanie, bezpieczeństwo ścieżek plików,
-  wielu klientów = jeden stan, sterowanie bębnem VHS przez WebSocket,
-  wgrywanie plików MIDI (walidacja, kolizje nazw, limit rozmiaru).
+  wielu klientów = jeden stan, sterowanie bębnem VHS i perkusją HDD przez
+  WebSocket, wgrywanie plików MIDI (walidacja, kolizje nazw, limit rozmiaru).
 
-**Frontend** (36 testów, vitest + jsdom):
+**Frontend** (40 testów, vitest + jsdom):
 
 ```bash
 cd web

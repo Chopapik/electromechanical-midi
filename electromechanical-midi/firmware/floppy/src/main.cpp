@@ -18,12 +18,16 @@
 //                      szerokosc stacji do oporu i odjezdza START_TRACK.
 //                      Awaryjne, gdy czujnik TRACK0 nie odpowiada (uszkodzona
 //                      tasma/czujnik) - inaczej ERR HOME_FAILED na zawsze.
+//   HIT             -> (brak odpowiedzi) jedno uderzenie perkusyjne HDD
+//                      (VCM). Sekwencja park->settle->strike ~105 ms; kolejne
+//                      HIT w trakcie trwania sa kolejkowane (jedno).
 //   DRUM <0-255>    -> (brak odpowiedzi) amplituda bebna VHS; 0 = stop
 //   DRUMF <hz>      -> (brak odpowiedzi) czestotliwosc kluczowania bebna;
 //                      0 = tryb DC (zwykly PWM 976 Hz). 20..2000 Hz.
 //   STATUS          -> STATUS track=<n> dir=<...> homed=<0|1> playing=<0|1>
 //                             track0=<0|1> hz=<...>
 //                             drum=<0-255> drum_out=<0-255> drumf=<0-2000>
+//                             hdd=<0|1>
 //   cokolwiek innego-> ERR UNKNOWN_CMD
 //
 // Bledy: ERR NOT_HOMED / ERR BUSY / ERR FREQ_RANGE / ERR MISSING_FREQ
@@ -66,6 +70,18 @@ constexpr uint8_t PIN_STEP    = 3;  // FDD pin 20 /STEP
 constexpr uint8_t PIN_TRACK0  = 4;  // FDD pin 26 /TRACK0
 constexpr uint8_t PIN_SELECT  = 5;  // FDD Drive Select
 constexpr uint8_t PIN_DRUM    = 6;  // VHS drum: D6 --[100 kOhm]--> CN5 (ICTL)
+constexpr uint8_t PIN_HDD_PNP_L = 7;  // HDD VCM mostek H: PNP lewy
+constexpr uint8_t PIN_HDD_PNP_R = 8;  // HDD VCM mostek H: PNP prawy
+constexpr uint8_t PIN_HDD_NPN_L = 9;  // HDD VCM mostek H: NPN lewy
+constexpr uint8_t PIN_HDD_NPN_R = 10; // HDD VCM mostek H: NPN prawy
+
+// Sekwencja uderzenia HDD (ustalona empirycznie w testach strojenia):
+//   PARK 40 ms (D7 LOW + D10 HIGH) - odwozi ramie do parku,
+//   SETTLE 40 ms                   - ramie osiada w parku,
+//   STRIKE 25 ms (D8 LOW + D9 HIGH)- UDERZENIE.
+constexpr uint16_t HDD_PARK_MS   = 40;
+constexpr uint16_t HDD_SETTLE_MS = 40;
+constexpr uint16_t HDD_STRIKE_MS = 25;
 
 // Ustalone eksperymentalnie dla tej stacji:
 constexpr uint8_t DIR_TOWARD_TRACK0 = HIGH;  // DIR HIGH = w strone TRACK0
@@ -560,6 +576,132 @@ private:
 };
 
 // ============================================================
+// HDD PERKUSJA (VCM) - nieblokujaca maszyna stanow
+//
+// Ramię NIE wraca samo po uderzeniu (sprawdzone empirycznie), dlatego
+// kazdy hit zaczyna sie od aktywnego odwiezienia do parku. Cykl:
+//   PARK 40 ms -> SETTLE 40 ms -> STRIKE 25 ms -> off
+// Calkowity cykl ~105 ms => maks ~9,5 uderzenia/s.
+// ============================================================
+
+class HddPercussion
+{
+public:
+    void begin()
+    {
+        // Bezpieczny stan ZANIM piny stana sie OUTPUT (inaczej reset
+        // plytki moglby na chwile otworzyc tranzystory mostka).
+        digitalWrite(PIN_HDD_PNP_L, HIGH);
+        digitalWrite(PIN_HDD_PNP_R, HIGH);
+        digitalWrite(PIN_HDD_NPN_L, LOW);
+        digitalWrite(PIN_HDD_NPN_R, LOW);
+
+        pinMode(PIN_HDD_PNP_L, OUTPUT);
+        pinMode(PIN_HDD_PNP_R, OUTPUT);
+        pinMode(PIN_HDD_NPN_L, OUTPUT);
+        pinMode(PIN_HDD_NPN_R, OUTPUT);
+
+        allOff();
+    }
+
+    // Wola z loop() - przechodzi przez fazy bez blokowania reszty.
+    void update()
+    {
+        if (phase_ == Phase::Idle)
+        {
+            if (pending_)
+            {
+                pending_ = false;
+                startPark();
+            }
+
+            return;
+        }
+
+        if (static_cast<long>(millis() - nextMs_) < 0)
+            return;
+
+        switch (phase_)
+        {
+        case Phase::Park:
+            allOff();
+            phase_ = Phase::Settle;
+            nextMs_ = millis() + HDD_SETTLE_MS;
+            break;
+
+        case Phase::Settle:
+            startStrike();
+            break;
+
+        case Phase::Strike:
+            allOff();
+            phase_ = Phase::Idle;
+            break;
+
+        case Phase::Idle:
+            break;
+        }
+    }
+
+    // Zlecenie uderzenia. Jesli sekwencja wlasnie trwa, kolejka (jedno).
+    void trigger()
+    {
+        if (phase_ == Phase::Idle)
+            startPark();
+        else
+            pending_ = true;
+    }
+
+    // Przerwanie trwajacej sekwencji (awaryjne; cewka bez pradu).
+    void stop()
+    {
+        pending_ = false;
+        phase_ = Phase::Idle;
+        allOff();
+    }
+
+    bool busy() const
+    {
+        return phase_ != Phase::Idle;
+    }
+
+    void allOff()
+    {
+        digitalWrite(PIN_HDD_PNP_L, HIGH);
+        digitalWrite(PIN_HDD_PNP_R, HIGH);
+        digitalWrite(PIN_HDD_NPN_L, LOW);
+        digitalWrite(PIN_HDD_NPN_R, LOW);
+    }
+
+private:
+    enum class Phase : uint8_t { Idle, Park, Settle, Strike };
+
+    void startPark()
+    {
+        allOff();
+        digitalWrite(PIN_HDD_PNP_L, LOW);   // kierunek A: do parku
+        digitalWrite(PIN_HDD_NPN_R, HIGH);
+
+        phase_ = Phase::Park;
+        nextMs_ = millis() + HDD_PARK_MS;
+    }
+
+    void startStrike()
+    {
+        allOff();
+        digitalWrite(PIN_HDD_PNP_R, LOW);   // kierunek B: UDERZENIE
+        digitalWrite(PIN_HDD_NPN_L, HIGH);
+
+        phase_ = Phase::Strike;
+        nextMs_ = millis() + HDD_STRIKE_MS;
+    }
+
+    Phase phase_ = Phase::Idle;
+    bool pending_ = false;
+    unsigned long nextMs_ = 0;
+};
+
+// ============================================================
 // INSTANCJE
 //
 // MVP: jedna stacja. Rozszerzenie na wiele instrumentow =
@@ -567,6 +709,7 @@ private:
 // ============================================================
 
 FloppyDrive drive(PIN_DIR, PIN_STEP, PIN_TRACK0, PIN_SELECT);
+HddPercussion hdd;
 
 // ============================================================
 // PARSOWANIE KOMEND
@@ -738,7 +881,10 @@ void printStatus()
     Serial.print(drumOutput);
 
     Serial.print(F(" drumf="));
-    Serial.println(drumToneHz);
+    Serial.print(drumToneHz);
+
+    Serial.print(F(" hdd="));
+    Serial.println(hdd.busy() ? 1 : 0);
 }
 
 void handleCommand(char *line)
@@ -894,6 +1040,28 @@ void handleCommand(char *line)
         return;
     }
 
+    if (strcasecmp(cmd, "HIT") == 0)
+    {
+        // Celowo cicho (jak PLAY/STOP): to komenda zdarzeniowa, stan
+        // widac przez STATUS (hdd=1 w trakcie sekwencji). HDD jest
+        // niezalezny od FDD - dziala takze, gdy stacja nie zrobila homingu.
+        hdd.trigger();
+        return;
+    }
+
+    if (strcasecmp(cmd, "HDD") == 0)
+    {
+        // "HDD 0" = awaryjne przerwanie trwajacej sekwencji (cewka bez pradu).
+        const char *arg = strtok(nullptr, " \t");
+
+        if (arg != nullptr && strcmp(arg, "0") == 0)
+        {
+            hdd.stop();
+        }
+
+        return;
+    }
+
     if (strcasecmp(cmd, "STATUS") == 0)
     {
         printStatus();
@@ -964,6 +1132,8 @@ void setup()
     digitalWrite(PIN_DRUM, LOW);
     analogWrite(PIN_DRUM, 0);
 
+    hdd.begin();   // HDD: bezpieczny OFF mostka H (zanim piny beda OUTPUT)
+
     Serial.begin(SERIAL_BAUD);
 
     drive.begin();
@@ -972,7 +1142,7 @@ void setup()
     delay(500);
 
     Serial.println(F("electromechanical-midi floppy controller v1"));
-    Serial.println(F("COMFORT 130-330 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS, DRUM <0-255>"));
+    Serial.println(F("COMFORT 130-330 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS, HIT, DRUM <0-255>"));
 
     drive.requestHome();
 }
@@ -981,4 +1151,5 @@ void loop()
 {
     pollSerial();
     drive.update();
+    hdd.update();
 }

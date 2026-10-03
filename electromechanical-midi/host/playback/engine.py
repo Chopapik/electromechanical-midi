@@ -32,7 +32,7 @@ import time
 from pathlib import Path
 from typing import Callable, Protocol
 
-from midi_source import MidiSource, MidiSourceError
+from midi_source import MidiSource, MidiSourceError, drum_name
 from pitch import (
     COMFORT_MAX_HZ,
     COMFORT_MIN_HZ,
@@ -47,6 +47,7 @@ from .timeline import (
     DRUM_MAX_HZ_DEFAULT,
     DRUM_MIN_HZ_DEFAULT,
     LANE_DRUM,
+    LANE_HDD,
     Command,
     Timeline,
     make_timeline,
@@ -178,6 +179,9 @@ class PlaybackEngine:
         drum_min_hz: float = DRUM_MIN_HZ_DEFAULT,
         drum_max_hz: float = DRUM_MAX_HZ_DEFAULT,
         drum_drive: int = DRUM_DRIVE_DEFAULT,
+        hdd_track_index: int | None = None,
+        hdd_note: int | None = None,
+        hdd_rate: float | None = None,
         keepalive: float = KEEPALIVE_S,
         spin_margin: float = SPIN_MARGIN_S,
         ready_timeout: float = 12.0,
@@ -225,6 +229,19 @@ class PlaybackEngine:
         self._drum_drive = drum_drive
         self._drum_current: Command | None = None
 
+        # --- trzecia linia: HDD perkusja (one-shot, bez wysokosci dzwieku) ---
+        # _hdd_note = filtr nuty: None = wszystkie, albo numer nuty
+        # perkusyjnej (np. 40 = werbel). Caly zestaw na jeden instrument
+        # brzmi jak terkot, bo hi-hat sam ma ~3,5 uderzenia/s.
+        self._hdd_track_index = hdd_track_index
+        self._hdd_note = hdd_note
+        # Maks. uderzen na sekunde (None = tylko limit mechaniki ~9/s).
+        self._hdd_rate = hdd_rate
+        self._hdd_notes: list[dict] = []   # dostepne nuty w tracku (do UI)
+        self._hdd_current: Command | None = None
+        self._hdd_busy = False          # potwierdzone przez firmware (STATUS hdd=)
+        self._hdd_count = 0             # ile uderzen poszlo (do podgladu)
+
         self._state = PlaybackState.STOPPED
         self._origin = time.monotonic()
         self._position_base = 0.0
@@ -271,8 +288,10 @@ class PlaybackEngine:
             self._shutdown = True
             self._safe_send_stop_locked()
             self._apply_drum_locked(drive=0, force=True)
+            self._send_raw_locked("HDD 0")
             self._drum_value = 0
             self._drum_current = None
+            self._hdd_current = None
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._current = None
@@ -391,11 +410,13 @@ class PlaybackEngine:
 
             self._safe_send_stop_locked()
             self._apply_drum_locked(drive=0, force=True)
+            self._send_raw_locked("HDD 0")
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._next_index = 0
             self._current = None
             self._drum_current = None
+            self._hdd_current = None
 
         log: list[str] = []
         blind = False
@@ -438,6 +459,12 @@ class PlaybackEngine:
             self._hardware.error = error
             self._hardware.log = log
 
+            # Udany homing = sprzet znow gotowy. Bez tego flaga connected
+            # zostawala False po wczesniejszym bledzie i przycisk "Home"
+            # nie ratowal sytuacji (UI dalej pokazywal rozlaczenie).
+            if ok:
+                self._hardware.connected = self._transport is not None
+
             if ok and blind:
                 self._hardware.warning = BLIND_HOME_WARNING
 
@@ -452,14 +479,17 @@ class PlaybackEngine:
                 self._state = PlaybackState.PAUSED
                 self._current = None
 
-            # FAIL-SAFE: nie zostawiamy krecacego sie bebna za soba.
+            # FAIL-SAFE: nie zostawiamy krecacego sie bebna ani trwajacej
+            # sekwencji uderzen HDD za soba.
             if self._transport is not None:
                 self._safe_send_stop_locked()
                 self._apply_drum_locked(drive=0, force=True)
+                self._send_raw_locked("HDD 0")
 
             self._drum_value = 0
             self._drum_output = None
             self._drum_current = None
+            self._hdd_current = None
             self._close_transport_locked()
             self._wake.set()
 
@@ -593,6 +623,69 @@ class PlaybackEngine:
             self._rebuild_locked(keep_position=True)
             self._wake.set()
 
+    # ---------- trzecia linia: HDD perkusja z MIDI ----------
+
+    def set_hdd_track(self, track_index: int | None) -> None:
+        """Przypisuje track MIDI do perkusji HDD (None = HDD nie gra).
+
+        HDD to instrument uderzeniowy bez wysokosci dzwieku: kazda nuta
+        wybranego tracku (niezaleznie od wysokosci) = jedno uderzenie.
+        """
+        with self._lock:
+            if track_index is not None:
+                if self._source is None:
+                    raise EngineError("najpierw wybierz plik MIDI")
+
+                if not 0 <= track_index < len(self._source.tracks):
+                    raise EngineError(f"track {track_index} nie istnieje")
+
+            if track_index == self._hdd_track_index:
+                return
+
+            self._hdd_track_index = track_index
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def set_hdd_note(self, note: int | None) -> None:
+        """Wybiera, ktora nuta perkusyjna ma uderzac w HDD (None = wszystkie).
+
+        HDD to jeden instrument uderzeniowy. Caly track perkusyjny naraz
+        brzmi jak terkot (hi-hat + ride + stopa + werbel zlewaja sie w jeden
+        dzwiek), dlatego wybiera sie jedna-nute o charakterze rytmicznym.
+        """
+        with self._lock:
+            note = None if note is None else int(note)
+
+            if note is not None and not 0 <= note <= 127:
+                raise EngineError(f"nuta {note} poza zakresem 0..127")
+
+            if note == self._hdd_note:
+                return
+
+            self._hdd_note = note
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def set_hdd_rate(self, rate: float | None) -> None:
+        """Maksymalna gestosc uderzen HDD (uderzen na sekunde).
+
+        None = tylko limit mechaniki (~9/s). Mniejsza wartosc przerzedza
+        uderzenia - np. 1.0 zostawia maksymalnie jedno na sekunde.
+        """
+        with self._lock:
+            if rate is not None:
+                rate = float(rate)
+
+                if not 0.05 <= rate <= 50.0:
+                    raise EngineError(f"gestosc {rate} poza zakresem 0.05..50 /s")
+
+            if rate == self._hdd_rate:
+                return
+
+            self._hdd_rate = rate
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
     def _rebuild_locked(self, *, keep_position: bool) -> None:
         """Buduje timeline na nowo i ustawia wskaznik na wlasciwe miejsce.
 
@@ -620,7 +713,12 @@ class PlaybackEngine:
             drum_max_hz=self._drum_max_hz,
             drum_mode=self._drum_transpose,
             drum_drive=self._drum_drive,
+            hdd_track_index=self._hdd_track_index,
+            hdd_note=self._hdd_note,
+            hdd_rate=self._hdd_rate,
         )
+
+        self._hdd_notes = self._hdd_note_options_locked()
 
         position = max(0.0, min(position, self._timeline.duration))
 
@@ -726,8 +824,11 @@ class PlaybackEngine:
         self._state = PlaybackState.PLAYING
         self._current = None
         self._drum_current = None
+        self._hdd_current = None
 
         # Wznowienie stanu WSZYSTKICH linii w tym miejscu.
+        # HDD nie ma stanu do wznowienia: to one-shot, a seek w srodek
+        # sekwencji nie powinien sztucznie uderzac.
         for command in timeline.resume_commands(position):
             if command.lane == LANE_DRUM:
                 self._dispatch_drum_locked(command)
@@ -735,17 +836,27 @@ class PlaybackEngine:
                 self._send_locked(command)
                 self._current = command
 
+        # One-shot "hit" DOKLADNIE w chwili startu/seeku: index_after je
+        # pominie, a wznowienie ich nie obejmuje (to nie nuty). Wysylamy je tu.
+        for command in timeline.commands_at(position):
+            if command.lane == LANE_HDD and command.kind == "hit":
+                self._send_raw_locked("HIT")
+                self._hdd_current = command
+                self._hdd_count += 1
+
         self._next_index = timeline.index_after(position)
         self._wake.set()
 
     def _reset_instruments_locked(self) -> bool:
-        """STOP dla FDD + DRUM 0 (wspolny punkt startu po seek/pauza/stop)."""
+        """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop)."""
         stop_ok = self._safe_send_stop_locked()
         drum_ok = self._apply_drum_locked(drive=0, force=True)
+        hdd_ok = self._send_raw_locked("HDD 0")
 
         self._drum_current = None
+        self._hdd_current = None
 
-        return stop_ok and drum_ok
+        return stop_ok and drum_ok and hdd_ok
 
     # ==========================================================
     # VHS DRUM (manualne sterowanie - NIE jest zwiazane z MIDI)
@@ -907,6 +1018,7 @@ class PlaybackEngine:
                 "stats": timeline.stats.as_dict() if timeline else None,
                 "hardware": self._hardware.as_dict(),
                 "drum": self._drum_snapshot_locked(),
+                "hdd": self._hdd_snapshot_locked(),
             }
 
     def _drum_snapshot_locked(self) -> dict:
@@ -939,6 +1051,52 @@ class PlaybackEngine:
             "midiFrequency": round(current.hz, 2) if current is not None and current.hz else None,
         }
 
+    def _hdd_note_options_locked(self) -> list[dict]:
+        """Nuty dostepne w wybranym tracku HDD (do wyboru jednej w UI).
+
+        Sortowane od najczestszej - to zwykle te, ktore niosa rytm
+        (werbel, stopa), a nie te, ktore tylko szumia (hi-hat).
+        """
+        if self._source is None or self._hdd_track_index is None:
+            return []
+
+        counts: dict[int, int] = {}
+
+        for span in self._source.notes(self._hdd_track_index):
+            counts[span.note] = counts.get(span.note, 0) + 1
+
+        return [
+            {
+                "note": note,
+                "name": drum_name(note) or note_name(note),
+                "count": count,
+            }
+            for note, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+        ]
+
+    def _hdd_snapshot_locked(self) -> dict:
+        connected = self._transport is not None
+        midi_active = (
+            self._state is PlaybackState.PLAYING and self._hdd_track_index is not None
+        )
+        current = self._hdd_current if midi_active else None
+
+        return {
+            "connected": connected,
+            "busy": self._hdd_busy if connected else False,
+            "count": self._hdd_count,
+            "controlledBy": "midi" if midi_active else "off",
+            "midiTrack": self._hdd_track_index,
+            "midiTrackName": self.hdd_track_name,
+            "note": self._hdd_note,
+            "rate": self._hdd_rate,
+            "notes": self._hdd_notes,
+            "lastNote": current.note if current is not None else None,
+            "lastNoteName": (
+                note_name(current.note) if current is not None and current.note is not None else None
+            ),
+        }
+
     @property
     def state(self) -> PlaybackState:
         with self._lock:
@@ -969,6 +1127,13 @@ class PlaybackEngine:
             return None
 
         return self._source.tracks[self._drum_track_index].name
+
+    @property
+    def hdd_track_name(self) -> str | None:
+        if self._source is None or self._hdd_track_index is None:
+            return None
+
+        return self._source.tracks[self._hdd_track_index].name
 
     @property
     def source(self) -> MidiSource | None:
@@ -1079,6 +1244,8 @@ class PlaybackEngine:
                     self._drum_tone_hz = int(value)
                 except ValueError:
                     pass
+            elif key == "hdd":
+                self._hdd_busy = value == "1"
 
     def _fail_locked(self, message: str) -> None:
         """Awaria lacza: nie udajemy, ze utwor gra dalej."""
@@ -1091,11 +1258,13 @@ class PlaybackEngine:
 
         self._current = None
         self._drum_current = None
+        self._hdd_current = None
 
         # Stan bebna jest teraz nieznany - po reconnect wszystko pojdzie od nowa.
         self._drum_value = 0
         self._drum_drive_sent = -1
         self._drum_tone_sent = -1
+        self._hdd_busy = False
         self._wake.set()
 
     def _poll_lines_locked(self) -> None:
@@ -1210,6 +1379,12 @@ class PlaybackEngine:
             if command.lane == LANE_DRUM:
                 if not self._dispatch_drum_locked(command):
                     return None
+            elif command.lane == LANE_HDD:
+                if not self._send_raw_locked("HIT"):
+                    return None
+
+                self._hdd_current = command
+                self._hdd_count += 1
             else:
                 if not self._send_locked(command):
                     return None

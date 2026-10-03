@@ -33,6 +33,30 @@ export interface DrumState {
   midiFrequency: number | null
 }
 
+export interface HddNoteOption {
+  note: number
+  name: string
+  count: number
+}
+
+export interface HddState {
+  connected: boolean
+  busy: boolean
+  count: number
+  /** "midi" gdy HDD gra z pliku, "off" gdy wyłączony */
+  controlledBy: 'midi' | 'off'
+  midiTrack: number | null
+  midiTrackName: string | null
+  /** wybrana nuta perkusyjna; null = wszystkie nuty tracku */
+  note: number | null
+  /** maks. uderzeń na sekundę; null = tylko limit mechaniki (~9/s) */
+  rate: number | null
+  /** nuty dostępne w wybranym tracku (do wyboru jednej) */
+  notes: HddNoteOption[]
+  lastNote: number | null
+  lastNoteName: string | null
+}
+
 export interface PlayerState {
   state: PlaybackStateValue
   position: number
@@ -50,6 +74,7 @@ export interface PlayerState {
   stats: Record<string, number> | null
   hardware: HardwareState
   drum: DrumState
+  hdd: HddState
 }
 
 export interface MidiFileEntry {

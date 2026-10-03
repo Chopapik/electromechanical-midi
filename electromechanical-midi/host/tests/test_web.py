@@ -587,3 +587,90 @@ class TestUpload(WebTestCase):
         response = self.upload("wielki.mid", b"x" * (MAX_UPLOAD_BYTES + 10))
 
         self.assertEqual(response.status_code, 413)
+
+
+class TestHddWeb(WebTestCase):
+    """Sterowanie perkusja HDD przez WebSocket + stan w /api/state."""
+
+    def test_stan_poczatkowy_zawiera_hdd(self):
+        state = self.client.get("/api/state").json()
+
+        self.assertIn("hdd", state)
+
+        hdd = state["hdd"]
+        self.assertIsNone(hdd["midiTrack"])
+        self.assertIsNone(hdd["midiTrackName"])
+        self.assertEqual(hdd["count"], 0)
+
+    def test_set_hdd_track_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_hdd_track", "track": 1})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["hdd"]["midiTrack"], 1)
+            self.assertIsNotNone(state["hdd"]["midiTrackName"])
+
+    def test_set_hdd_track_none_wylacza(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_hdd_track", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_hdd_track", "track": None})
+            state = read_until_state(websocket)
+
+            self.assertIsNone(state["hdd"]["midiTrack"])
+
+
+class TestHddNoteWeb(WebTestCase):
+    """Wybor nuty perkusyjnej HDD przez WebSocket."""
+
+    def test_set_hdd_note_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_hdd_track", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_hdd_note", "note": 40})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["hdd"]["note"], 40)
+
+            websocket.send_json({"action": "set_hdd_note", "note": None})
+            state = read_until_state(websocket)
+
+            self.assertIsNone(state["hdd"]["note"])
+
+
+class TestHddRateWeb(WebTestCase):
+    """Limiter gestosci HDD przez WebSocket."""
+
+    def test_set_hdd_rate_przez_websocket(self):
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_file", "file": "song.mid", "track": 1})
+            read_until_state(websocket)
+            websocket.send_json({"action": "set_hdd_track", "track": 1})
+            read_until_state(websocket)
+
+            websocket.send_json({"action": "set_hdd_rate", "rate": 1})
+            state = read_until_state(websocket)
+
+            self.assertEqual(state["hdd"]["rate"], 1)
+
+            websocket.send_json({"action": "set_hdd_rate", "rate": None})
+            state = read_until_state(websocket)
+
+            self.assertIsNone(state["hdd"]["rate"])

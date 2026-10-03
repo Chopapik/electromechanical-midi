@@ -586,3 +586,10 @@ select:disabled {
   line-height: 1.5;
   color: #fcd34d;
 }
+
+.hdd-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--accent-2);
+}

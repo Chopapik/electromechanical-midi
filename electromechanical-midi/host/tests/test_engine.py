@@ -1389,3 +1389,276 @@ class TestBlindHomingFallback(EngineTestCase):
         serial.feed("OK", "HOMING_BLIND", "READY")
 
         self.assertTrue(link.wait_ready(timeout=2.0, echo=lambda line: None))
+
+
+class TestHdd(EngineTestCase):
+    """Trzecia linia: HDD perkusja (one-shot, bez wysokosci dzwieku)."""
+
+    def setUp(self):
+        super().setUp()
+        self.engine.shutdown()
+        self.transport = FakeTransport()
+        self.engine = PlaybackEngine(
+            connect_fn=lambda port: self.transport,
+            keepalive=0.2,
+            hdd_track_index=2,
+        )
+        self.engine.start()
+        self.assertTrue(self.engine.connect())
+
+    def load_dual(self, fdd_notes, hdd_notes):
+        path = write_two_track_midi(self.tmp / "hdd.mid", fdd_notes, hdd_notes)
+        self.engine.load_file(path, 1)
+
+        return path
+
+    def hdd_events(self) -> list[str]:
+        return [text for text in self.transport.raw_texts() if text == "HIT"]
+
+    def test_hdd_track_wysyla_uderzenia(self):
+        self.load_dual([(0.0, 2.0, 60)], [(0.0, 0.3, 36), (0.8, 1.1, 42)])
+        self.transport.events.clear()
+
+        self.engine.play()
+        time.sleep(1.5)
+
+        self.assertEqual(len(self.hdd_events()), 2)
+        self.assertEqual(self.engine.snapshot()["hdd"]["count"], 2)
+
+    def test_akord_zlewa_sie_w_jedno_uderzenie(self):
+        # 3 nuty w tym samym momencie = akord -> jedno uderzenie.
+        self.load_dual(
+            [(0.0, 1.0, 60)],
+            [(0.0, 0.5, 60), (0.0, 0.5, 64), (0.0, 0.5, 67)],
+        )
+        self.transport.events.clear()
+
+        self.engine.play()
+        time.sleep(0.4)
+
+        self.assertEqual(len(self.hdd_events()), 1)
+
+    def test_none_wylacza_hdd(self):
+        self.engine.set_hdd_track(None)
+        self.load_dual([(0.0, 1.0, 60)], [(0.0, 1.0, 36)])
+        self.transport.events.clear()
+
+        self.engine.play()
+        time.sleep(0.4)
+
+        self.assertEqual(self.hdd_events(), [])
+        self.assertIsNone(self.engine.snapshot()["hdd"]["midiTrack"])
+
+    def test_seek_nie_wznawia_uderzenia(self):
+        # HDD to one-shot: seek w srodek utworu nie powinien sztucznie
+        # uderzyc, nawet jesli jakas nuta "brzmi" w tym miejscu.
+        self.load_dual([(0.0, 10.0, 60)], [(0.0, 0.3, 36)])
+        self.engine.play()
+        time.sleep(0.1)
+
+        self.transport.events.clear()
+        self.engine.seek(5.0)
+        time.sleep(0.2)
+
+        self.assertEqual(self.hdd_events(), [])
+
+    def test_stop_zatrzymuje_hdd(self):
+        # Reset instrumentow wysyla HDD 0 (przerwanie sekwencji).
+        self.load_dual([(0.0, 5.0, 60)], [(0.0, 1.0, 36)])
+        self.transport.events.clear()
+
+        self.engine.play()
+        time.sleep(0.1)
+        self.engine.stop()
+        time.sleep(0.1)
+
+        self.assertIn("HDD 0", self.transport.raw_texts())
+        self.assertIs(self.engine.state, PlaybackState.STOPPED)
+
+    def test_budowa_schedule_zlewa_szybkie_powtorki(self):
+        from playback.timeline import build_hdd_schedule
+
+        spans = [
+            NoteSpan(0.0, 0.1, 60, 100, 9),
+            NoteSpan(0.05, 0.15, 62, 100, 9),   # blizej niz 110 ms -> zlane
+            NoteSpan(0.3, 0.4, 64, 100, 9),
+        ]
+
+        commands, stats = build_hdd_schedule(spans)
+
+        self.assertEqual(len(commands), 2)
+        self.assertEqual(stats.notes, 2)
+        self.assertEqual(stats.skipped, 1)
+        self.assertEqual([c.kind for c in commands], ["hit", "hit"])
+
+
+class TestHddNote(EngineTestCase):
+    """Filtr nuty HDD: caly zestaw na jeden instrument = terkot.
+
+    HDD ma jeden dzwiek uderzeniowy, wiec z tracku perkusyjnego wybiera sie
+    jedna-nute o charakterze rytmicznym (np. werbel 40 albo stopa 36).
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.engine.shutdown()
+        self.transport = FakeTransport()
+        self.engine = PlaybackEngine(
+            connect_fn=lambda port: self.transport,
+            keepalive=0.2,
+            hdd_track_index=2,
+        )
+        self.engine.start()
+        self.assertTrue(self.engine.connect())
+
+    def load(self, hdd_notes):
+        path = write_two_track_midi(
+            self.tmp / "hddnote.mid", [(0.0, 4.0, 60)], hdd_notes
+        )
+        self.engine.load_file(path, 1)
+
+    def hdd_hits(self):
+        return [
+            command
+            for command in self.engine._timeline.commands
+            if command.lane == "hdd"
+        ]
+
+    def test_bez_filtra_wszystkie_nuty(self):
+        self.load([(0.0, 0.2, 36), (0.5, 0.7, 40), (1.0, 1.2, 42)])
+
+        self.assertEqual(len(self.hdd_hits()), 3)
+
+    def test_filtr_przepuszcza_tylko_wybrana_nute(self):
+        self.load([(0.0, 0.2, 36), (0.5, 0.7, 40), (1.0, 1.2, 42)])
+
+        self.engine.set_hdd_note(40)
+        hits = self.hdd_hits()
+
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0].note, 40)
+
+    def test_none_przywraca_wszystkie_nuty(self):
+        self.load([(0.0, 0.2, 36), (0.5, 0.7, 40)])
+
+        self.engine.set_hdd_note(40)
+        self.engine.set_hdd_note(None)
+
+        self.assertEqual(len(self.hdd_hits()), 2)
+
+    def test_lista_dostepnych_nut_w_stanie(self):
+        self.load([(0.0, 0.2, 36), (0.5, 0.7, 40), (0.8, 1.0, 40)])
+
+        notes = self.engine.snapshot()["hdd"]["notes"]
+        by_note = {option["note"]: option for option in notes}
+
+        self.assertEqual(by_note[40]["count"], 2)
+        self.assertEqual(by_note[40]["name"], "Werbel")
+        self.assertEqual(by_note[36]["name"], "Stopa")
+
+    def test_nuta_poza_zakresem_daje_blad(self):
+        self.load([(0.0, 0.2, 36)])
+
+        with self.assertRaises(EngineError):
+            self.engine.set_hdd_note(200)
+
+
+class TestHddRate(EngineTestCase):
+    """Limiter gestosci HDD: werbel na 170 BPM to 1,3 uderzenia/s.
+
+    Utwor szybki (backbeat co 2,2 beatu) - limiter pozwala zejsc do
+    half-time (1 uderzenie/s) albo rzadziej, bez zmiany nuty.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.engine.shutdown()
+        self.transport = FakeTransport()
+        self.engine = PlaybackEngine(
+            connect_fn=lambda port: self.transport,
+            keepalive=0.2,
+            hdd_track_index=2,
+        )
+        self.engine.start()
+        self.assertTrue(self.engine.connect())
+
+    def load(self, hdd_notes):
+        path = write_two_track_midi(
+            self.tmp / "hddrate.mid", [(0.0, 6.0, 60)], hdd_notes
+        )
+        self.engine.load_file(path, 1)
+
+    def hits(self):
+        return [c for c in self.engine._timeline.commands if c.lane == "hdd"]
+
+    def test_bez_limitu_wszystkie_uderzenia(self):
+        self.load([(t / 2.0, t / 2.0 + 0.1, 40) for t in range(10)])
+
+        self.assertEqual(len(self.hits()), 10)
+
+    def test_limit_1_na_sekunde_przerzedza(self):
+        # uderzenia co 0,5 s -> przy limicie 1/s zostaje co drugie
+        self.load([(t / 2.0, t / 2.0 + 0.1, 40) for t in range(10)])
+
+        self.engine.set_hdd_rate(1.0)
+
+        self.assertEqual(len(self.hits()), 5)
+
+    def test_limit_nie_lamie_mechaniki(self):
+        # nawet "bez limitu" nie schodzi ponizej cyklu park+strike (110 ms)
+        self.load([(t / 20.0, t / 20.0 + 0.02, 40) for t in range(20)])
+
+        self.engine.set_hdd_rate(None)
+
+        self.assertLessEqual(len(self.hits()), 20)
+
+    def test_none_przywraca_bez_limitu(self):
+        self.load([(t / 2.0, t / 2.0 + 0.1, 40) for t in range(10)])
+
+        self.engine.set_hdd_rate(1.0)
+        self.engine.set_hdd_rate(None)
+
+        self.assertEqual(len(self.hits()), 10)
+
+    def test_gestosc_poza_zakresem_daje_blad(self):
+        self.load([(0.0, 0.1, 40)])
+
+        for bad in (0.0, -1.0, 100.0):
+            with self.assertRaises(EngineError):
+                self.engine.set_hdd_rate(bad)
+
+
+class TestHomeRatujePolaczenie(EngineTestCase):
+    """Udany HOME po bledzie musi przywrocic flage connected.
+
+    Bez tego UI pokazywalo "Arduino disconnected" i przycisk Home
+    nie ratowal sytuacji, mimo ze stacja wlasnie sie zahomowala.
+    """
+
+    def test_home_przywraca_connected(self):
+        self.transport.queue_line("HOMING")
+        self.transport.queue_line("READY")
+
+        # symulujemy wczesniejsza awarie lacza
+        with self.engine._lock:
+            self.engine._hardware.connected = False
+
+        self.assertTrue(self.engine.home())
+
+        snapshot = self.engine.snapshot()
+        self.assertTrue(snapshot["hardware"]["connected"])
+        self.assertIsNone(snapshot["hardware"]["error"])
+
+    def test_udany_home_czysci_blad(self):
+        self.transport.queue_line("HOMING")
+        self.transport.queue_line("READY")
+
+        with self.engine._lock:
+            self.engine._hardware.error = "Arduino: ERR HOME_FAILED"
+            self.engine._hardware.connected = False
+
+        self.engine.home()
+
+        hardware = self.engine.snapshot()["hardware"]
+        self.assertIsNone(hardware["error"])
+        self.assertTrue(hardware["connected"])

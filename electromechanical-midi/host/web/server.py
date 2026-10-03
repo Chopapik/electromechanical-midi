@@ -342,6 +342,21 @@ def create_app(
             await asyncio.to_thread(engine.set_drum_transpose, str(message.get("mode")))
         elif action == "set_drum_strategy":
             await asyncio.to_thread(engine.set_drum_strategy, str(message.get("strategy")))
+        elif action == "set_hdd_track":
+            track = message.get("track", None)
+            await asyncio.to_thread(
+                engine.set_hdd_track, None if track is None else int(track)
+            )
+        elif action == "set_hdd_note":
+            note = message.get("note", None)
+            await asyncio.to_thread(
+                engine.set_hdd_note, None if note is None else int(note)
+            )
+        elif action == "set_hdd_rate":
+            rate = message.get("rate", None)
+            await asyncio.to_thread(
+                engine.set_hdd_rate, None if rate is None else float(rate)
+            )
         elif action == "snapshot":
             pass
         else:

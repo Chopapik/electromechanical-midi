@@ -126,6 +126,72 @@ export default function App() {
             <option value="last">last — ostatni NOTE_ON</option>
           </select>
         </label>
+
+        <TrackSelector
+          metadata={player.metadata}
+          selected={state?.hdd.midiTrack ?? null}
+          onSelect={(index) => player.selectHddTrack(index < 0 ? null : index)}
+          label="HDD Track (perkusja)"
+          allowNone
+          noneLabel="None (HDD wyłączony)"
+        />
+
+        {state?.hdd.midiTrack != null && (
+          <>
+            <label className="field">
+              <span className="field-label">HDD Note (co ma uderzać)</span>
+
+              <select
+                value={state.hdd.note ?? ''}
+                onChange={(event) =>
+                  player.selectHddNote(
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              >
+                <option value="">
+                  wszystkie nuty ({state.hdd.notes.reduce((sum, o) => sum + o.count, 0)})
+                </option>
+
+                {state.hdd.notes.map((option) => (
+                  <option key={option.note} value={option.note}>
+                    {option.name} ({option.note}) · {option.count}×
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field">
+              <span className="field-label">HDD Gęstość</span>
+
+              <select
+                value={state.hdd.rate ?? ''}
+                onChange={(event) =>
+                  player.selectHddRate(
+                    event.target.value === '' ? null : Number(event.target.value),
+                  )
+                }
+              >
+                <option value="">bez limitu (tylko mechanika ~9/s)</option>
+                <option value="4">max 4 uderzenia/s</option>
+                <option value="3">max 3 uderzenia/s</option>
+                <option value="2">max 2 uderzenia/s</option>
+                <option value="1">max 1 uderzenie/s (half-time)</option>
+                <option value="0.5">max 1 na 2 s</option>
+              </select>
+            </label>
+
+            <p className="hdd-status">
+              HDD: {state.hdd.midiTrackName} ·{' '}
+              {state.hdd.note == null
+                ? 'wszystkie nuty'
+                : state.hdd.notes.find((o) => o.note === state.hdd.note)?.name ??
+                  `nuta ${state.hdd.note}`}{' '}
+              · {state.hdd.count} uderzeń
+              {state.hdd.busy ? ' · ⏵ uderzenie' : ''}
+            </p>
+          </>
+        )}
       </section>
 
       <HardwareStatus

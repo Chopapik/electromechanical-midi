@@ -42,6 +42,9 @@ export interface PlayerApi {
   selectDrumTrack: (track: number | null) => void
   selectDrumTranspose: (mode: string) => void
   selectDrumStrategy: (strategy: string) => void
+  selectHddTrack: (track: number | null) => void
+  selectHddNote: (note: number | null) => void
+  selectHddRate: (rate: number | null) => void
   uploadFile: (file: File) => void
 }
 
@@ -248,6 +251,18 @@ export function usePlayer(): PlayerApi {
     (strategy: string) => send('set_drum_strategy', { strategy }),
     [send],
   )
+  const selectHddTrack = useCallback(
+    (track: number | null) => send('set_hdd_track', { track }),
+    [send],
+  )
+  const selectHddNote = useCallback(
+    (note: number | null) => send('set_hdd_note', { note }),
+    [send],
+  )
+  const selectHddRate = useCallback(
+    (rate: number | null) => send('set_hdd_rate', { rate }),
+    [send],
+  )
 
   return {
     state,
@@ -278,6 +293,9 @@ export function usePlayer(): PlayerApi {
     selectDrumTrack,
     selectDrumTranspose,
     selectDrumStrategy,
+    selectHddTrack,
+    selectHddNote,
+    selectHddRate,
     uploadFile,
   }
 }
