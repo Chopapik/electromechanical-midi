@@ -1,0 +1,227 @@
+{
+  "0087-09-radiohead_2007-jigsaw_falling_into_place.mid": {
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7461,
+      "played": 5344,
+      "dropped": 2117,
+      "dropRate": 0.2837,
+      "tonalRequested": 5379,
+      "tonalDropped": 1937,
+      "reassigned": 3805,
+      "delayed": 247,
+      "arpeggiated": 19,
+      "voiceSteals": 48,
+      "shortened": 48,
+      "accompanimentContinuity": 0.9031,
+      "totalTonalSilenceSeconds": 7.42,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.7676,
+        "fdd-2": 0.7557,
+        "fdd-3": 0.757
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6143
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7461,
+      "played": 6899,
+      "dropped": 562,
+      "dropRate": 0.0753,
+      "tonalRequested": 5379,
+      "tonalDropped": 382,
+      "reassigned": 4884,
+      "delayed": 438,
+      "arpeggiated": 6,
+      "voiceSteals": 320,
+      "shortened": 439,
+      "accompanimentContinuity": 0.9841,
+      "totalTonalSilenceSeconds": 1.715,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9102,
+        "fdd-2": 0.911,
+        "fdd-3": 0.8997
+      },
+      "dvdUtilization": {
+        "dvd_sled-1": 0.6687,
+        "dvd_sled-2": 0.6354,
+        "dvd_sled-3": 0.5637,
+        "dvd_sled-4": 0.6204
+      },
+      "dvdEvents": {
+        "dvd_sled-1": 565,
+        "dvd_sled-2": 551,
+        "dvd_sled-3": 481,
+        "dvd_sled-4": 529
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.614
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    }
+  },
+  "0002-02-radiohead_1993-creep-[k].mid": {
+    "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 4525,
+      "played": 4344,
+      "dropped": 181,
+      "dropRate": 0.04,
+      "tonalRequested": 3259,
+      "tonalDropped": 179,
+      "reassigned": 1200,
+      "delayed": 129,
+      "arpeggiated": 582,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6614,
+      "totalTonalSilenceSeconds": 45.318,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.49,
+        "fdd-2": 0.4182,
+        "fdd-3": 0.4008
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 4525,
+      "played": 4523,
+      "dropped": 2,
+      "dropRate": 0.0004,
+      "tonalRequested": 3259,
+      "tonalDropped": 0,
+      "reassigned": 864,
+      "delayed": 0,
+      "arpeggiated": 109,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6501,
+      "totalTonalSilenceSeconds": 46.342,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.4013,
+        "fdd-2": 0.4127,
+        "fdd-3": 0.4134
+      },
+      "dvdUtilization": {
+        "dvd_sled-1": 0.0383,
+        "dvd_sled-2": 0.0319,
+        "dvd_sled-3": 0.0348,
+        "dvd_sled-4": 0.0302
+      },
+      "dvdEvents": {
+        "dvd_sled-1": 145,
+        "dvd_sled-2": 127,
+        "dvd_sled-3": 135,
+        "dvd_sled-4": 113
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    }
+  },
+  "0063-01-radiohead_2003-2+2=5-[k].mid": {
+    "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 6414,
+      "played": 4626,
+      "dropped": 1788,
+      "dropRate": 0.2788,
+      "tonalRequested": 4845,
+      "tonalDropped": 1742,
+      "reassigned": 3832,
+      "delayed": 1130,
+      "arpeggiated": 462,
+      "voiceSteals": 243,
+      "shortened": 247,
+      "accompanimentContinuity": 0.9418,
+      "totalTonalSilenceSeconds": 8.315,
+      "longSilentGaps": 13,
+      "fddUtilization": {
+        "fdd-1": 0.6521,
+        "fdd-2": 0.6969,
+        "fdd-3": 0.707
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6268
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 293,
+      "leadPlayed": 293,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 6414,
+      "played": 5798,
+      "dropped": 616,
+      "dropRate": 0.096,
+      "tonalRequested": 4845,
+      "tonalDropped": 570,
+      "reassigned": 4175,
+      "delayed": 1050,
+      "arpeggiated": 308,
+      "voiceSteals": 88,
+      "shortened": 89,
+      "accompanimentContinuity": 0.9438,
+      "totalTonalSilenceSeconds": 8.145,
+      "longSilentGaps": 13,
+      "fddUtilization": {
+        "fdd-1": 0.6934,
+        "fdd-2": 0.617,
+        "fdd-3": 0.6578
+      },
+      "dvdUtilization": {
+        "dvd_sled-1": 0.3903,
+        "dvd_sled-2": 0.3792,
+        "dvd_sled-3": 0.3856,
+        "dvd_sled-4": 0.3586
+      },
+      "dvdEvents": {
+        "dvd_sled-1": 457,
+        "dvd_sled-2": 443,
+        "dvd_sled-3": 454,
+        "dvd_sled-4": 411
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.6268
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 293,
+      "leadPlayed": 293,
+      "leadDropped": 0
+    }
+  }
+}

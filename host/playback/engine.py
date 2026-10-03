@@ -26,6 +26,7 @@ Zasady, ktore chronia przed wyscigami:
 from __future__ import annotations
 
 import dataclasses
+import json
 import enum
 import threading
 import time
@@ -46,12 +47,19 @@ from .timeline import (
     DRUM_DRIVE_DEFAULT,
     DRUM_MAX_HZ_DEFAULT,
     DRUM_MIN_HZ_DEFAULT,
+    LANES,
     LANE_DRUM,
     LANE_HDD,
     Command,
     Timeline,
     make_timeline,
 )
+from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
+from .arrangement import Arrangement, ArrangementError, midi_identity
+from .hardware import bind_devices, build_commands
+from .allocator import allocate, manual_pins
+from .duplicates import normalize
+from .orchestra import OrchestraConfig, default_orchestra, parse_orchestra
 
 # Ostatnie 1.5 ms czekania to aktywne krecenie - dzieki temu komendy
 # wychodza wtedy, kiedy maja, a nie "mniej wiecej".
@@ -189,6 +197,7 @@ class PlaybackEngine:
         on_handshake: Callable[[str], None] | None = None,
         wait_ready: bool = True,
         realtime: bool = True,
+        auto_arrange: bool = False,
     ):
         self._lock = threading.RLock()
         self._wake = threading.Event()
@@ -212,6 +221,9 @@ class PlaybackEngine:
         # i retry homingu nigdy nie dochodzil do skutku.
         self._handshake = False
         self._wait_ready = wait_ready
+        # Auto Arranger jako domyslne wyjscie: MIDI -> plan -> orkiestra.
+        # Domyslnie OFF, bo CLI i testy silnika uzywaja recznego trybu PLAYER.
+        self._auto_arrange = auto_arrange
         # realtime=False: wysylaj wszystko od razu (tylko --dry-run / testy)
         self._realtime = realtime
 
@@ -249,7 +261,28 @@ class PlaybackEngine:
         self._current: Command | None = None
 
         self._transport: Transport | None = None
+        self._virtual_mode = False
+        self._virtual = VirtualOrchestra()
+        self._preview = WavePreview()
+        self._preview_generation = 0
+        self._preview_request: tuple[int, VirtualOrchestra, float] | None = None
+        self._preview_worker_running = False
+        self._arrangement: Arrangement | None = None      # reczny override (JSON)
+        self._orchestra: OrchestraConfig = default_orchestra()
+        self._plan = None                                  # PerformancePlan
+        self._normalized = None                            # NormalizedSource
+        self._plan_report: dict | None = None
+        self._arrangement_notes: list[dict] = []
+        self._arrangement_revision = 0
+        # Instancje aranzacji podpięte do fizycznych linii Serial. Pusty
+        # slownik = czysty podglad wirtualny, nie wolno wtedy dotykac sprzetu.
+        self._hardware_bound: dict[str, VirtualDeviceInstance] = {}
+        self._hardware_unmapped: list[dict] = []
+        self._hardware_active = False
         self._hardware = HardwareStatus()
+        # Klik "Play" w trakcie homingu nie moze przepasc: zapamietujemy
+        # zamiar i startujemy od razu, gdy Arduino zglosi READY.
+        self._pending_play = False
         self._last_io = 0.0
 
         # --- VHS drum ---
@@ -286,6 +319,9 @@ class PlaybackEngine:
         """Zatrzymuje granie i konczy watek roboczy."""
         with self._lock:
             self._shutdown = True
+            self._preview_generation += 1
+            self._preview_request = None
+            self._preview.close()
             self._safe_send_stop_locked()
             self._apply_drum_locked(drive=0, force=True)
             self._send_raw_locked("HDD 0")
@@ -358,9 +394,9 @@ class PlaybackEngine:
             except Exception as exc:
                 ready = False
                 error = str(exc)
-            finally:
-                with self._lock:
-                    self._handshake = False
+            # _handshake zdejmujemy dopiero po instalacji transportu (nizej).
+            # Inaczej miedzy koncem homingu a podlaczeniem jest okno, w ktorym
+            # Play wyglada jak "brak polaczenia z Arduino".
 
             if not ready and error is None:
                 error = "brak READY po homingu (stacja nie odpowiedziala)"
@@ -370,6 +406,7 @@ class PlaybackEngine:
 
         with self._lock:
             self._transport = transport
+            self._handshake = False
             self._hardware = HardwareStatus(
                 connected=True,
                 port=str(device) if device else port,
@@ -392,6 +429,17 @@ class PlaybackEngine:
             self._drum_drive_sent = 0
             self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
             self._request_status_locked(force=True)
+
+            pending = self._pending_play
+            self._pending_play = False
+
+        # Play klikniety w trakcie homingu startuje teraz - bez tego uzytkownik
+        # widzi, ze "nic sie nie stalo", i musi klikac drugi raz.
+        if pending and ready:
+            try:
+                self.play()
+            except EngineError:
+                pass
 
         return ready
 
@@ -468,11 +516,23 @@ class PlaybackEngine:
             if ok and blind:
                 self._hardware.warning = BLIND_HOME_WARNING
 
+            pending = self._pending_play
+            self._pending_play = False
+
+        # Play klikniety w trakcie homingu (albo podczas reconnectu) startuje
+        # tutaj, zamiast przepasc.
+        if pending and ok:
+            try:
+                self.play()
+            except EngineError:
+                pass
+
         return ok
 
     def disconnect(self) -> None:
         with self._lock:
             was_playing = self._state is PlaybackState.PLAYING
+            self._pending_play = False
 
             if was_playing:
                 self._position_base = self._position_locked()
@@ -509,6 +569,21 @@ class PlaybackEngine:
     # WCZYTANIE UTWORU
     # ==========================================================
 
+    @staticmethod
+    def _read_saved_arrangement(source: MidiSource) -> dict | None:
+        """`<nazwa>.orchestra.json` obok pliku MIDI, jesli jest poprawnym JSON-em."""
+        path = source.path.with_suffix('.orchestra.json')
+
+        if not path.is_file():
+            return None
+
+        try:
+            document = json.loads(path.read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError):
+            return None
+
+        return document if isinstance(document, dict) else None
+
     def load_file(self, path: str | Path, track_index: int | None = None) -> None:
         """Wczytuje plik MIDI. Zmiana pliku = STOP i powrot na pozycje 0."""
         source = MidiSource(path)  # moze rzucic MidiSourceError
@@ -524,7 +599,19 @@ class PlaybackEngine:
         if not 0 <= track_index < len(source.tracks):
             raise EngineError(f"track {track_index} nie istnieje")
 
+        # Zapisana aranzacja obok pliku to OPCJONALNY override. Jesli istnieje
+        # i pasuje do tego MIDI, wygrywa z auto-aranzacja; jesli nie - cichy
+        # powrot do auto, bo reczny JSON nigdy nie moze zablokowac odtwarzania.
+        saved = self._read_saved_arrangement(source)
+
         with self._lock:
+            self._preview.close()
+            self._arrangement = None
+            self._plan = None
+            self._plan_report = None
+            self._normalized = None
+            self._arrangement_notes = []
+            self._arrangement_revision += 1
             self._safe_send_stop_locked()
 
             self._source = source
@@ -533,12 +620,20 @@ class PlaybackEngine:
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._current = None
+
+            if saved is not None:
+                try:
+                    self._configure_arrangement_locked(saved)
+                except (ArrangementError, ValueError, TypeError):
+                    self._arrangement = None
+
             self._rebuild_locked(keep_position=False)
             self._wake.set()
 
     def set_track(self, track_index: int) -> None:
         """Zmiana tracku zachowuje pozycje i stan (gra dalej od tego samego miejsca)."""
         with self._lock:
+            self._auto_arrange = False
             if self._source is None:
                 raise EngineError("najpierw wybierz plik MIDI")
 
@@ -557,6 +652,7 @@ class PlaybackEngine:
             raise EngineError(f"nieznany tryb transpozycji {mode!r}")
 
         with self._lock:
+            self._auto_arrange = False
             if mode == self._transpose:
                 return
 
@@ -571,6 +667,7 @@ class PlaybackEngine:
             raise EngineError(f"nieznana strategia {strategy!r}")
 
         with self._lock:
+            self._auto_arrange = False
             if strategy == self._strategy:
                 return
 
@@ -583,6 +680,7 @@ class PlaybackEngine:
     def set_drum_track(self, track_index: int | None) -> None:
         """Przypisuje track MIDI do bebna (None = beben tylko reczny)."""
         with self._lock:
+            self._auto_arrange = False
             if track_index is not None:
                 if self._source is None:
                     raise EngineError("najpierw wybierz plik MIDI")
@@ -602,6 +700,7 @@ class PlaybackEngine:
             raise EngineError(f"nieznany tryb transpozycji {mode!r}")
 
         with self._lock:
+            self._auto_arrange = False
             if mode == self._drum_transpose:
                 return
 
@@ -616,6 +715,7 @@ class PlaybackEngine:
             raise EngineError(f"nieznana strategia {strategy!r}")
 
         with self._lock:
+            self._auto_arrange = False
             if strategy == self._drum_strategy:
                 return
 
@@ -632,6 +732,7 @@ class PlaybackEngine:
         wybranego tracku (niezaleznie od wysokosci) = jedno uderzenie.
         """
         with self._lock:
+            self._auto_arrange = False
             if track_index is not None:
                 if self._source is None:
                     raise EngineError("najpierw wybierz plik MIDI")
@@ -654,6 +755,7 @@ class PlaybackEngine:
         dzwiek), dlatego wybiera sie jedna-nute o charakterze rytmicznym.
         """
         with self._lock:
+            self._auto_arrange = False
             note = None if note is None else int(note)
 
             if note is not None and not 0 <= note <= 127:
@@ -673,6 +775,7 @@ class PlaybackEngine:
         uderzenia - np. 1.0 zostawia maksymalnie jedno na sekunde.
         """
         with self._lock:
+            self._auto_arrange = False
             if rate is not None:
                 rate = float(rate)
 
@@ -698,6 +801,36 @@ class PlaybackEngine:
             return
 
         position = self._position_locked() if keep_position else 0.0
+        self._preview_generation += 1
+        self._preview_request = None
+
+        if self._auto_arrange:
+            self._rebuild_plan_locked(position)
+            return
+
+        if self._virtual_mode:
+            was_playing = self._state is PlaybackState.PLAYING
+            if not was_playing:
+                self._preview.close()
+            self._timeline = self._virtual.simulate(self._source)
+            self._arrangement_notes = []
+            self._hardware_active = False
+            self._hardware_bound = {}
+            self._hardware_unmapped = []
+            position = max(0.0, min(position, self._timeline.duration))
+            if was_playing:
+                # Keep the old preview and monotonic playhead running while a
+                # replacement WAV is rendered off the engine lock.
+                self._next_index = self._timeline.index_after(position)
+                self._request_preview_locked(self._virtual, self._timeline.duration)
+            else:
+                self._position_base = position
+                self._next_index = self._timeline.index_after(position)
+            return
+
+        self._hardware_active = True
+        self._hardware_bound = {}
+        self._hardware_unmapped = []
 
         self._timeline = make_timeline(
             self._source,
@@ -730,6 +863,308 @@ class PlaybackEngine:
         self._next_index = self._timeline.index_after(position)
         self._current = None
 
+    def _build_plan_locked(self) -> None:
+        """MIDI + orkiestra -> plan wykonania. Bez tego nie ma czego grac."""
+        if self._source is None:
+            self._plan = None
+
+            return
+
+        if self._normalized is None:
+            # Double-tracking -> partie logiczne. Liczone raz na plik.
+            self._normalized = normalize(self._source)
+
+        pins = (manual_pins(self._arrangement, self._normalized)
+                if self._arrangement is not None else {})
+        self._plan = allocate(
+            self._normalized, self._orchestra, pins=pins,
+            name=self._source.path.stem,
+            origin='manual' if self._arrangement is not None else 'auto')
+
+    def _plan_notes_locked(self) -> list[dict]:
+        """Widok nut dla UI: zrodlo + decyzja arrangera + faktyczny czas."""
+        if self._plan is None:
+            return []
+
+        notes = []
+
+        for event in self._plan.events:
+            notes.append({
+                'id': event.id,
+                'track': event.track,
+                'trackName': event.track_name,
+                'channel': event.channel,
+                'note': event.note,
+                'name': event.name,
+                'start': round(event.start, 6),
+                'duration': round(event.duration, 6),
+                'velocity': event.velocity,
+                'isDrum': event.role == 'percussion',
+                'status': event.status,
+                'outcome': event.outcome,
+                'role': event.role,
+                'deviceId': event.device_id,
+                'playedNote': event.played_note,
+                'actualStart': round(event.actual_start, 6),
+                'actualDuration': round(event.actual_duration, 6),
+                'delayMs': round(event.delay * 1000, 2),
+                'reassigned': event.reassigned,
+                'folded': event.folded,
+                'preferredDevice': event.preferred_device,
+                'reason': event.reason,
+                'sourceTracks': list(event.source_tracks),
+                'duplicateGroupId': event.duplicate_group_id,
+                'routes': [] if event.device_id is None else [{
+                    'ruleId': event.rule_id or 'auto',
+                    'deviceId': event.device_id,
+                    'status': event.status,
+                    'outcome': event.outcome,
+                    'articulation': event.articulation,
+                    'reason': event.reason,
+                    'originalNote': event.note,
+                    'playedNote': event.played_note,
+                    'deviceAvailableAt': None,
+                }],
+            })
+
+        return notes
+
+    def _rebuild_plan_locked(self, position: float) -> None:
+        """Timeline z PerformancePlan: symulacja + (opcjonalnie) fizyczne linie.
+
+        Plan jest jedynym zrodlem decyzji. Renderer odtwarza go 1:1, a komendy
+        sprzetowe powstaja z tych samych zdarzen - wirtualizacja i sprzet nie
+        moga sie rozjechac.
+        """
+        was_playing = self._state is PlaybackState.PLAYING
+
+        if not was_playing:
+            self._preview.close()
+
+        self._build_plan_locked()
+
+        timeline = self._virtual.render_plan(self._plan)
+
+        # Bez podlaczonego Arduino Auto Arranger gra na Virtual Orchestra.
+        # Bez tego "wrzuc MIDI i nacisnij Play" konczylo sie bledem
+        # "brak polaczenia z Arduino", mimo ze plan jest gotowy.
+        if self._transport is None and any(
+                device.get('mode', 'virtual') in ('virtual', 'hybrid')
+                for device in self._plan.devices):
+            self._virtual_mode = True
+        notes = self._plan_notes_locked()
+        # Raport liczymy raz na przebudowe - snapshot leci po WebSocketcie
+        # przy kazdej zmianie stanu i nie moze za kazdym razem chodzic po
+        # wszystkich zdarzeniach planu.
+        self._plan_report = self._plan.report()
+
+        bound, unmapped = bind_devices(self._virtual.devices)
+        self._hardware_bound = bound
+        self._hardware_unmapped = unmapped
+        hardware_commands = build_commands(self._virtual, bound)
+        self._hardware_active = bool(hardware_commands)
+
+        merged = list(timeline.commands) + hardware_commands
+        self._timeline = Timeline.from_commands(merged, timeline.stats)
+
+        self._arrangement_notes = notes
+        self._arrangement_revision += 1
+
+        position = max(0.0, min(position, self._timeline.duration))
+
+        if was_playing:
+            self._next_index = self._timeline.index_after(position)
+            if self._virtual_mode:
+                self._request_preview_locked(self._virtual, self._timeline.duration)
+        else:
+            self._position_base = position
+            self._next_index = self._timeline.index_after(position)
+
+    def _request_preview_locked(self, orchestra: VirtualOrchestra, duration: float) -> None:
+        self._preview_request = (self._preview_generation, orchestra, duration)
+        if self._preview_worker_running:
+            return
+        self._preview_worker_running = True
+        threading.Thread(target=self._render_preview_worker, name='virtual-preview-refresh', daemon=True).start()
+
+    def _render_preview_worker(self) -> None:
+        """Coalesce rapid edits; swap audio at the current position when ready."""
+        while True:
+            with self._lock:
+                request = self._preview_request
+                self._preview_request = None
+                if request is None or self._shutdown:
+                    self._preview_worker_running = False
+                    return
+            generation, orchestra, duration = request
+            preview = WavePreview()
+            try:
+                preview.render(orchestra, duration)
+            except Exception:
+                preview.close()
+                continue
+            with self._lock:
+                if generation != self._preview_generation or self._shutdown or not self._virtual_mode:
+                    preview.close()
+                    continue
+                old_preview = self._preview
+                try:
+                    if self._state is PlaybackState.PLAYING:
+                        preview.play(self._position_locked())
+                except Exception:
+                    preview.close()
+                    continue
+                self._preview = preview
+                old_preview.close()
+
+    def configure_virtual(self, payload: dict) -> None:
+        """Switch output without replacing MIDI source, tempo map or worker clock."""
+        candidate = VirtualOrchestra()
+        candidate.set_config(payload)
+        with self._lock:
+            enabled = bool(payload.get('enabled', True))
+            if not enabled and self._state is PlaybackState.PLAYING and self._transport is None:
+                raise EngineError('stop or pause before disabling virtual output without connected hardware')
+            if self._arrangement is not None and self._source is not None:
+                doc = self._arrangement.as_dict().copy()
+                doc['devices'] = [dataclasses.asdict(d) for d in candidate.devices]
+                ids = {d.id for d in candidate.devices}
+                doc['rules'] = [rule for rule in doc['rules'] if rule['destination']['deviceId'] is None or rule['destination']['deviceId'] in ids]
+                existing = {rule['destination']['deviceId'] for rule in doc['rules']}
+                for device in candidate.devices:
+                    if device.id not in existing and device.track is not None:
+                        doc['rules'].append({'id': f'route-{device.id}', 'source': {'track': device.track},
+                                             'destination': {'deviceId': device.id}})
+                self._arrangement = Arrangement.parse(doc, self._source)
+            if not self._virtual_mode:
+                self._reset_instruments_locked()
+            self._virtual = candidate
+            # UI Virtual Orchestra jest edytorem rzeczywistego OrchestraConfig.
+            # Bez synchronizacji Auto Arranger nadal alokowalby stara pule.
+            self._orchestra = parse_orchestra({
+                'name': candidate.name,
+                'devices': candidate.config()['devices'],
+                'policy': self._orchestra.policy,
+            })
+            self._virtual_mode = enabled
+            if not enabled:
+                self._preview.close()
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def _configure_arrangement_locked(self, payload: dict, *, allow_mismatch: bool = False) -> None:
+        """Ustawia orkiestre i override z dokumentu. Nie przebudowuje planu.
+
+        Urzadzenia z dokumentu staja sie orkiestra, a reguly - preferencjami
+        allokatora. Regula NIE przybija nuty na stale: gdy wskazane urzadzenie
+        jest zajete, inne wolne i tak ja uratuje.
+        """
+        arrangement = Arrangement.parse(payload, self._source, allow_mismatch=allow_mismatch)
+        orchestra = parse_orchestra({
+            'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
+            'devices': arrangement.data['devices'],
+            'policy': payload.get('policy'),
+        })
+        bound, _ = bind_devices(orchestra.instances())
+        preview_devices = [device for device in orchestra.instances() if device.in_preview]
+
+        if not self._virtual_mode and not bound:
+            self._reset_instruments_locked()
+
+        self._arrangement = arrangement
+        self._orchestra = orchestra
+        self._auto_arrange = True
+
+        # Import nie przelacza na sile wirtualizacji - patrz komentarz przy
+        # render_plan. Podglad musi dzialac, gdy dokument ma cokolwiek do
+        # uslyszenia albo nie ma gdzie wyslac komend sprzetowych.
+        if preview_devices or not bound or self._transport is None:
+            self._virtual_mode = True
+
+    def set_arrangement(self, payload: dict, *, allow_mismatch: bool = False) -> None:
+        """Reczny override aranzacji (import JSON) - reszta nadal przez allocator."""
+        with self._lock:
+            if self._source is None:
+                raise EngineError('load MIDI before importing an arrangement')
+
+            self._configure_arrangement_locked(payload, allow_mismatch=allow_mismatch)
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def has_arrangement_override(self) -> bool:
+        """Czy uzytkownik wczytal wlasny JSON (a nie tylko auto-aranzacja)."""
+        with self._lock:
+            return self._arrangement is not None
+
+    def set_orchestra(self, payload: dict) -> None:
+        """Zmiana dostepnego sprzetu - plan powstaje od nowa."""
+        with self._lock:
+            self._orchestra = parse_orchestra(payload)
+            self._auto_arrange = True
+            self._arrangement = None
+            self._rebuild_locked(keep_position=True)
+            self._wake.set()
+
+    def initialize_arrangement(self) -> None:
+        with self._lock:
+            if self._source is None:
+                raise EngineError('load MIDI first')
+
+            # "Zainicjalizuj aranzacje" = wlacz Auto Arrangera i zbuduj plan.
+            self._auto_arrange = True
+
+            if self._plan is None:
+                self._rebuild_locked(keep_position=True)
+
+    def _document_locked(self) -> dict | None:
+        """Dokument aranzacji: orkiestra + polityka + reczne reguly.
+
+        Reguly sa PUSTE przy auto-aranzacji - plan jest deterministyczny, wiec
+        ten sam plik MIDI + ta sama orkiestra odtworza go bez zapisywania
+        tysiecy przypisan nuta-po-nucie.
+        """
+        if self._source is None or self._plan is None:
+            return None
+
+        return {
+            'schemaVersion': 1,
+            'midi': midi_identity(self._source),
+            'name': self._plan.name,
+            'devices': self._orchestra.devices,
+            'rules': list(self._arrangement.data['rules']) if self._arrangement is not None else [],
+            'policy': self._orchestra.policy,
+            'origin': self._plan.origin,
+        }
+
+    def _source_tracks(self) -> list:
+        """Partie logiczne, jesli zrodlo jest juz znormalizowane."""
+        if self._normalized is not None:
+            return self._normalized.tracks
+
+        return list(self._source.tracks) if self._source is not None else []
+
+    def arrangement_view(self) -> dict:
+        with self._lock:
+            return {
+                'arrangement': self._document_locked(),
+                'notes': self._arrangement_notes,
+                'midiIdentity': midi_identity(self._source) if self._source else None,
+                'tracks': [{'index': t.index, 'name': t.name, 'isDrums': t.is_drums,
+                            'noteCount': t.note_count,
+                            'sourceTracks': list(getattr(t, 'source_tracks', (t.index,))),
+                            'groupId': getattr(t, 'group_id', None),
+                            'duplicateConfidence': getattr(t, 'duplicate_confidence', None)}
+                           for t in self._source_tracks()],
+                'revision': self._arrangement_revision,
+                'report': self._plan.report() if self._plan is not None else None,
+                'orchestra': {
+                    'name': self._orchestra.name,
+                    'policy': self._orchestra.policy,
+                    'devices': [{'id': d['id'], 'type': d['type'], 'name': d['name']}
+                                for d in self._orchestra.devices],
+                },
+            }
+
     # ==========================================================
     # STEROWANIE
     # ==========================================================
@@ -748,6 +1183,9 @@ class PlaybackEngine:
             if position >= self._timeline.duration:
                 position = 0.0
 
+            # Podglad renderujemy TYLKO gdy go nie ma (albo jest nieaktualny).
+            # Wczesniej lecial od nowa przy kazdym Play - przy 6 urzadzeniach
+            # to ~6 s, przy 40 ~20 s zamrozonego UI i locka silnika.
             self._begin_locked(position)
 
     def pause(self) -> None:
@@ -756,6 +1194,8 @@ class PlaybackEngine:
                 return
 
             position = self._position_locked()
+            if self._virtual_mode:
+                self._preview.stop()
             self._reset_instruments_locked()
             self._position_base = position
             self._state = PlaybackState.PAUSED
@@ -776,6 +1216,7 @@ class PlaybackEngine:
     def stop(self) -> None:
         """STOP + DRUM 0, playhead = 0, stan STOPPED."""
         with self._lock:
+            self._preview.stop()
             self._reset_instruments_locked()
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
@@ -809,9 +1250,35 @@ class PlaybackEngine:
         if timeline is None:
             return
 
-        if self._transport is None:
+        if self._transport is None and not self._virtual_mode:
+            # Homing/reconnect trwa (do ready_timeout). Zamiast cicho nie
+            # zrobic nic albo straszyc bledem - zapamietujemy zamiar
+            # i zagramy, gdy tylko pojawi sie READY.
+            if self._handshake:
+                self._pending_play = True
+                self._wake.set()
+                return
+
             self._fail_locked("brak polaczenia z Arduino")
             return
+
+        if self._virtual_mode:
+            if self._preview.path is None:
+                self._preview.render(self._virtual, timeline.duration)
+            self._preview.play(position)
+
+            if not (self._hardware_active and self._transport is not None):
+                # Czysty podglad wirtualny: sprzet zostaje nietkniety.
+                self._next_index = timeline.index_after(position)
+                self._origin = time.monotonic() - position
+                self._position_base = position
+                self._state = PlaybackState.PLAYING
+                self._wake.set()
+                return
+
+            # Tryb hybrydowy: podglad gra dalej, a ponizszy kod wysyla stan
+            # linii sprzetowych. _reset_instruments_locked nie zatrzymuje
+            # wtedy preview.
 
         # Zawsze STOP + DRUM 0 przed nowym planem - zaden instrument nie
         # moze zostac z dzwiekiem ze starego planu.
@@ -848,7 +1315,17 @@ class PlaybackEngine:
         self._wake.set()
 
     def _reset_instruments_locked(self) -> bool:
-        """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop)."""
+        """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop).
+
+        Nic nie wysyla, gdy zaden plan nie uzywa fizycznych linii: czysty
+        podglad wirtualny nie moze szarpac podlaczonym sprzetem.
+        """
+        if self._transport is None:
+            return True
+
+        if self._virtual_mode and not self._hardware_active:
+            return True
+
         stop_ok = self._safe_send_stop_locked()
         drum_ok = self._apply_drum_locked(drive=0, force=True)
         hdd_ok = self._send_raw_locked("HDD 0")
@@ -1016,9 +1493,32 @@ class PlaybackEngine:
                 "strategy": self._strategy,
                 "range": {"minHz": self._min_hz, "maxHz": self._max_hz},
                 "stats": timeline.stats.as_dict() if timeline else None,
-                "hardware": self._hardware.as_dict(),
+                "hardware": {
+                    **self._hardware.as_dict(),
+                    # connecting: trwa homing/reconnect (Play poczeka w kolejce).
+                    "connecting": self._handshake,
+                    "pendingPlay": self._pending_play,
+                },
                 "drum": self._drum_snapshot_locked(),
                 "hdd": self._hdd_snapshot_locked(),
+                "arrangementRevision": self._arrangement_revision,
+                "arrangementActive": self._plan is not None,
+                "arrangementOrigin": self._plan.origin if self._plan is not None else None,
+                "arrangementTotals": self._plan_report['totals'] if self._plan_report else None,
+                "arrangementHardware": {
+                    # active = aranzacja kieruje cokolwiek na fizyczne linie,
+                    # connected = czy jest gdzie to wyslac (Arduino).
+                    "active": self._hardware_active,
+                    "connected": self._transport is not None,
+                    "lanes": {lane: {"deviceId": device.id, "name": device.name, "type": device.type}
+                              for lane, device in self._hardware_bound.items()},
+                    "unmapped": self._hardware_unmapped,
+                },
+                "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
+                            "report": self._virtual.report,
+                            "activity": (self._virtual.active_at(position, visual_hold=0.25) if self._virtual_mode and playing
+                                         else {device.id: False for device in self._virtual.devices}),
+                            "profiles": [profile.as_dict() for profile in PROFILES.values()]},
             }
 
     def _drum_snapshot_locked(self) -> dict:
@@ -1290,6 +1790,8 @@ class PlaybackEngine:
                 self._fail_locked(f"Arduino: {line}")
 
     def _keepalive_locked(self) -> None:
+        if self._virtual_mode:
+            return
         transport = self._transport
 
         if transport is None or self._state is not PlaybackState.PLAYING:
@@ -1329,7 +1831,7 @@ class PlaybackEngine:
                 if (
                     self._state is not PlaybackState.PLAYING
                     or self._timeline is None
-                    or self._transport is None
+                    or (self._transport is None and not self._virtual_mode)
                 ):
                     timeout: float | None = None
                 else:
@@ -1343,7 +1845,7 @@ class PlaybackEngine:
                 # recznym sterowaniu bebna przychodza tu STATUS-y i bledy.
                 # Podczas handshake'u NIE dotykamy bufora (patrz _handshake).
                 with self._lock:
-                    if not self._handshake:
+                    if not self._handshake and not self._virtual_mode:
                         self._poll_lines_locked()
 
                 self._wake.wait(timeout=WORKER_IDLE_POLL_S)
@@ -1376,7 +1878,12 @@ class PlaybackEngine:
             if command.time > position + 1e-9:
                 break
 
-            if command.lane == LANE_DRUM:
+            if command.lane in LANES and self._transport is None:
+                # Podglad wirtualny bez podlaczonego sprzetu: linie sprzetowe
+                # zostaja w planie (zagraja po podlaczeniu), ale nie mamy
+                # gdzie ich teraz wyslac.
+                pass
+            elif command.lane == LANE_DRUM:
                 if not self._dispatch_drum_locked(command):
                     return None
             elif command.lane == LANE_HDD:
@@ -1385,6 +1892,8 @@ class PlaybackEngine:
 
                 self._hdd_current = command
                 self._hdd_count += 1
+            elif command.lane == 'virtual':
+                pass  # PCM was rendered from accepted mechanical events.
             else:
                 if not self._send_locked(command):
                     return None

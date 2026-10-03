@@ -1662,3 +1662,233 @@ class TestHomeRatujePolaczenie(EngineTestCase):
         hardware = self.engine.snapshot()["hardware"]
         self.assertIsNone(hardware["error"])
         self.assertTrue(hardware["connected"])
+
+
+# ============================================================
+# ARANZACJA: JEDEN DOKUMENT, DWA WYJSCIA
+# ============================================================
+
+
+class TestArrangementOutput(EngineTestCase):
+    """Import aranzacji nie moze zalezec od zakladki ani wymuszac wirtualizacji."""
+
+    def document(self, devices, rules):
+        from playback.arrangement import midi_identity
+
+        return {"schemaVersion": 1, "midi": midi_identity(self.engine.source), "name": "Test",
+                "devices": devices, "rules": rules}
+
+    def device(self, ident, kind, mode="virtual", **fields):
+        return {"id": ident, "type": kind, "mode": mode, **fields}
+
+    def route(self, ident, track, target):
+        return {"id": ident, "source": {"track": track}, "destination": {"deviceId": target},
+                "transform": {}}
+
+    def test_all_virtual_document_never_touches_the_serial_port(self):
+        self.load([(0, .4, 60), (.5, .9, 64)])
+        self.engine.set_arrangement(self.document(
+            [self.device("fdd", "FDD"), self.device("hdd", "HDD_VCM")],
+            [self.route("a", 0, "fdd"), self.route("b", 0, "hdd")]))
+
+        snapshot = self.engine.snapshot()
+        self.assertTrue(snapshot["virtual"]["enabled"])
+        self.assertFalse(snapshot["arrangementHardware"]["active"])
+        self.assertEqual(snapshot["arrangementHardware"]["lanes"], {})
+
+        before = len(self.transport.events)
+        self.engine.play()
+        self.assertTrue(self.wait_for_state(PlaybackState.STOPPED))
+
+        self.assertEqual(self.transport.since(before), [])
+
+    def test_real_device_import_keeps_the_users_output_choice(self):
+        self.load([(0, .4, 60), (.5, .9, 64)])
+        # Uzytkownik ma wylaczony podglad: sam sprzet.
+        with self.engine._lock:
+            self.engine._virtual_mode = False
+
+        self.engine.set_arrangement(self.document(
+            [self.device("fdd", "FDD", "real")], [self.route("a", 0, "fdd")]))
+
+        snapshot = self.engine.snapshot()
+        self.assertFalse(snapshot["virtual"]["enabled"],
+                         "dokument sprzetowy nie moze wymusic wirtualizacji")
+        self.assertTrue(snapshot["arrangementHardware"]["active"])
+        self.assertEqual(list(snapshot["arrangementHardware"]["lanes"]), ["fdd"])
+
+    def test_mixed_document_keeps_the_preview_audible(self):
+        self.load([(0, .4, 60), (.5, .9, 64)])
+        self.engine.set_arrangement(self.document(
+            [self.device("fdd", "FDD", "real"), self.device("other", "FDD", "virtual")],
+            [self.route("a", 0, "fdd"), self.route("b", 0, "other")]))
+
+        snapshot = self.engine.snapshot()
+        self.assertTrue(snapshot["virtual"]["enabled"],
+                        "instancje wirtualne musza byc slyszalne mimo sprzetowych w dokumencie")
+        self.assertEqual(snapshot["arrangementHardware"]["lanes"]["fdd"]["deviceId"], "fdd")
+
+    def test_taken_lane_is_reported_instead_of_silently_ignored(self):
+        self.load([(0, .4, 60)])
+        self.engine.set_arrangement(self.document(
+            [self.device("fdd-1", "FDD", "real"), self.device("fdd-2", "FDD", "real")],
+            [self.route("a", 0, "fdd-1"), self.route("b", 0, "fdd-2")]))
+
+        hardware = self.engine.snapshot()["arrangementHardware"]
+        self.assertEqual(hardware["lanes"]["fdd"]["deviceId"], "fdd-1")
+        self.assertEqual([item["deviceId"] for item in hardware["unmapped"]], ["fdd-2"])
+        self.assertEqual(hardware["unmapped"][0]["reason"], "LANE_TAKEN")
+
+    def test_real_devices_drive_the_serial_port(self):
+        self.load([(0, .2, 60), (.4, .6, 62), (.8, 1.0, 64)])
+        self.engine.set_arrangement(self.document(
+            [self.device("fdd", "FDD", "real")], [self.route("a", 0, "fdd")]))
+
+        with self.engine._lock:
+            self.engine._position_base = 0.0
+            self.engine._state = PlaybackState.STOPPED
+
+        before = len(self.transport.events)
+        self.engine.play()
+        self.assertTrue(self.wait_for_state(PlaybackState.STOPPED))
+
+        # Byl reset linii (STOP/DRUM/HDD), a potem nuty z aranzacji.
+        played = [text for _, text in self.transport.since(before) if text.startswith("PLAY")]
+        self.assertEqual(len(played), 3)
+
+
+# ============================================================
+# HOMING: KLIK "PLAY" NIE MOZE PRZEPASC
+# ============================================================
+
+
+class SlowHomingTransport(FakeTransport):
+    """Arduino, ktory potrzebuje chwili na dojazd do track 0."""
+
+    def __init__(self, homing: float = 0.4, ready: bool = True):
+        super().__init__()
+        self.port = "/dev/fake-homing"
+        self.label = "Fake homing"
+        self.homing = homing
+        self.ready = ready
+        self.homed = 0
+
+    def wait_ready(self, timeout: float = 10.0, echo=print, **_kwargs) -> bool:
+        echo("HOMING")
+        time.sleep(self.homing)
+        self.homed += 1
+
+        if not self.ready:
+            return False
+
+        echo("READY")
+
+        return True
+
+
+class TestHomingQueue(unittest.TestCase):
+    """Play w trakcie homingu musi trafic do kolejki, a nie zniknac."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.path = write_midi(self.tmp / "Song.mid", [(0, .3, 60), (.4, .7, 62)])
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def engine(self, homing=0.4, ready=True):
+        transport = SlowHomingTransport(homing=homing, ready=ready)
+        engine = PlaybackEngine(connect_fn=lambda port: transport, wait_ready=True)
+        engine.start()
+        engine.load_file(self.path)
+
+        return engine, transport
+
+    def wait_until(self, predicate, timeout=3.0):
+        deadline = time.monotonic() + timeout
+
+        while time.monotonic() < deadline:
+            if predicate():
+                return True
+
+            time.sleep(0.01)
+
+        return predicate()
+
+    def test_snapshot_reports_connecting_during_homing(self):
+        engine, _ = self.engine(homing=0.5)
+        thread = threading.Thread(target=engine.connect, daemon=True)
+
+        try:
+            thread.start()
+            self.assertTrue(self.wait_until(lambda: engine.snapshot()["hardware"]["connecting"]))
+            self.assertFalse(engine.snapshot()["hardware"]["connected"])
+        finally:
+            thread.join()
+            engine.shutdown()
+
+    def test_play_during_homing_is_queued_and_starts_on_ready(self):
+        engine, _ = self.engine(homing=0.5)
+        thread = threading.Thread(target=engine.connect, daemon=True)
+
+        try:
+            thread.start()
+            self.assertTrue(self.wait_until(lambda: engine.snapshot()["hardware"]["connecting"]))
+
+            # Klik w trakcie dojazdu: bez bledu, ale jeszcze nie gra.
+            engine.play()
+            self.assertEqual(engine.state, PlaybackState.STOPPED)
+            self.assertTrue(engine.snapshot()["hardware"]["pendingPlay"])
+
+            thread.join()
+            self.assertTrue(self.wait_until(lambda: engine.state is PlaybackState.PLAYING))
+            self.assertFalse(engine.snapshot()["hardware"]["pendingPlay"])
+        finally:
+            thread.join()
+            engine.shutdown()
+
+    def test_failed_homing_does_not_pretend_to_play(self):
+        engine, _ = self.engine(homing=0.2, ready=False)
+        thread = threading.Thread(target=engine.connect, daemon=True)
+
+        try:
+            thread.start()
+            self.assertTrue(self.wait_until(lambda: engine.snapshot()["hardware"]["connecting"]))
+            engine.play()
+            self.assertTrue(engine.snapshot()["hardware"]["pendingPlay"])
+            thread.join()
+        finally:
+            thread.join()
+
+        try:
+            self.assertFalse(self.wait_until(lambda: engine.state is PlaybackState.PLAYING, timeout=0.5))
+            self.assertFalse(engine.snapshot()["hardware"]["pendingPlay"])
+            self.assertIsNotNone(engine.snapshot()["hardware"]["error"])
+        finally:
+            engine.shutdown()
+
+    def test_play_without_any_connection_still_reports_the_error(self):
+        engine = PlaybackEngine(connect_fn=lambda port: FakeTransport(), wait_ready=False)
+        engine.start()
+
+        try:
+            engine.load_file(self.path)
+            engine.play()  # brak transportu i brak homingu
+            self.assertEqual(engine.state, PlaybackState.STOPPED)
+            self.assertIn("brak polaczenia", engine.snapshot()["hardware"]["error"])
+        finally:
+            engine.shutdown()
+
+    def test_play_after_ready_is_immediate(self):
+        engine, transport = self.engine(homing=0.05)
+
+        try:
+            self.assertTrue(engine.connect())
+            self.assertFalse(engine.snapshot()["hardware"]["connecting"])
+            engine.play()
+            self.assertEqual(engine.state, PlaybackState.PLAYING)
+            self.assertFalse(engine.snapshot()["hardware"]["pendingPlay"])
+            self.assertTrue(self.wait_until(lambda: any(t.startswith("PLAY") for t in transport.texts())))
+        finally:
+            engine.shutdown()

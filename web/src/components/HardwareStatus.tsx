@@ -11,18 +11,37 @@ interface Props {
 
 export function HardwareStatus({ hardware, ports, onReconnect, onHome }: Props) {
   const connected = hardware?.connected ?? false
+  const connecting = hardware?.connecting ?? false
+  const pendingPlay = hardware?.pendingPlay ?? false
   const current = hardware?.port ?? null
   const warning = hardware?.warning ?? null
 
+  const title = connected
+    ? 'Arduino connected'
+    : connecting
+      ? 'Arduino: homing…'
+      : 'Arduino disconnected'
+
   return (
     <div className="hardware">
-      <div className={`hardware-status ${connected ? 'ok' : 'off'}`}>
+      <div className={`hardware-status ${connected ? 'ok' : connecting ? 'busy' : 'off'}`}>
         <span className="dot" />
         <span className="hardware-text">
-          <strong>{connected ? 'Arduino connected' : 'Arduino disconnected'}</strong>
-          <small>{current ?? 'brak portu'}</small>
+          <strong>{title}</strong>
+          <small>{current ?? (connecting ? 'czekam na READY…' : 'brak portu')}</small>
         </span>
       </div>
+
+      {connecting && (
+        <p className="hardware-notice" role="status">
+          Stacja dojeżdża do track 0. {pendingPlay
+            ? 'Play jest w kolejce — utwór ruszy sam po READY.'
+            : 'Play wciśnięty teraz wystartuje automatycznie po READY.'}
+        </p>
+      )}
+      {pendingPlay && !connecting && (
+        <p className="hardware-notice" role="status">Czekam na Arduino — utwór ruszy po READY.</p>
+      )}
 
       {hardware?.error && <p className="hardware-error">⚠ {hardware.error}</p>}
 

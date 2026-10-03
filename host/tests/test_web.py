@@ -137,6 +137,56 @@ class WebTestCase(unittest.TestCase):
 
 
 class TestRest(WebTestCase):
+    def test_arrangement_api_save_load_and_mismatch(self):
+        self.engine.load_file(self.midi_dir / 'song.mid')
+        initialized = self.client.post('/api/arrangement/initialize')
+        self.assertEqual(initialized.status_code, 200)
+        document = initialized.json()['arrangement']
+        document['devices'] = [{'id': 'hdd', 'type': 'HDD_VCM'}]
+        document['rules'] = [{'id': 'kick', 'source': {'track': 1, 'includeNotes': [60]},
+                              'destination': {'deviceId': 'hdd'}}]
+        updated = self.client.put('/api/arrangement', json=document)
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.json()['notes'][0]['routes'][0]['deviceId'], 'hdd')
+        self.assertEqual(self.client.post('/api/arrangement/save').status_code, 200)
+        saved = self.client.get('/api/arrangement/saved').json()
+        self.assertEqual(saved['file'], 'song.orchestra.json')
+        self.assertEqual(saved['arrangement']['rules'][0]['id'], 'kick')
+        self.engine.load_file(self.midi_dir / 'song.mid')
+        restored = self.client.post('/api/arrangement/initialize')
+        self.assertEqual(restored.status_code, 200)
+        self.assertEqual(restored.json()['arrangement']['rules'][0]['id'], 'kick')
+        document['midi']['tracks'][1]['name'] = 'wrong'
+        mismatch = self.client.put('/api/arrangement', json=document)
+        self.assertEqual(mismatch.status_code, 409)
+        self.assertEqual(mismatch.json()['detail']['mismatches'][0]['kind'], 'track')
+
+    def test_virtual_preset_round_trip(self):
+        config = {'name': 'Two FDD', 'devices': [
+            {'id': 'a', 'type': 'FDD', 'track': 1},
+            {'id': 'b', 'type': 'FDD', 'track': 1},
+        ]}
+        response = self.client.put('/api/virtual/presets/Two FDD', json=config)
+        self.assertEqual(response.status_code, 200)
+        saved = self.client.get('/api/virtual/presets').json()['presets']['Two FDD']
+        self.assertEqual([d['id'] for d in saved['devices']], ['a', 'b'])
+        self.assertEqual(self.client.delete('/api/virtual/presets/Two FDD').status_code, 200)
+        self.assertEqual(self.client.get('/api/virtual/presets').json()['presets'], {})
+
+    def test_four_dvd_instances_survive_virtual_preset_save_and_load(self):
+        config = {'name': 'DVD overflow', 'devices': [
+            {'id': f'dvd-{number}', 'type': 'DVD_SLED', 'profile': 'DVD_REFERENCE',
+             'mode': 'virtual', 'volume': .2}
+            for number in range(1, 5)
+        ]}
+        response = self.client.put('/api/virtual/presets/DVD overflow', json=config)
+        self.assertEqual(response.status_code, 200)
+        saved = self.client.get('/api/virtual/presets').json()['presets']['DVD overflow']
+        self.assertEqual([item['id'] for item in saved['devices']],
+                         ['dvd-1', 'dvd-2', 'dvd-3', 'dvd-4'])
+        self.assertTrue(all(item['volume'] == .2 and item['mode'] == 'virtual'
+                            for item in saved['devices']))
+
     def test_lista_plikow(self):
         response = self.client.get("/api/files")
 

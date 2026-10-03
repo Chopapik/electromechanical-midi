@@ -55,6 +55,7 @@ from floppy_link import SerialLinkError, describe_ports, scan_ports  # noqa: E40
 from midi_source import MidiSource, MidiSourceError  # noqa: E402
 from pitch import COMFORT_MAX_HZ, COMFORT_MIN_HZ, FOLD_MODES  # noqa: E402
 from playback.engine import EngineError, PlaybackEngine  # noqa: E402
+from playback.arrangement import ArrangementError, ArrangementMismatch  # noqa: E402
 
 # Jak czesto backend publikuje autorytatywny stan (frontend interpoluje
 # plynnie miedzy tymi wiadomosciami przez requestAnimationFrame).
@@ -303,6 +304,8 @@ def create_app(
 
         if action == "play":
             await asyncio.to_thread(engine.play)
+        elif action == "set_virtual":
+            await asyncio.to_thread(engine.configure_virtual, message.get('config') or {})
         elif action == "pause":
             await asyncio.to_thread(engine.pause)
         elif action == "resume":
@@ -447,6 +450,127 @@ def create_app(
             "range": {"minHz": COMFORT_MIN_HZ, "maxHz": COMFORT_MAX_HZ},
         }
 
+    preset_path = midi_dir / '.virtual-orchestra-presets.json'
+
+    def read_presets() -> dict:
+        if not preset_path.exists():
+            return {}
+        try:
+            data = json.loads(preset_path.read_text(encoding='utf-8'))
+            return data if isinstance(data, dict) else {}
+        except (OSError, json.JSONDecodeError):
+            return {}
+
+    @app.get('/api/virtual/presets')
+    def api_virtual_presets() -> dict:
+        return {'presets': read_presets()}
+
+    @app.put('/api/virtual/presets/{name}')
+    def api_save_virtual_preset(name: str, config: dict) -> dict:
+        if not name or len(name) > 100 or '/' in name or '\\' in name:
+            raise HTTPException(status_code=400, detail='invalid preset name')
+        # Use the same parser as playback, so saved presets are always loadable.
+        from playback.virtual import VirtualOrchestra
+        checked = VirtualOrchestra()
+        try:
+            checked.set_config(config)
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        presets = read_presets()
+        presets[name] = checked.config()
+        midi_dir.mkdir(parents=True, exist_ok=True)
+        temporary = preset_path.with_suffix('.tmp')
+        temporary.write_text(json.dumps(presets, ensure_ascii=False, indent=2), encoding='utf-8')
+        temporary.replace(preset_path)
+        return {'presets': presets}
+
+    @app.delete('/api/virtual/presets/{name}')
+    def api_delete_virtual_preset(name: str) -> dict:
+        presets = read_presets()
+        presets.pop(name, None)
+        preset_path.write_text(json.dumps(presets, ensure_ascii=False, indent=2), encoding='utf-8')
+        return {'presets': presets}
+
+    @app.get('/api/arrangement')
+    def api_arrangement() -> dict:
+        return engine.arrangement_view()
+
+    @app.post('/api/arrangement/initialize')
+    def api_initialize_arrangement() -> dict:
+        """Auto Arranger: MIDI + orkiestra -> plan. Zapisany JSON jest tylko
+        opcjonalnym overridem i wczytuje sie razem z plikiem MIDI."""
+        try:
+            engine.initialize_arrangement()
+        except ArrangementMismatch as exc:
+            raise HTTPException(status_code=409, detail={'mismatches': exc.mismatches}) from exc
+        except (ArrangementError, ValueError, TypeError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except EngineError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return engine.arrangement_view()
+
+    @app.get('/api/orchestra')
+    def api_orchestra() -> dict:
+        view = engine.arrangement_view()
+
+        return {'orchestra': view['orchestra'],
+                'report': view['report'],
+                'origin': view['arrangement']['origin'] if view['arrangement'] else None}
+
+    @app.put('/api/orchestra')
+    def api_set_orchestra(payload: dict) -> dict:
+        try:
+            engine.set_orchestra(payload)
+        except (ValueError, TypeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except EngineError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return engine.arrangement_view()
+
+    @app.get('/api/report')
+    def api_report() -> dict:
+        return engine.arrangement_view()['report'] or {}
+
+    @app.put('/api/arrangement')
+    def api_update_arrangement(document: dict) -> dict:
+        try:
+            engine.set_arrangement(document)
+        except ArrangementMismatch as exc:
+            raise HTTPException(status_code=409, detail={'mismatches': exc.mismatches}) from exc
+        except (ArrangementError, ValueError, TypeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except EngineError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        return engine.arrangement_view()
+
+    def arrangement_path() -> Path:
+        source = engine.source
+        if source is None:
+            raise HTTPException(status_code=409, detail='load MIDI first')
+        return midi_dir / f'{source.path.stem}.orchestra.json'
+
+    @app.post('/api/arrangement/save')
+    def api_save_arrangement() -> dict:
+        document = engine.arrangement_view()['arrangement']
+        if document is None:
+            raise HTTPException(status_code=409, detail='no arrangement to save')
+        path = arrangement_path()
+        temporary = path.with_suffix('.tmp')
+        temporary.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding='utf-8')
+        temporary.replace(path)
+        return {'file': path.name}
+
+    @app.get('/api/arrangement/saved')
+    def api_load_arrangement() -> dict:
+        path = arrangement_path()
+        if not path.is_file():
+            raise HTTPException(status_code=404, detail=f'{path.name} not found')
+        try:
+            document = json.loads(path.read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {'file': path.name, 'arrangement': document}
+
     # --------------------------------------------------------
     # WebSocket
     # --------------------------------------------------------
@@ -573,6 +697,8 @@ def main(argv: list[str] | None = None) -> int:
             return link
 
     engine = PlaybackEngine(
+        # GUI: MIDI -> Auto Arranger -> plan -> orkiestra. Bez JSON-a.
+        auto_arrange=True,
         connect_fn=connect_fn,
         min_hz=args.min_hz,
         max_hz=args.max_hz,

@@ -170,6 +170,14 @@ class TrackInfo:
         return " - ".join(parts)
 
 
+@dataclasses.dataclass(frozen=True)
+class TimedText:
+    time: float
+    text: str
+    kind: str
+    track: int
+
+
 # ============================================================
 # REDUKCJA DO MONOFONII
 #
@@ -363,6 +371,7 @@ class MidiSource:
         self.tempo = TempoMap(self._midi)
 
         self._notes_cache: dict[int, list[NoteSpan]] = {}
+        self._text_cache: tuple[TimedText, ...] | None = None
         self.tracks: list[TrackInfo] = [
             self._describe(index) for index in range(len(self._midi.tracks))
         ]
@@ -410,6 +419,26 @@ class MidiSource:
             note_count=note_count,
             channels=tuple(sorted(channels)),
         )
+
+    def programs(self, track_index: int) -> tuple[int, ...]:
+        """GM program changes on the track's note channels (zero based)."""
+        channels = set(self.tracks[track_index].channels)
+        return tuple(message.program for message in self._midi.tracks[track_index]
+                     if message.type == 'program_change' and message.channel in channels)
+
+    def text_events(self) -> tuple[TimedText, ...]:
+        """Timed text and karaoke events, including text-only tracks."""
+        if self._text_cache is None:
+            events = []
+            for index, track in enumerate(self._midi.tracks):
+                tick = 0
+                for message in track:
+                    tick += message.time
+                    if message.type in ('text', 'lyrics', 'lyric'):
+                        events.append(TimedText(self.tempo.seconds_at(tick),
+                                                str(message.text), message.type, index))
+            self._text_cache = tuple(sorted(events, key=lambda item: (item.time, item.track)))
+        return self._text_cache
 
     # ---------- nuty ----------
 

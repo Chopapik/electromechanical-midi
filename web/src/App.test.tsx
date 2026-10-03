@@ -164,6 +164,76 @@ describe('App', () => {
     vi.unstubAllGlobals()
   })
 
+  it('adds a virtual device without Arduino and sends its track to the backend', async () => {
+    const socket = await renderApp({
+      virtual: {
+        enabled: false,
+        config: { name: 'Test', devices: [] },
+        report: {},
+        activity: {},
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    await waitFor(() => expect(screen.getByText('Virtual Orchestra')).toBeDefined())
+    fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'FDD' } })
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual',
+      config: { enabled: true, devices: [{ type: 'FDD', track: 1 }] },
+    })
+  })
+
+  it('adds a quiet DVD and removes a specific instance from OrchestraConfig', async () => {
+    const fdd = { id: 'fdd-1', type: 'FDD', name: 'FDD #1', track: null, role: '', volume: .6,
+      pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
+    const dvd = { ...fdd, id: 'dvd-1', type: 'DVD_SLED', name: 'DVD sled #1',
+      volume: .2, profile: 'DVD_REFERENCE' }
+    const socket = await renderApp({ virtual: {
+      enabled: true, config: { name: 'Eleven voices', devices: [fdd, dvd] },
+      report: {}, activity: {}, profiles: [
+        { id: 'FDD_CURRENT', kind: 'FDD', parameters: {} },
+        { id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} },
+      ],
+    } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'DVD_SLED' } })
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual', config: { devices: [fdd, dvd, { type: 'DVD_SLED', volume: .2,
+        profile: 'DVD_REFERENCE', mode: 'virtual' }] },
+    })
+    const row = screen.getByText('DVD sled #1 · DVD sled').closest('details')!
+    fireEvent.click(row.querySelector('summary')!)
+    fireEvent.click(row.querySelector('button:last-of-type')!)
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual', config: { devices: [fdd] },
+    })
+  })
+
+  it('shows each device LED from backend activity state', async () => {
+    const socket = await renderApp({
+      virtual: {
+        enabled: true,
+        config: { name: 'Test', devices: [{ id: 'a', type: 'FDD', name: 'FDD #1', track: 1,
+          role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+          profile: 'FDD_CURRENT', mode: 'virtual', overrides: {} }] },
+        report: {}, activity: { a: false },
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    expect(screen.getByLabelText('FDD #1: idle').classList.contains('is-active')).toBe(false)
+    await act(async () => {
+      socket.emit({ type: 'state', state: { ...STATE, virtual: {
+        enabled: true, config: { name: 'Test', devices: [{ id: 'a', type: 'FDD', name: 'FDD #1', track: 1,
+          role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+          profile: 'FDD_CURRENT', mode: 'virtual', overrides: {} }] }, report: {}, activity: { a: true },
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
+      } } })
+    })
+    expect(screen.getByLabelText('FDD #1: active').classList.contains('is-active')).toBe(true)
+  })
+
   it('pokazuje plik, track i status sprzetu', async () => {
     await renderApp()
 
@@ -269,7 +339,8 @@ describe('App', () => {
   it('wgranie pliku MIDI wysyla POST i przelacza na nowy plik', async () => {
     const socket = await renderApp()
 
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    // Import aranzacji tez ma ukryty input - wybieramy ten od plikow MIDI.
+    const input = document.querySelector('input[type="file"][accept*=".mid"]') as HTMLInputElement
     expect(input).not.toBeNull()
 
     const file = new File([new Uint8Array([77, 84, 104, 100])], 'nowy.mid', {
@@ -542,5 +613,98 @@ describe('App', () => {
 
     expect(screen.getByText('Disconnected')).toBeDefined()
     expect((screen.getByTitle('Start bębna') as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('wspolny import aranzacji jest dostepny w kazdej zakladce', async () => {
+    const documents: Array<Record<string, unknown>> = []
+    const arrangement = {
+      schemaVersion: 1, name: 'Imported song', midi: { file: 'song.mid', sha256: 'abc', tracks: [] },
+      devices: [{ id: 'fdd', type: 'FDD', name: 'FDD', track: 1, role: '', volume: 1, pan: 0,
+        mute: false, solo: false, transpose: 0, gate: 1, profile: 'FDD_CURRENT', mode: 'real', overrides: {} }],
+      rules: [],
+    }
+    vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/api/arrangement' && init?.method === 'PUT') {
+        documents.push(JSON.parse(String(init.body)) as Record<string, unknown>)
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ arrangement, notes: [], midiIdentity: arrangement.midi, tracks: [], revision: 2 }) } as Response)
+      }
+      return mockFetch(url, init)
+    }))
+
+    await renderApp()
+
+    // Ten sam przycisk widac na kazdej zakladce - nie ma osobnego importu
+    // "dla sprzetu" i "dla wirtualizacji".
+    for (const tab of ['PLAYER', 'ORCHESTRA', 'ARRANGEMENT']) {
+      fireEvent.click(screen.getByRole('button', { name: tab }))
+      expect(screen.getAllByRole('button', { name: 'Import Arrangement JSON' }).length).toBeGreaterThan(0)
+    }
+
+    const input = screen.getAllByLabelText('Arrangement JSON file').at(-1) as HTMLInputElement
+    Object.defineProperty(File.prototype, 'text', { configurable: true, value: vi.fn(async () => JSON.stringify(arrangement)) })
+    fireEvent.change(input, { target: { files: [new File(['{}'], 'song.orchestra.json')] } })
+
+    await waitFor(() => expect(documents).toHaveLength(1))
+    expect(documents[0].name).toBe('Imported song')
+    await waitFor(() => expect(screen.getByText(/Imported .Imported song./)).toBeDefined())
+  })
+
+  it('tryb instancji decyduje o sprzecie i idzie do backendu', async () => {
+    const device = { id: 'a', type: 'FDD', name: 'FDD #1', track: 1, role: '', volume: .6, pan: 0,
+      mute: false, solo: false, transpose: 0, gate: 1, profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
+    const socket = await renderApp({
+      virtual: { enabled: true, config: { name: 'Test', devices: [device] }, report: {}, activity: {},
+        profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }] },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
+    const mode = screen.getByLabelText('FDD #1 mode') as HTMLSelectElement
+    expect(mode.value).toBe('virtual')
+    expect([...mode.options].map(option => option.value)).toEqual(['virtual', 'real', 'hybrid'])
+
+    fireEvent.change(mode, { target: { value: 'real' } })
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual',
+      config: { devices: [{ id: 'a', mode: 'real' }] },
+    })
+  })
+
+  it('pokazuje ktore instancje trafily na fizyczne linie Serial', async () => {
+    await renderApp({
+      arrangementHardware: {
+        active: true, connected: true,
+        lanes: { fdd: { deviceId: 'fdd', name: 'FDD · Yorke', type: 'FDD' } },
+        unmapped: [{ deviceId: 'fdd-2', name: 'FDD · extra', type: 'FDD', reason: 'LANE_TAKEN', lane: 'fdd', boundTo: 'fdd' }],
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
+    expect(screen.getByText('Hardware lanes')).toBeDefined()
+    expect(screen.getByText(/FDD · Yorke/)).toBeDefined()
+    expect(screen.getByText(/lane fdd already used by fdd/)).toBeDefined()
+  })
+
+  it('w trakcie homingu pokazuje ze Play czeka w kolejce', async () => {
+    await renderApp({
+      hardware: { connected: false, port: null, label: null, error: null, warning: null, log: [],
+        connecting: true, pendingPlay: true },
+    })
+
+    expect(screen.getByText('Arduino: homing…')).toBeDefined()
+    expect(screen.getByText(/Play jest w kolejce/)).toBeDefined()
+    expect(screen.getByText(/czekam na Arduino \(homing\)/)).toBeDefined()
+    // Play nie moze wygladac na zepsuty, skoro tylko czeka na READY.
+    expect(screen.queryByText('Arduino disconnected')).toBeNull()
+  })
+
+  it('bez homingu pokazuje zwykle rozlaczenie i blad', async () => {
+    await renderApp({
+      hardware: { connected: false, port: null, label: null, error: 'brak polaczenia z Arduino',
+        warning: null, log: [], connecting: false, pendingPlay: false },
+    })
+
+    expect(screen.getByText('Arduino disconnected')).toBeDefined()
+    expect(screen.getByText(/brak polaczenia z Arduino/)).toBeDefined()
+    expect(screen.queryByText('Arduino: homing…')).toBeNull()
   })
 })
