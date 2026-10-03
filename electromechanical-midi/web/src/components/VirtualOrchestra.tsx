@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { ArrangementHardware, DeviceMode, FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
 
 const KINDS = ['FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR']
+let fallbackDeviceId = 0
+const newDeviceId = (type: string) => globalThis.crypto?.randomUUID?.() ?? `${type}-${Date.now()}-${++fallbackDeviceId}`
 const LABEL: Record<string, string> = {
   FDD: 'FDD', DVD_SLED: 'DVD sled', STEPPER_FREE: 'Free stepper',
   VHS: 'VHS motor', HDD_VCM: 'HDD VCM', SOLENOID_RESONATOR: 'Solenoid + resonator',
@@ -35,15 +37,15 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   const apply = (devices: VirtualDevice[], active = enabled) => configure({ ...config, devices }, active)
   const add = (type: string) => {
     const count = config.devices.filter(d => d.type === type).length + 1
-    const id = globalThis.crypto?.randomUUID?.() ?? `${type}-${Date.now()}`
+    const id = newDeviceId(type)
     apply([...config.devices, {
       id, type, name: `${LABEL[type]} #${count}`, track: metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
-      role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      role: '', volume: type === 'DVD_SLED' ? .2 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
       profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: 'virtual', overrides: {},
     }], true)  }
   const update = (id: string, patch: Partial<VirtualDevice>) => apply(config.devices.map(d => d.id === id ? { ...d, ...patch } : d))
   const duplicate = (device: VirtualDevice) => {
-    const id = globalThis.crypto?.randomUUID?.() ?? `${device.type}-${Date.now()}`
+    const id = newDeviceId(device.type)
     apply([...config.devices, { ...device, id, name: `${device.name} copy` }])
   }
   const changeParameter = (device: VirtualDevice, key: string, patch: Partial<{ value: number | null; provenance: string; source: string }>) => {

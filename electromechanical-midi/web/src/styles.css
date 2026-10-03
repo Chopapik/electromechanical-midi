@@ -710,3 +710,6 @@ select:disabled {
 .report-devices td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .util-bar { display: inline-block; height: 7px; min-width: 2px; margin-right: 7px; vertical-align: middle;
   border-radius: 4px; background: var(--accent); opacity: .75; }
+
+/* Mechanical sustain: roznica miedzy zapisem MIDI a wykonaniem mechaniki. */
+.mechanical-sustain { color: var(--accent); font-size: 12px; margin: 2px 0; }

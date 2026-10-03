@@ -183,6 +183,33 @@ describe('App', () => {
     })
   })
 
+  it('adds a quiet DVD and removes a specific instance from OrchestraConfig', async () => {
+    const fdd = { id: 'fdd-1', type: 'FDD', name: 'FDD #1', track: null, role: '', volume: .6,
+      pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
+    const dvd = { ...fdd, id: 'dvd-1', type: 'DVD_SLED', name: 'DVD sled #1',
+      volume: .2, profile: 'DVD_REFERENCE' }
+    const socket = await renderApp({ virtual: {
+      enabled: true, config: { name: 'Eleven voices', devices: [fdd, dvd] },
+      report: {}, activity: {}, profiles: [
+        { id: 'FDD_CURRENT', kind: 'FDD', parameters: {} },
+        { id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} },
+      ],
+    } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'DVD_SLED' } })
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual', config: { devices: [fdd, dvd, { type: 'DVD_SLED', volume: .2,
+        profile: 'DVD_REFERENCE', mode: 'virtual' }] },
+    })
+    const row = screen.getByText('DVD sled #1 · DVD sled').closest('details')!
+    fireEvent.click(row.querySelector('summary')!)
+    fireEvent.click(row.querySelector('button:last-of-type')!)
+    expect(socket.actions().at(-1)).toMatchObject({
+      action: 'set_virtual', config: { devices: [fdd] },
+    })
+  })
+
   it('shows each device LED from backend activity state', async () => {
     const socket = await renderApp({
       virtual: {

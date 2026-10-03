@@ -1000,6 +1000,27 @@ pio run -d firmware/floppy
 
 ## Auto Arranger (domyślny przepływ)
 
+### Semantyczna klasyfikacja tracków
+
+Kolejność: `MidiSource → normalizacja dubli → klasyfikacja semantyczna → wybór leadu/basu → allocator → PerformancePlan`. Klasyfikator w `host/playback/semantic.py` nadaje każdej partii rolę `VOCAL`, `BACKING_VOCAL`, `BASS`, `GUITAR`, `KEYS`, `STRINGS`, `PAD_SYNTH`, `PERCUSSION` albo `OTHER`. Raport aranżacji zawiera `trackClassification` z wynikiem każdej roli, pewnością, rodziną GM i powodami; zakładka **ARRANGEMENT** pokazuje je także w inspectorze nuty. Wyniki to jawne sumy wag, a nie prawdopodobieństwa.
+
+| Sygnał | Punkty |
+| --- | --- |
+| nazwa wokalu/basu | `+0.72` do wskazanej roli |
+| nazwa innej rozpoznanej roli | `+0.68` |
+| nazwa chórku / dodatkowego głosu | `+0.78 BACKING_VOCAL` |
+| `melody` / `solo` w nazwie | `+0.08 VOCAL` |
+| rodzina GM Bass | `+0.45 BASS` |
+| inna rozpoznana rodzina GM | `+0.18` do odpowiedniej roli |
+| kanał perkusyjny MIDI | `+1.00 PERCUSSION` |
+| monofonia co najmniej 80% | `+0.07 VOCAL`, `+0.04 BACKING_VOCAL`; przy niskich nutach `+0.04 BASS` |
+| średnia wysokość 48–84 / nie wyższa niż 55 | `+0.06 VOCAL` / `+0.12 BASS` |
+| co najmniej 30% małych interwałów / średni czas nuty 0.1–0.8 s | `+0.04 VOCAL` / `+0.02 VOCAL` |
+| polifonia co najmniej 1.5 | `+0.04 GUITAR`, `KEYS`, `STRINGS` |
+| zbieżność co najmniej 25% nut z tekstem w oknie ±120 ms | do `+0.50 VOCAL`, `+0.10 BACKING_VOCAL`, proporcjonalnie do zbieżności 75% |
+
+Niska partia z GM Bass odejmuje `0.35` od punktów `VOCAL`. Bazowy wynik `OTHER` to `0.25`; rola musi osiągnąć `0.55`, inaczej pozostaje `OTHER`. Pewność to wynik zwycięskiej roli ograniczony do `1.00`. `VOCAL` przejmuje lead tylko przy pewności co najmniej `0.75` i przewadze co najmniej `0.12` nad innymi rolami; w przeciwnym razie działa dotychczasowa heurystyka. Pewny `BASS` i `PERCUSSION` są wyłączone z jej kandydatów. Po wyborze leadu tylko jego nuty mają dostęp do VHS; pozostałe partie tonalne korzystają z FDD/DVD, a perkusja z HDD.
+
 MIDI → analiza → **voice allocator** → **Performance Plan** → Virtual Orchestra
 (a później ten sam plan → hardware scheduler).
 
@@ -1065,6 +1086,144 @@ Kolejność ratowania nuty:
 
 `REASSIGNED`, `DELAYED`, `ARPEGGIATED`, `STOLEN`, `SHORTENED` to jawne wyniki
 widoczne w inspektorze nuty i w raporcie.
+
+### Mechaniczna artykulacja FDD (legato)
+
+MIDI gitary to często bardzo krótkie nuty: szarpnięcie struny plus naturalne
+wybrzmienie instrumentu. Stacja dyskietek **nie ma naturalnego decayu** — jeśli
+zagramy literalnie 62 ms i STOP, słychać `puk, cisza, puk, cisza`. Muzyka
+przestaje się nieść, mimo poprawnych onsetów.
+
+`playback/articulation.py` dodaje warstwę **wykonawczą**: rozdziela
+`sourceDuration` (co jest w MIDI) od `performedDuration` (co zagra mechanika).
+
+```
+Allocator → PerformancePlan (sourceDuration)
+          → articulation pass (performedDuration)
+          → Virtual Orchestra / hardware scheduler
+```
+
+Pass żyje **między allokatorem a rendererem**, więc wirtualizacja i przyszły
+sprzęt dostają dokładnie tę samą długość wykonawczą. Renderer nie podejmuje
+żadnych nowych decyzji.
+
+#### Algorytm
+
+```
+desiredEnd   = max(sourceEnd, start + preferredMechanicalSustain)
+desiredEnd   = min(desiredEnd, sourceEnd + maxSustainExtension)
+limit        = nextAssignedNoteStart − releaseGap      (na TYM SAMYM urządzeniu)
+performedEnd = min(desiredEnd, limit)
+performedEnd = max(performedEnd, sourceEnd)            (nigdy nie skracamy)
+```
+
+* **NOTE_ON / `actual_start` nigdy się nie zmienia** — groove zostaje.
+* `releaseGap` rośnie do artykulacji mechanicznej (12 ms) przy powtórce tego
+  samego pitchu, żeby dwie nuty nie zlały się w jedną ciągłą.
+* Zdarzenia `SHORTENED` są pomijane — sustain nie cofa decyzji schedulera.
+* Tylko urządzenia z `capability.articulation == 'sustain'` (FDD). VHS, HDD,
+  solenoid i stepper mają `'none'`.
+* Zmiana jest **adaptacyjna**: przy gęstym riffie (mediana przerwy 19 ms) nuta
+  wydłuża się o ~16 ms; tam, gdzie jest 260 ms miejsca, dochodzi do 190 ms.
+  Długie nuty (≥ `preferred`) zostają 1:1.
+
+#### Parametry (`BALANCED`)
+
+| parametr | wartość |
+| --- | --- |
+| `preferredMechanicalSustainMs` | 190 |
+| `minMechanicalSustainMs` | 120 |
+| `releaseGapMs` | 3 |
+| `maxSustainExtensionMs` | 200 |
+| `mechanicalSustain` | `true` (wyłącznik A/B) |
+
+#### Benchmark Creep
+
+| metryka | przed | po |
+| --- | --- | --- |
+| played / dropped | 4344 / 181 | 4344 / 181 (bez zmian) |
+| accompaniment continuity | 0,371 | **0,661** |
+| long gaps > 150 ms | 237 | **20** |
+| total silence | 68,0 s | **41,5 s** |
+| planned coverage | 0,709 | **0,823** |
+| FDD coverage | 0,371 | **0,665** |
+| mean performed duration | 61,5 ms | **107,8 ms** |
+
+Kontrola `2+2=5`: liczba zdarzeń, NOTE_ON (bit w bit), decyzje allokatora
+(urządzenie/wynik/rola) i `sourceDuration` **identyczne**; zmieniają się
+wyłącznie długości na FDD. Ten utwór też zyskuje: continuity 0,843 → 0,942,
+cisza 14,0 s → 6,9 s.
+
+### Normalizacja źródeł: double-tracking
+
+Realne pliki MIDI często zawierają tę samą partię zagraną dwa razy — `Guitar 1`
+i `Guitar Dub`, stereo-duble, warstwy przesunięte o kilka–kilkadziesiąt ms. Dla
+syntezatora to normalna technika producencka. Dla monofonicznej orkiestry
+mechanicznej to **fałszywa polifonia**: dwa głosy walczą o te same FDD, choć
+muzycznie to jedna partia.
+
+`playback/duplicates.py` wykrywa takie pary i zamienia surowe tracki na
+**partie logiczne**:
+
+```
+MidiSource → detect() → DuplicateReport
+           → normalize() → NormalizedSource (partie logiczne)
+           → analysis → allocator → PerformancePlan
+```
+
+Detekcja **nie używa nazw ani numerów tracków** — liczy się wyłącznie struktura
+nut. Nazwa trafia tylko do raportu.
+
+#### Algorytm
+
+1. **Odsiew wstępny** — tylko tracki tonalne (perkusji nie deduplikujemy),
+   ≥ 8 nut, stosunek liczby nut ≥ 0,60.
+2. **Estymacja offsetu** — histogram `b.start − a.start` po parach *tego samego
+   pitchu* w oknie ±250 ms, ziarno 1 ms; bierze się najgęstszy bin i uściśla
+   medianą wokół szczytu. Histogram, nie średnia: kilka brakujących nut albo
+   ornament nie przesuwa wyniku.
+3. **Dopasowanie** — z offsetem, każda nuta A szuka najbliższej nuty B o tym
+   samym pitchu w oknie ±40 ms; każda nuta B użyta najwyżej raz.
+4. **Metryki** — `matchingRatio` (względem większego tracku), `pitchAgreement`,
+   `medianOffset`, `offsetMad`, `durationSimilarity`, `velocitySimilarity`,
+   `countRatio`, `confidence`.
+5. **Werdykt** — `EXACT_DUPLICATE` / `NEAR_DUPLICATE` / `DIFFERENT`.
+6. **Grupowanie** — spójne składowe po parach duplikatów, a potem **weryfikacja
+   każdego członka względem primary** (łańcuch A~B~C nie skleja A z C).
+
+| próg | EXACT | NEAR |
+| --- | --- | --- |
+| matchingRatio | ≥ 0,99 | ≥ 0,90 |
+| offset MAD | ≤ 8 ms | ≤ 30 ms |
+| durationSimilarity | ≥ 0,90 | ≥ 0,75 |
+| velocitySimilarity | ≥ 0,90 | ≥ 0,55 |
+
+Primary wybierany jest deterministycznie: większa liczba nut, potem wcześniejszy
+indeks. Dub nie zużywa drugiego mechanicznego głosu — partia logiczna ma nuty
+primary, a pełna metadana źródłowa (`sourceTracks`, `duplicateGroupId`,
+`duplicateConfidence`, offsety) zostaje w planie i w raporcie.
+
+Zasada bezpieczeństwa: **wolimy nie połączyć prawdziwego dubla niż źle skleić
+dwie różne partie**. Przykłady false-positive protection: `C-E-G` vs `E-G-B`
+(2/3 zgodności), ta sama linia o oktawę wyżej, ten sam rytm z innym pitchsem,
+gęsty niezależny track. Na 15 plikach w `midi/` detektor znajduje grupy
+**wyłącznie w Creep**.
+
+#### Benchmark Creep
+
+| metryka | przed | po |
+| --- | --- | --- |
+| tonal events | 5793 | 3259 |
+| accompaniment demand | 2393 s | **1345 s** |
+| demand / 3×FDD capacity | 3,40 | **1,91** |
+| dropped | 1411 | **181** |
+| drop rate | 20,0% | **4,0%** |
+| delayed + arpeggiated | 2933 | **711** |
+| długie dziury (>150 ms) | 237 | 237 |
+| orchestra silent | 64,9 s | 68,0 s |
+| planned coverage | 0,722 | 0,709 |
+
+Kontrola `2+2=5` (0 grup): wszystkie metryki **bit w bit identyczne** przed i po.
 
 ### VHS = DEDICATED_LEAD_ONLY
 
@@ -1211,3 +1370,15 @@ Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.
 `devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mode`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware (bez aranżacji); gdy aranżacja jest wczytana, routing obu wyjść pochodzi z jej reguł i pola `mode`.
 
 Piano roll używa cienkiego renderera Canvas bez nowego parsera MIDI ani zegara odtwarzania. Oceniono [react-piano-roll](https://github.com/PlayfulCreations/react-piano-roll), [@minagishl/react-piano-roll](https://www.npmjs.com/package/%40minagishl/react-piano-roll), [tween-midi-editor](https://github.com/tuomashatakka/tween-midi-editor) i [@tonejs/midi](https://www.npmjs.com/package/%40tonejs/midi). Gotowe edytory dodają własne odtwarzanie lub model MIDI i utrudniają niestandardowe kolory, wielokierunkowy routing oraz diagnostykę pojedynczej nuty; ostatnia biblioteka jest parserem, który powielałby `MidiSource`. Canvas rysuje tylko nuty widoczne w oknie, więc duży plik nie tworzy tysięcy elementów DOM. Loop range, fizyczny/hybrid adapter routingu i faktyczne warianty artykulacji pozostają kolejnym etapem.
+
+## Eksperyment: cztery dodatkowe głosy DVD
+
+Domyślna testowa orkiestra ma teraz 3 FDD, 4 wirtualne `DVD_SLED`, 1 VHS i 3 HDD. DVD mają profil `DVD_REFERENCE` z nieznanym zakresem fizycznym, tryb `virtual` i głośność `0.2`; nie dodano sterowania fizycznymi napędami. FDD mają pierwszeństwo dla akompaniamentu, a DVD przejmują nuty, gdy FDD są zajęte. VHS pozostaje urządzeniem wyłącznie dla leadu, HDD wyłącznie dla perkusji. W zakładce **ORCHESTRA** można nadal dodawać, usuwać i zapisywać poszczególne instancje; te zmiany trafiają do `OrchestraConfig` używanego przez Auto Arrangera.
+
+Porównanie 7 urządzeń (bez DVD) z 11 urządzeniami na tych samych znormalizowanych plikach MIDI:
+
+```sh
+.venv/bin/python scripts/benchmark_dvd.py
+```
+
+Wyniki z dostępnych lokalnie utworów są w [`benchmarks/dvd-7-vs-11.json`](benchmarks/dvd-7-vs-11.json). Zawierają drop rate, ciągłość, ciszę tonalną oraz liczbę nut i wykorzystanie każdego DVD. Istniejący zapisany JSON Jigsaw jest ręcznym override po wczytaniu tego konkretnego pliku; benchmark celowo mierzy czysty Auto Arranger bez tego override.

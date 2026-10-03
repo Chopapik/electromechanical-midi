@@ -67,7 +67,7 @@ export function AutoArrangerReport({ report, origin }: {
             </dd>
           </dl>
         </div>
-        <Bucket title="Tonal (FDD + VHS)" bucket={report.tonal} />
+        <Bucket title="Tonal (FDD + DVD + VHS)" bucket={report.tonal} />
         <Bucket title="Percussion (HDD)" bucket={report.percussion} />
         <div className="report-bucket">
           <h4>Rescue mechanisms</h4>
@@ -82,6 +82,67 @@ export function AutoArrangerReport({ report, origin }: {
           </dl>
         </div>
       </div>
+
+      {!!report.trackClassification?.some(track => track.noteCount > 0 && track.finalRole !== 'PERCUSSION') && <div className="report-bucket">
+        <h4>Track classification</h4>
+        <div className="track-classifications">{report.trackClassification
+          .filter(track => track.noteCount > 0 && track.finalRole !== 'PERCUSSION')
+          .map(track => <div key={track.index} className="track-classification">
+            <strong>{track.index} — {track.name}</strong>{' · '}{track.finalRole}
+            {' · '}{percent(track.confidence)}
+            <span className="muted"> · GM {track.gmFamily ?? 'unknown'}
+              {' · '}{track.monophonic ? 'monophonic' : 'polyphonic'}
+              {' · '}{track.evidence.slice(0, 3).join('; ')}</span>
+          </div>)}</div>
+      </div>}
+
+      {report.duplicates && report.duplicates.groupsFound > 0 && <div className="report-bucket report-duplicates">
+        <h4>Duplicate detection (double-tracking)</h4>
+        <p className="muted">
+          {report.duplicates.groupsFound} groups · {report.duplicates.tracksCollapsed} tracks collapsed ·
+          tonal events {report.duplicates.rawTonalEvents} → {report.duplicates.logicalTonalEvents}
+          {' '}(−{report.duplicates.duplicateEventsCollapsed})
+        </p>
+        <dl>
+          <dt>accompaniment demand</dt>
+          <dd>{report.duplicates.accompanimentDemandSecondsBefore.toFixed(0)} s →{' '}
+            {report.duplicates.accompanimentDemandSecondsAfter.toFixed(0)} s</dd>
+          <dt>demand / accompaniment capacity</dt>
+          <dd>{report.duplicates.demandCapacityBefore.toFixed(2)} →{' '}
+            {report.duplicates.demandCapacityAfter.toFixed(2)}</dd>
+        </dl>
+        {report.duplicates.groups.map(group => <p key={group.groupId} className="muted">
+          {group.tracks.map(track => group.names[String(track)] ?? track).join(' + ')}
+          {' '}· confidence {group.confidence.toFixed(3)}
+          {group.duplicates.map(track => ` · offset ${(
+            group.medianOffsetsMs[String(track)] ?? 0).toFixed(2)} ms [${group.verdicts[String(track)]}]`).join('')}
+        </p>)}
+      </div>}
+
+      {report.articulation && <div className="report-bucket">
+        <h4>FDD mechanical sustain</h4>
+        <dl>
+          <dt>notes extended</dt><dd>{report.articulation.extended}</dd>
+          <dt>mean extension</dt><dd>+{report.articulation.meanExtensionMs.toFixed(0)} ms</dd>
+          <dt>max extension</dt><dd>+{report.articulation.maxExtensionMs.toFixed(0)} ms</dd>
+          <dt>added sustain</dt><dd>{report.articulation.addedSeconds.toFixed(0)} s</dd>
+          <dt>target length</dt><dd>{report.articulation.params.preferredMechanicalSustainMs} ms</dd>
+        </dl>
+      </div>}
+
+      {report.continuity && <div className="report-bucket">
+        <h4>Continuity</h4>
+        <dl>
+          <dt>silent gaps</dt><dd>{report.continuity.silentGapCount}</dd>
+          <dt>audible gaps &gt;150 ms</dt><dd>{report.continuity.longGapCount}</dd>
+          <dt>orchestra silent</dt><dd>{report.continuity.orchestraSilentTime.toFixed(1)} s</dd>
+          <dt>planned coverage</dt><dd>{percent(report.continuity.plannedCoverage)}</dd>
+          {report.continuity.accompanimentContinuity !== undefined && <>
+            <dt>accompaniment continuity</dt>
+            <dd>{percent(report.continuity.accompanimentContinuity)}</dd>
+          </>}
+        </dl>
+      </div>}
 
       {report.devices.length > 0 && <table className="report-devices">
         <thead>

@@ -34,7 +34,7 @@ describe('AutoArrangerReport', () => {
   it('pokazuje metryki ratowania nut i wynik globalny', () => {
     render(<AutoArrangerReport report={report} origin="auto" />)
 
-    expect(screen.getByText('Tonal (FDD + VHS)')).toBeDefined()
+    expect(screen.getByText('Tonal (FDD + DVD + VHS)')).toBeDefined()
     expect(screen.getByText('Percussion (HDD)')).toBeDefined()
     expect(screen.getByText('16.7%')).toBeDefined()      // drop rate
     expect(screen.getByText('auto')).toBeDefined()
@@ -64,5 +64,20 @@ describe('AutoArrangerReport', () => {
   it('nic nie renderuje bez raportu', () => {
     const { container } = render(<AutoArrangerReport report={null} />)
     expect(container.firstChild).toBeNull()
+  })
+
+  it('pokazuje role, pewnosc i dowody klasyfikacji tonalnych trackow', () => {
+    render(<AutoArrangerReport report={{ ...report, trackClassification: [
+      { index: 5, name: 'Thom Yorke (voz)', noteCount: 153, finalRole: 'VOCAL',
+        confidence: 0.98, gmFamily: 'Reed', monophonic: true, lyricAlignment: 0.98,
+        evidence: ['name: voz', 'lyrics alignment: 98%'], roleScores: { VOCAL: 0.98 } },
+      { index: 8, name: 'Drums', noteCount: 400, finalRole: 'PERCUSSION',
+        confidence: 1, gmFamily: null, monophonic: false, lyricAlignment: 0,
+        evidence: ['MIDI drum channel'], roleScores: { PERCUSSION: 1 } },
+    ] }} origin="auto" />)
+    expect(screen.getByText('Track classification')).toBeDefined()
+    expect(screen.getByText(/Thom Yorke \(voz\)/)).toBeDefined()
+    expect(screen.getByText(/GM Reed.*monophonic.*name: voz.*lyrics alignment/)).toBeDefined()
+    expect(screen.queryByText(/8 — Drums/)).toBeNull()
   })
 })

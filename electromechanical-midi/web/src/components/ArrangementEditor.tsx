@@ -160,6 +160,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
   if (!view?.arrangement) return <section className="arrangement"><h2>Arrangement</h2><p>Loading arrangement…</p></section>
   const doc = view.arrangement
   const selected = view.notes.find(n => n.id === selectedId) ?? null
+  const selectedClassification = view.report?.trackClassification?.find(item => item.index === selected?.track)
   const drumTracks = view.tracks.filter(t => t.isDrums)
   const drumIndex = drumTrack ?? drumTracks[0]?.index ?? null
   const drumNotes = [...new Map(view.notes.filter(n => n.track === drumIndex).map(n => [n.note, n])).values()].sort((a, b) => a.note - b.note)
@@ -208,13 +209,26 @@ export function ArrangementEditor({ file, state, seek }: Props) {
       <div className="arrangement-inspector"><h3>Note Inspector</h3>
         {selected ? <><p><strong>{selected.name ?? `MIDI ${selected.note}`}</strong> · MIDI {selected.note} · {selected.isDrum ? 'drum' : 'tonal'}</p>
           <p>SOURCE: track {selected.track} — {selected.trackName} · channel {selected.channel} · velocity {selected.velocity}{selected.role ? ` · rola ${selected.role}` : ''}</p>
+          {selectedClassification && <p>SEMANTIC: {selectedClassification.finalRole} · {(selectedClassification.confidence * 100).toFixed(0)}%
+            {' · '}{selectedClassification.evidence.slice(0, 3).join('; ')}</p>}
+          {(selected.sourceTracks?.length ?? 0) > 1 && <p className="muted">
+            partia logiczna z tracków {selected.sourceTracks!.join(' + ')}
+            {selected.duplicateGroupId ? ` · grupa ${selected.duplicateGroupId}` : ''}
+          </p>}
           <p>AUTO ARRANGER: <strong>{selected.deviceId ?? 'DROP'}</strong>
             {selected.reassigned ? ' (reassigned)' : ''}{selected.folded ? ' (folded)' : ''}</p>
           <p>OUTCOME: <strong className={selected.outcome === 'DROPPED' ? 'report-bad' : ''}>{selected.outcome ?? selected.status}</strong>{selected.reason ? ` · ${selected.reason}` : ''}</p>
           <p>TIMING: start {formatTime(selected.start)} → {formatTime(selected.actualStart ?? selected.start)}
             {(selected.delayMs ?? 0) > 0.01 ? ` · +${(selected.delayMs ?? 0).toFixed(1)} ms` : ' · on time'}</p>
-          <p>Duration {selected.duration.toFixed(3)}s{(selected.actualDuration ?? selected.duration) < selected.duration - 1e-3
-            ? ` → ${(selected.actualDuration ?? selected.duration).toFixed(3)}s (shortened)` : ''}</p>
+          <p>Source duration: {(selected.sourceDuration ?? selected.duration) * 1000 >= 1 ? `${((selected.sourceDuration ?? selected.duration) * 1000).toFixed(0)} ms` : `${(selected.sourceDuration ?? selected.duration).toFixed(3)} s`}
+            {' · '}Performed duration: {((selected.performedDuration ?? selected.actualDuration ?? selected.duration) * 1000 >= 1)
+              ? `${((selected.performedDuration ?? selected.actualDuration ?? selected.duration) * 1000).toFixed(0)} ms`
+              : `${(selected.performedDuration ?? selected.actualDuration ?? selected.duration).toFixed(3)} s`}</p>
+          {(selected.sustainExtendedMs ?? 0) > 0.5 && <p className="mechanical-sustain">
+            Mechanical sustain: +{(selected.sustainExtendedMs ?? 0).toFixed(0)} ms
+          </p>}
+          {(selected.actualDuration ?? selected.duration) < (selected.sourceDuration ?? selected.duration) - 1e-3
+            && (selected.sustainExtendedMs ?? 0) <= 0.5 && <p className="muted">skrócone przez scheduler</p>}
           {selected.routes.length ? selected.routes.map((r, i) => <p key={`${r.ruleId}-${i}`} className="inspector-route">
             Rule {r.ruleId} → {doc.devices.find(d => d.id === r.deviceId)?.name ?? 'DROP'} · {r.status}
             {r.reason ? ` · ${r.reason}` : ''}{r.articulation ? ` · ${r.articulation}` : ''}

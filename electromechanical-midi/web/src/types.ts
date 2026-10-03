@@ -226,6 +226,13 @@ export interface ArrangementNote {
   reassigned?: boolean
   folded?: boolean
   reason?: string | null
+  sourceTracks?: number[]
+  duplicateGroupId?: string | null
+  // Jawny podzial: co bylo w MIDI vs co zagra mechanika (FDD sustain).
+  sourceDuration?: number
+  performedDuration?: number
+  sustainExtendedMs?: number
+  mechanicalArticulation?: string | null
 }
 
 export interface ReportBucket {
@@ -244,6 +251,11 @@ export interface ReportDevice {
 
 export interface ArrangementReport {
   sourceEvents: number
+  trackClassification?: Array<{
+    index: number; name: string; noteCount: number; finalRole: string
+    confidence: number; roleScores: Record<string, number>; evidence: string[]
+    gmFamily: string | null; monophonic: boolean; lyricAlignment: number
+  }>
   lead: {
     requested: number; played: number; dropped: number
     delayed: number; preservation: number
@@ -261,6 +273,63 @@ export interface ArrangementReport {
     meanDelayMs: number; maxDelayMs: number
   }
   duration: number
+  continuity?: ContinuityMetrics
+  duplicates?: DuplicateSummary | null
+  articulation?: ArticulationStats | null
+}
+
+export interface ContinuityMetrics {
+  orchestraSilentTime: number
+  silentGapCount: number
+  meanSilentGapMs: number
+  medianSilentGapMs: number
+  p90SilentGapMs: number
+  maxSilentGapMs: number
+  longGapCount: number
+  longGapSeconds: number
+  plannedCoverage: number
+  accompanimentActiveSeconds?: number
+  accompanimentCoveredSeconds?: number
+  accompanimentContinuity?: number
+  fddCoverage?: number
+}
+
+export interface ArticulationStats {
+  extended: number
+  meanExtensionMs: number
+  maxExtensionMs: number
+  addedSeconds: number
+  params: {
+    enabled: boolean
+    minMechanicalSustainMs: number
+    preferredMechanicalSustainMs: number
+    releaseGapMs: number
+    maxSustainExtensionMs: number
+  }
+}
+
+export interface DuplicateGroupInfo {
+  groupId: string
+  primary: number
+  tracks: number[]
+  duplicates: number[]
+  confidence: number
+  names: Record<string, string>
+  medianOffsetsMs: Record<string, number>
+  verdicts: Record<string, string>
+}
+
+export interface DuplicateSummary {
+  groupsFound: number
+  tracksCollapsed: number
+  rawTonalEvents: number
+  logicalTonalEvents: number
+  duplicateEventsCollapsed: number
+  accompanimentDemandSecondsBefore: number
+  accompanimentDemandSecondsAfter: number
+  demandCapacityBefore: number
+  demandCapacityAfter: number
+  groups: DuplicateGroupInfo[]
 }
 
 export interface OrchestraView {
@@ -272,7 +341,8 @@ export interface ArrangementView {
   arrangement: ArrangementDocument | null
   notes: ArrangementNote[]
   midiIdentity: ArrangementDocument['midi'] | null
-  tracks: Array<{ index: number; name: string; isDrums: boolean; noteCount: number }>
+  tracks: Array<{ index: number; name: string; isDrums: boolean; noteCount: number
+    sourceTracks?: number[]; groupId?: string | null; duplicateConfidence?: number | null }>
   revision: number
   report?: ArrangementReport | null
   orchestra?: OrchestraView
