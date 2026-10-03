@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT / 'host'))
 from midi_source import MidiSource  # noqa: E402
 from playback import allocator, analysis  # noqa: E402
 from playback.arrangement import Arrangement, midi_identity  # noqa: E402
+from playback import duplicates  # noqa: E402
 from playback.orchestra import default_orchestra  # noqa: E402
 from playback.virtual import VirtualOrchestra  # noqa: E402
 
@@ -161,6 +162,120 @@ def describe(label: str, source: MidiSource, devices: list[dict], auto: bool) ->
     return result
 
 
+def duplicate_comparison(source: MidiSource) -> None:
+    """Przed/po sklejeniu double-trackingu - ten sam plik, ta sama orkiestra."""
+    report = duplicates.detect(source)
+    normalized = duplicates.normalize(source, report)
+    print('  DUPLICATE DETECTION')
+
+    if not report.groups:
+        print('    brak grup - plik nie ma zdublowanych partii')
+    else:
+        print(f'    groupsFound {len(report.groups)}, tracksCollapsed {report.collapsed_tracks}, '
+              f'events {report.raw_tonal_events} -> {report.logical_tonal_events} '
+              f'(-{report.events_removed})')
+        for group in report.groups:
+            names = ' + '.join(group.names[index] for index in group.tracks)
+            print(f'      {names}')
+            print(f'        confidence {group.confidence:.3f}  primary track {group.primary}')
+            for track in group.duplicates:
+                similarity = next((pair for pair in report.pairs
+                                   if {pair.track_a, pair.track_b} == {group.primary, track}), None)
+                detail = (f'pitch {similarity.pitch_agreement:.3f} '
+                          f'timing-mad {similarity.offset_mad_s * 1000:.2f} ms' if similarity else '')
+                print(f'        + track {track} {group.names[track]}: '
+                      f'offset {group.median_offsets[track] * 1000:+.2f} ms '
+                      f'[{group.verdicts[track]}] {detail}')
+
+    before = allocator.allocate(source, default_orchestra())
+    after = allocator.allocate(normalized, default_orchestra())
+    report_before, report_after = before.report(), after.report()
+
+    kpi = report_after['duplicates']
+    print()
+    print(f'    {"metric":28s} {"before":>12s} {"after":>12s}')
+    rows = [
+        ('tonal requested', report_before['tonal']['requested'], report_after['tonal']['requested']),
+        ('accompaniment demand [s]',
+         kpi.get('accompanimentDemandSecondsBefore'), kpi.get('accompanimentDemandSecondsAfter')),
+        ('demand / accompaniment capacity', kpi.get('demandCapacityBefore'), kpi.get('demandCapacityAfter')),
+        ('played', report_before['totals']['played'], report_after['totals']['played']),
+        ('dropped', report_before['totals']['dropped'], report_after['totals']['dropped']),
+        ('drop rate', round(report_before['totals']['dropRate'], 3),
+         round(report_after['totals']['dropRate'], 3)),
+        ('shortened', report_before['totals']['shortened'], report_after['totals']['shortened']),
+        ('voice steals', report_before['totals']['voiceSteals'], report_after['totals']['voiceSteals']),
+        ('delayed + arpeggiated',
+         report_before['totals']['delayed'] + report_before['totals']['arpeggiated'],
+         report_after['totals']['delayed'] + report_after['totals']['arpeggiated']),
+        ('silent gap count', report_before['continuity']['silentGapCount'],
+         report_after['continuity']['silentGapCount']),
+        ('orchestra silent [s]', report_before['continuity']['orchestraSilentTime'],
+         report_after['continuity']['orchestraSilentTime']),
+        ('max silent gap [ms]', report_before['continuity']['maxSilentGapMs'],
+         report_after['continuity']['maxSilentGapMs']),
+        ('planned coverage', report_before['continuity']['plannedCoverage'],
+         report_after['continuity']['plannedCoverage']),
+    ]
+
+    for label, left, right in rows:
+        print(f'    {label:28s} {str(left):>12s} {str(right):>12s}')
+    print()
+
+
+def articulation_comparison(source: MidiSource) -> None:
+    """Przed/po mechanicznej artykulacji FDD - ten sam plan, inna dlugosc NOTE_OFF."""
+    from playback.orchestra import BALANCED
+    from playback import allocator
+
+    normalized = duplicates.normalize(source)
+    base = default_orchestra()
+    off = allocator.allocate(normalized, type(base)(
+        devices=base.devices, policy={**BALANCED, 'mechanicalSustain': False}))
+    on = allocator.allocate(normalized, base)
+    before, after = off.report(), on.report()
+    stats = on.articulation
+
+    print('  FDD MECHANICAL SUSTAIN')
+    print(f'    params: preferred {stats["params"]["preferredMechanicalSustainMs"]} ms, '
+          f'release {stats["params"]["releaseGapMs"]} ms, '
+          f'max extension {stats["params"]["maxSustainExtensionMs"]} ms')
+    print(f'    notes extended {stats["extended"]}, mean +{stats["meanExtensionMs"]} ms, '
+          f'max +{stats["maxExtensionMs"]} ms, added {stats["addedSeconds"]} s')
+
+    rows = [
+        ('played', before['totals']['played'], after['totals']['played']),
+        ('dropped', before['totals']['dropped'], after['totals']['dropped']),
+        ('source tonal coverage', before['continuity']['plannedCoverage'],
+         after['continuity']['plannedCoverage']),
+        ('long gaps >150 ms', before['continuity']['longGapCount'],
+         after['continuity']['longGapCount']),
+        ('silent gap count', before['continuity']['silentGapCount'],
+         after['continuity']['silentGapCount']),
+        ('median gap [ms]', before['continuity']['medianSilentGapMs'],
+         after['continuity']['medianSilentGapMs']),
+        ('total silence [s]', before['continuity']['orchestraSilentTime'],
+         after['continuity']['orchestraSilentTime']),
+        ('accompaniment continuity', before['continuity']['accompanimentContinuity'],
+         after['continuity']['accompanimentContinuity']),
+        ('FDD coverage', before['continuity']['fddCoverage'],
+         after['continuity']['fddCoverage']),
+        ('FDD utilization',
+         round(sum(d['utilization'] for d in before['devices'] if d['type'] == 'FDD'), 3),
+         round(sum(d['utilization'] for d in after['devices'] if d['type'] == 'FDD'), 3)),
+        ('mean performed [ms]',
+         round(sum(e.actual_duration for e in off.events if e.device_type == 'FDD')
+               / max(1, len([e for e in off.events if e.device_type == 'FDD'])) * 1000, 1),
+         round(sum(e.actual_duration for e in on.events if e.device_type == 'FDD')
+               / max(1, len([e for e in on.events if e.device_type == 'FDD'])) * 1000, 1)),
+    ]
+    print()
+    print(f'    {"metric":26s} {"before":>12s} {"after":>12s}')
+    for label, left, right in rows:
+        print(f'    {label:26s} {str(left):>12s} {str(right):>12s}')
+    print()
+
+
 def main(argv: list[str]) -> int:
     songs = argv[1:] or list(DEFAULT_SONGS)
 
@@ -187,6 +302,9 @@ def main(argv: list[str]) -> int:
               f'bas track {profile.bass_track} ({bass})')
         print(f'  role: {dict(Counter(profile.roles.values()))}')
         print()
+
+        duplicate_comparison(source)
+        articulation_comparison(source)
 
         before = describe('STATIC (dawny routing)', source, orchestra.devices, auto=False)
         print()
