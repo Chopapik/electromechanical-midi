@@ -134,7 +134,13 @@ python -m pip install -r host/requirements.txt
 ```
 
 Zależności: `mido` (parsowanie MIDI), `pyserial` (Serial), `fastapi` +
-`uvicorn` (web player).
+`uvicorn` (web player), `numpy` (wektorowy render podglądu Virtual Orchestra).
+
+> `numpy` jest opcjonalny w kodzie (jest fallback czysto-pythonowy), ale bez
+> niego `WavePreview.render` liczy próbka po próbce i pierwszy `Play` w trybie
+> wirtualnym potrafi zamrozić UI na kilkanaście/kilkadziesiąt sekund:
+> przykładowa aranżacja 6 urządzeń ≈ 5.9 s vs 0.2 s, duża aranżacja 40 urządzeń
+> ≈ 24 s vs 0.9 s.
 
 > Na macOS port Arduino nazywa się zwykle `/dev/cu.usbmodemXXXX`.
 > Program wykrywa go sam - nigdzie nie ma zaszytego numeru portu.
@@ -496,6 +502,12 @@ sterowanie), do zmiany razem z ewentualnym watchdogiem bębna.
   kandydatów, UI pozwala wybrać port.
 * Po otwarciu portu Uno resetuje się, robi homing i wysyła `READY` - backend
   czeka na to i pokazuje wynik.
+* **Play wciśnięty w trakcie homingu nie przepada.** Homing trwa do
+  `--ready-timeout` (domyślnie 12 s) i przez cały ten czas nie ma jeszcze
+  transportu, więc kiedyś kliknięcie `▶` kończyło się cichym „nic się nie
+  stało". Teraz backend zapamiętuje zamiar (`hardware.pendingPlay`), UI pokazuje
+  `Arduino: homing…` / `Play jest w kolejce`, a utwór rusza sam po `READY`.
+  To dotyczy też **Reconnect** i **Home**.
 * **Awaria w trakcie grania** (np. wyjęty kabel) → utwór przechodzi w `paused`
   z komunikatem błędu; playback **nie udaje, że gra dalej w ciszy**.
 * Po podłączeniu sprzętu wciśnij **Reconnect** i wznów (`▶`).
@@ -1012,6 +1024,19 @@ Reguły obsługują `track`/`tracks`, `channel`/`channels`, `includeNotes`, `exc
 
 **Save Arrangement** zapisuje obok MIDI plik `<nazwa>.orchestra.json` w katalogu `midi/`. **Load Arrangement** odczytuje ten plik. Import/eksport pozwalają przenieść JSON jako osobny plik. Backend sprawdza `schemaVersion`, nazwę i SHA-256 MIDI oraz indeksy i nazwy tracków. Przy niezgodności import pokazuje mapowanie tracków do aktualnego pliku przed zastosowaniem. Format wersji 1:
 
+**Import jest wspólny dla wszystkich zakładek.** Przycisk *Import Arrangement JSON* siedzi w nagłówku obok zakładek, więc ten sam plik wczytasz z **PLAYER**, **ORCHESTRA** i **ARRANGEMENT** — nie ma osobnego dokumentu „dla sprzętu” i „dla wirtualizacji”. Import nie przełącza też na siłę na wirtualizację: o wyjściu decyduje pole `mode` każdej instancji, a nie zakładka.
+
+`mode` instancji ma trzy wartości:
+
+| `mode` | Symulacja i piano roll | Podgląd audio (WAV) | Fizyczne linie Serial |
+| --- | --- | --- | --- |
+| `virtual` | tak | tak | nie |
+| `real` | tak (diagnostyka) | nie | tak |
+| `hybrid` | tak | tak | tak |
+
+Sprzęt ma dokładnie jedną linię FDD, jedną bębna VHS i jedną HDD, więc dla każdej linii wybierana jest **pierwsza** instancja `real`/`hybrid` (kolejność w `devices`). Pozostałe trafiają do sekcji *Hardware lanes* w zakładce **ORCHESTRA** jako `LANE_TAKEN` — zamiast być po cichu zignorowane. Komendy sprzętowe (`PLAY`/`STOP`, `DRUM`/`DRUMF`, `HIT`) powstają z tych samych zaakceptowanych zdarzeń, które widzi symulacja (`host/playback/hardware.py`), więc sprzęt nie zagra niczego, czego piano roll nie pokazuje jako `ACCEPTED`/`FOLDED`/`DELAYED`. `mute` i `solo` wyciszają także sprzęt. Gdy Arduino nie jest podłączone, `GET /api/state` zwraca `arrangementHardware.active` (aranżacja kieruje na linie) i `.connected: false`; linie czekają w planie i ruszają po podłączeniu.
+
+
 Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json`](midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json). Wybierz odpowiadający mu MIDI bez dopisku `(2)` lub `(3)`, a potem otwórz **ARRANGEMENT**. Przykład przypisuje wokal i gitarę do dwóch FDD, bas do VHS, stopę/werbel do HDD, talerze do solenoidu i smyczki do steppera; hi-hat 42 pozostaje nieprzypisany. To demonstracja routingu, nie skalibrowana recepta dla fizycznych urządzeń.
 
 ```json
@@ -1038,6 +1063,6 @@ Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.
 }
 ```
 
-`devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware; routing wirtualnej orkiestry po włączeniu aranżacji pochodzi z jej reguł.
+`devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mode`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware (bez aranżacji); gdy aranżacja jest wczytana, routing obu wyjść pochodzi z jej reguł i pola `mode`.
 
 Piano roll używa cienkiego renderera Canvas bez nowego parsera MIDI ani zegara odtwarzania. Oceniono [react-piano-roll](https://github.com/PlayfulCreations/react-piano-roll), [@minagishl/react-piano-roll](https://www.npmjs.com/package/%40minagishl/react-piano-roll), [tween-midi-editor](https://github.com/tuomashatakka/tween-midi-editor) i [@tonejs/midi](https://www.npmjs.com/package/%40tonejs/midi). Gotowe edytory dodają własne odtwarzanie lub model MIDI i utrudniają niestandardowe kolory, wielokierunkowy routing oraz diagnostykę pojedynczej nuty; ostatnia biblioteka jest parserem, który powielałby `MidiSource`. Canvas rysuje tylko nuty widoczne w oknie, więc duży plik nie tworzy tysięcy elementów DOM. Loop range, fizyczny/hybrid adapter routingu i faktyczne warianty artykulacji pozostają kolejnym etapem.

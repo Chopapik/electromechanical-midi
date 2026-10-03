@@ -46,14 +46,16 @@ from .timeline import (
     DRUM_DRIVE_DEFAULT,
     DRUM_MAX_HZ_DEFAULT,
     DRUM_MIN_HZ_DEFAULT,
+    LANES,
     LANE_DRUM,
     LANE_HDD,
     Command,
     Timeline,
     make_timeline,
 )
-from .virtual import PROFILES, VirtualOrchestra, WavePreview
+from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
 from .arrangement import Arrangement, midi_identity
+from .hardware import bind_devices, build_commands
 
 # Ostatnie 1.5 ms czekania to aktywne krecenie - dzieki temu komendy
 # wychodza wtedy, kiedy maja, a nie "mniej wiecej".
@@ -260,7 +262,15 @@ class PlaybackEngine:
         self._arrangement: Arrangement | None = None
         self._arrangement_notes: list[dict] = []
         self._arrangement_revision = 0
+        # Instancje aranzacji podpięte do fizycznych linii Serial. Pusty
+        # slownik = czysty podglad wirtualny, nie wolno wtedy dotykac sprzetu.
+        self._hardware_bound: dict[str, VirtualDeviceInstance] = {}
+        self._hardware_unmapped: list[dict] = []
+        self._hardware_active = False
         self._hardware = HardwareStatus()
+        # Klik "Play" w trakcie homingu nie moze przepasc: zapamietujemy
+        # zamiar i startujemy od razu, gdy Arduino zglosi READY.
+        self._pending_play = False
         self._last_io = 0.0
 
         # --- VHS drum ---
@@ -372,9 +382,9 @@ class PlaybackEngine:
             except Exception as exc:
                 ready = False
                 error = str(exc)
-            finally:
-                with self._lock:
-                    self._handshake = False
+            # _handshake zdejmujemy dopiero po instalacji transportu (nizej).
+            # Inaczej miedzy koncem homingu a podlaczeniem jest okno, w ktorym
+            # Play wyglada jak "brak polaczenia z Arduino".
 
             if not ready and error is None:
                 error = "brak READY po homingu (stacja nie odpowiedziala)"
@@ -384,6 +394,7 @@ class PlaybackEngine:
 
         with self._lock:
             self._transport = transport
+            self._handshake = False
             self._hardware = HardwareStatus(
                 connected=True,
                 port=str(device) if device else port,
@@ -406,6 +417,17 @@ class PlaybackEngine:
             self._drum_drive_sent = 0
             self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
             self._request_status_locked(force=True)
+
+            pending = self._pending_play
+            self._pending_play = False
+
+        # Play klikniety w trakcie homingu startuje teraz - bez tego uzytkownik
+        # widzi, ze "nic sie nie stalo", i musi klikac drugi raz.
+        if pending and ready:
+            try:
+                self.play()
+            except EngineError:
+                pass
 
         return ready
 
@@ -482,11 +504,23 @@ class PlaybackEngine:
             if ok and blind:
                 self._hardware.warning = BLIND_HOME_WARNING
 
+            pending = self._pending_play
+            self._pending_play = False
+
+        # Play klikniety w trakcie homingu (albo podczas reconnectu) startuje
+        # tutaj, zamiast przepasc.
+        if pending and ok:
+            try:
+                self.play()
+            except EngineError:
+                pass
+
         return ok
 
     def disconnect(self) -> None:
         with self._lock:
             was_playing = self._state is PlaybackState.PLAYING
+            self._pending_play = False
 
             if was_playing:
                 self._position_base = self._position_locked()
@@ -719,30 +753,19 @@ class PlaybackEngine:
         self._preview_generation += 1
         self._preview_request = None
 
+        if self._arrangement is not None:
+            self._rebuild_arrangement_locked(position)
+            return
+
         if self._virtual_mode:
             was_playing = self._state is PlaybackState.PLAYING
             if not was_playing:
                 self._preview.close()
-            if self._arrangement is not None:
-                routes, notes = self._arrangement.route(self._source)
-                self._timeline = self._virtual.simulate(self._source, routes)
-                for note in notes:
-                    decisions = self._virtual.decisions.get(note['id'], [])
-                    by_device = {decision['deviceId']: decision for decision in decisions}
-                    for route in note['routes']:
-                        if route['deviceId'] in by_device:
-                            route.update(by_device[route['deviceId']])
-                    if decisions:
-                        statuses = {decision['status'] for decision in decisions}
-                        note['status'] = next((status for status in ('DELAYED', 'FOLDED', 'ACCEPTED', 'DROPPED')
-                                               if status in statuses), 'DROPPED')
-                    else:
-                        note['status'] = 'UNASSIGNED'
-                self._arrangement_notes = notes
-                self._arrangement_revision += 1
-            else:
-                self._timeline = self._virtual.simulate(self._source)
-                self._arrangement_notes = []
+            self._timeline = self._virtual.simulate(self._source)
+            self._arrangement_notes = []
+            self._hardware_active = False
+            self._hardware_bound = {}
+            self._hardware_unmapped = []
             position = max(0.0, min(position, self._timeline.duration))
             if was_playing:
                 # Keep the old preview and monotonic playhead running while a
@@ -753,6 +776,10 @@ class PlaybackEngine:
                 self._position_base = position
                 self._next_index = self._timeline.index_after(position)
             return
+
+        self._hardware_active = True
+        self._hardware_bound = {}
+        self._hardware_unmapped = []
 
         self._timeline = make_timeline(
             self._source,
@@ -784,6 +811,57 @@ class PlaybackEngine:
         self._position_base = position
         self._next_index = self._timeline.index_after(position)
         self._current = None
+
+    def _rebuild_arrangement_locked(self, position: float) -> None:
+        """Timeline z aranzacji: symulacja + (opcjonalnie) fizyczne linie.
+
+        Jeden dokument, dwa wyjscia. Instancje 'virtual'/'hybrid' ida do
+        podgladu audio, instancje 'real'/'hybrid' - na Serial. Komendy
+        sprzetowe powstaja z zaakceptowanych zdarzen symulacji, wiec oba
+        wyjscia nie moga sie rozjechac.
+        """
+        was_playing = self._state is PlaybackState.PLAYING
+
+        if not was_playing:
+            self._preview.close()
+
+        routes, notes = self._arrangement.route(self._source)
+        virtual_timeline = self._virtual.simulate(self._source, routes)
+
+        bound, unmapped = bind_devices(self._arrangement.devices)
+        self._hardware_bound = bound
+        self._hardware_unmapped = unmapped
+        hardware_commands = build_commands(self._virtual, bound)
+        self._hardware_active = bool(hardware_commands)
+
+        merged = list(virtual_timeline.commands) + hardware_commands
+        self._timeline = Timeline.from_commands(merged, virtual_timeline.stats)
+
+        for note in notes:
+            decisions = self._virtual.decisions.get(note['id'], [])
+            by_device = {decision['deviceId']: decision for decision in decisions}
+            for route in note['routes']:
+                if route['deviceId'] in by_device:
+                    route.update(by_device[route['deviceId']])
+            if decisions:
+                statuses = {decision['status'] for decision in decisions}
+                note['status'] = next((status for status in ('DELAYED', 'FOLDED', 'ACCEPTED', 'DROPPED')
+                                       if status in statuses), 'DROPPED')
+            else:
+                note['status'] = 'UNASSIGNED'
+
+        self._arrangement_notes = notes
+        self._arrangement_revision += 1
+
+        position = max(0.0, min(position, self._timeline.duration))
+
+        if was_playing:
+            self._next_index = self._timeline.index_after(position)
+            if self._virtual_mode:
+                self._request_preview_locked(self._virtual, self._timeline.duration)
+        else:
+            self._position_base = position
+            self._next_index = self._timeline.index_after(position)
 
     def _request_preview_locked(self, orchestra: VirtualOrchestra, duration: float) -> None:
         self._preview_request = (self._preview_generation, orchestra, duration)
@@ -856,11 +934,20 @@ class PlaybackEngine:
                 raise EngineError('load MIDI before importing an arrangement')
             arrangement = Arrangement.parse(payload, self._source, allow_mismatch=allow_mismatch)
             candidate = VirtualOrchestra(arrangement.devices, arrangement.data['name'])
-            if not self._virtual_mode:
+            bound, _ = bind_devices(arrangement.devices)
+            preview_devices = [device for device in arrangement.devices if device.in_preview]
+            if not self._virtual_mode and not bound:
                 self._reset_instruments_locked()
             self._arrangement = arrangement
             self._virtual = candidate
-            self._virtual_mode = True
+            # Import NIE przelacza na sile wirtualizacji. Dokument z
+            # instancjami sprzetowymi zostawia wybor uzytkownika: podglad
+            # wlaczony = tryb hybrydowy (sprzet + audio), wylaczony = sam
+            # sprzet. Podglad MUSI dzialac, gdy dokument ma cokolwiek do
+            # uslyszenia (instancje virtual/hybrid) albo gdy nie ma gdzie
+            # wyslac komend sprzetowych.
+            if preview_devices or not bound or self._transport is None:
+                self._virtual_mode = True
             self._rebuild_locked(keep_position=True)
             self._wake.set()
 
@@ -899,9 +986,9 @@ class PlaybackEngine:
             if position >= self._timeline.duration:
                 position = 0.0
 
-            if self._virtual_mode:
-                self._preview.render(self._virtual, self._timeline.duration)
-
+            # Podglad renderujemy TYLKO gdy go nie ma (albo jest nieaktualny).
+            # Wczesniej lecial od nowa przy kazdym Play - przy 6 urzadzeniach
+            # to ~6 s, przy 40 ~20 s zamrozonego UI i locka silnika.
             self._begin_locked(position)
 
     def pause(self) -> None:
@@ -967,6 +1054,14 @@ class PlaybackEngine:
             return
 
         if self._transport is None and not self._virtual_mode:
+            # Homing/reconnect trwa (do ready_timeout). Zamiast cicho nie
+            # zrobic nic albo straszyc bledem - zapamietujemy zamiar
+            # i zagramy, gdy tylko pojawi sie READY.
+            if self._handshake:
+                self._pending_play = True
+                self._wake.set()
+                return
+
             self._fail_locked("brak polaczenia z Arduino")
             return
 
@@ -974,12 +1069,19 @@ class PlaybackEngine:
             if self._preview.path is None:
                 self._preview.render(self._virtual, timeline.duration)
             self._preview.play(position)
-            self._next_index = timeline.index_after(position)
-            self._origin = time.monotonic() - position
-            self._position_base = position
-            self._state = PlaybackState.PLAYING
-            self._wake.set()
-            return
+
+            if not (self._hardware_active and self._transport is not None):
+                # Czysty podglad wirtualny: sprzet zostaje nietkniety.
+                self._next_index = timeline.index_after(position)
+                self._origin = time.monotonic() - position
+                self._position_base = position
+                self._state = PlaybackState.PLAYING
+                self._wake.set()
+                return
+
+            # Tryb hybrydowy: podglad gra dalej, a ponizszy kod wysyla stan
+            # linii sprzetowych. _reset_instruments_locked nie zatrzymuje
+            # wtedy preview.
 
         # Zawsze STOP + DRUM 0 przed nowym planem - zaden instrument nie
         # moze zostac z dzwiekiem ze starego planu.
@@ -1016,10 +1118,17 @@ class PlaybackEngine:
         self._wake.set()
 
     def _reset_instruments_locked(self) -> bool:
-        if self._virtual_mode:
-            self._preview.stop()
+        """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop).
+
+        Nic nie wysyla, gdy zaden plan nie uzywa fizycznych linii: czysty
+        podglad wirtualny nie moze szarpac podlaczonym sprzetem.
+        """
+        if self._transport is None:
             return True
-        """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop)."""
+
+        if self._virtual_mode and not self._hardware_active:
+            return True
+
         stop_ok = self._safe_send_stop_locked()
         drum_ok = self._apply_drum_locked(drive=0, force=True)
         hdd_ok = self._send_raw_locked("HDD 0")
@@ -1187,11 +1296,25 @@ class PlaybackEngine:
                 "strategy": self._strategy,
                 "range": {"minHz": self._min_hz, "maxHz": self._max_hz},
                 "stats": timeline.stats.as_dict() if timeline else None,
-                "hardware": self._hardware.as_dict(),
+                "hardware": {
+                    **self._hardware.as_dict(),
+                    # connecting: trwa homing/reconnect (Play poczeka w kolejce).
+                    "connecting": self._handshake,
+                    "pendingPlay": self._pending_play,
+                },
                 "drum": self._drum_snapshot_locked(),
                 "hdd": self._hdd_snapshot_locked(),
                 "arrangementRevision": self._arrangement_revision,
                 "arrangementActive": self._arrangement is not None,
+                "arrangementHardware": {
+                    # active = aranzacja kieruje cokolwiek na fizyczne linie,
+                    # connected = czy jest gdzie to wyslac (Arduino).
+                    "active": self._hardware_active,
+                    "connected": self._transport is not None,
+                    "lanes": {lane: {"deviceId": device.id, "name": device.name, "type": device.type}
+                              for lane, device in self._hardware_bound.items()},
+                    "unmapped": self._hardware_unmapped,
+                },
                 "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
                             "report": self._virtual.report,
                             "activity": (self._virtual.active_at(position, visual_hold=0.25) if self._virtual_mode and playing
@@ -1556,7 +1679,12 @@ class PlaybackEngine:
             if command.time > position + 1e-9:
                 break
 
-            if command.lane == LANE_DRUM:
+            if command.lane in LANES and self._transport is None:
+                # Podglad wirtualny bez podlaczonego sprzetu: linie sprzetowe
+                # zostaja w planie (zagraja po podlaczeniu), ale nie mamy
+                # gdzie ich teraz wyslac.
+                pass
+            elif command.lane == LANE_DRUM:
                 if not self._dispatch_drum_locked(command):
                     return None
             elif command.lane == LANE_HDD:

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ArrangementEditor } from './components/ArrangementEditor'
+import { ArrangementImport } from './components/ArrangementImport'
 import { DrumPanel } from './components/DrumPanel'
 import { HardwareStatus } from './components/HardwareStatus'
 import { MidiFileSelector } from './components/MidiFileSelector'
@@ -36,6 +37,10 @@ export default function App() {
         {(['player', 'orchestra', 'arrangement'] as const).map(value =>
           <button key={value} type="button" aria-current={tab === value ? 'page' : undefined}
             onClick={() => setTab(value)}>{value.toUpperCase()}</button>)}
+
+        {/* Jeden import dla wszystkich zakladek: ten sam JSON opisuje
+            instancje wirtualne i sprzetowe (pole "mode" kazdego urzadzenia). */}
+        <ArrangementImport className="global-import" />
       </nav>
 
       {player.error && (
@@ -76,6 +81,11 @@ export default function App() {
 
         <div className="status-line">
           <span className={`pill ${state?.state ?? 'stopped'}`}>{state?.state ?? 'stopped'}</span>
+          {state?.hardware?.pendingPlay && (
+            <span className="pill waiting" role="status">
+              czekam na Arduino (homing) — ruszy po READY
+            </span>
+          )}
           {stats && (
             <span className="muted">
               {stats.notes} nut · złożone oktawowo: {stats.folded}
@@ -204,7 +214,7 @@ export default function App() {
         )}
       </section>}
 
-      {tab === 'orchestra' && <VirtualOrchestra virtual={state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={state?.arrangementActive} />}
+      {tab === 'orchestra' && <VirtualOrchestra virtual={state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={state?.arrangementActive} hardware={state?.arrangementHardware} />}
 
       {tab === 'arrangement' && <ArrangementEditor file={state?.file ?? null} state={state} seek={player.seek} />}
 

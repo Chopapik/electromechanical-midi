@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ArrangementDocument, ArrangementRule, ArrangementView, PlayerState } from '../types'
+import { ArrangementImport } from './ArrangementImport'
 import { PianoRoll, deviceColor, sourceColor, type ViewMode } from './PianoRoll'
 
 const STATUS = ['ACCEPTED', 'FOLDED', 'DELAYED', 'DROPPED', 'UNASSIGNED']
@@ -25,7 +26,6 @@ export function ArrangementEditor({ file, state, seek }: Props) {
   const [imported, setImported] = useState<ArrangementDocument | null>(null)
   const [mismatches, setMismatches] = useState<Array<{ kind: string; index?: number; expected: string; actual: string | null }>>([])
   const [remap, setRemap] = useState<Record<number, number>>({})
-  const importRef = useRef<HTMLInputElement>(null)
   const latest = useRef<ArrangementDocument | null>(null)
   const confirmed = useRef<ArrangementDocument | null>(null)
   const pending = useRef<Promise<void>>(Promise.resolve())
@@ -137,10 +137,6 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     link.href = url; link.download = `${file?.replace(/\.[^.]+$/, '') ?? 'song'}.orchestra.json`
     link.click(); URL.revokeObjectURL(url)
   }
-  const importJson = async (fileToImport: File) => {
-    try { await put(JSON.parse(await fileToImport.text()) as ArrangementDocument, true) }
-    catch { setMessage('Invalid arrangement JSON') }
-  }
   const applyRemap = async () => {
     if (!imported || !view?.midiIdentity) return
     const doc = clone(imported)
@@ -175,8 +171,8 @@ export function ArrangementEditor({ file, state, seek }: Props) {
       <button type="button" onClick={save}>Save Arrangement</button>
       <button type="button" onClick={loadSaved}>Load Arrangement</button>
       <button type="button" onClick={exportJson}>Export Arrangement JSON</button>
-      <button type="button" onClick={() => importRef.current?.click()}>Import Arrangement JSON</button>
-      <input ref={importRef} type="file" accept=".json,application/json" hidden aria-label="Arrangement JSON file" onChange={e => { const chosen = e.target.files?.[0]; if (chosen) void importJson(chosen); e.target.value = '' }} />
+      {/* Ten sam komponent co w naglowku - import jest wspolny dla zakladek. */}
+      <ArrangementImport />
     </div>
     {message && <p role="status" className="muted">{message}</p>}
     {imported && <div className="arrangement-mismatch" role="alert">

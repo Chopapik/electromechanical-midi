@@ -9,6 +9,10 @@ export interface HardwareState {
   error: string | null
   warning: string | null
   log: string[]
+  /** true w trakcie homingu/reconnectu — Play poczeka w kolejce */
+  connecting?: boolean
+  /** true gdy Play zostal klikniety przed READY i wystartuje sam */
+  pendingPlay?: boolean
 }
 
 export interface DrumState {
@@ -61,6 +65,7 @@ export interface PlayerState {
   virtual?: VirtualState
   arrangementRevision?: number
   arrangementActive?: boolean
+  arrangementHardware?: ArrangementHardware
   state: PlaybackStateValue
   position: number
   duration: number
@@ -80,6 +85,9 @@ export interface PlayerState {
   hdd: HddState
 }
 
+/** Dokad trafia instancja: symulacja, fizyczny sprzet, albo oba naraz. */
+export type DeviceMode = 'virtual' | 'real' | 'hybrid'
+
 export interface VirtualDevice {
   id: string
   type: string
@@ -93,8 +101,16 @@ export interface VirtualDevice {
   transpose: number
   gate: number
   profile: string
-  mode: string
+  mode: DeviceMode
   overrides: Record<string, { value: number | null; provenance: string; source: string }>
+}
+
+/** Ktore instancje aranzacji trafily na fizyczne linie Serial. */
+export interface ArrangementHardware {
+  active: boolean
+  connected: boolean
+  lanes: Record<string, { deviceId: string; name: string; type: string }>
+  unmapped: Array<{ deviceId: string; name: string; type: string; reason: string; lane?: string; boundTo?: string }>
 }
 
 export interface VirtualConfig { name: string; devices: VirtualDevice[] }

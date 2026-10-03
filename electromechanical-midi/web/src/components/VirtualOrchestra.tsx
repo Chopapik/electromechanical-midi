@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
-import type { FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
+import type { ArrangementHardware, DeviceMode, FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
 
 const KINDS = ['FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR']
 const LABEL: Record<string, string> = {
   FDD: 'FDD', DVD_SLED: 'DVD sled', STEPPER_FREE: 'Free stepper',
   VHS: 'VHS motor', HDD_VCM: 'HDD VCM', SOLENOID_RESONATOR: 'Solenoid + resonator',
+}
+const MODE_LABEL: Record<DeviceMode, string> = {
+  virtual: 'virtual — only simulation + audio preview',
+  real: 'real — only physical hardware',
+  hybrid: 'hybrid — hardware + preview',
+}
+const LANE_LABEL: Record<string, string> = {
+  fdd: 'FDD (PLAY/STOP)', drum: 'VHS drum (DRUM/DRUMF)', hdd: 'HDD (HIT)',
 }
 
 interface Props {
@@ -12,9 +20,10 @@ interface Props {
   metadata: FileMetadata | null
   configure: (config: VirtualConfig, enabled: boolean) => void
   arrangementActive?: boolean
+  hardware?: ArrangementHardware
 }
 
-export function VirtualOrchestra({ virtual, metadata, configure, arrangementActive }: Props) {
+export function VirtualOrchestra({ virtual, metadata, configure, arrangementActive, hardware }: Props) {
   const [presets, setPresets] = useState<Record<string, VirtualConfig>>({})
   const [selectedPreset, setSelectedPreset] = useState('')
   const [notice, setNotice] = useState('')
@@ -31,8 +40,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       id, type, name: `${LABEL[type]} #${count}`, track: metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
       role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
       profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: 'virtual', overrides: {},
-    }], true)
-  }
+    }], true)  }
   const update = (id: string, patch: Partial<VirtualDevice>) => apply(config.devices.map(d => d.id === id ? { ...d, ...patch } : d))
   const duplicate = (device: VirtualDevice) => {
     const id = globalThis.crypto?.randomUUID?.() ?? `${device.type}-${Date.now()}`
@@ -59,6 +67,21 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <h2>Virtual Orchestra</h2>
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
+    {hardware && <div className="virtual-hardware" role="status">
+      <h3>Hardware lanes</h3>
+      {hardware.active
+        ? <>{Object.entries(hardware.lanes).map(([lane, device]) => <p key={lane} className="hardware-lane">
+            <strong>{LANE_LABEL[lane] ?? lane}</strong> ← {device.name}{' '}
+            <span className="muted">({device.type})</span>
+          </p>)}
+          {!hardware.connected && <p className="muted">No Arduino connected — lanes stay queued until you connect.</p>}</>
+        : <p className="muted">No device drives physical hardware. Set a device <em>Mode</em> to <code>real</code> or <code>hybrid</code>.</p>}
+      {hardware.unmapped.length > 0 && <>
+        <p className="import-error">Not wired to hardware ({hardware.unmapped.length}):</p>
+        <ul>{hardware.unmapped.map(item => <li key={item.deviceId}>{item.name} — {item.reason === 'LANE_TAKEN'
+          ? `lane ${item.lane} already used by ${item.boundTo}` : 'no physical lane for this device type'}</li>)}</ul>
+      </>}
+    </div>}
     <div className="virtual-toolbar">
       <label>Add device <select aria-label="Add device" value="" onChange={e => { if (e.target.value) add(e.target.value) }}>
         <option value="">ADD DEVICE…</option>{KINDS.map(type => <option key={type} value={type}>{LABEL[type]}</option>)}
@@ -93,6 +116,10 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
           <label>Gate <input type="number" min="0.1" max="2" step="0.1" value={device.gate} onChange={e => update(device.id, { gate: Number(e.target.value) })} /></label>
           <label>Profile <select value={device.profile} onChange={e => update(device.id, { profile: e.target.value })}>
             {virtual?.profiles.filter(p => p.kind === device.type).map(p => <option key={p.id}>{p.id}</option>)}
+          </select></label>
+          <label>Mode <select aria-label={`${device.name} mode`} value={device.mode ?? 'virtual'}
+            onChange={e => update(device.id, { mode: e.target.value as DeviceMode })}>
+            {(Object.keys(MODE_LABEL) as DeviceMode[]).map(mode => <option key={mode} value={mode}>{MODE_LABEL[mode]}</option>)}
           </select></label>
           <button type="button" onClick={() => duplicate(device)}>Duplicate</button>
           <button type="button" onClick={() => apply(config.devices.filter(d => d.id !== device.id))}>Remove</button>

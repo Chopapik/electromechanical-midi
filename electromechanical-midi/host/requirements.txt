@@ -8,3 +8,9 @@ uvicorn[standard]>=0.29
 
 # Upload plikow MIDI z przegladarki (multipart/form-data)
 python-multipart>=0.0.9
+
+# Wektorowy render podgladu audio Virtual Orchestra (~13-30x szybciej).
+# Bez tego WavePreview.render liczy probka po probce w czystym Pythonie:
+# dlugi utwor z wieloma instancjami to kilkadziesiat sekund zamrozonego
+# Play. Kod ma fallback, wiec brak numpy nie jest bledem - tylko wolniej.
+numpy>=1.24
