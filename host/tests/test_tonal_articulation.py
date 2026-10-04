@@ -10,7 +10,7 @@ import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from midi_source import MidiSource
 from playback.performance import PerformancePlan, PerformanceEvent, ReinforcementEvent
-from playback.tonal_articulation import resolve, render, capture, chord_context, Curve
+from playback.tonal_articulation import resolve, render, capture, chord_context, Curve, apply_mode
 from playback.virtual import VirtualOrchestra, WavePreview
 from playback.allocator import allocate
 from playback.duplicates import normalize
@@ -162,6 +162,50 @@ class TonalTest(unittest.TestCase):
             self.assertEqual(sorted(e.start for e in p.events),[0,.011])
             self.assertTrue(any(e.get('control')==11 for e in p.expression['0']))
 
+    def test_extreme_profile_is_diagnostic_and_continuous_unchanged(self):
+        a=resolve(plan())[0]['a'];x=apply_mode(a,'extreme')
+        self.assertTrue(x.extreme)
+        self.assertTrue(.025<=x.attack<=.040)
+        self.assertTrue(.250<=x.decay<=.350)
+        self.assertTrue(.1<=x.sustain<=.2)
+        self.assertTrue(.300<=x.release<=.500)
+        continuous=resolve(plan(program=65))[0]['a']
+        self.assertEqual(apply_mode(continuous,'extreme'),continuous)
+        low=apply_mode(resolve(plan([event(velocity=40)]))[0]['a'],'extreme')
+        high=apply_mode(resolve(plan([event(velocity=120)]))[0]['a'],'extreme')
+        self.assertGreater(high.transient,low.transient*8)
+        self.assertGreater(high.brightness,low.brightness*8)
+
+    def test_extreme_final_pcm_differs_beyond_a_scalar_gain(self):
+        import wave
+        p=plan();snapshot=dataclasses.asdict(p)
+        signals={}
+        with tempfile.TemporaryDirectory() as folder:
+            for mode in ('raw','articulated','extreme'):
+                w,rows,o=lane(p,mode)
+                w.render(o,1.)  # Same WAV entry point used by the playback worker.
+                try:
+                    with wave.open(str(w.path),'rb') as wav:
+                        signals[mode]=np.frombuffer(wav.readframes(wav.getnframes()),dtype='<i2').astype(float)
+                finally: w.close()
+                self.assertEqual(snapshot,dataclasses.asdict(p))
+                self.assertEqual(rows[0][2].time,p.events[0].actual_start)
+            raw,ext=signals['raw'],signals['extreme']
+            fit=np.dot(raw,ext)/np.dot(raw,raw)
+            self.assertGreater(np.linalg.norm(ext-fit*raw)/np.linalg.norm(raw),.3)
+            # Check real PCM after NOTE_OFF, rather than inspecting release params.
+            self.assertGreater(np.max(np.abs(ext[int(.5*22050)*2:int(.6*22050)*2])),0)
+            self.assertTrue(np.all(raw[int(.5*22050)*2:]==0))
+            w,rows,_=lane(p,'extreme');l,_=w._render_numpy(np,rows,22050,1);q,_=w._render_python(rows,22050,1)
+            np.testing.assert_allclose(l,np.asarray(q),atol=2e-6)
+
+    def test_extreme_short_notes_and_retrigger_keep_physical_plan(self):
+        p=plan([event(duration=.07),event('b',.07,.07)])
+        snapshot=dataclasses.asdict(p);w,rows,_=lane(p,'extreme')
+        self.assertLess(rows[1][2].tonal_articulation.release,.04)
+        self.assertLessEqual(rows[0][3]+rows[0][4],rows[1][3])
+        self.assertEqual(snapshot,dataclasses.asdict(p))
+
     def test_live_mode_change_keeps_clock_and_plan(self):
         engine=PlaybackEngine()
         try:
@@ -170,6 +214,10 @@ class TonalTest(unittest.TestCase):
             original=engine._plan
             with patch.object(engine,'_rebuild_locked') as rebuild:
                 engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='raw'))
+                self.assertIs(engine._plan,original);self.assertEqual(engine._position_base,12.)
+                rebuild.assert_not_called()
+                engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='extreme'))
+                self.assertEqual(engine._virtual.tonal_mode,'extreme')
                 self.assertIs(engine._plan,original);self.assertEqual(engine._position_base,12.)
                 rebuild.assert_not_called()
         finally: engine.shutdown()

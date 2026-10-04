@@ -61,6 +61,7 @@ class TonalArticulation:
     frequency: Curve = Curve()
     modulation: Curve = Curve((0.,), (0.,))
     raw: bool = False
+    extreme: bool = False
 
     def debug(self):
         return {'profile':self.profile,'deviceType':self.device,'attackMs':self.attack*1000,
@@ -68,7 +69,8 @@ class TonalArticulation:
             'sourceDuration':self.source_duration,'velocity':self.velocity,'semanticRole':self.role,
             'program':self.program,'legato':self.legato,'staccato':self.staccato,
             'strumLike':self.strum_like,'sustainPedal':self.pedal,'ccGainAtStart':self.gain.values[0],
-            'raw':self.raw}
+            'raw':self.raw, 'extreme':self.extreme, 'sustainLevel':self.sustain,
+            'brightness':self.brightness, 'transient':self.transient}
 
 
 def capture(source):
@@ -212,6 +214,32 @@ def retarget(art, device, duration, velocity, offset=0.):
         intensity=(velocity/127)**.65,gain=shifted(art.gain),frequency=shifted(art.frequency),modulation=shifted(art.modulation))
 
 
+def apply_mode(art, mode):
+    """Temporary diagnostic exaggeration, after semantic/physical decisions."""
+    if mode == 'raw':
+        return dataclasses.replace(art, attack=.001, decay=0., sustain=1., release=.002, raw=True)
+    if mode != 'extreme' or art.profile != 'PLUCKED':
+        return art
+    v=art.velocity/127
+    scale=min(1., art.gate/.12)
+    return dataclasses.replace(art, attack=(.040-.015*v)*scale,
+        decay=(.350-.100*v)*scale, sustain=.10+.10*v,
+        release=min((.300+.200*v)*scale, art.gate*.5) if scale<1 else .300+.200*v,
+        brightness=.03+1.5*v**3, transient=.05+2.2*v**3, extreme=True)
+
+
+def envelope(t, art, length, np=None):
+    """Amplitude shape consumed by both actual PCM render paths."""
+    exp=math.exp if np is None else np.exp
+    minimum=min if np is None else np.minimum; maximum=max if np is None else np.maximum
+    if art.raw:
+        return minimum(1.,t/.001)*minimum(1.,maximum(0.,length-t)/.002)
+    decay_time=art.decay/4 if art.extreme else art.decay
+    shape=minimum(1.,t/max(.0005,art.attack))*(art.sustain+(1-art.sustain)*exp(-maximum(0.,t-art.attack)/max(.001,decay_time)))
+    shape*=exp(-maximum(0.,t-art.gate)/max(.001,art.release/4))
+    return shape*minimum(1.,maximum(0.,length-t)/.006)
+
+
 def render(t, art, hz, length, np=None):
     exp=math.exp if np is None else np.exp; sin=math.sin if np is None else np.sin
     minimum=min if np is None else np.minimum; maximum=max if np is None else np.maximum
@@ -225,12 +253,9 @@ def render(t, art, hz, length, np=None):
         pulse=exp(-(phase%1)*sharp)
         resonance=900 if art.device=='FDD' else 1300 if art.device=='DVD_SLED' else 600
         carrier=pulse*(.55+(.25+.2*art.brightness)*sin(2*math.pi*resonance*t))
-    if art.raw:
-        envelope=minimum(1.,t/.001)*minimum(1.,maximum(0.,length-t)/.002)
-    else:
-        envelope=minimum(1.,t/max(.0005,art.attack))*(art.sustain+(1-art.sustain)*exp(-maximum(0.,t-art.attack)/max(.001,art.decay)))
-        envelope*=exp(-maximum(0.,t-art.gate)/max(.001,art.release/4))
-        # Mechanical contact burst; no guitar sample or oscillator replacement.
-        carrier+=art.transient*exp(-t/.003)*sin(2*math.pi*(1800 if art.device=='FDD' else 1400)*t)
-        envelope*=minimum(1.,maximum(0.,length-t)/.006)
-    return carrier*envelope*art.intensity*art.gain.at(t,np)
+    if not art.raw:
+        # EXTREME deliberately puts a conspicuous mechanical burst at the
+        # envelope peak. Regular ARTICULATED math is unchanged.
+        burst=(exp(-abs(t-art.attack)/.003) if art.extreme else exp(-t/.003))
+        carrier+=art.transient*burst*sin(2*math.pi*(1800 if art.device=='FDD' else 1400)*t)
+    return carrier*envelope(t,art,length,np)*art.intensity*art.gain.at(t,np)

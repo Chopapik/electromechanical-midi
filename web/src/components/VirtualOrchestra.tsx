@@ -83,8 +83,8 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     </label>
     <p className="muted">100% = dotychczasowy poziom · do 2000% wzmocnienia całego odsłuchu.</p>
     <label>Tonal sound <select aria-label="Tonal sound" value={config.tonalMode ?? 'articulated'}
-      onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' }, enabled)}>
-      <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option>
+      onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' | 'extreme' }, enabled)}>
+      <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option><option value="extreme">TONAL EXTREME · diagnostic</option>
     </select></label>
     <label>HDD sound <select aria-label="HDD sound" value={config.hddMode ?? 'articulated'}
       onChange={e => configure({ ...config, hddMode: e.target.value as 'raw' | 'articulated' }, enabled)}>

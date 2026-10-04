@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from midi_source import NoteSpan
-from playback.virtual import VirtualDeviceInstance, VirtualOrchestra
+from playback.virtual import VirtualDeviceInstance, VirtualOrchestra, WavePreview
 
 class Source:
     tracks = [object()]
@@ -20,6 +20,25 @@ def span(start, end, note=69):
     return NoteSpan(start, end, note, 100, 0)
 
 class VirtualMechanicsTest(unittest.TestCase):
+    def test_fdd_reversals_do_not_add_knocks_to_preview_pcm(self):
+        orchestra = VirtualOrchestra([device()])
+        orchestra.simulate(Source([span(0, 2, 69)]))
+        events = list(orchestra.events)
+        reversals = orchestra.report['one']['reversals']
+        self.assertGreater(reversals, 10)
+        preview = WavePreview()
+        n = int(2.25 * preview.RATE)
+        rows = preview._plan(orchestra, n)
+        self.assertTrue(rows)
+        self.assertTrue(all(row[2].kind != 'reversal' for row in rows))
+        actual = preview._render_python(rows, n, 1)
+        orchestra.events = [e for e in events if e.kind != 'reversal']
+        expected = preview._render_python(preview._plan(orchestra, n), n, 1)
+        self.assertEqual(actual, expected)
+        orchestra.events = events
+        self.assertEqual(orchestra.report['one']['reversals'], reversals)
+        self.assertEqual(sum(e.kind == 'reversal' for e in orchestra.events), reversals)
+
     def test_fdd_sustain_reverses_and_updates_position(self):
         orchestra = VirtualOrchestra([device()])
         orchestra.simulate(Source([span(0, 2, 69)]))

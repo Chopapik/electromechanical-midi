@@ -19,7 +19,7 @@ from midi_source import MidiSource
 from pitch import hz_to_midi, midi_to_hz
 from .timeline import Command, Timeline
 
-from .tonal_articulation import Curve, TonalArticulation, resolve as resolve_tonal, render as render_tonal, retarget as retarget_tonal
+from .tonal_articulation import Curve, TonalArticulation, resolve as resolve_tonal, render as render_tonal, retarget as retarget_tonal, apply_mode as apply_tonal_mode
 from .hdd_articulation import HDDArticulation, classify as classify_hdd, adapt as adapt_hdd, sample as sample_hdd
 
 KINDS = ('FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
@@ -239,8 +239,8 @@ class VirtualOrchestra:
 
     def set_config(self, payload: dict) -> None:
         tonal_mode = str(payload.get('tonalMode', 'articulated'))
-        if tonal_mode not in ('raw', 'articulated'):
-            raise ValueError('tonalMode must be raw or articulated')
+        if tonal_mode not in ('raw', 'articulated', 'extreme'):
+            raise ValueError('tonalMode must be raw, articulated or extreme')
         hdd_mode = str(payload.get('hddMode', 'articulated'))
         if hdd_mode not in ('raw', 'articulated'):
             raise ValueError('hddMode must be raw or articulated')
@@ -701,6 +701,11 @@ class WavePreview:
             d = by_id[event.device]
             if not d.in_preview:
                 continue
+            # Reversals describe actuator travel, not an additional MIDI sound.
+            # The former synthetic 1700 Hz knock dominated sustained FDD notes.
+            # Keep mechanical events/statistics, but omit that uncalibrated audio.
+            if event.kind == 'reversal':
+                continue
             if event.kind == 'tone':
                 tonal.setdefault(d.id, []).append(event)
             elif d.type == 'HDD_VCM' and event.kind == 'hit':
@@ -730,8 +735,7 @@ class WavePreview:
                         event.duration, .5, .15, (event.velocity/127)**.65,
                         source_duration=event.duration, velocity=event.velocity,
                         frequency=Curve((0.,),(event.hz,)))
-                if orchestra.tonal_mode == 'raw':
-                    art = dataclasses.replace(art, attack=.001, decay=0., sustain=1., release=.002, raw=True)
+                art = apply_tonal_mode(art, orchestra.tonal_mode)
                 duration = art.gate+art.release
                 if event.reinforcement:
                     if lane and not lane[-1][2].reinforcement and lane[-1][3]+lane[-1][4]>start:
