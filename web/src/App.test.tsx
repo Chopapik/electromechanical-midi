@@ -210,6 +210,23 @@ describe('App', () => {
     })
   })
 
+  it('switches four physical DVD to dynamic reinforcement', async () => {
+    const dvd = Array.from({ length: 4 }, (_, index) => ({
+      id: `dvd_sled-${index + 1}`, type: 'DVD_SLED', name: `DVD #${index + 1}`,
+      track: null, role: '', volume: .2, pan: 0, mute: false, solo: false,
+      transpose: 0, gate: 1, profile: 'DVD_REFERENCE', mode: 'virtual' as const,
+      overrides: {},
+    }))
+    const socket = await renderApp({ virtual: {
+      enabled: true, config: { name: 'Four DVD', devices: dvd, dvdMode: 'independent' },
+      report: {}, activity: {}, profiles: [{ id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} }],
+    } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    fireEvent.change(screen.getByLabelText('DVD mode'), { target: { value: 'reinforcement' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual',
+      config: { dvdMode: 'reinforcement', devices: dvd } })
+  })
+
   it('shows each device LED from backend activity state', async () => {
     const socket = await renderApp({
       virtual: {

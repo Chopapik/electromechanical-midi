@@ -29,12 +29,16 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   const [presets, setPresets] = useState<Record<string, VirtualConfig>>({})
   const [selectedPreset, setSelectedPreset] = useState('')
   const [notice, setNotice] = useState('')
-  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [] }
+  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [], dvdMode: 'independent' as const }
+  const dvd = config.devices.filter(device => device.type === 'DVD_SLED')
+  const canReinforce = dvd.length === 4
   const enabled = virtual?.enabled ?? false
   const refresh = () => fetch('/api/virtual/presets').then(r => r.json()).then(data => setPresets(data.presets ?? {})).catch(() => setNotice('Could not load presets'))
   useEffect(() => { refresh() }, [])
 
-  const apply = (devices: VirtualDevice[], active = enabled) => configure({ ...config, devices }, active)
+  const apply = (devices: VirtualDevice[], active = enabled) => configure({ ...config, devices,
+    dvdMode: devices.filter(device => device.type === 'DVD_SLED').length === 4
+      ? config.dvdMode : 'independent' }, active)
   const add = (type: string) => {
     const count = config.devices.filter(d => d.type === type).length + 1
     const id = newDeviceId(type)
@@ -43,7 +47,10 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       role: '', volume: type === 'DVD_SLED' ? .2 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
       profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: 'virtual', overrides: {},
     }], true)  }
-  const update = (id: string, patch: Partial<VirtualDevice>) => apply(config.devices.map(d => d.id === id ? { ...d, ...patch } : d))
+  const update = (id: string, patch: Partial<VirtualDevice>) => {
+    const devices = config.devices.map(d => d.id === id ? { ...d, ...patch } : d)
+    configure({ ...config, devices }, enabled)
+  }
   const duplicate = (device: VirtualDevice) => {
     const id = newDeviceId(device.type)
     apply([...config.devices, { ...device, id, name: `${device.name} copy` }])
@@ -69,6 +76,12 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <h2>Virtual Orchestra</h2>
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
+    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'independent'}
+      disabled={!canReinforce}
+      onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
+      <option value="independent">4x DVD independent</option>
+      <option value="reinforcement">4x DVD + dynamic reinforcement</option>
+    </select></label>
     {hardware && <div className="virtual-hardware" role="status">
       <h3>Hardware lanes</h3>
       {hardware.active
@@ -150,6 +163,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       <div className="virtual-reports">{Object.entries(virtual?.report ?? {}).map(([id, r]) => <article key={id}>
         <strong>{r.name}</strong> · accepted {r.accepted} · played {r.played} · dropped {r.dropped} · folded {r.folded} · delayed {r.delayed} · busy {r.busyConflicts}
         {r.type === 'FDD' || r.type === 'DVD_SLED' ? <> · steps {r.steps} · travel {r.travel} · reversals {r.reversals}</> : null}
+        {r.type === 'DVD_SLED' && r.reinforcementEvents ? <> · reinforcement {r.reinforcementEvents} / {(r.reinforcementTime ?? 0).toFixed(2)}s</> : null}
         {r.type === 'HDD_VCM' ? <> · hits {r.acceptedHits}/{r.requestedHits} · dropped busy {r.droppedWhileBusy} · busy time {r.busyTime.toFixed(2)}s · max density {r.maxDensity.toFixed(1)}/s</> : null}
         {r.type === 'STEPPER_FREE' ? <> · active {r.activeTime.toFixed(2)}s</> : null}
         <div className="muted">{Object.entries(r.reasons).map(([code, count]) => `${code}: ${count}`).join(' · ')}</div>

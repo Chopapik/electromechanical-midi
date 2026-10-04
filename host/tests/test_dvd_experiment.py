@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from midi_source import MidiSource  # noqa: E402
 from playback import allocator  # noqa: E402
+from playback.allocator import ManualPin  # noqa: E402
 from playback.analysis import MidiAnalysis  # noqa: E402
 from playback.engine import PlaybackEngine  # noqa: E402
 from playback.orchestra import default_orchestra, parse_orchestra  # noqa: E402
@@ -124,5 +125,68 @@ class DvdExperimentTest(unittest.TestCase):
                                   if item['type'] == 'DVD_SLED']), 4)
             engine.configure_virtual({**seven, 'enabled': True})
             self.assertEqual(len(engine.arrangement_view()['orchestra']['devices']), 7)
+        finally:
+            engine.shutdown()
+
+    def test_reinforcement_preserves_four_normal_voices_and_decisions(self):
+        source = self.harmony_source([(0, .5, note) for note in (60, 62, 64, 65, 67, 69, 71)])
+        analysis = self.harmony_analysis(source)
+        independent = allocator.allocate(source, default_orchestra(), midi_analysis=analysis)
+        reinforced = allocator.allocate(source, default_orchestra(dvd_mode='reinforcement'),
+                                        midi_analysis=analysis)
+        self.assertEqual(len(independent.devices), 11)
+        self.assertEqual(len(reinforced.devices), 11)
+        self.assertEqual([e.as_dict() for e in independent.events],
+                         [e.as_dict() for e in reinforced.events])
+        self.assertEqual(independent.report()['tonal'], reinforced.report()['tonal'])
+
+    def test_reinforcement_is_acoustic_only_and_stops_for_normal_note(self):
+        source = self.harmony_source([(0, .8, 60), (.4, .4, 64)])
+        analysis = self.harmony_analysis(source)
+        config = default_orchestra(dvd_mode='reinforcement')
+        config.devices = [d for d in config.devices if d['type'] == 'DVD_SLED']
+        pins = {'1:0': ManualPin(device_id='dvd_sled-1', rule_id='a'),
+                '1:1': ManualPin(device_id='dvd_sled-2', rule_id='b')}
+        plan = allocator.allocate(source, config, midi_analysis=analysis, pins=pins)
+        self.assertTrue(plan.reinforcements)
+        normal = [event for event in plan.events if event.played]
+        for extra in plan.reinforcements:
+            self.assertIn(extra.source_id, {event.id for event in normal})
+            self.assertTrue(all(extra.start + extra.duration <= event.actual_start + 1e-9
+                                or event.end <= extra.start + 1e-9
+                                for event in normal if event.device_id == extra.device_id))
+        self.assertTrue(any(abs(extra.start + extra.duration - .4) < .01
+                            for extra in plan.reinforcements if extra.device_id == 'dvd_sled-2'))
+
+        renderer = VirtualOrchestra()
+        renderer.render_plan(plan)
+        self.assertEqual(sum(r['played'] for r in renderer.report.values()),
+                         len(normal))
+        self.assertEqual(sum(r['reinforcementEvents'] for r in renderer.report.values()),
+                         len(plan.reinforcements))
+        self.assertEqual(len([e for e in renderer.events if e.kind == 'tone']),
+                         len(normal) + len(plan.reinforcements))
+
+    def test_reinforcement_mode_requires_four_dvds(self):
+        config = default_orchestra(dvd_mode='reinforcement')
+        self.assertEqual(parse_orchestra(config.as_dict()).dvd_mode, 'reinforcement')
+        config.devices = [device for device in config.devices if device['id'] != 'dvd_sled-4']
+        with self.assertRaisesRegex(ValueError, 'exactly four'):
+            parse_orchestra(config.as_dict())
+
+    def test_engine_switches_mode_without_changing_four_physical_dvds(self):
+        source = self.harmony_source([(0, .5, note) for note in (60, 62, 64, 65, 67, 69, 71)])
+        engine = PlaybackEngine(auto_arrange=False)
+        try:
+            engine.load_file(source.path)
+            engine.configure_virtual({**default_orchestra(dvd_mode='reinforcement').as_dict(),
+                                      'enabled': True})
+            reinforced = engine.arrangement_view()
+            self.assertEqual(reinforced['report']['dvdMode'], 'reinforcement')
+            self.assertEqual(engine._virtual.config()['dvdMode'], 'reinforcement')
+            self.assertEqual(len([d for d in engine._virtual.devices
+                                  if d.type == 'DVD_SLED']), 4)
+            engine.configure_virtual({**default_orchestra().as_dict(), 'enabled': True})
+            self.assertEqual(engine.arrangement_view()['report']['dvdMode'], 'independent')
         finally:
             engine.shutdown()

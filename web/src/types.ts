@@ -115,13 +115,14 @@ export interface ArrangementHardware {
   unmapped: Array<{ deviceId: string; name: string; type: string; reason: string; lane?: string; boundTo?: string }>
 }
 
-export interface VirtualConfig { name: string; devices: VirtualDevice[] }
+export interface VirtualConfig { name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement' }
 export interface VirtualReport {
   name: string; type: string; accepted: number; played: number; dropped: number
   folded: number; delayed: number; busyConflicts: number; steps: number
   reversals: number; travel: number; activeTime: number; requestedHits: number
   acceptedHits: number; droppedWhileBusy: number; busyTime: number
   maxDensity: number
+  reinforcementEvents?: number; reinforcementTime?: number
   reasons: Record<string, number>; state: Record<string, number | boolean>
 }
 export interface VirtualState {
@@ -196,6 +197,7 @@ export interface ArrangementDocument {
   rules: ArrangementRule[]
   /** Auto Arranger: polityka wykonania; rules sa wtedy tylko recznym overridem */
   policy?: Record<string, number | string | boolean>
+  dvdMode?: 'independent' | 'reinforcement'
   origin?: 'auto' | 'manual' | 'hybrid'
 }
 export interface ArrangementRouteResult {
@@ -251,6 +253,8 @@ export interface ReportDevice {
 
 export interface ArrangementReport {
   sourceEvents: number
+  dvdMode?: 'independent' | 'reinforcement'
+  dvdPairs?: Record<string, string[]>
   trackClassification?: Array<{
     index: number; name: string; noteCount: number; finalRole: string
     confidence: number; roleScores: Record<string, number>; evidence: string[]

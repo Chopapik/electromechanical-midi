@@ -132,6 +132,21 @@ class PerformanceEvent:
         }
 
 
+@dataclasses.dataclass(frozen=True)
+class ReinforcementEvent:
+    source_id: str
+    device_id: str
+    start: float
+    duration: float
+    hz: float
+    velocity: int
+
+    def as_dict(self) -> dict:
+        return {'sourceId': self.source_id, 'deviceId': self.device_id,
+                'start': round(self.start, 6), 'duration': round(self.duration, 6),
+                'hz': round(self.hz, 3), 'velocity': self.velocity}
+
+
 @dataclasses.dataclass
 class PerformancePlan:
     """Caly plan wykonania: zdarzenia + orkiestra + polityka + raport."""
@@ -146,6 +161,8 @@ class PerformancePlan:
     lead_devices: tuple[str, ...] = ()   # urzadzenia DEDICATED_LEAD_ONLY
     duplicates: dict = dataclasses.field(default_factory=dict)
     articulation: dict = dataclasses.field(default_factory=dict)
+    dvd_mode: str = 'independent'
+    reinforcements: list[ReinforcementEvent] = dataclasses.field(default_factory=list)
 
     @property
     def duration(self) -> float:
@@ -171,6 +188,8 @@ class PerformancePlan:
             'analysis': self.analysis,
             'midi': self.source_ref,
             'devices': self.devices,
+            'dvdMode': self.dvd_mode,
+            'reinforcements': [event.as_dict() for event in self.reinforcements],
             'events': [event.as_dict() for event in self.events],
             'report': self.report(),
         }
@@ -419,6 +438,11 @@ def build_report(plan: PerformancePlan) -> dict:
 
     return {
         'sourceEvents': total_requested,
+        'dvdMode': plan.dvd_mode,
+        'reinforcement': {
+            'events': len(plan.reinforcements),
+            'totalSeconds': round(sum(event.duration for event in plan.reinforcements), 3),
+        },
         'trackClassification': plan.analysis.get('trackClassification', []),
         'lead': {
             'requested': len(lead_events),

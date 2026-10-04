@@ -62,12 +62,23 @@ class OrchestraConfig:
     name: str = 'Balanced 3FDD + 4DVD + VHS + 3HDD'
     devices: list[dict] = dataclasses.field(default_factory=list)
     policy: dict = dataclasses.field(default_factory=lambda: dict(BALANCED))
+    dvd_mode: str = 'independent'
 
     def instances(self) -> list[VirtualDeviceInstance]:
         return [VirtualDeviceInstance.parse(device) for device in self.devices]
 
     def as_dict(self) -> dict:
-        return {'name': self.name, 'devices': self.devices, 'policy': self.policy}
+        return {'name': self.name, 'devices': self.devices, 'policy': self.policy,
+                'dvdMode': self.dvd_mode}
+
+    def allocation_devices(self) -> tuple[list[VirtualDeviceInstance], dict[str, list[dict]]]:
+        """Both modes allocate the same four independent DVD voices."""
+        if self.dvd_mode not in ('independent', 'reinforcement'):
+            raise ValueError(f'unknown DVD mode: {self.dvd_mode}')
+        devices = self.instances()
+        if self.dvd_mode == 'reinforcement' and len([d for d in devices if d.type == 'DVD_SLED']) != 4:
+            raise ValueError('reinforcement requires exactly four DVD_SLED devices')
+        return devices, {}
 
 
 def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual') -> dict:
@@ -78,10 +89,12 @@ def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual
             'overrides': {}}
 
 
-def default_orchestra(*, dvd_count: int = 4) -> OrchestraConfig:
+def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent') -> OrchestraConfig:
     """Testowa orkiestra; dvd_count=0 odtwarza bazowe siedem urządzeń."""
     if not 0 <= dvd_count <= 57:
         raise ValueError('dvd_count poza zakresem 0..57')
+    if dvd_mode not in ('independent', 'reinforcement') or (dvd_mode == 'reinforcement' and dvd_count != 4):
+        raise ValueError(f'unknown DVD mode: {dvd_mode}')
     devices: list[dict] = []
     counters: dict[str, int] = {}
 
@@ -99,7 +112,7 @@ def default_orchestra(*, dvd_count: int = 4) -> OrchestraConfig:
     return OrchestraConfig(
         name=('Balanced 3FDD + 4DVD + VHS + 3HDD' if dvd_count == 4
               else f'Balanced 3FDD + {dvd_count}DVD + VHS + 3HDD'),
-        devices=devices, policy=dict(BALANCED))
+        devices=devices, policy=dict(BALANCED), dvd_mode=dvd_mode)
 
 
 def parse_policy(payload: dict | None) -> dict:
@@ -134,11 +147,16 @@ def parse_policy(payload: dict | None) -> dict:
 def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     """Buduje konfiguracje z JSON-a; brak pola devices = domyslna orkiestra."""
     payload = payload or {}
+    dvd_mode = str(payload.get('dvdMode') or 'independent')
+    if dvd_mode not in ('independent', 'reinforcement'):
+        raise ValueError(f'unknown DVD mode: {dvd_mode}')
 
     if 'devices' not in payload or payload['devices'] is None:
         config = default_orchestra()
         config.policy = parse_policy(payload.get('policy'))
         config.name = str(payload.get('name') or config.name)
+        config.dvd_mode = dvd_mode
+        config.allocation_devices()
 
         return config
 
@@ -147,8 +165,11 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     if len(devices) > 64 or len({device.id for device in devices}) != len(devices):
         raise ValueError('maximum 64 devices; ids must be unique')
 
-    return OrchestraConfig(
+    config = OrchestraConfig(
         name=str(payload.get('name') or 'Orchestra')[:100],
         devices=[dataclasses.asdict(device) for device in devices],
         policy=parse_policy(payload.get('policy')),
+        dvd_mode=dvd_mode,
     )
+    config.allocation_devices()
+    return config

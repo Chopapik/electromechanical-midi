@@ -1045,7 +1045,11 @@ class PlaybackEngine:
                 'name': candidate.name,
                 'devices': candidate.config()['devices'],
                 'policy': self._orchestra.policy,
+                'dvdMode': candidate.dvd_mode,
             })
+            if candidate.dvd_mode == 'reinforcement':
+                # Reinforcement runs after the normal PerformancePlan is built.
+                self._auto_arrange = True
             self._virtual_mode = enabled
             if not enabled:
                 self._preview.close()
@@ -1064,6 +1068,7 @@ class PlaybackEngine:
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
             'devices': arrangement.data['devices'],
             'policy': payload.get('policy'),
+            'dvdMode': payload.get('dvdMode'),
         })
         bound, _ = bind_devices(orchestra.instances())
         preview_devices = [device for device in orchestra.instances() if device.in_preview]
@@ -1133,6 +1138,7 @@ class PlaybackEngine:
             'devices': self._orchestra.devices,
             'rules': list(self._arrangement.data['rules']) if self._arrangement is not None else [],
             'policy': self._orchestra.policy,
+            'dvdMode': self._orchestra.dvd_mode,
             'origin': self._plan.origin,
         }
 
@@ -1160,6 +1166,7 @@ class PlaybackEngine:
                 'orchestra': {
                     'name': self._orchestra.name,
                     'policy': self._orchestra.policy,
+                    'dvdMode': self._orchestra.dvd_mode,
                     'devices': [{'id': d['id'], 'type': d['type'], 'name': d['name']}
                                 for d in self._orchestra.devices],
                 },

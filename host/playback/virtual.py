@@ -194,6 +194,7 @@ class MechanicalState:
 class VirtualOrchestra:
     def __init__(self, devices: list[VirtualDeviceInstance] | None = None, name: str = 'Virtual Orchestra'):
         self.name = name
+        self.dvd_mode = 'independent'
         self.devices = devices or []
         self.report: dict = {}
         self.events: list[AcousticEvent] = []
@@ -202,9 +203,15 @@ class VirtualOrchestra:
 
     def set_config(self, payload: dict) -> None:
         devices = [VirtualDeviceInstance.parse(item) for item in payload.get('devices', [])]
+        dvd_mode = str(payload.get('dvdMode') or 'independent')
+        if dvd_mode not in ('independent', 'reinforcement'):
+            raise ValueError(f'unknown DVD mode: {dvd_mode}')
+        if dvd_mode == 'reinforcement' and len([d for d in devices if d.type == 'DVD_SLED']) != 4:
+            raise ValueError('reinforcement requires exactly four DVD_SLED devices')
         if len(devices) > 64 or len({d.id for d in devices}) != len(devices):
             raise ValueError('maximum 64 devices; ids must be unique')
         self.name = str(payload.get('name') or 'Virtual Orchestra')[:100]
+        self.dvd_mode = dvd_mode
         self.devices = devices
         self.report = {}
         self.events = []
@@ -212,11 +219,13 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'devices': [dataclasses.asdict(d) for d in self.devices]}
+        return {'name': self.name, 'dvdMode': self.dvd_mode,
+                'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
         """Podmienia sklad orkiestry na ten z planu wykonania."""
         self.name = plan.name
+        self.dvd_mode = plan.dvd_mode
         self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
         self.report = {}
         self.events = []
@@ -351,7 +360,24 @@ class VirtualOrchestra:
             state.phase = 'IDLE'
             self.report[device.id] = {'name': device.name, 'type': device.type, **counts,
                                       'reasons': reasons, 'state': vars(state).copy(),
-                                      'phases': phases}
+                                      'phases': phases, 'reinforcementEvents': 0,
+                                      'reinforcementTime': 0.0}
+
+        # Acoustic-only extras: normal commands and their statistics are already
+        # fixed. The pass guarantees these intervals never overlap normal DVD notes.
+        by_id = {device.id: device for device in self.devices}
+        audible_solo = any(device.solo and not device.mute for device in self.devices)
+        for extra in plan.reinforcements:
+            device = by_id[extra.device_id]
+            report = self.report[device.id]
+            report['reinforcementEvents'] += 1
+            report['reinforcementTime'] += extra.duration
+            if not device.mute and (not audible_solo or device.solo):
+                self.activity[device.id].append((extra.start, extra.start + extra.duration))
+                self.events.append(AcousticEvent(extra.start, 'tone', device.id,
+                                                 extra.hz, extra.duration, extra.velocity))
+        for intervals in self.activity.values():
+            intervals.sort()
 
         end = max(float(getattr(plan, 'duration', 0.0)),
                   max((e.time + (e.duration if e.kind == 'tone' else .12)

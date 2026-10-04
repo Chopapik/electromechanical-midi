@@ -1382,3 +1382,27 @@ Porównanie 7 urządzeń (bez DVD) z 11 urządzeniami na tych samych znormalizow
 ```
 
 Wyniki z dostępnych lokalnie utworów są w [`benchmarks/dvd-7-vs-11.json`](benchmarks/dvd-7-vs-11.json). Zawierają drop rate, ciągłość, ciszę tonalną oraz liczbę nut i wykorzystanie każdego DVD. Istniejący zapisany JSON Jigsaw jest ręcznym override po wczytaniu tego konkretnego pliku; benchmark celowo mierzy czysty Auto Arranger bez tego override.
+
+### Eksperyment A/B: dynamiczne reinforcement DVD
+
+W **ORCHESTRA → DVD mode** wybierz `4x DVD independent` lub `4x DVD + dynamic reinforcement`. Oba ustawienia dają allocatorowi te same cztery niezależne DVD i tę samą politykę. Po zakończeniu alokacji i artykulacji mały pass szuka wolnych odcinków każdego DVD. Gdy w tym czasie inne DVD gra nutę, dodaje jej akustyczny dubel na wolnym napędzie. Kandydatów porządkuje istniejący score priority (rola, velocity i długość). Jeden głos dostaje najwyżej jeden dubel w danym odcinku. Dubel kończy się przed następną zwykłą nutą na docelowym DVD. Dodatki są zapisane osobno w `PerformancePlan.reinforcements`, więc nie zmieniają zwykłych decyzji ani liczników `played`/`dropped`.
+
+Ustawienie zapisuje się jako `dvdMode: "independent" | "reinforcement"` w konfiguracji orkiestry i presetach. Poszczególne DVD zachowują osobne diody i raporty. Zmiana trybu przebudowuje plan z zachowaniem pozycji odtwarzania.
+
+Benchmark unikalnych MIDI można powtórzyć komendą:
+
+```sh
+.venv/bin/python scripts/benchmark_dvd_reinforcement.py --midi-dir /ścieżka/do/katalogu/midi
+```
+
+Wynik: [`benchmarks/dvd-reinforcement.json`](benchmarks/dvd-reinforcement.json). Z 26 dostępnych plików wybrano 15 unikalnych według SHA-256. Każdy z nich został znormalizowany tylko raz. Skrypt wymaga identycznych zwykłych zdarzeń, urządzeń, polityki i metryk alokacji w obu wariantach; rozbieżność kończy benchmark błędem. `dvdDoublingPercentOfNormalWork` to czas pracy dodatkowych napędów podzielony przez zwykły czas pracy DVD, a wykorzystanie pojedynczego DVD uwzględnia zwykłe nuty i duble.
+
+| 15 unikalnych MIDI | 4 DVD independent | 4 DVD + reinforcement |
+| --- | ---: | ---: |
+| nuty tonalne: requested / played / dropped | 51 195 / 47 737 / 3 458 | 51 195 / 47 737 / 3 458 |
+| drop rate | 6,75% | 6,75% |
+| zdarzenia / łączny czas reinforcement | 0 / 0 s | 8 849 / 1 404,964 s |
+| czas pracy DVD z doublingiem | 0% | 30,28% |
+| wykorzystanie DVD1 / DVD2 / DVD3 / DVD4 | 36,60% / 35,87% / 31,96% / 31,66% | 49,98% / 45,05% / 41,13% / 41,15% |
+
+Zwykłe przypisania i dropy są identyczne dla każdego pliku. Te wyniki dotyczą symulowanego podglądu akustycznego; rzeczywisty przyrost głośności napędów wymaga pomiaru sprzętowego.
