@@ -11,12 +11,13 @@ import { PlayerControls } from './components/PlayerControls'
 import { ProgressBar } from './components/ProgressBar'
 import { TrackSelector } from './components/TrackSelector'
 import { TransposeSelector } from './components/TransposeSelector'
+import { MechanicalView } from './components/MechanicalView'
 import { VirtualOrchestra } from './components/VirtualOrchestra'
 import { usePlayer } from './usePlayer'
 
 export default function App() {
   const player = usePlayer()
-  const [tab, setTab] = useState<'player' | 'orchestra' | 'arrangement'>('player')
+  const [tab, setTab] = useState<'player' | 'orchestra' | 'arrangement' | 'mechanical'>('player')
   const { state } = player
 
   const duration = state?.duration ?? 0
@@ -25,7 +26,7 @@ export default function App() {
   const stats = state?.stats
 
   return (
-    <div className={`app ${tab === 'arrangement' ? 'arrangement-open' : ''}`}>
+    <div className={`app ${(tab === 'arrangement' || tab === 'mechanical') ? 'arrangement-open' : ''}`}>
       <header className="header">
         <h1>Electromechanical MIDI</h1>
         <p className="subtitle">
@@ -34,9 +35,9 @@ export default function App() {
       </header>
 
       <nav className="main-tabs" aria-label="Main sections">
-        {(['player', 'orchestra', 'arrangement'] as const).map(value =>
+        {(['player', 'orchestra', 'arrangement', 'mechanical'] as const).map(value =>
           <button key={value} type="button" aria-current={tab === value ? 'page' : undefined}
-            onClick={() => setTab(value)}>{value.toUpperCase()}</button>)}
+            onClick={() => setTab(value)}>{value === 'mechanical' ? 'MECHANICAL VIEW' : value.toUpperCase()}</button>)}
 
         {/* Jeden import dla wszystkich zakladek: ten sam JSON opisuje
             instancje wirtualne i sprzetowe (pole "mode" kazdego urzadzenia). */}
@@ -221,6 +222,8 @@ export default function App() {
       </section>}
 
       {tab === 'orchestra' && <VirtualOrchestra virtual={state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={state?.arrangementActive} hardware={state?.arrangementHardware} />}
+
+      {tab === 'mechanical' && <MechanicalView state={state} />}
 
       {tab === 'arrangement' && <ArrangementEditor file={state?.file ?? null} state={state} seek={player.seek} />}
 

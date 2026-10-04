@@ -8,9 +8,10 @@
  *  - dopiero puszczenie (albo strzalka) wysyla JEDEN seek.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
+import { usePlaybackClock } from '../usePlaybackClock'
 import { formatTime } from '../format'
 
 interface Props {
@@ -22,32 +23,8 @@ interface Props {
 
 export function ProgressBar({ position, duration, playing, onSeek }: Props) {
   const barRef = useRef<HTMLDivElement | null>(null)
-  const anchorRef = useRef({ position: 0, at: performance.now() })
-
-  const [display, setDisplay] = useState(position)
+  const display = usePlaybackClock(position, playing, duration)
   const [dragValue, setDragValue] = useState<number | null>(null)
-
-  // Kazda wiadomosc z backendu ustawia nowa kotwice (backend = zrodlo prawdy).
-  useEffect(() => {
-    anchorRef.current = { position, at: performance.now() }
-    setDisplay(position)
-  }, [position, playing])
-
-  // Plynne dokladanie czasu miedzy wiadomosciami.
-  useEffect(() => {
-    if (!playing || dragValue !== null) return
-
-    let frame = 0
-
-    const tick = () => {
-      setDisplay(anchorRef.current.position + (performance.now() - anchorRef.current.at) / 1000)
-      frame = requestAnimationFrame(tick)
-    }
-
-    frame = requestAnimationFrame(tick)
-
-    return () => cancelAnimationFrame(frame)
-  }, [playing, position, dragValue])
 
   const valueFromClientX = useCallback(
     (clientX: number): number => {

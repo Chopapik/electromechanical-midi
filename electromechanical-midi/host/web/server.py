@@ -491,6 +491,10 @@ def create_app(
         preset_path.write_text(json.dumps(presets, ensure_ascii=False, indent=2), encoding='utf-8')
         return {'presets': presets}
 
+    @app.get('/api/mechanical')
+    def api_mechanical() -> dict:
+        return engine.mechanical_view()
+
     @app.get('/api/arrangement')
     def api_arrangement() -> dict:
         return engine.arrangement_view()

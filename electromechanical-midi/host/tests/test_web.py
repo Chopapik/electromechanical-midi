@@ -137,6 +137,27 @@ class WebTestCase(unittest.TestCase):
 
 
 class TestRest(WebTestCase):
+    def test_mechanical_projection_is_read_only_and_matches_plan(self):
+        empty = self.client.get('/api/mechanical').json()
+        self.assertFalse(empty['hasPlan'])
+        self.assertEqual(empty['events'], [])
+        self.engine.load_file(self.midi_dir / 'song.mid')
+        self.engine.initialize_arrangement()
+        before = self.engine.snapshot()
+        plan = self.engine._plan
+        response = self.client.get('/api/mechanical')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['events'], [e.as_dict() for e in plan.events if e.played])
+        self.assertEqual(data['reinforcements'], [e.as_dict() for e in plan.reinforcements])
+        self.assertEqual(data['trays'], [e.as_dict() for e in plan.tray_events])
+        self.assertEqual(data['file'], 'song.mid')
+        self.assertEqual(data['devices'][0]['id'], plan.devices[0]['id'])
+        self.assertIn('minHz', data['devices'][0]['parameters'])
+        self.assertIs(self.engine._plan, plan)
+        self.assertEqual(self.engine.snapshot()['state'], before['state'])
+        self.assertEqual(self.engine.snapshot()['arrangementRevision'], before['arrangementRevision'])
+
     def test_arrangement_api_save_load_and_mismatch(self):
         self.engine.load_file(self.midi_dir / 'song.mid')
         initialized = self.client.post('/api/arrangement/initialize')

@@ -1,0 +1,30 @@
+.mechanical-view { padding: 24px; background: #141d27; border: 1px solid #374657; border-radius: 14px; }
+.mechanical-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.mechanical-heading h2 { margin: 0; }
+.mechanical-heading p, .mechanical-labels, .mechanical-legend { color: #a5b4c5; }
+.mechanical-legend { display: flex; flex-wrap: wrap; gap: 20px; padding: 12px 0; font-size: .85rem; }
+.mechanical-view .primary { --motion-color: #63d7e8; }
+.mechanical-view .reinforcement { --motion-color: #f4af64; }
+.mechanical-legend .primary, .mechanical-legend .reinforcement { color: var(--motion-color); }
+.mechanical-group h3 { font-size: 1rem; margin: 20px 0 10px; }
+.mechanical-group small { margin-left: 10px; color: #8f9bac; font-weight: normal; }
+.mechanical-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr)); gap: 12px; }
+.mechanical-device { --motion-color: #617080; min-width: 0; width: 100%; text-align: left; background: #1c2835; color: #e3ebf3; border: 1px solid #3a4858; border-top: 3px solid var(--motion-color); padding: 12px; border-radius: 8px; cursor: pointer; }
+.mechanical-device[aria-pressed="true"] { outline: 2px solid #bccfe3; outline-offset: 2px; }
+.mechanical-card-heading { display: flex; justify-content: space-between; gap: 6px; font-size: .9rem; }
+.mechanical-card-heading span { font-size: .7rem; color: var(--motion-color); }
+.mechanical-device svg { display: block; width: 100%; height: 95px; }
+.mechanical-device .housing { fill: #111923; stroke: #536174; stroke-width: 2; }
+.mechanical-device .slot { fill: #040a10; }
+.mechanical-device .rail { fill: none; stroke: #657386; stroke-width: 3; }
+.mechanical-device .screw { stroke: #788a9a; stroke-width: 5; stroke-dasharray: 2 4; }
+.mechanical-device .moving { fill: var(--motion-color); stroke: var(--motion-color); }
+.mechanical-device .lens { fill: #18232e; stroke: var(--motion-color); stroke-width: 2; }
+.mechanical-device .ink { stroke: #17232f; stroke-width: 3; fill: none; }
+.mechanical-device .platter { fill: #293949; stroke: #8292a3; stroke-width: 2; }
+.mechanical-device.attack { box-shadow: inset 0 0 18px #75a9d020; }
+.mechanical-badge { color: var(--motion-color); font-size: .7rem; font-weight: bold; letter-spacing: .08em; }
+.mechanical-labels { margin-top: 8px; font-size: .75rem; line-height: 1.5; overflow-wrap: anywhere; }
+.mechanical-labels span { color: #8394a6; }
+.mechanical-inspector { margin-top: 24px; border-top: 1px solid #374657; font-size: .85rem; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .mechanical-view { padding: 14px; } .mechanical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -54,7 +54,7 @@ from .timeline import (
     Timeline,
     make_timeline,
 )
-from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
+from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview, effective_profile
 from .arrangement import Arrangement, ArrangementError, midi_identity
 from .hardware import bind_devices, build_commands
 from .allocator import allocate, manual_pins
@@ -1165,6 +1165,24 @@ class PlaybackEngine:
                 'routes': [{'ruleId': 'reinforcement', 'deviceId': extra.device_id,
                             'status': 'ACCEPTED', 'reason': extra.reason}]})
         return notes
+
+    def mechanical_view(self) -> dict:
+        """Read-only projection of the actual plan; never initializes/reallocates it."""
+        with self._lock:
+            plan = self._plan
+            devices = plan.devices if plan else self._orchestra.devices
+            return {
+                'file': self._source.path.name if self._source else None,
+                'revision': self._arrangement_revision,
+                'devices': [{**data, 'parameters': {
+                    key: parameter.value for key, parameter in
+                    effective_profile(VirtualDeviceInstance.parse(data)).parameters.items()
+                }} for data in devices],
+                'events': [e.as_dict() for e in plan.events if e.played] if plan else [],
+                'reinforcements': [e.as_dict() for e in plan.reinforcements] if plan else [],
+                'trays': [e.as_dict() for e in plan.tray_events] if plan else [],
+                'hasPlan': plan is not None,
+            }
 
     def arrangement_view(self) -> dict:
         with self._lock:
