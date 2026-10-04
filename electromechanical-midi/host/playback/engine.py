@@ -1045,7 +1045,11 @@ class PlaybackEngine:
                 'name': candidate.name,
                 'devices': candidate.config()['devices'],
                 'policy': self._orchestra.policy,
+                'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled,
             })
+            if candidate.dvd_mode == 'reinforcement':
+                # Reinforcement runs after the normal PerformancePlan is built.
+                self._auto_arrange = True
             self._virtual_mode = enabled
             if not enabled:
                 self._preview.close()
@@ -1064,6 +1068,7 @@ class PlaybackEngine:
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
             'devices': arrangement.data['devices'],
             'policy': payload.get('policy'),
+            'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True),
         })
         bound, _ = bind_devices(orchestra.instances())
         preview_devices = [device for device in orchestra.instances() if device.in_preview]
@@ -1133,6 +1138,7 @@ class PlaybackEngine:
             'devices': self._orchestra.devices,
             'rules': list(self._arrangement.data['rules']) if self._arrangement is not None else [],
             'policy': self._orchestra.policy,
+            'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled,
             'origin': self._plan.origin,
         }
 
@@ -1148,6 +1154,13 @@ class PlaybackEngine:
             return {
                 'arrangement': self._document_locked(),
                 'notes': self._arrangement_notes,
+                'trayNotes': [{**event.as_dict(), 'id': f'tray:{event.device_id}:{event.source_id}',
+                    'trackName': 'DVD tray reinforcement', 'name': f'GM {event.note} · tray',
+                    'isDrum': True, 'routes': [{'ruleId': 'tray-reinforcement', 'deviceId': event.device_id,
+                        'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}], 'deviceId': event.device_id,
+                    'actualStart': event.start, 'actualDuration': event.duration,
+                    'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}
+                    for event in (self._plan.tray_events if self._plan else [])],
                 'midiIdentity': midi_identity(self._source) if self._source else None,
                 'tracks': [{'index': t.index, 'name': t.name, 'isDrums': t.is_drums,
                             'noteCount': t.note_count,
@@ -1160,6 +1173,7 @@ class PlaybackEngine:
                 'orchestra': {
                     'name': self._orchestra.name,
                     'policy': self._orchestra.policy,
+                    'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled,
                     'devices': [{'id': d['id'], 'type': d['type'], 'name': d['name']}
                                 for d in self._orchestra.devices],
                 },
@@ -1516,6 +1530,7 @@ class PlaybackEngine:
                 },
                 "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
                             "report": self._virtual.report,
+                            "trayStatus": self._virtual.tray_state_at(position) if playing else {},
                             "activity": (self._virtual.active_at(position, visual_hold=0.25) if self._virtual_mode and playing
                                          else {device.id: False for device in self._virtual.devices}),
                             "profiles": [profile.as_dict() for profile in PROFILES.values()]},

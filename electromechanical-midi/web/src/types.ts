@@ -115,19 +115,21 @@ export interface ArrangementHardware {
   unmapped: Array<{ deviceId: string; name: string; type: string; reason: string; lane?: string; boundTo?: string }>
 }
 
-export interface VirtualConfig { name: string; devices: VirtualDevice[] }
+export interface VirtualConfig { name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement'; trayEnabled?: boolean }
 export interface VirtualReport {
   name: string; type: string; accepted: number; played: number; dropped: number
   folded: number; delayed: number; busyConflicts: number; steps: number
   reversals: number; travel: number; activeTime: number; requestedHits: number
   acceptedHits: number; droppedWhileBusy: number; busyTime: number
   maxDensity: number
+  reinforcementEvents?: number; reinforcementTime?: number
   reasons: Record<string, number>; state: Record<string, number | boolean>
 }
 export interface VirtualState {
   enabled: boolean
   config: VirtualConfig
   report: Record<string, VirtualReport>
+  trayStatus?: Record<string, { phase: string; note?: number; velocity?: number; duration?: number; strength?: string }>
   activity: Record<string, boolean>
   profiles: Array<{ id: string; kind: string; parameters: Record<string, { value: number | null; provenance: string; source: string }> }>
 }
@@ -196,6 +198,8 @@ export interface ArrangementDocument {
   rules: ArrangementRule[]
   /** Auto Arranger: polityka wykonania; rules sa wtedy tylko recznym overridem */
   policy?: Record<string, number | string | boolean>
+  dvdMode?: 'independent' | 'reinforcement'
+  trayEnabled?: boolean
   origin?: 'auto' | 'manual' | 'hybrid'
 }
 export interface ArrangementRouteResult {
@@ -211,6 +215,7 @@ export type PerformanceOutcome =
 export type NoteRole = 'lead' | 'bass' | 'harmony' | 'percussion'
 
 export interface ArrangementNote {
+  reinforcement?: boolean
   id: string; track: number; trackName: string; channel: number
   note: number; name: string | null; start: number; duration: number
   velocity: number; isDrum: boolean; routes: ArrangementRouteResult[]
@@ -251,6 +256,9 @@ export interface ReportDevice {
 
 export interface ArrangementReport {
   sourceEvents: number
+  dvdMode?: 'independent' | 'reinforcement'
+  trayEnabled?: boolean
+  dvdPairs?: Record<string, string[]>
   trackClassification?: Array<{
     index: number; name: string; noteCount: number; finalRole: string
     confidence: number; roleScores: Record<string, number>; evidence: string[]
@@ -339,6 +347,7 @@ export interface OrchestraView {
 }
 export interface ArrangementView {
   arrangement: ArrangementDocument | null
+  trayNotes?: ArrangementNote[]
   notes: ArrangementNote[]
   midiIdentity: ArrangementDocument['midi'] | null
   tracks: Array<{ index: number; name: string; isDrums: boolean; noteCount: number

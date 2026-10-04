@@ -132,6 +132,43 @@ class PerformanceEvent:
         }
 
 
+@dataclasses.dataclass(frozen=True)
+class ReinforcementEvent:
+    source_id: str
+    device_id: str
+    start: float
+    duration: float
+    hz: float
+    velocity: int
+
+    def as_dict(self) -> dict:
+        return {'sourceId': self.source_id, 'deviceId': self.device_id,
+                'start': round(self.start, 6), 'duration': round(self.duration, 6),
+                'hz': round(self.hz, 3), 'velocity': self.velocity}
+
+
+@dataclasses.dataclass(frozen=True)
+class TrayEvent:
+    source_id: str
+    device_id: str
+    track: int
+    note: int
+    velocity: int
+    start: float
+    duration: float
+    cooldown: float
+    priority: int
+    strength: str
+    direction: int
+
+    def as_dict(self) -> dict:
+        return {'sourceId': self.source_id, 'deviceId': self.device_id, 'track': self.track,
+                'note': self.note, 'velocity': self.velocity, 'channel': 9,
+                'start': round(self.start, 6), 'duration': round(self.duration, 6),
+                'cooldown': round(self.cooldown, 6), 'priority': self.priority,
+                'strength': self.strength, 'direction': self.direction, 'reinforcement': True}
+
+
 @dataclasses.dataclass
 class PerformancePlan:
     """Caly plan wykonania: zdarzenia + orkiestra + polityka + raport."""
@@ -146,10 +183,16 @@ class PerformancePlan:
     lead_devices: tuple[str, ...] = ()   # urzadzenia DEDICATED_LEAD_ONLY
     duplicates: dict = dataclasses.field(default_factory=dict)
     articulation: dict = dataclasses.field(default_factory=dict)
+    dvd_mode: str = 'independent'
+    reinforcements: list[ReinforcementEvent] = dataclasses.field(default_factory=list)
+    tray_enabled: bool = True
+    tray_events: list[TrayEvent] = dataclasses.field(default_factory=list)
+    tray_report: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
-        return max((event.end for event in self.events), default=0.0)
+        return max(max((event.end for event in self.events), default=0.0),
+                   max((event.start + event.duration for event in self.tray_events), default=0.0))
 
     def by_device(self) -> dict[str, list[PerformanceEvent]]:
         result: dict[str, list[PerformanceEvent]] = {device['id']: [] for device in self.devices}
@@ -171,6 +214,10 @@ class PerformancePlan:
             'analysis': self.analysis,
             'midi': self.source_ref,
             'devices': self.devices,
+            'dvdMode': self.dvd_mode,
+            'reinforcements': [event.as_dict() for event in self.reinforcements],
+            'trayEnabled': self.tray_enabled,
+            'trayReinforcements': [event.as_dict() for event in self.tray_events],
             'events': [event.as_dict() for event in self.events],
             'report': self.report(),
         }
@@ -400,9 +447,11 @@ def build_report(plan: PerformancePlan) -> dict:
         if event.outcome == 'DROPPED' and event.preferred_device in per_device:
             per_device[event.preferred_device]['dropped'] += 1
 
-    tonal_devices = [d for d in plan.devices if device_kind.get(d['id'], 'tonal') == 'tonal']
-    perc_devices = [d for d in plan.devices if device_kind.get(d['id']) == 'percussion']
-    tonal_activity = {k: v for k, v in activity.items() if device_kind.get(k, 'tonal') == 'tonal'}
+    normal_devices = [d for d in plan.devices if d['type'] != 'DVD_TRAY']
+    tonal_devices = [d for d in normal_devices if device_kind.get(d['id'], 'tonal') == 'tonal']
+    perc_devices = [d for d in normal_devices if device_kind.get(d['id']) == 'percussion']
+    normal_ids = {d['id'] for d in normal_devices}
+    tonal_activity = {k: v for k, v in activity.items() if k in normal_ids and device_kind.get(k, 'tonal') == 'tonal'}
     perc_activity = {k: v for k, v in activity.items() if device_kind.get(k) == 'percussion'}
 
     total_requested = sum(bucket['requested'] for bucket in kinds.values())
@@ -419,6 +468,12 @@ def build_report(plan: PerformancePlan) -> dict:
 
     return {
         'sourceEvents': total_requested,
+        'dvdMode': plan.dvd_mode,
+        'reinforcement': {
+            'events': len(plan.reinforcements),
+            'totalSeconds': round(sum(event.duration for event in plan.reinforcements), 3),
+        },
+        'tray': plan.tray_report,
         'trackClassification': plan.analysis.get('trackClassification', []),
         'lead': {
             'requested': len(lead_events),

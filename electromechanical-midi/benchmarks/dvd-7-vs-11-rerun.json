@@ -1,0 +1,2327 @@
+{
+  "0002-02-radiohead_1993-creep-[k] (2).mid": {
+    "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 4525,
+      "played": 4344,
+      "dropped": 181,
+      "dropRate": 0.04,
+      "tonalRequested": 3259,
+      "tonalDropped": 179,
+      "reassigned": 1200,
+      "delayed": 129,
+      "arpeggiated": 582,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6614,
+      "totalTonalSilenceSeconds": 45.318,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.49,
+        "fdd-2": 0.4182,
+        "fdd-3": 0.4008
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 4525,
+      "played": 4523,
+      "dropped": 2,
+      "dropRate": 0.0004,
+      "tonalRequested": 3259,
+      "tonalDropped": 0,
+      "reassigned": 864,
+      "delayed": 0,
+      "arpeggiated": 109,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6501,
+      "totalTonalSilenceSeconds": 46.342,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.4013,
+        "fdd-2": 0.4127,
+        "fdd-3": 0.4134
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0383,
+        "DVD_STEPPER_2": 0.0319,
+        "DVD_STEPPER_3": 0.0348,
+        "DVD_STEPPER_4": 0.0302
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 145,
+        "DVD_STEPPER_2": 127,
+        "DVD_STEPPER_3": 135,
+        "DVD_STEPPER_4": 113
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    }
+  },
+  "0002-02-radiohead_1993-creep-[k] (3).mid": {
+    "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 4525,
+      "played": 4344,
+      "dropped": 181,
+      "dropRate": 0.04,
+      "tonalRequested": 3259,
+      "tonalDropped": 179,
+      "reassigned": 1200,
+      "delayed": 129,
+      "arpeggiated": 582,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6614,
+      "totalTonalSilenceSeconds": 45.318,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.49,
+        "fdd-2": 0.4182,
+        "fdd-3": 0.4008
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 4525,
+      "played": 4523,
+      "dropped": 2,
+      "dropRate": 0.0004,
+      "tonalRequested": 3259,
+      "tonalDropped": 0,
+      "reassigned": 864,
+      "delayed": 0,
+      "arpeggiated": 109,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6501,
+      "totalTonalSilenceSeconds": 46.342,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.4013,
+        "fdd-2": 0.4127,
+        "fdd-3": 0.4134
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0383,
+        "DVD_STEPPER_2": 0.0319,
+        "DVD_STEPPER_3": 0.0348,
+        "DVD_STEPPER_4": 0.0302
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 145,
+        "DVD_STEPPER_2": 127,
+        "DVD_STEPPER_3": 135,
+        "DVD_STEPPER_4": 113
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    }
+  },
+  "0002-02-radiohead_1993-creep-[k].mid": {
+    "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 4525,
+      "played": 4344,
+      "dropped": 181,
+      "dropRate": 0.04,
+      "tonalRequested": 3259,
+      "tonalDropped": 179,
+      "reassigned": 1200,
+      "delayed": 129,
+      "arpeggiated": 582,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6614,
+      "totalTonalSilenceSeconds": 45.318,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.49,
+        "fdd-2": 0.4182,
+        "fdd-3": 0.4008
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 4525,
+      "played": 4523,
+      "dropped": 2,
+      "dropRate": 0.0004,
+      "tonalRequested": 3259,
+      "tonalDropped": 0,
+      "reassigned": 864,
+      "delayed": 0,
+      "arpeggiated": 109,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.6501,
+      "totalTonalSilenceSeconds": 46.342,
+      "longSilentGaps": 22,
+      "fddUtilization": {
+        "fdd-1": 0.4013,
+        "fdd-2": 0.4127,
+        "fdd-3": 0.4134
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0383,
+        "DVD_STEPPER_2": 0.0319,
+        "DVD_STEPPER_3": 0.0348,
+        "DVD_STEPPER_4": 0.0302
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 145,
+        "DVD_STEPPER_2": 127,
+        "DVD_STEPPER_3": 135,
+        "DVD_STEPPER_4": 113
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4851
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 243,
+      "leadPlayed": 243,
+      "leadDropped": 0
+    }
+  },
+  "0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid": {
+    "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 3622,
+      "played": 3418,
+      "dropped": 204,
+      "dropRate": 0.0563,
+      "tonalRequested": 1829,
+      "tonalDropped": 151,
+      "reassigned": 1162,
+      "delayed": 6,
+      "arpeggiated": 1,
+      "voiceSteals": 76,
+      "shortened": 127,
+      "accompanimentContinuity": 0.9476,
+      "totalTonalSilenceSeconds": 2.575,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.4542,
+        "fdd-2": 0.7015,
+        "fdd-3": 0.6928
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.7095
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 156,
+      "leadPlayed": 156,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 3622,
+      "played": 3569,
+      "dropped": 53,
+      "dropRate": 0.0146,
+      "tonalRequested": 1829,
+      "tonalDropped": 0,
+      "reassigned": 1133,
+      "delayed": 6,
+      "arpeggiated": 0,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.9839,
+      "totalTonalSilenceSeconds": 1.739,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.4369,
+        "fdd-2": 0.7273,
+        "fdd-3": 0.6713
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0395,
+        "DVD_STEPPER_2": 0.014,
+        "DVD_STEPPER_3": 0.1274,
+        "DVD_STEPPER_4": 0.0777
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 31,
+        "DVD_STEPPER_2": 11,
+        "DVD_STEPPER_3": 100,
+        "DVD_STEPPER_4": 61
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.7095
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 156,
+      "leadPlayed": 156,
+      "leadDropped": 0
+    }
+  },
+  "0032-01-radiohead_1997-airbag-[k].mid": {
+    "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7316,
+      "played": 5477,
+      "dropped": 1839,
+      "dropRate": 0.2514,
+      "tonalRequested": 3647,
+      "tonalDropped": 342,
+      "reassigned": 3858,
+      "delayed": 314,
+      "arpeggiated": 286,
+      "voiceSteals": 2,
+      "shortened": 2,
+      "accompanimentContinuity": 0.7106,
+      "totalTonalSilenceSeconds": 38.792,
+      "longSilentGaps": 91,
+      "fddUtilization": {
+        "fdd-1": 0.5446,
+        "fdd-2": 0.4933,
+        "fdd-3": 0.4617
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5117
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 182,
+      "leadPlayed": 182,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7316,
+      "played": 5807,
+      "dropped": 1509,
+      "dropRate": 0.2063,
+      "tonalRequested": 3647,
+      "tonalDropped": 12,
+      "reassigned": 3598,
+      "delayed": 21,
+      "arpeggiated": 0,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.7011,
+      "totalTonalSilenceSeconds": 39.358,
+      "longSilentGaps": 91,
+      "fddUtilization": {
+        "fdd-1": 0.5121,
+        "fdd-2": 0.4672,
+        "fdd-3": 0.4376
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0587,
+        "DVD_STEPPER_2": 0.0557,
+        "DVD_STEPPER_3": 0.0519,
+        "DVD_STEPPER_4": 0.0549
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 100,
+        "DVD_STEPPER_2": 95,
+        "DVD_STEPPER_3": 87,
+        "DVD_STEPPER_4": 92
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5117
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 182,
+      "leadPlayed": 182,
+      "leadDropped": 0
+    }
+  },
+  "0036-05-radiohead_1997-let_down-[k].mid": {
+    "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7290,
+      "played": 4761,
+      "dropped": 2529,
+      "dropRate": 0.3469,
+      "tonalRequested": 5257,
+      "tonalDropped": 2262,
+      "reassigned": 3869,
+      "delayed": 115,
+      "arpeggiated": 38,
+      "voiceSteals": 71,
+      "shortened": 72,
+      "accompanimentContinuity": 0.7468,
+      "totalTonalSilenceSeconds": 34.214,
+      "longSilentGaps": 11,
+      "fddUtilization": {
+        "fdd-1": 0.6578,
+        "fdd-2": 0.6247,
+        "fdd-3": 0.6192
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5304
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 202,
+      "leadPlayed": 202,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7290,
+      "played": 6084,
+      "dropped": 1206,
+      "dropRate": 0.1654,
+      "tonalRequested": 5257,
+      "tonalDropped": 939,
+      "reassigned": 4248,
+      "delayed": 31,
+      "arpeggiated": 80,
+      "voiceSteals": 293,
+      "shortened": 522,
+      "accompanimentContinuity": 0.9813,
+      "totalTonalSilenceSeconds": 1.45,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9172,
+        "fdd-2": 0.9186,
+        "fdd-3": 0.8679
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6587,
+        "DVD_STEPPER_2": 0.7017,
+        "DVD_STEPPER_3": 0.6594,
+        "DVD_STEPPER_4": 0.6432
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 502,
+        "DVD_STEPPER_2": 524,
+        "DVD_STEPPER_3": 492,
+        "DVD_STEPPER_4": 472
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5298
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 202,
+      "leadPlayed": 202,
+      "leadDropped": 0
+    }
+  },
+  "0041-10-radiohead_1997-no_surprises-[k] (2).mid": {
+    "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5432,
+      "played": 3097,
+      "dropped": 2335,
+      "dropRate": 0.4299,
+      "tonalRequested": 4692,
+      "tonalDropped": 2333,
+      "reassigned": 3189,
+      "delayed": 48,
+      "arpeggiated": 56,
+      "voiceSteals": 112,
+      "shortened": 128,
+      "accompanimentContinuity": 0.6312,
+      "totalTonalSilenceSeconds": 36.795,
+      "longSilentGaps": 133,
+      "fddUtilization": {
+        "fdd-1": 0.5741,
+        "fdd-2": 0.5522,
+        "fdd-3": 0.5794
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6265
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 175,
+      "leadPlayed": 162,
+      "leadDropped": 13
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5432,
+      "played": 4830,
+      "dropped": 602,
+      "dropRate": 0.1108,
+      "tonalRequested": 4692,
+      "tonalDropped": 600,
+      "reassigned": 3298,
+      "delayed": 74,
+      "arpeggiated": 74,
+      "voiceSteals": 117,
+      "shortened": 123,
+      "accompanimentContinuity": 0.9218,
+      "totalTonalSilenceSeconds": 11.781,
+      "longSilentGaps": 10,
+      "fddUtilization": {
+        "fdd-1": 0.7668,
+        "fdd-2": 0.7408,
+        "fdd-3": 0.7638
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6115,
+        "DVD_STEPPER_2": 0.5866,
+        "DVD_STEPPER_3": 0.5813,
+        "DVD_STEPPER_4": 0.5798
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 522,
+        "DVD_STEPPER_2": 500,
+        "DVD_STEPPER_3": 498,
+        "DVD_STEPPER_4": 483
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.626
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 175,
+      "leadPlayed": 162,
+      "leadDropped": 13
+    }
+  },
+  "0041-10-radiohead_1997-no_surprises-[k].mid": {
+    "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5432,
+      "played": 3097,
+      "dropped": 2335,
+      "dropRate": 0.4299,
+      "tonalRequested": 4692,
+      "tonalDropped": 2333,
+      "reassigned": 3189,
+      "delayed": 48,
+      "arpeggiated": 56,
+      "voiceSteals": 112,
+      "shortened": 128,
+      "accompanimentContinuity": 0.6312,
+      "totalTonalSilenceSeconds": 36.795,
+      "longSilentGaps": 133,
+      "fddUtilization": {
+        "fdd-1": 0.5741,
+        "fdd-2": 0.5522,
+        "fdd-3": 0.5794
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6265
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 175,
+      "leadPlayed": 162,
+      "leadDropped": 13
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5432,
+      "played": 4830,
+      "dropped": 602,
+      "dropRate": 0.1108,
+      "tonalRequested": 4692,
+      "tonalDropped": 600,
+      "reassigned": 3298,
+      "delayed": 74,
+      "arpeggiated": 74,
+      "voiceSteals": 117,
+      "shortened": 123,
+      "accompanimentContinuity": 0.9218,
+      "totalTonalSilenceSeconds": 11.781,
+      "longSilentGaps": 10,
+      "fddUtilization": {
+        "fdd-1": 0.7668,
+        "fdd-2": 0.7408,
+        "fdd-3": 0.7638
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6115,
+        "DVD_STEPPER_2": 0.5866,
+        "DVD_STEPPER_3": 0.5813,
+        "DVD_STEPPER_4": 0.5798
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 522,
+        "DVD_STEPPER_2": 500,
+        "DVD_STEPPER_3": 498,
+        "DVD_STEPPER_4": 483
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.626
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 175,
+      "leadPlayed": 162,
+      "leadDropped": 13
+    }
+  },
+  "0054-02-radiohead_2001-pyramid_song.mid": {
+    "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 2503,
+      "played": 1721,
+      "dropped": 782,
+      "dropRate": 0.3124,
+      "tonalRequested": 1921,
+      "tonalDropped": 782,
+      "reassigned": 1011,
+      "delayed": 28,
+      "arpeggiated": 1,
+      "voiceSteals": 17,
+      "shortened": 17,
+      "accompanimentContinuity": 0.647,
+      "totalTonalSilenceSeconds": 47.894,
+      "longSilentGaps": 117,
+      "fddUtilization": {
+        "fdd-1": 0.6511,
+        "fdd-2": 0.6209,
+        "fdd-3": 0.6191
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5683
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 208,
+      "leadPlayed": 208,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 2503,
+      "played": 2458,
+      "dropped": 45,
+      "dropRate": 0.018,
+      "tonalRequested": 1921,
+      "tonalDropped": 45,
+      "reassigned": 1016,
+      "delayed": 12,
+      "arpeggiated": 1,
+      "voiceSteals": 8,
+      "shortened": 8,
+      "accompanimentContinuity": 0.9009,
+      "totalTonalSilenceSeconds": 16.647,
+      "longSilentGaps": 29,
+      "fddUtilization": {
+        "fdd-1": 0.8953,
+        "fdd-2": 0.8968,
+        "fdd-3": 0.8968
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.66,
+        "DVD_STEPPER_2": 0.7418,
+        "DVD_STEPPER_3": 0.4266,
+        "DVD_STEPPER_4": 0.3866
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 227,
+        "DVD_STEPPER_2": 250,
+        "DVD_STEPPER_3": 150,
+        "DVD_STEPPER_4": 138
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5678
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 208,
+      "leadPlayed": 208,
+      "leadDropped": 0
+    }
+  },
+  "0063-01-radiohead_2003-2+2=5-[k].mid": {
+    "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 6414,
+      "played": 4626,
+      "dropped": 1788,
+      "dropRate": 0.2788,
+      "tonalRequested": 4845,
+      "tonalDropped": 1742,
+      "reassigned": 3832,
+      "delayed": 1130,
+      "arpeggiated": 462,
+      "voiceSteals": 243,
+      "shortened": 247,
+      "accompanimentContinuity": 0.9418,
+      "totalTonalSilenceSeconds": 8.315,
+      "longSilentGaps": 13,
+      "fddUtilization": {
+        "fdd-1": 0.6521,
+        "fdd-2": 0.6969,
+        "fdd-3": 0.707
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6268
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 293,
+      "leadPlayed": 293,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 6414,
+      "played": 5798,
+      "dropped": 616,
+      "dropRate": 0.096,
+      "tonalRequested": 4845,
+      "tonalDropped": 570,
+      "reassigned": 4175,
+      "delayed": 1050,
+      "arpeggiated": 308,
+      "voiceSteals": 88,
+      "shortened": 89,
+      "accompanimentContinuity": 0.9438,
+      "totalTonalSilenceSeconds": 8.145,
+      "longSilentGaps": 13,
+      "fddUtilization": {
+        "fdd-1": 0.6934,
+        "fdd-2": 0.617,
+        "fdd-3": 0.6578
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3903,
+        "DVD_STEPPER_2": 0.3792,
+        "DVD_STEPPER_3": 0.3856,
+        "DVD_STEPPER_4": 0.3586
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 457,
+        "DVD_STEPPER_2": 443,
+        "DVD_STEPPER_3": 454,
+        "DVD_STEPPER_4": 411
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.6268
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 293,
+      "leadPlayed": 293,
+      "leadDropped": 0
+    }
+  },
+  "0071-09-radiohead_2003-there_there-[k].mid": {
+    "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 8505,
+      "played": 6393,
+      "dropped": 2112,
+      "dropRate": 0.2483,
+      "tonalRequested": 4034,
+      "tonalDropped": 1491,
+      "reassigned": 5568,
+      "delayed": 230,
+      "arpeggiated": 7,
+      "voiceSteals": 102,
+      "shortened": 106,
+      "accompanimentContinuity": 0.8131,
+      "totalTonalSilenceSeconds": 49.46,
+      "longSilentGaps": 92,
+      "fddUtilization": {
+        "fdd-1": 0.6601,
+        "fdd-2": 0.6354,
+        "fdd-3": 0.5925
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5046
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 153,
+      "leadPlayed": 153,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 8505,
+      "played": 7596,
+      "dropped": 909,
+      "dropRate": 0.1069,
+      "tonalRequested": 4034,
+      "tonalDropped": 288,
+      "reassigned": 5613,
+      "delayed": 175,
+      "arpeggiated": 0,
+      "voiceSteals": 12,
+      "shortened": 12,
+      "accompanimentContinuity": 0.8975,
+      "totalTonalSilenceSeconds": 34.368,
+      "longSilentGaps": 69,
+      "fddUtilization": {
+        "fdd-1": 0.7189,
+        "fdd-2": 0.7212,
+        "fdd-3": 0.6982
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.4238,
+        "DVD_STEPPER_2": 0.3925,
+        "DVD_STEPPER_3": 0.3517,
+        "DVD_STEPPER_4": 0.4087
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 359,
+        "DVD_STEPPER_2": 343,
+        "DVD_STEPPER_3": 297,
+        "DVD_STEPPER_4": 337
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5046
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 153,
+      "leadPlayed": 153,
+      "leadDropped": 0
+    }
+  },
+  "0080-02-radiohead_2007-bodysnatchers-[k] (2).mid": {
+    "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 9364,
+      "played": 7523,
+      "dropped": 1841,
+      "dropRate": 0.1966,
+      "tonalRequested": 7490,
+      "tonalDropped": 1611,
+      "reassigned": 5797,
+      "delayed": 2797,
+      "arpeggiated": 598,
+      "voiceSteals": 7,
+      "shortened": 7,
+      "accompanimentContinuity": 0.8374,
+      "totalTonalSilenceSeconds": 22.609,
+      "longSilentGaps": 57,
+      "fddUtilization": {
+        "fdd-1": 0.7776,
+        "fdd-2": 0.7845,
+        "fdd-3": 0.7691
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4683
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 316,
+      "leadPlayed": 316,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 9364,
+      "played": 8971,
+      "dropped": 393,
+      "dropRate": 0.042,
+      "tonalRequested": 7490,
+      "tonalDropped": 163,
+      "reassigned": 6113,
+      "delayed": 1367,
+      "arpeggiated": 4,
+      "voiceSteals": 6,
+      "shortened": 6,
+      "accompanimentContinuity": 0.8249,
+      "totalTonalSilenceSeconds": 24.84,
+      "longSilentGaps": 102,
+      "fddUtilization": {
+        "fdd-1": 0.7496,
+        "fdd-2": 0.7664,
+        "fdd-3": 0.7585
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3992,
+        "DVD_STEPPER_2": 0.3957,
+        "DVD_STEPPER_3": 0.3748,
+        "DVD_STEPPER_4": 0.368
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 987,
+        "DVD_STEPPER_2": 968,
+        "DVD_STEPPER_3": 879,
+        "DVD_STEPPER_4": 831
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4683
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 316,
+      "leadPlayed": 316,
+      "leadDropped": 0
+    }
+  },
+  "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+    "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 9364,
+      "played": 7523,
+      "dropped": 1841,
+      "dropRate": 0.1966,
+      "tonalRequested": 7490,
+      "tonalDropped": 1611,
+      "reassigned": 5797,
+      "delayed": 2797,
+      "arpeggiated": 598,
+      "voiceSteals": 7,
+      "shortened": 7,
+      "accompanimentContinuity": 0.8374,
+      "totalTonalSilenceSeconds": 22.609,
+      "longSilentGaps": 57,
+      "fddUtilization": {
+        "fdd-1": 0.7776,
+        "fdd-2": 0.7845,
+        "fdd-3": 0.7691
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4683
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 316,
+      "leadPlayed": 316,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 9364,
+      "played": 8971,
+      "dropped": 393,
+      "dropRate": 0.042,
+      "tonalRequested": 7490,
+      "tonalDropped": 163,
+      "reassigned": 6113,
+      "delayed": 1367,
+      "arpeggiated": 4,
+      "voiceSteals": 6,
+      "shortened": 6,
+      "accompanimentContinuity": 0.8249,
+      "totalTonalSilenceSeconds": 24.84,
+      "longSilentGaps": 102,
+      "fddUtilization": {
+        "fdd-1": 0.7496,
+        "fdd-2": 0.7664,
+        "fdd-3": 0.7585
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3992,
+        "DVD_STEPPER_2": 0.3957,
+        "DVD_STEPPER_3": 0.3748,
+        "DVD_STEPPER_4": 0.368
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 987,
+        "DVD_STEPPER_2": 968,
+        "DVD_STEPPER_3": 879,
+        "DVD_STEPPER_4": 831
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4683
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 316,
+      "leadPlayed": 316,
+      "leadDropped": 0
+    }
+  },
+  "0081-03-radiohead_2007-nude.mid": {
+    "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 2819,
+      "played": 2016,
+      "dropped": 803,
+      "dropRate": 0.2849,
+      "tonalRequested": 2035,
+      "tonalDropped": 801,
+      "reassigned": 1388,
+      "delayed": 28,
+      "arpeggiated": 46,
+      "voiceSteals": 78,
+      "shortened": 110,
+      "accompanimentContinuity": 0.771,
+      "totalTonalSilenceSeconds": 45.881,
+      "longSilentGaps": 66,
+      "fddUtilization": {
+        "fdd-1": 0.594,
+        "fdd-2": 0.5269,
+        "fdd-3": 0.5017
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.3253
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 28,
+      "leadPlayed": 28,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 2819,
+      "played": 2643,
+      "dropped": 176,
+      "dropRate": 0.0624,
+      "tonalRequested": 2035,
+      "tonalDropped": 174,
+      "reassigned": 1401,
+      "delayed": 10,
+      "arpeggiated": 24,
+      "voiceSteals": 54,
+      "shortened": 55,
+      "accompanimentContinuity": 0.7706,
+      "totalTonalSilenceSeconds": 46.15,
+      "longSilentGaps": 66,
+      "fddUtilization": {
+        "fdd-1": 0.546,
+        "fdd-2": 0.5544,
+        "fdd-3": 0.4936
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.2929,
+        "DVD_STEPPER_2": 0.29,
+        "DVD_STEPPER_3": 0.2926,
+        "DVD_STEPPER_4": 0.2865
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 208,
+        "DVD_STEPPER_2": 186,
+        "DVD_STEPPER_3": 182,
+        "DVD_STEPPER_4": 178
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.3253
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 28,
+      "leadPlayed": 28,
+      "leadDropped": 0
+    }
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid": {
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7461,
+      "played": 5344,
+      "dropped": 2117,
+      "dropRate": 0.2837,
+      "tonalRequested": 5379,
+      "tonalDropped": 1937,
+      "reassigned": 3805,
+      "delayed": 247,
+      "arpeggiated": 19,
+      "voiceSteals": 48,
+      "shortened": 48,
+      "accompanimentContinuity": 0.9031,
+      "totalTonalSilenceSeconds": 7.42,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.7676,
+        "fdd-2": 0.7557,
+        "fdd-3": 0.757
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6143
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7461,
+      "played": 6899,
+      "dropped": 562,
+      "dropRate": 0.0753,
+      "tonalRequested": 5379,
+      "tonalDropped": 382,
+      "reassigned": 4884,
+      "delayed": 438,
+      "arpeggiated": 6,
+      "voiceSteals": 320,
+      "shortened": 439,
+      "accompanimentContinuity": 0.9841,
+      "totalTonalSilenceSeconds": 1.715,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9102,
+        "fdd-2": 0.911,
+        "fdd-3": 0.8997
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6687,
+        "DVD_STEPPER_2": 0.6354,
+        "DVD_STEPPER_3": 0.5637,
+        "DVD_STEPPER_4": 0.6204
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 565,
+        "DVD_STEPPER_2": 551,
+        "DVD_STEPPER_3": 481,
+        "DVD_STEPPER_4": 529
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.614
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    }
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place (3).mid": {
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7461,
+      "played": 5344,
+      "dropped": 2117,
+      "dropRate": 0.2837,
+      "tonalRequested": 5379,
+      "tonalDropped": 1937,
+      "reassigned": 3805,
+      "delayed": 247,
+      "arpeggiated": 19,
+      "voiceSteals": 48,
+      "shortened": 48,
+      "accompanimentContinuity": 0.9031,
+      "totalTonalSilenceSeconds": 7.42,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.7676,
+        "fdd-2": 0.7557,
+        "fdd-3": 0.757
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6143
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7461,
+      "played": 6899,
+      "dropped": 562,
+      "dropRate": 0.0753,
+      "tonalRequested": 5379,
+      "tonalDropped": 382,
+      "reassigned": 4884,
+      "delayed": 438,
+      "arpeggiated": 6,
+      "voiceSteals": 320,
+      "shortened": 439,
+      "accompanimentContinuity": 0.9841,
+      "totalTonalSilenceSeconds": 1.715,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9102,
+        "fdd-2": 0.911,
+        "fdd-3": 0.8997
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6687,
+        "DVD_STEPPER_2": 0.6354,
+        "DVD_STEPPER_3": 0.5637,
+        "DVD_STEPPER_4": 0.6204
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 565,
+        "DVD_STEPPER_2": 551,
+        "DVD_STEPPER_3": 481,
+        "DVD_STEPPER_4": 529
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.614
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    }
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place (4).mid": {
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7461,
+      "played": 5344,
+      "dropped": 2117,
+      "dropRate": 0.2837,
+      "tonalRequested": 5379,
+      "tonalDropped": 1937,
+      "reassigned": 3805,
+      "delayed": 247,
+      "arpeggiated": 19,
+      "voiceSteals": 48,
+      "shortened": 48,
+      "accompanimentContinuity": 0.9031,
+      "totalTonalSilenceSeconds": 7.42,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.7676,
+        "fdd-2": 0.7557,
+        "fdd-3": 0.757
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6143
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7461,
+      "played": 6899,
+      "dropped": 562,
+      "dropRate": 0.0753,
+      "tonalRequested": 5379,
+      "tonalDropped": 382,
+      "reassigned": 4884,
+      "delayed": 438,
+      "arpeggiated": 6,
+      "voiceSteals": 320,
+      "shortened": 439,
+      "accompanimentContinuity": 0.9841,
+      "totalTonalSilenceSeconds": 1.715,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9102,
+        "fdd-2": 0.911,
+        "fdd-3": 0.8997
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6687,
+        "DVD_STEPPER_2": 0.6354,
+        "DVD_STEPPER_3": 0.5637,
+        "DVD_STEPPER_4": 0.6204
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 565,
+        "DVD_STEPPER_2": 551,
+        "DVD_STEPPER_3": 481,
+        "DVD_STEPPER_4": 529
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.614
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    }
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place.mid": {
+    "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7461,
+      "played": 5344,
+      "dropped": 2117,
+      "dropRate": 0.2837,
+      "tonalRequested": 5379,
+      "tonalDropped": 1937,
+      "reassigned": 3805,
+      "delayed": 247,
+      "arpeggiated": 19,
+      "voiceSteals": 48,
+      "shortened": 48,
+      "accompanimentContinuity": 0.9031,
+      "totalTonalSilenceSeconds": 7.42,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.7676,
+        "fdd-2": 0.7557,
+        "fdd-3": 0.757
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.6143
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7461,
+      "played": 6899,
+      "dropped": 562,
+      "dropRate": 0.0753,
+      "tonalRequested": 5379,
+      "tonalDropped": 382,
+      "reassigned": 4884,
+      "delayed": 438,
+      "arpeggiated": 6,
+      "voiceSteals": 320,
+      "shortened": 439,
+      "accompanimentContinuity": 0.9841,
+      "totalTonalSilenceSeconds": 1.715,
+      "longSilentGaps": 1,
+      "fddUtilization": {
+        "fdd-1": 0.9102,
+        "fdd-2": 0.911,
+        "fdd-3": 0.8997
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.6687,
+        "DVD_STEPPER_2": 0.6354,
+        "DVD_STEPPER_3": 0.5637,
+        "DVD_STEPPER_4": 0.6204
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 565,
+        "DVD_STEPPER_2": 551,
+        "DVD_STEPPER_3": 481,
+        "DVD_STEPPER_4": 529
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.614
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 310,
+      "leadPlayed": 310,
+      "leadDropped": 0
+    }
+  },
+  "Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid": {
+    "sha256": "ee4bacbe4b9bdc706d4cfcb52d30c43fa4e7eb52b85b4871e7c66a21143b8ede",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 927,
+      "played": 875,
+      "dropped": 52,
+      "dropRate": 0.0561,
+      "tonalRequested": 927,
+      "tonalDropped": 52,
+      "reassigned": 375,
+      "delayed": 22,
+      "arpeggiated": 0,
+      "voiceSteals": 13,
+      "shortened": 13,
+      "accompanimentContinuity": 0.9999,
+      "totalTonalSilenceSeconds": 0,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.5039,
+        "fdd-2": 0.5682,
+        "fdd-3": 0.5189
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5705
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 64,
+      "leadPlayed": 64,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 927,
+      "played": 927,
+      "dropped": 0,
+      "dropRate": 0.0,
+      "tonalRequested": 927,
+      "tonalDropped": 0,
+      "reassigned": 375,
+      "delayed": 22,
+      "arpeggiated": 0,
+      "voiceSteals": 13,
+      "shortened": 13,
+      "accompanimentContinuity": 0.9999,
+      "totalTonalSilenceSeconds": 0,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.5039,
+        "fdd-2": 0.5682,
+        "fdd-3": 0.5189
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0496,
+        "DVD_STEPPER_2": 0.0298,
+        "DVD_STEPPER_3": 0.0238,
+        "DVD_STEPPER_4": 0.0
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 25,
+        "DVD_STEPPER_2": 15,
+        "DVD_STEPPER_3": 12,
+        "DVD_STEPPER_4": 0
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5705
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 64,
+      "leadPlayed": 64,
+      "leadDropped": 0
+    }
+  },
+  "Pink - Try [MIDIfind.com].mid": {
+    "sha256": "c8e0d1ff0c75de624c283fdc2061eee3485eebe4c4234d5eaafdca47d45e2304",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 7107,
+      "played": 4606,
+      "dropped": 2501,
+      "dropRate": 0.3519,
+      "tonalRequested": 5940,
+      "tonalDropped": 2501,
+      "reassigned": 3276,
+      "delayed": 285,
+      "arpeggiated": 465,
+      "voiceSteals": 109,
+      "shortened": 109,
+      "accompanimentContinuity": 0.7618,
+      "totalTonalSilenceSeconds": 16.668,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.7147,
+        "fdd-2": 0.7294,
+        "fdd-3": 0.7318
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5377
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 375,
+      "leadPlayed": 354,
+      "leadDropped": 21
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 7107,
+      "played": 6644,
+      "dropped": 463,
+      "dropRate": 0.0651,
+      "tonalRequested": 5940,
+      "tonalDropped": 463,
+      "reassigned": 4385,
+      "delayed": 252,
+      "arpeggiated": 852,
+      "voiceSteals": 115,
+      "shortened": 117,
+      "accompanimentContinuity": 0.9905,
+      "totalTonalSilenceSeconds": 0.012,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.9575,
+        "fdd-2": 0.9475,
+        "fdd-3": 0.952
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.7094,
+        "DVD_STEPPER_2": 0.6346,
+        "DVD_STEPPER_3": 0.6728,
+        "DVD_STEPPER_4": 0.5937
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 670,
+        "DVD_STEPPER_2": 594,
+        "DVD_STEPPER_3": 600,
+        "DVD_STEPPER_4": 543
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5375
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 375,
+      "leadPlayed": 354,
+      "leadDropped": 21
+    }
+  },
+  "Pink_Floyd_-_Time.mid": {
+    "sha256": "1364df4d9ee8de694621967f9da6a7e6265aa1b1de4cdea485fc3e9111724aef",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 6144,
+      "played": 4952,
+      "dropped": 1192,
+      "dropRate": 0.194,
+      "tonalRequested": 3342,
+      "tonalDropped": 970,
+      "reassigned": 2788,
+      "delayed": 196,
+      "arpeggiated": 170,
+      "voiceSteals": 204,
+      "shortened": 256,
+      "accompanimentContinuity": 0.5551,
+      "totalTonalSilenceSeconds": 92.664,
+      "longSilentGaps": 122,
+      "fddUtilization": {
+        "fdd-1": 0.3797,
+        "fdd-2": 0.3701,
+        "fdd-3": 0.3604
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.4221
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 146,
+      "leadPlayed": 145,
+      "leadDropped": 1
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 6144,
+      "played": 5626,
+      "dropped": 518,
+      "dropRate": 0.0843,
+      "tonalRequested": 3342,
+      "tonalDropped": 296,
+      "reassigned": 2814,
+      "delayed": 150,
+      "arpeggiated": 77,
+      "voiceSteals": 146,
+      "shortened": 174,
+      "accompanimentContinuity": 0.5517,
+      "totalTonalSilenceSeconds": 93.193,
+      "longSilentGaps": 123,
+      "fddUtilization": {
+        "fdd-1": 0.3492,
+        "fdd-2": 0.3389,
+        "fdd-3": 0.3512
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.1324,
+        "DVD_STEPPER_2": 0.1313,
+        "DVD_STEPPER_3": 0.1258,
+        "DVD_STEPPER_4": 0.1283
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 247,
+        "DVD_STEPPER_2": 254,
+        "DVD_STEPPER_3": 241,
+        "DVD_STEPPER_4": 234
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.4221
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 146,
+      "leadPlayed": 145,
+      "leadDropped": 1
+    }
+  },
+  "Queen - Bohemian Rhapsody (2).mid": {
+    "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5925,
+      "played": 4181,
+      "dropped": 1744,
+      "dropRate": 0.2943,
+      "tonalRequested": 4811,
+      "tonalDropped": 1709,
+      "reassigned": 3112,
+      "delayed": 222,
+      "arpeggiated": 511,
+      "voiceSteals": 129,
+      "shortened": 146,
+      "accompanimentContinuity": 0.6975,
+      "totalTonalSilenceSeconds": 76.696,
+      "longSilentGaps": 303,
+      "fddUtilization": {
+        "fdd-1": 0.5388,
+        "fdd-2": 0.5238,
+        "fdd-3": 0.5109
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5925,
+      "played": 5427,
+      "dropped": 498,
+      "dropRate": 0.0841,
+      "tonalRequested": 4811,
+      "tonalDropped": 463,
+      "reassigned": 3137,
+      "delayed": 191,
+      "arpeggiated": 389,
+      "voiceSteals": 66,
+      "shortened": 81,
+      "accompanimentContinuity": 0.6943,
+      "totalTonalSilenceSeconds": 77.341,
+      "longSilentGaps": 310,
+      "fddUtilization": {
+        "fdd-1": 0.519,
+        "fdd-2": 0.5084,
+        "fdd-3": 0.4823
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.2288,
+        "DVD_STEPPER_2": 0.1928,
+        "DVD_STEPPER_3": 0.2011,
+        "DVD_STEPPER_4": 0.182
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 443,
+        "DVD_STEPPER_2": 388,
+        "DVD_STEPPER_3": 393,
+        "DVD_STEPPER_4": 369
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    }
+  },
+  "Queen - Bohemian Rhapsody (3).mid": {
+    "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5925,
+      "played": 4181,
+      "dropped": 1744,
+      "dropRate": 0.2943,
+      "tonalRequested": 4811,
+      "tonalDropped": 1709,
+      "reassigned": 3112,
+      "delayed": 222,
+      "arpeggiated": 511,
+      "voiceSteals": 129,
+      "shortened": 146,
+      "accompanimentContinuity": 0.6975,
+      "totalTonalSilenceSeconds": 76.696,
+      "longSilentGaps": 303,
+      "fddUtilization": {
+        "fdd-1": 0.5388,
+        "fdd-2": 0.5238,
+        "fdd-3": 0.5109
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5925,
+      "played": 5427,
+      "dropped": 498,
+      "dropRate": 0.0841,
+      "tonalRequested": 4811,
+      "tonalDropped": 463,
+      "reassigned": 3137,
+      "delayed": 191,
+      "arpeggiated": 389,
+      "voiceSteals": 66,
+      "shortened": 81,
+      "accompanimentContinuity": 0.6943,
+      "totalTonalSilenceSeconds": 77.341,
+      "longSilentGaps": 310,
+      "fddUtilization": {
+        "fdd-1": 0.519,
+        "fdd-2": 0.5084,
+        "fdd-3": 0.4823
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.2288,
+        "DVD_STEPPER_2": 0.1928,
+        "DVD_STEPPER_3": 0.2011,
+        "DVD_STEPPER_4": 0.182
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 443,
+        "DVD_STEPPER_2": 388,
+        "DVD_STEPPER_3": 393,
+        "DVD_STEPPER_4": 369
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    }
+  },
+  "Queen - Bohemian Rhapsody (4).mid": {
+    "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5925,
+      "played": 4181,
+      "dropped": 1744,
+      "dropRate": 0.2943,
+      "tonalRequested": 4811,
+      "tonalDropped": 1709,
+      "reassigned": 3112,
+      "delayed": 222,
+      "arpeggiated": 511,
+      "voiceSteals": 129,
+      "shortened": 146,
+      "accompanimentContinuity": 0.6975,
+      "totalTonalSilenceSeconds": 76.696,
+      "longSilentGaps": 303,
+      "fddUtilization": {
+        "fdd-1": 0.5388,
+        "fdd-2": 0.5238,
+        "fdd-3": 0.5109
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5925,
+      "played": 5427,
+      "dropped": 498,
+      "dropRate": 0.0841,
+      "tonalRequested": 4811,
+      "tonalDropped": 463,
+      "reassigned": 3137,
+      "delayed": 191,
+      "arpeggiated": 389,
+      "voiceSteals": 66,
+      "shortened": 81,
+      "accompanimentContinuity": 0.6943,
+      "totalTonalSilenceSeconds": 77.341,
+      "longSilentGaps": 310,
+      "fddUtilization": {
+        "fdd-1": 0.519,
+        "fdd-2": 0.5084,
+        "fdd-3": 0.4823
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.2288,
+        "DVD_STEPPER_2": 0.1928,
+        "DVD_STEPPER_3": 0.2011,
+        "DVD_STEPPER_4": 0.182
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 443,
+        "DVD_STEPPER_2": 388,
+        "DVD_STEPPER_3": 393,
+        "DVD_STEPPER_4": 369
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    }
+  },
+  "Queen - Bohemian Rhapsody.mid": {
+    "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 5925,
+      "played": 4181,
+      "dropped": 1744,
+      "dropRate": 0.2943,
+      "tonalRequested": 4811,
+      "tonalDropped": 1709,
+      "reassigned": 3112,
+      "delayed": 222,
+      "arpeggiated": 511,
+      "voiceSteals": 129,
+      "shortened": 146,
+      "accompanimentContinuity": 0.6975,
+      "totalTonalSilenceSeconds": 76.696,
+      "longSilentGaps": 303,
+      "fddUtilization": {
+        "fdd-1": 0.5388,
+        "fdd-2": 0.5238,
+        "fdd-3": 0.5109
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 5925,
+      "played": 5427,
+      "dropped": 498,
+      "dropRate": 0.0841,
+      "tonalRequested": 4811,
+      "tonalDropped": 463,
+      "reassigned": 3137,
+      "delayed": 191,
+      "arpeggiated": 389,
+      "voiceSteals": 66,
+      "shortened": 81,
+      "accompanimentContinuity": 0.6943,
+      "totalTonalSilenceSeconds": 77.341,
+      "longSilentGaps": 310,
+      "fddUtilization": {
+        "fdd-1": 0.519,
+        "fdd-2": 0.5084,
+        "fdd-3": 0.4823
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.2288,
+        "DVD_STEPPER_2": 0.1928,
+        "DVD_STEPPER_3": 0.2011,
+        "DVD_STEPPER_4": 0.182
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 443,
+        "DVD_STEPPER_2": 388,
+        "DVD_STEPPER_3": 393,
+        "DVD_STEPPER_4": 369
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1963
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 129,
+      "leadPlayed": 129,
+      "leadDropped": 0
+    }
+  },
+  "Radiohead — Sail to the Moon [MIDIfind.com] (1) (2).mid": {
+    "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 1957,
+      "played": 1419,
+      "dropped": 538,
+      "dropRate": 0.2749,
+      "tonalRequested": 1491,
+      "tonalDropped": 534,
+      "reassigned": 1026,
+      "delayed": 27,
+      "arpeggiated": 154,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9045,
+      "totalTonalSilenceSeconds": 21.23,
+      "longSilentGaps": 89,
+      "fddUtilization": {
+        "fdd-1": 0.8142,
+        "fdd-2": 0.7886,
+        "fdd-3": 0.7758
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1565
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 1957,
+      "played": 1939,
+      "dropped": 18,
+      "dropRate": 0.0092,
+      "tonalRequested": 1491,
+      "tonalDropped": 14,
+      "reassigned": 1103,
+      "delayed": 22,
+      "arpeggiated": 0,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9943,
+      "totalTonalSilenceSeconds": 1.059,
+      "longSilentGaps": 3,
+      "fddUtilization": {
+        "fdd-1": 0.9307,
+        "fdd-2": 0.8997,
+        "fdd-3": 0.9331
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3703,
+        "DVD_STEPPER_2": 0.4341,
+        "DVD_STEPPER_3": 0.2394,
+        "DVD_STEPPER_4": 0.2979
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 140,
+        "DVD_STEPPER_2": 202,
+        "DVD_STEPPER_3": 78,
+        "DVD_STEPPER_4": 161
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1564
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    }
+  },
+  "Radiohead — Sail to the Moon [MIDIfind.com] (1).mid": {
+    "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 1957,
+      "played": 1419,
+      "dropped": 538,
+      "dropRate": 0.2749,
+      "tonalRequested": 1491,
+      "tonalDropped": 534,
+      "reassigned": 1026,
+      "delayed": 27,
+      "arpeggiated": 154,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9045,
+      "totalTonalSilenceSeconds": 21.23,
+      "longSilentGaps": 89,
+      "fddUtilization": {
+        "fdd-1": 0.8142,
+        "fdd-2": 0.7886,
+        "fdd-3": 0.7758
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1565
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 1957,
+      "played": 1939,
+      "dropped": 18,
+      "dropRate": 0.0092,
+      "tonalRequested": 1491,
+      "tonalDropped": 14,
+      "reassigned": 1103,
+      "delayed": 22,
+      "arpeggiated": 0,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9943,
+      "totalTonalSilenceSeconds": 1.059,
+      "longSilentGaps": 3,
+      "fddUtilization": {
+        "fdd-1": 0.9307,
+        "fdd-2": 0.8997,
+        "fdd-3": 0.9331
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3703,
+        "DVD_STEPPER_2": 0.4341,
+        "DVD_STEPPER_3": 0.2394,
+        "DVD_STEPPER_4": 0.2979
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 140,
+        "DVD_STEPPER_2": 202,
+        "DVD_STEPPER_3": 78,
+        "DVD_STEPPER_4": 161
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1564
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    }
+  },
+  "Radiohead — Sail to the Moon [MIDIfind.com].mid": {
+    "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 1957,
+      "played": 1419,
+      "dropped": 538,
+      "dropRate": 0.2749,
+      "tonalRequested": 1491,
+      "tonalDropped": 534,
+      "reassigned": 1026,
+      "delayed": 27,
+      "arpeggiated": 154,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9045,
+      "totalTonalSilenceSeconds": 21.23,
+      "longSilentGaps": 89,
+      "fddUtilization": {
+        "fdd-1": 0.8142,
+        "fdd-2": 0.7886,
+        "fdd-3": 0.7758
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.1565
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 1957,
+      "played": 1939,
+      "dropped": 18,
+      "dropRate": 0.0092,
+      "tonalRequested": 1491,
+      "tonalDropped": 14,
+      "reassigned": 1103,
+      "delayed": 22,
+      "arpeggiated": 0,
+      "voiceSteals": 1,
+      "shortened": 1,
+      "accompanimentContinuity": 0.9943,
+      "totalTonalSilenceSeconds": 1.059,
+      "longSilentGaps": 3,
+      "fddUtilization": {
+        "fdd-1": 0.9307,
+        "fdd-2": 0.8997,
+        "fdd-3": 0.9331
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.3703,
+        "DVD_STEPPER_2": 0.4341,
+        "DVD_STEPPER_3": 0.2394,
+        "DVD_STEPPER_4": 0.2979
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 140,
+        "DVD_STEPPER_2": 202,
+        "DVD_STEPPER_3": 78,
+        "DVD_STEPPER_4": 161
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.1564
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 84,
+      "leadPlayed": 84,
+      "leadDropped": 0
+    }
+  },
+  "Stay_Shakespears_Sister.mid": {
+    "sha256": "64658ddba1818073b5d00999aa24f7ed68d8289a1ac5b490570d2f352926602d",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 3355,
+      "played": 2306,
+      "dropped": 1049,
+      "dropRate": 0.3127,
+      "tonalRequested": 2117,
+      "tonalDropped": 753,
+      "reassigned": 2170,
+      "delayed": 92,
+      "arpeggiated": 152,
+      "voiceSteals": 36,
+      "shortened": 36,
+      "accompanimentContinuity": 0.5837,
+      "totalTonalSilenceSeconds": 33.61,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.4863,
+        "fdd-2": 0.445,
+        "fdd-3": 0.4667
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.5726
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 232,
+      "leadPlayed": 232,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 3355,
+      "played": 2818,
+      "dropped": 537,
+      "dropRate": 0.1601,
+      "tonalRequested": 2117,
+      "tonalDropped": 241,
+      "reassigned": 2175,
+      "delayed": 25,
+      "arpeggiated": 13,
+      "voiceSteals": 64,
+      "shortened": 64,
+      "accompanimentContinuity": 0.5811,
+      "totalTonalSilenceSeconds": 34.009,
+      "longSilentGaps": 32,
+      "fddUtilization": {
+        "fdd-1": 0.479,
+        "fdd-2": 0.4295,
+        "fdd-3": 0.4491
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.1762,
+        "DVD_STEPPER_2": 0.1533,
+        "DVD_STEPPER_3": 0.1734,
+        "DVD_STEPPER_4": 0.1552
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 147,
+        "DVD_STEPPER_2": 134,
+        "DVD_STEPPER_3": 143,
+        "DVD_STEPPER_4": 125
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.5726
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 232,
+      "leadPlayed": 232,
+      "leadDropped": 0
+    }
+  },
+  "range-test.mid": {
+    "sha256": "d94011ddb062ce74339e0bda439beea903455efae37799fa7cde3cce9f0c4ec9",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 73,
+      "played": 73,
+      "dropped": 0,
+      "dropRate": 0.0,
+      "tonalRequested": 73,
+      "tonalDropped": 0,
+      "reassigned": 0,
+      "delayed": 0,
+      "arpeggiated": 0,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.0,
+      "totalTonalSilenceSeconds": 0,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.0,
+        "fdd-2": 0.0,
+        "fdd-3": 0.0
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 1.0
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 73,
+      "leadPlayed": 73,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 73,
+      "played": 73,
+      "dropped": 0,
+      "dropRate": 0.0,
+      "tonalRequested": 73,
+      "tonalDropped": 0,
+      "reassigned": 0,
+      "delayed": 0,
+      "arpeggiated": 0,
+      "voiceSteals": 0,
+      "shortened": 0,
+      "accompanimentContinuity": 0.0,
+      "totalTonalSilenceSeconds": 0,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.0,
+        "fdd-2": 0.0,
+        "fdd-3": 0.0
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0,
+        "DVD_STEPPER_2": 0.0,
+        "DVD_STEPPER_3": 0.0,
+        "DVD_STEPPER_4": 0.0
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 0,
+        "DVD_STEPPER_2": 0,
+        "DVD_STEPPER_3": 0,
+        "DVD_STEPPER_4": 0
+      },
+      "vhsUtilization": {
+        "vhs-1": 1.0
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 73,
+      "leadPlayed": 73,
+      "leadDropped": 0
+    }
+  },
+  "test.mid": {
+    "sha256": "dc6dd3622f3911770b660a7f3260ace79d475642019dc7a6a6754aea678ba473",
+    "seven": {
+      "deviceCount": 7,
+      "requested": 54,
+      "played": 54,
+      "dropped": 0,
+      "dropRate": 0.0,
+      "tonalRequested": 54,
+      "tonalDropped": 0,
+      "reassigned": 12,
+      "delayed": 10,
+      "arpeggiated": 0,
+      "voiceSteals": 4,
+      "shortened": 4,
+      "accompanimentContinuity": 1.0,
+      "totalTonalSilenceSeconds": 0.024,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.5686,
+        "fdd-2": 0.5686,
+        "fdd-3": 0.5686
+      },
+      "dvdUtilization": {},
+      "dvdEvents": {},
+      "vhsUtilization": {
+        "vhs-1": 0.9964
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 30,
+      "leadPlayed": 30,
+      "leadDropped": 0
+    },
+    "eleven": {
+      "deviceCount": 11,
+      "requested": 54,
+      "played": 54,
+      "dropped": 0,
+      "dropRate": 0.0,
+      "tonalRequested": 54,
+      "tonalDropped": 0,
+      "reassigned": 12,
+      "delayed": 10,
+      "arpeggiated": 0,
+      "voiceSteals": 4,
+      "shortened": 4,
+      "accompanimentContinuity": 1.0,
+      "totalTonalSilenceSeconds": 0.024,
+      "longSilentGaps": 0,
+      "fddUtilization": {
+        "fdd-1": 0.5686,
+        "fdd-2": 0.5686,
+        "fdd-3": 0.5686
+      },
+      "dvdUtilization": {
+        "DVD_STEPPER_1": 0.0,
+        "DVD_STEPPER_2": 0.0,
+        "DVD_STEPPER_3": 0.0,
+        "DVD_STEPPER_4": 0.0
+      },
+      "dvdEvents": {
+        "DVD_STEPPER_1": 0,
+        "DVD_STEPPER_2": 0,
+        "DVD_STEPPER_3": 0,
+        "DVD_STEPPER_4": 0
+      },
+      "vhsUtilization": {
+        "vhs-1": 0.9964
+      },
+      "nonLeadVhsEvents": 0,
+      "leadRequested": 30,
+      "leadPlayed": 30,
+      "leadDropped": 0
+    }
+  }
+}

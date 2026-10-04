@@ -1,0 +1,1131 @@
+{
+  "method": {
+    "uniqueBy": "SHA-256",
+    "normalAllocationIdentical": true,
+    "physicalAndLogicalDvdVoices": 4,
+    "doublingPercentDefinition": "reinforcement DVD-seconds / normal DVD-seconds * 100",
+    "utilizationDefinition": "(normal + reinforcement active seconds) / song duration"
+  },
+  "filesDiscovered": 26,
+  "uniqueFilesMeasured": 15,
+  "aggregate": {
+    "independent": {
+      "requested": 51195,
+      "played": 47737,
+      "dropped": 3458,
+      "dropRate": 0.0675,
+      "reinforcementEvents": 0,
+      "reinforcementSeconds": 0,
+      "dvdNormalSeconds": 4640.146,
+      "durationSeconds": 3409.383,
+      "dvdDoublingPercentOfNormalWork": 0.0,
+      "dvdUtilization": {
+        "dvd_sled-1": {
+          "normalSeconds": 1247.84,
+          "reinforcementSeconds": 0.0,
+          "totalUtilization": 0.366
+        },
+        "dvd_sled-2": {
+          "normalSeconds": 1223.041,
+          "reinforcementSeconds": 0.0,
+          "totalUtilization": 0.3587
+        },
+        "dvd_sled-3": {
+          "normalSeconds": 1089.808,
+          "reinforcementSeconds": 0.0,
+          "totalUtilization": 0.3196
+        },
+        "dvd_sled-4": {
+          "normalSeconds": 1079.457,
+          "reinforcementSeconds": 0.0,
+          "totalUtilization": 0.3166
+        }
+      }
+    },
+    "reinforcement": {
+      "requested": 51195,
+      "played": 47737,
+      "dropped": 3458,
+      "dropRate": 0.0675,
+      "reinforcementEvents": 8849,
+      "reinforcementSeconds": 1404.964,
+      "dvdNormalSeconds": 4640.146,
+      "durationSeconds": 3409.383,
+      "dvdDoublingPercentOfNormalWork": 30.28,
+      "dvdUtilization": {
+        "dvd_sled-1": {
+          "normalSeconds": 1247.84,
+          "reinforcementSeconds": 456.248,
+          "totalUtilization": 0.4998
+        },
+        "dvd_sled-2": {
+          "normalSeconds": 1223.041,
+          "reinforcementSeconds": 312.851,
+          "totalUtilization": 0.4505
+        },
+        "dvd_sled-3": {
+          "normalSeconds": 1089.808,
+          "reinforcementSeconds": 312.339,
+          "totalUtilization": 0.4113
+        },
+        "dvd_sled-4": {
+          "normalSeconds": 1079.457,
+          "reinforcementSeconds": 323.523,
+          "totalUtilization": 0.4115
+        }
+      }
+    }
+  },
+  "songs": [
+    {
+      "file": "0002-02-radiohead_1993-creep-[k] (2).mid",
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "independent": {
+        "requested": 3259,
+        "played": 3259,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 31.606,
+        "durationSeconds": 233.668,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 8.957,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0383
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 7.465,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0319
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 8.122,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0348
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 7.062,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0302
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 3259,
+        "played": 3259,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 160,
+        "reinforcementSeconds": 9.277,
+        "dvdNormalSeconds": 31.606,
+        "durationSeconds": 233.668,
+        "dvdDoublingPercentOfNormalWork": 29.35,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 8.957,
+            "reinforcementSeconds": 3.602,
+            "totalUtilization": 0.0537
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 7.465,
+            "reinforcementSeconds": 3.24,
+            "totalUtilization": 0.0458
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 8.122,
+            "reinforcementSeconds": 0.27,
+            "totalUtilization": 0.0359
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 7.062,
+            "reinforcementSeconds": 2.165,
+            "totalUtilization": 0.0395
+          }
+        }
+      }
+    },
+    {
+      "file": "0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "independent": {
+        "requested": 1829,
+        "played": 1829,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 65.832,
+        "durationSeconds": 254.584,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 10.053,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0395
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 3.567,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.014
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 32.43,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1274
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 19.782,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0777
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 1829,
+        "played": 1829,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 203,
+        "reinforcementSeconds": 65.833,
+        "dvdNormalSeconds": 65.832,
+        "durationSeconds": 254.584,
+        "dvdDoublingPercentOfNormalWork": 100.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 10.053,
+            "reinforcementSeconds": 36.646,
+            "totalUtilization": 0.1834
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 3.567,
+            "reinforcementSeconds": 20.107,
+            "totalUtilization": 0.093
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 32.43,
+            "reinforcementSeconds": 6.486,
+            "totalUtilization": 0.1529
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 19.782,
+            "reinforcementSeconds": 2.594,
+            "totalUtilization": 0.0879
+          }
+        }
+      }
+    },
+    {
+      "file": "0041-10-radiohead_1997-no_surprises-[k] (2).mid",
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "independent": {
+        "requested": 4692,
+        "played": 4092,
+        "dropped": 600,
+        "dropRate": 0.1279,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 530.252,
+        "durationSeconds": 224.754,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 137.44,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6115
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 131.848,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.5866
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 130.649,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.5813
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 130.315,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.5798
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 4692,
+        "played": 4092,
+        "dropped": 600,
+        "dropRate": 0.1279,
+        "reinforcementEvents": 593,
+        "reinforcementSeconds": 65.943,
+        "dvdNormalSeconds": 530.252,
+        "durationSeconds": 224.754,
+        "dvdDoublingPercentOfNormalWork": 12.44,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 137.44,
+            "reinforcementSeconds": 19.778,
+            "totalUtilization": 0.6995
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 131.848,
+            "reinforcementSeconds": 20.304,
+            "totalUtilization": 0.677
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 130.649,
+            "reinforcementSeconds": 11.818,
+            "totalUtilization": 0.6339
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 130.315,
+            "reinforcementSeconds": 14.043,
+            "totalUtilization": 0.6423
+          }
+        }
+      }
+    },
+    {
+      "file": "0054-02-radiohead_2001-pyramid_song.mid",
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "independent": {
+        "requested": 1921,
+        "played": 1876,
+        "dropped": 45,
+        "dropRate": 0.0234,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 619.524,
+        "durationSeconds": 279.69,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 184.588,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.66
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 207.468,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.7418
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 119.329,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.4266
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 108.139,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3866
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 1921,
+        "played": 1876,
+        "dropped": 45,
+        "dropRate": 0.0234,
+        "reinforcementEvents": 471,
+        "reinforcementSeconds": 340.631,
+        "dvdNormalSeconds": 619.524,
+        "durationSeconds": 279.69,
+        "dvdDoublingPercentOfNormalWork": 54.98,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 184.588,
+            "reinforcementSeconds": 68.831,
+            "totalUtilization": 0.9061
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 207.468,
+            "reinforcementSeconds": 36.808,
+            "totalUtilization": 0.8734
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 119.329,
+            "reinforcementSeconds": 113.567,
+            "totalUtilization": 0.8327
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 108.139,
+            "reinforcementSeconds": 121.424,
+            "totalUtilization": 0.8208
+          }
+        }
+      }
+    },
+    {
+      "file": "0063-01-radiohead_2003-2+2=5-[k].mid",
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "independent": {
+        "requested": 4845,
+        "played": 4275,
+        "dropped": 570,
+        "dropRate": 0.1176,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 285.07,
+        "durationSeconds": 188.322,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 73.505,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3903
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 71.409,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3792
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 72.618,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3856
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 67.538,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3586
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 4845,
+        "played": 4275,
+        "dropped": 570,
+        "dropRate": 0.1176,
+        "reinforcementEvents": 1123,
+        "reinforcementSeconds": 58.097,
+        "dvdNormalSeconds": 285.07,
+        "durationSeconds": 188.322,
+        "dvdDoublingPercentOfNormalWork": 20.38,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 73.505,
+            "reinforcementSeconds": 19.436,
+            "totalUtilization": 0.4935
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 71.409,
+            "reinforcementSeconds": 14.883,
+            "totalUtilization": 0.4582
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 72.618,
+            "reinforcementSeconds": 10.189,
+            "totalUtilization": 0.4397
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 67.538,
+            "reinforcementSeconds": 13.589,
+            "totalUtilization": 0.4308
+          }
+        }
+      }
+    },
+    {
+      "file": "0071-09-radiohead_2003-there_there-[k].mid",
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "independent": {
+        "requested": 4034,
+        "played": 3746,
+        "dropped": 288,
+        "dropRate": 0.0714,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 500.077,
+        "durationSeconds": 317.175,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 134.434,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.4238
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 124.484,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3925
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 111.538,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3517
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 129.621,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.4087
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 4034,
+        "played": 3746,
+        "dropped": 288,
+        "dropRate": 0.0714,
+        "reinforcementEvents": 599,
+        "reinforcementSeconds": 152.082,
+        "dvdNormalSeconds": 500.077,
+        "durationSeconds": 317.175,
+        "dvdDoublingPercentOfNormalWork": 30.41,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 134.434,
+            "reinforcementSeconds": 62.706,
+            "totalUtilization": 0.6215
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 124.484,
+            "reinforcementSeconds": 39.108,
+            "totalUtilization": 0.5158
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 111.538,
+            "reinforcementSeconds": 31.157,
+            "totalUtilization": 0.4499
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 129.621,
+            "reinforcementSeconds": 19.112,
+            "totalUtilization": 0.4689
+          }
+        }
+      }
+    },
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k] (2).mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "independent": {
+        "requested": 7490,
+        "played": 7327,
+        "dropped": 163,
+        "dropRate": 0.0218,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 364.934,
+        "durationSeconds": 237.332,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 94.741,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3992
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 93.907,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3957
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 88.952,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3748
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 87.334,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.368
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 7490,
+        "played": 7327,
+        "dropped": 163,
+        "dropRate": 0.0218,
+        "reinforcementEvents": 1057,
+        "reinforcementSeconds": 99.71,
+        "dvdNormalSeconds": 364.934,
+        "durationSeconds": 237.332,
+        "dvdDoublingPercentOfNormalWork": 27.32,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 94.741,
+            "reinforcementSeconds": 36.875,
+            "totalUtilization": 0.5546
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 93.907,
+            "reinforcementSeconds": 22.35,
+            "totalUtilization": 0.4898
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 88.952,
+            "reinforcementSeconds": 19.822,
+            "totalUtilization": 0.4583
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 87.334,
+            "reinforcementSeconds": 20.663,
+            "totalUtilization": 0.455
+          }
+        }
+      }
+    },
+    {
+      "file": "0081-03-radiohead_2007-nude.mid",
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "independent": {
+        "requested": 2035,
+        "played": 1861,
+        "dropped": 174,
+        "dropRate": 0.0855,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 263.827,
+        "durationSeconds": 227.035,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 66.504,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2929
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 65.848,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.29
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 66.435,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2926
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 65.04,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2865
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 2035,
+        "played": 1861,
+        "dropped": 174,
+        "dropRate": 0.0855,
+        "reinforcementEvents": 149,
+        "reinforcementSeconds": 14.205,
+        "dvdNormalSeconds": 263.827,
+        "durationSeconds": 227.035,
+        "dvdDoublingPercentOfNormalWork": 5.38,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 66.504,
+            "reinforcementSeconds": 4.978,
+            "totalUtilization": 0.3149
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 65.848,
+            "reinforcementSeconds": 4.146,
+            "totalUtilization": 0.3083
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 66.435,
+            "reinforcementSeconds": 2.409,
+            "totalUtilization": 0.3032
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 65.04,
+            "reinforcementSeconds": 2.671,
+            "totalUtilization": 0.2982
+          }
+        }
+      }
+    },
+    {
+      "file": "0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "independent": {
+        "requested": 5379,
+        "played": 4997,
+        "dropped": 382,
+        "dropRate": 0.071,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 580.911,
+        "durationSeconds": 233.465,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 156.121,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6687
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 148.341,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6354
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 131.606,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.5637
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 144.843,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6204
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 5379,
+        "played": 4997,
+        "dropped": 382,
+        "dropRate": 0.071,
+        "reinforcementEvents": 1526,
+        "reinforcementSeconds": 99.434,
+        "dvdNormalSeconds": 580.911,
+        "durationSeconds": 233.465,
+        "dvdDoublingPercentOfNormalWork": 17.12,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 156.121,
+            "reinforcementSeconds": 27.34,
+            "totalUtilization": 0.7858
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 148.341,
+            "reinforcementSeconds": 27.586,
+            "totalUtilization": 0.7536
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 131.606,
+            "reinforcementSeconds": 27.531,
+            "totalUtilization": 0.6816
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 144.843,
+            "reinforcementSeconds": 16.977,
+            "totalUtilization": 0.6931
+          }
+        }
+      }
+    },
+    {
+      "file": "Pink - Try [MIDIfind.com].mid",
+      "sha256": "c8e0d1ff0c75de624c283fdc2061eee3485eebe4c4234d5eaafdca47d45e2304",
+      "independent": {
+        "requested": 5940,
+        "played": 5477,
+        "dropped": 463,
+        "dropRate": 0.0779,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 598.052,
+        "durationSeconds": 229.091,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 162.526,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.7094
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 145.387,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6346
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 154.129,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.6728
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 136.01,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.5937
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 5940,
+        "played": 5477,
+        "dropped": 463,
+        "dropRate": 0.0779,
+        "reinforcementEvents": 911,
+        "reinforcementSeconds": 174.522,
+        "dvdNormalSeconds": 598.052,
+        "durationSeconds": 229.091,
+        "dvdDoublingPercentOfNormalWork": 29.18,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 162.526,
+            "reinforcementSeconds": 37.913,
+            "totalUtilization": 0.8749
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 145.387,
+            "reinforcementSeconds": 47.279,
+            "totalUtilization": 0.841
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 154.129,
+            "reinforcementSeconds": 34.583,
+            "totalUtilization": 0.8237
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 136.01,
+            "reinforcementSeconds": 54.747,
+            "totalUtilization": 0.8327
+          }
+        }
+      }
+    },
+    {
+      "file": "Pink_Floyd_-_Time.mid",
+      "sha256": "1364df4d9ee8de694621967f9da6a7e6265aa1b1de4cdea485fc3e9111724aef",
+      "independent": {
+        "requested": 3342,
+        "played": 3046,
+        "dropped": 296,
+        "dropRate": 0.0886,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 196.167,
+        "durationSeconds": 378.824,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 50.144,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1324
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 49.738,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1313
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 47.666,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1258
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 48.619,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1283
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 3342,
+        "played": 3046,
+        "dropped": 296,
+        "dropRate": 0.0886,
+        "reinforcementEvents": 719,
+        "reinforcementSeconds": 53.868,
+        "dvdNormalSeconds": 196.167,
+        "durationSeconds": 378.824,
+        "dvdDoublingPercentOfNormalWork": 27.46,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 50.144,
+            "reinforcementSeconds": 25.687,
+            "totalUtilization": 0.2002
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 49.738,
+            "reinforcementSeconds": 14.276,
+            "totalUtilization": 0.169
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 47.666,
+            "reinforcementSeconds": 7.113,
+            "totalUtilization": 0.1446
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 48.619,
+            "reinforcementSeconds": 6.792,
+            "totalUtilization": 0.1463
+          }
+        }
+      }
+    },
+    {
+      "file": "Queen - Bohemian Rhapsody (2).mid",
+      "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+      "independent": {
+        "requested": 4811,
+        "played": 4348,
+        "dropped": 463,
+        "dropRate": 0.0962,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 259.987,
+        "durationSeconds": 323.101,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 73.918,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2288
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 62.307,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.1928
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 64.971,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2011
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 58.791,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.182
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 4811,
+        "played": 4348,
+        "dropped": 463,
+        "dropRate": 0.0962,
+        "reinforcementEvents": 938,
+        "reinforcementSeconds": 77.999,
+        "dvdNormalSeconds": 259.987,
+        "durationSeconds": 323.101,
+        "dvdDoublingPercentOfNormalWork": 30.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 73.918,
+            "reinforcementSeconds": 26.82,
+            "totalUtilization": 0.3118
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 62.307,
+            "reinforcementSeconds": 27.31,
+            "totalUtilization": 0.2774
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 64.971,
+            "reinforcementSeconds": 9.758,
+            "totalUtilization": 0.2313
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 58.791,
+            "reinforcementSeconds": 14.11,
+            "totalUtilization": 0.2256
+          }
+        }
+      }
+    },
+    {
+      "file": "Radiohead — Sail to the Moon [MIDIfind.com] (1).mid",
+      "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+      "independent": {
+        "requested": 1491,
+        "played": 1477,
+        "dropped": 14,
+        "dropRate": 0.0094,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 343.907,
+        "durationSeconds": 256.332,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 94.909,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.3703
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 111.272,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.4341
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 61.363,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2394
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 76.363,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.2979
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 1491,
+        "played": 1477,
+        "dropped": 14,
+        "dropRate": 0.0094,
+        "reinforcementEvents": 400,
+        "reinforcementSeconds": 193.363,
+        "dvdNormalSeconds": 343.907,
+        "durationSeconds": 256.332,
+        "dvdDoublingPercentOfNormalWork": 56.23,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 94.909,
+            "reinforcementSeconds": 85.636,
+            "totalUtilization": 0.7043
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 111.272,
+            "reinforcementSeconds": 35.454,
+            "totalUtilization": 0.5724
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 61.363,
+            "reinforcementSeconds": 37.636,
+            "totalUtilization": 0.3862
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 76.363,
+            "reinforcementSeconds": 34.636,
+            "totalUtilization": 0.433
+          }
+        }
+      }
+    },
+    {
+      "file": "range-test.mid",
+      "sha256": "d94011ddb062ce74339e0bda439beea903455efae37799fa7cde3cce9f0c4ec9",
+      "independent": {
+        "requested": 73,
+        "played": 73,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 0.0,
+        "durationSeconds": 9.125,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 73,
+        "played": 73,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 0.0,
+        "durationSeconds": 9.125,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          }
+        }
+      }
+    },
+    {
+      "file": "test.mid",
+      "sha256": "dc6dd3622f3911770b660a7f3260ace79d475642019dc7a6a6754aea678ba473",
+      "independent": {
+        "requested": 54,
+        "played": 54,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 0.0,
+        "durationSeconds": 16.885,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          }
+        }
+      },
+      "reinforcement": {
+        "requested": 54,
+        "played": 54,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "reinforcementEvents": 0,
+        "reinforcementSeconds": 0,
+        "dvdNormalSeconds": 0.0,
+        "durationSeconds": 16.885,
+        "dvdDoublingPercentOfNormalWork": 0.0,
+        "dvdUtilization": {
+          "dvd_sled-1": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-2": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-3": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          },
+          "dvd_sled-4": {
+            "normalSeconds": 0.0,
+            "reinforcementSeconds": 0.0,
+            "totalUtilization": 0.0
+          }
+        }
+      }
+    }
+  ]
+}

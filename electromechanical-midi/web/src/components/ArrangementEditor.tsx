@@ -159,7 +159,8 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     <button type="button" onClick={() => setRetry(value => value + 1)}>Spróbuj ponownie</button></section>
   if (!view?.arrangement) return <section className="arrangement"><h2>Arrangement</h2><p>Loading arrangement…</p></section>
   const doc = view.arrangement
-  const selected = view.notes.find(n => n.id === selectedId) ?? null
+  const displayNotes = mode === 'source' ? view.notes : [...view.notes, ...(view.trayNotes ?? [])]
+  const selected = displayNotes.find(n => n.id === selectedId) ?? null
   const selectedClassification = view.report?.trackClassification?.find(item => item.index === selected?.track)
   const drumTracks = view.tracks.filter(t => t.isDrums)
   const drumIndex = drumTrack ?? drumTracks[0]?.index ?? null
@@ -192,10 +193,10 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     <div className="arrangement-toolbar"><label>View <select aria-label="Piano roll view mode" value={mode} onChange={e => setMode(e.target.value as ViewMode)}>
       <option value="source">SOURCE VIEW</option><option value="device">DEVICE VIEW</option><option value="simulation">SIMULATION VIEW</option>
     </select></label><span>Playhead follows the existing player · MIDI is read-only</span></div>
-    <PianoRoll notes={view.notes} devices={doc.devices} position={state?.position ?? 0} playing={state?.state === 'playing'} mode={mode} selectedId={selectedId}
+    <PianoRoll notes={displayNotes} devices={doc.devices} position={state?.position ?? 0} playing={state?.state === 'playing'} mode={mode} selectedId={selectedId}
       hiddenTracks={hiddenTracks} hiddenDevices={hiddenDevices} onSelect={setSelectedId} onSeek={seek} />
     <div className="arrangement-bottom">
-      <aside className="arrangement-legend"><h3>Legend</h3><p>Fill: current view · left stripe: source track · border: destination device</p>
+      <aside className="arrangement-legend"><h3>Legend</h3><p>Fill: current view · left stripe: source track · border: destination device · dashed: tray reinforcement</p>
         <h4>MIDI Sources</h4>{view.tracks.filter(t => t.noteCount > 0).map(t => <label key={t.index}>
           <input type="checkbox" checked={!hiddenTracks.has(t.index)} onChange={() => toggle(hiddenTracks, setHiddenTracks, t.index)} />
           <span className="legend-swatch" style={{ background: sourceColor(t.index) }} /> {t.index} — {t.name}
@@ -235,9 +236,9 @@ export function ArrangementEditor({ file, state, seek }: Props) {
             {r.playedNote !== null && r.playedNote !== undefined && r.playedNote !== selected.note ? ` · played MIDI ${r.playedNote}` : ''}
             {r.deviceAvailableAt !== null && r.deviceAvailableAt !== undefined ? ` · available ${formatTime(r.deviceAvailableAt)}` : ''}
           </p>) : <p>No routing rule matched this note.</p>}
-          <label>Route this pitch <select aria-label="Selected note destination" value={selected.routes.find(r => r.deviceId)?.deviceId ?? ''}
+          <label>Route this pitch <select disabled={selected.reinforcement} aria-label="Selected note destination" value={selected.routes.find(r => r.deviceId)?.deviceId ?? ''}
             onChange={e => setNoteRoute(selected.track, selected.note, e.target.value || null)}>
-            <option value="">DROP / unused</option>{doc.devices.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            <option value="">DROP / unused</option>{doc.devices.filter(d => d.type !== 'DVD_TRAY').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select></label>
         </> : <p>Click a note in the piano roll to inspect its MIDI source, routing and mechanical result.</p>}
         <div className="note-access-list"><strong>Quick select</strong>{view.notes.slice(0, 12).map(n => <button type="button" key={n.id} onClick={() => setSelectedId(n.id)}>{n.name ?? n.note} · {formatTime(n.start)} · {n.status}</button>)}</div>
@@ -251,7 +252,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
             <option value="">All tracks</option>{view.tracks.map(t => <option key={t.index} value={t.index}>{t.index} — {t.name}</option>)}
           </select></label>
           <label>Device <select value={rule.destination.deviceId ?? ''} onChange={e => change(d => { d.rules.find(r => r.id === rule.id)!.destination.deviceId = e.target.value || null })}>
-            <option value="">DROP</option>{doc.devices.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            <option value="">DROP</option>{doc.devices.filter(d => d.type !== 'DVD_TRAY').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select></label>
           <label>Include notes <input aria-label={`${rule.id} include notes`} defaultValue={rule.source.includeNotes?.join(', ') ?? ''} placeholder="36, 38, 49" onBlur={e => change(d => { const r = d.rules.find(r => r.id === rule.id)!; const values = e.target.value.split(',').map(v => Number(v.trim())).filter(v => Number.isInteger(v) && v >= 0 && v <= 127); if (e.target.value.trim()) r.source.includeNotes = values; else delete r.source.includeNotes })} /></label>
           <label>Exclude notes <input aria-label={`${rule.id} exclude notes`} defaultValue={rule.source.excludeNotes?.join(', ') ?? ''} onBlur={e => change(d => { const r = d.rules.find(r => r.id === rule.id)!; r.source.excludeNotes = e.target.value.split(',').map(v => Number(v.trim())).filter(v => Number.isInteger(v) && v >= 0 && v <= 127) })} /></label>
@@ -278,7 +279,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
         return <div key={n.note} className="drum-route-row">
           <label><input type="checkbox" aria-label={`Use drum ${n.note}`} checked={Boolean(routed)} onChange={e => setNoteRoute(n.track, n.note, e.target.checked ? (doc.devices.find(d => d.type === 'HDD_VCM' || d.type === 'SOLENOID_RESONATOR')?.id ?? doc.devices[0]?.id ?? null) : null, precise?.articulation)} /> {n.note} {n.name} ({countByNote.get(n.note)})</label>
           <select aria-label={`Route drum ${n.note}`} value={routed?.deviceId ?? ''} onChange={e => setNoteRoute(n.track, n.note, e.target.value || null, precise?.articulation)}>
-            <option value="">DROP</option>{doc.devices.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            <option value="">DROP</option>{doc.devices.filter(d => d.type !== 'DVD_TRAY').map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
           <select aria-label={`Articulation drum ${n.note}`} value={precise?.articulation ?? ''} onChange={e => setNoteRoute(n.track, n.note, routed?.deviceId ?? null, e.target.value || null)}>
             <option value="">Default articulation</option>{['LEFT_SOFT', 'LEFT_HARD', 'RIGHT_SOFT', 'RIGHT_HARD', 'DOUBLE_HIT'].map(a => <option key={a}>{a}</option>)}

@@ -202,12 +202,48 @@ describe('App', () => {
       action: 'set_virtual', config: { devices: [fdd, dvd, { type: 'DVD_SLED', volume: .2,
         profile: 'DVD_REFERENCE', mode: 'virtual' }] },
     })
-    const row = screen.getByText('DVD sled #1 · DVD sled').closest('details')!
+    const row = screen.getByText('DVD sled #1 · DVD stepper').closest('details')!
     fireEvent.click(row.querySelector('summary')!)
     fireEvent.click(row.querySelector('button:last-of-type')!)
     expect(socket.actions().at(-1)).toMatchObject({
       action: 'set_virtual', config: { devices: [fdd] },
     })
+  })
+
+  it('switches four physical DVD to dynamic reinforcement', async () => {
+    const dvd = Array.from({ length: 4 }, (_, index) => ({
+      id: `dvd_sled-${index + 1}`, type: 'DVD_SLED', name: `DVD #${index + 1}`,
+      track: null, role: '', volume: .2, pan: 0, mute: false, solo: false,
+      transpose: 0, gate: 1, profile: 'DVD_REFERENCE', mode: 'virtual' as const,
+      overrides: {},
+    }))
+    const socket = await renderApp({ virtual: {
+      enabled: true, config: { name: 'Four DVD', devices: dvd, dvdMode: 'independent' },
+      report: {}, activity: {}, profiles: [{ id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} }],
+    } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    fireEvent.change(screen.getByLabelText('DVD mode'), { target: { value: 'reinforcement' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual',
+      config: { dvdMode: 'reinforcement', devices: dvd } })
+  })
+
+  it('shows tray movement and toggles acoustic accents', async () => {
+    const tray = { id: 'DVD_TRAY_1', type: 'DVD_TRAY', name: 'DVD Tray 1', track: null,
+      role: '', volume: .35, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      profile: 'DVD_TRAY_REFERENCE', mode: 'virtual' as const, overrides: {} }
+    const socket = await renderApp({ virtual: {
+      enabled: true, config: { name: 'Trays', devices: [tray], trayEnabled: true },
+      report: {}, activity: { DVD_TRAY_1: true },
+      trayStatus: { DVD_TRAY_1: { phase: 'moving', note: 57, velocity: 110, duration: .245, strength: 'STRONG' } },
+      profiles: [{ id: 'DVD_TRAY_REFERENCE', kind: 'DVD_TRAY', parameters: {} }],
+    } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    expect(screen.getByText('DVD Tray 1 · DVD TRAY / DC MOTOR · moving')).toBeTruthy()
+    fireEvent.click(screen.getByText('DVD Tray 1 · DVD TRAY / DC MOTOR · moving'))
+    expect(screen.getByText(/GM 57 · velocity 110 · STRONG · 245 ms/)).toBeTruthy()
+    expect(screen.getByLabelText('DVD Tray 1 mode').querySelectorAll('option').length).toBe(1)
+    fireEvent.click(screen.getByLabelText('DVD tray mechanical accents'))
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { trayEnabled: false, devices: [tray] } })
   })
 
   it('shows each device LED from backend activity state', async () => {

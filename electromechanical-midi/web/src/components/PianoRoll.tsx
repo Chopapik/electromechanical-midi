@@ -126,7 +126,9 @@ export function PianoRoll({ notes, devices, position, playing, mode, selectedId,
       ctx.fillRect(x, y, w, ROW - 4)
       ctx.strokeStyle = destinationColor
       ctx.lineWidth = selectedId === n.id ? 3 : 2
+      if (n.reinforcement) ctx.setLineDash([4, 2])
       ctx.strokeRect(x + 1, y + 1, w - 2, ROW - 6)
+      ctx.setLineDash([])
       ctx.fillStyle = trackColor
       ctx.fillRect(x, y, Math.min(w, 4), ROW - 4)
       if (n.status === 'DROPPED') {

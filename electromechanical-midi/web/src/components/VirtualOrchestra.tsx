@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { ArrangementHardware, DeviceMode, FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
 
-const KINDS = ['FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR']
+const KINDS = ['FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR']
 let fallbackDeviceId = 0
 const newDeviceId = (type: string) => globalThis.crypto?.randomUUID?.() ?? `${type}-${Date.now()}-${++fallbackDeviceId}`
 const LABEL: Record<string, string> = {
-  FDD: 'FDD', DVD_SLED: 'DVD sled', STEPPER_FREE: 'Free stepper',
+  FDD: 'FDD', DVD_SLED: 'DVD stepper', DVD_TRAY: 'DVD TRAY / DC MOTOR', STEPPER_FREE: 'Free stepper',
   VHS: 'VHS motor', HDD_VCM: 'HDD VCM', SOLENOID_RESONATOR: 'Solenoid + resonator',
 }
 const MODE_LABEL: Record<DeviceMode, string> = {
@@ -29,21 +29,28 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   const [presets, setPresets] = useState<Record<string, VirtualConfig>>({})
   const [selectedPreset, setSelectedPreset] = useState('')
   const [notice, setNotice] = useState('')
-  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [] }
+  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [], dvdMode: 'independent' as const }
+  const dvd = config.devices.filter(device => device.type === 'DVD_SLED')
+  const canReinforce = dvd.length >= 2
   const enabled = virtual?.enabled ?? false
   const refresh = () => fetch('/api/virtual/presets').then(r => r.json()).then(data => setPresets(data.presets ?? {})).catch(() => setNotice('Could not load presets'))
   useEffect(() => { refresh() }, [])
 
-  const apply = (devices: VirtualDevice[], active = enabled) => configure({ ...config, devices }, active)
+  const apply = (devices: VirtualDevice[], active = enabled) => configure({ ...config, devices,
+    dvdMode: devices.filter(device => device.type === 'DVD_SLED').length >= 2
+      ? config.dvdMode : 'independent' }, active)
   const add = (type: string) => {
     const count = config.devices.filter(d => d.type === type).length + 1
     const id = newDeviceId(type)
     apply([...config.devices, {
-      id, type, name: `${LABEL[type]} #${count}`, track: metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
-      role: '', volume: type === 'DVD_SLED' ? .2 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      id, type, name: `${LABEL[type]} #${count}`, track: type === 'DVD_TRAY' ? null : metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
+      role: '', volume: type === 'DVD_SLED' ? .2 : type === 'DVD_TRAY' ? .35 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
       profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: 'virtual', overrides: {},
     }], true)  }
-  const update = (id: string, patch: Partial<VirtualDevice>) => apply(config.devices.map(d => d.id === id ? { ...d, ...patch } : d))
+  const update = (id: string, patch: Partial<VirtualDevice>) => {
+    const devices = config.devices.map(d => d.id === id ? { ...d, ...patch } : d)
+    configure({ ...config, devices }, enabled)
+  }
   const duplicate = (device: VirtualDevice) => {
     const id = newDeviceId(device.type)
     apply([...config.devices, { ...device, id, name: `${device.name} copy` }])
@@ -69,6 +76,14 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <h2>Virtual Orchestra</h2>
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
+    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'independent'}
+      disabled={!canReinforce}
+      onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
+      <option value="independent">{dvd.length}x DVD independent</option>
+      <option value="reinforcement">{dvd.length}x DVD + dynamic reinforcement</option>
+    </select></label>
+    <label><input type="checkbox" checked={config.trayEnabled ?? true}
+      onChange={event => configure({ ...config, trayEnabled: event.target.checked }, enabled)} /> DVD tray mechanical accents</label>
     {hardware && <div className="virtual-hardware" role="status">
       <h3>Hardware lanes</h3>
       {hardware.active
@@ -97,16 +112,20 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     {notice && <p role="status">{notice}</p>}
     <div className="virtual-devices">{config.devices.map(device => {
       const profile = virtual?.profiles.find(p => p.id === device.profile)
+      const tray = virtual?.trayStatus?.[device.id]
       return <details key={device.id} className="virtual-device">
-        <summary>{device.name} · {LABEL[device.type]}
+        <summary>{device.name} · {LABEL[device.type]}{device.type === 'DVD_TRAY' && ` · ${tray?.phase ?? 'idle'}`}
           <span className={`device-led ${virtual?.activity?.[device.id] ? 'is-active' : ''}`}
             role="img" aria-label={`${device.name}: ${virtual?.activity?.[device.id] ? 'active' : 'idle'}`}
             title={virtual?.activity?.[device.id] ? 'Device active' : 'Device idle'} />
         </summary>
+        {device.type === 'DVD_TRAY' && <p className="muted">Mechanical reinforcement · {tray?.phase ?? 'idle'}
+          {tray?.note !== undefined && <> · GM {tray.note} · velocity {tray.velocity} · {tray.strength} · {Math.round((tray.duration ?? 0) * 1000)} ms</>}
+        </p>}
         <div className="virtual-device-controls">
           <label>Name <input value={device.name} onChange={e => update(device.id, { name: e.target.value })} /></label>
           <label>Role <input value={device.role} onChange={e => update(device.id, { role: e.target.value })} /></label>
-          <label>Track <select disabled={arrangementActive} value={device.track ?? ''} onChange={e => update(device.id, { track: e.target.value === '' ? null : Number(e.target.value) })}>
+          <label>Track <select disabled={arrangementActive || device.type === 'DVD_TRAY'} value={device.track ?? ''} onChange={e => update(device.id, { track: e.target.value === '' ? null : Number(e.target.value) })}>
             <option value="">None</option>{metadata?.tracks.filter(t => t.noteCount > 0).map(t => <option key={t.index} value={t.index}>{t.label}</option>)}
           </select></label>
           {arrangementActive && <span className="muted">Routing is edited in Arrangement.</span>}
@@ -114,14 +133,14 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
           <label>Pan <input type="range" min="-1" max="1" step="0.1" value={device.pan} onChange={e => update(device.id, { pan: Number(e.target.value) })} /></label>
           <label><input type="checkbox" checked={device.mute} onChange={e => update(device.id, { mute: e.target.checked })} /> Mute</label>
           <label><input type="checkbox" checked={device.solo} onChange={e => update(device.id, { solo: e.target.checked })} /> Solo</label>
-          <label>Transpose <input type="number" min="-48" max="48" value={device.transpose} onChange={e => update(device.id, { transpose: Number(e.target.value) })} /></label>
-          <label>Gate <input type="number" min="0.1" max="2" step="0.1" value={device.gate} onChange={e => update(device.id, { gate: Number(e.target.value) })} /></label>
+          <label>Transpose <input disabled={device.type === 'DVD_TRAY'} type="number" min="-48" max="48" value={device.transpose} onChange={e => update(device.id, { transpose: Number(e.target.value) })} /></label>
+          <label>Gate <input disabled={device.type === 'DVD_TRAY'} type="number" min="0.1" max="2" step="0.1" value={device.gate} onChange={e => update(device.id, { gate: Number(e.target.value) })} /></label>
           <label>Profile <select value={device.profile} onChange={e => update(device.id, { profile: e.target.value })}>
             {virtual?.profiles.filter(p => p.kind === device.type).map(p => <option key={p.id}>{p.id}</option>)}
           </select></label>
           <label>Mode <select aria-label={`${device.name} mode`} value={device.mode ?? 'virtual'}
             onChange={e => update(device.id, { mode: e.target.value as DeviceMode })}>
-            {(Object.keys(MODE_LABEL) as DeviceMode[]).map(mode => <option key={mode} value={mode}>{MODE_LABEL[mode]}</option>)}
+            {(Object.keys(MODE_LABEL) as DeviceMode[]).filter(mode => device.type !== 'DVD_TRAY' || mode === 'virtual').map(mode => <option key={mode} value={mode}>{MODE_LABEL[mode]}</option>)}
           </select></label>
           <button type="button" onClick={() => duplicate(device)}>Duplicate</button>
           <button type="button" onClick={() => apply(config.devices.filter(d => d.id !== device.id))}>Remove</button>
@@ -148,8 +167,9 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <h3>Simulation Report · full MIDI</h3>
     {Object.entries(virtual?.report ?? {}).length === 0 ? <p className="muted">Add devices and load MIDI to see mechanical constraints.</p> :
       <div className="virtual-reports">{Object.entries(virtual?.report ?? {}).map(([id, r]) => <article key={id}>
-        <strong>{r.name}</strong> · accepted {r.accepted} · played {r.played} · dropped {r.dropped} · folded {r.folded} · delayed {r.delayed} · busy {r.busyConflicts}
+        <strong>{r.name}</strong>{r.type !== 'DVD_TRAY' && <> · accepted {r.accepted} · played {r.played} · dropped {r.dropped} · folded {r.folded} · delayed {r.delayed} · busy {r.busyConflicts}</>}
         {r.type === 'FDD' || r.type === 'DVD_SLED' ? <> · steps {r.steps} · travel {r.travel} · reversals {r.reversals}</> : null}
+        {(r.type === 'DVD_SLED' || r.type === 'DVD_TRAY') && r.reinforcementEvents ? <> · reinforcement {r.reinforcementEvents} / {(r.reinforcementTime ?? 0).toFixed(2)}s</> : null}
         {r.type === 'HDD_VCM' ? <> · hits {r.acceptedHits}/{r.requestedHits} · dropped busy {r.droppedWhileBusy} · busy time {r.busyTime.toFixed(2)}s · max density {r.maxDensity.toFixed(1)}/s</> : null}
         {r.type === 'STEPPER_FREE' ? <> · active {r.activeTime.toFixed(2)}s</> : null}
         <div className="muted">{Object.entries(r.reasons).map(([code, count]) => `${code}: ${count}`).join(' · ')}</div>

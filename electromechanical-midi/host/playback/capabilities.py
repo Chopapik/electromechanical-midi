@@ -33,6 +33,7 @@ _ROLE_POLICY = {
     'STEPPER_FREE': 'accompaniment',
     'HDD_VCM': 'percussion',
     'SOLENOID_RESONATOR': 'percussion',
+    'DVD_TRAY': 'reinforcement-only',
 }
 
 # Jaka artykulacje mechaniczna stosuje dany typ urzadzenia. To wlasciwosc
@@ -45,6 +46,7 @@ _ARTICULATION = {
     'VHS': 'none',
     'HDD_VCM': 'none',
     'SOLENOID_RESONATOR': 'none',
+    'DVD_TRAY': 'none',
 }
 
 LEAD_ONLY = 'lead-only'
@@ -58,6 +60,7 @@ _ROLE = {
     'VHS': TONAL,
     'HDD_VCM': PERCUSSIVE,
     'SOLENOID_RESONATOR': PERCUSSIVE,
+    'DVD_TRAY': PERCUSSIVE,
 }
 
 

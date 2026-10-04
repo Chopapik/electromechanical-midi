@@ -19,7 +19,7 @@ from midi_source import MidiSource
 from pitch import hz_to_midi, midi_to_hz
 from .timeline import Command, Timeline
 
-KINDS = ('FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
+KINDS = ('FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
 TONAL = {'FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS'}
 
 # Tryb instancji decyduje, dokad trafiaja jej zaakceptowane nuty:
@@ -56,6 +56,23 @@ def _p(value, provenance='UNKNOWN', source=''):
     return Parameter(value, provenance, source)
 
 PROFILES = {
+    'DVD_TRAY_REFERENCE': DeviceProfile('DVD_TRAY_REFERENCE', 'DVD_TRAY', {
+        'polyphony': _p(1, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'shortMinMs': _p(80, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'shortMaxMs': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'mediumMinMs': _p(140, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'mediumMaxMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'strongMinMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'strongMaxMs': _p(300, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'cooldownMs': _p(150, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'rideGapMs': _p(800, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'openHatGapMs': _p(1200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'openHatMinVelocity': _p(100, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'rideMinVelocity': _p(75, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'motorHz': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'resonanceHz': _p(1050, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'gearHz': _p(57, 'ESTIMATED', 'software experiment; needs physical calibration'),
+    }),
     'FDD_CURRENT': DeviceProfile('FDD_CURRENT', 'FDD', {
         'polyphony': _p(1, 'RESEARCHED', 'single FDD head and firmware PLAY state'),
         'minPosition': _p(4, 'RESEARCHED', 'firmware/floppy/src/main.cpp MIN_TRACK'),
@@ -149,6 +166,8 @@ class VirtualDeviceInstance:
         mode = MODE_ALIASES.get(mode, mode)
         if mode not in MODES:
             raise ValueError(f'invalid mode: {mode} (expected one of {", ".join(MODES)})')
+        if kind == 'DVD_TRAY' and mode != 'virtual':
+            raise ValueError('DVD_TRAY supports virtual mode only')
         overrides = {}
         for key, item in (data.get('overrides') or {}).items():
             if key not in PROFILES[profile].parameters or key == 'polyphony':
@@ -178,6 +197,7 @@ class AcousticEvent:
     hz: float = 0.0
     duration: float = 0.0
     velocity: int = 100
+    direction: int = 1
 
 class MechanicalState:
     def __init__(self, profile: DeviceProfile):
@@ -194,6 +214,9 @@ class MechanicalState:
 class VirtualOrchestra:
     def __init__(self, devices: list[VirtualDeviceInstance] | None = None, name: str = 'Virtual Orchestra'):
         self.name = name
+        self.dvd_mode = 'independent'
+        self.tray_enabled = True
+        self.tray_movements = []
         self.devices = devices or []
         self.report: dict = {}
         self.events: list[AcousticEvent] = []
@@ -202,9 +225,15 @@ class VirtualOrchestra:
 
     def set_config(self, payload: dict) -> None:
         devices = [VirtualDeviceInstance.parse(item) for item in payload.get('devices', [])]
+        dvd_mode = str(payload.get('dvdMode') or 'independent')
+        if dvd_mode not in ('independent', 'reinforcement'):
+            raise ValueError(f'unknown DVD mode: {dvd_mode}')
         if len(devices) > 64 or len({d.id for d in devices}) != len(devices):
             raise ValueError('maximum 64 devices; ids must be unique')
         self.name = str(payload.get('name') or 'Virtual Orchestra')[:100]
+        self.dvd_mode = dvd_mode
+        self.tray_enabled = bool(payload.get("trayEnabled", True))
+        self.tray_movements = []
         self.devices = devices
         self.report = {}
         self.events = []
@@ -212,11 +241,15 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'devices': [dataclasses.asdict(d) for d in self.devices]}
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled,
+                'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
         """Podmienia sklad orkiestry na ten z planu wykonania."""
         self.name = plan.name
+        self.dvd_mode = plan.dvd_mode
+        self.tray_enabled = plan.tray_enabled
+        self.tray_movements = plan.tray_events
         self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
         self.report = {}
         self.events = []
@@ -351,10 +384,35 @@ class VirtualOrchestra:
             state.phase = 'IDLE'
             self.report[device.id] = {'name': device.name, 'type': device.type, **counts,
                                       'reasons': reasons, 'state': vars(state).copy(),
-                                      'phases': phases}
+                                      'phases': phases, 'reinforcementEvents': 0,
+                                      'reinforcementTime': 0.0}
+
+        # Acoustic-only extras: normal commands and their statistics are already
+        # fixed. The pass guarantees these intervals never overlap normal DVD notes.
+        by_id = {device.id: device for device in self.devices}
+        audible_solo = any(device.solo and not device.mute for device in self.devices)
+        for extra in plan.reinforcements:
+            device = by_id[extra.device_id]
+            report = self.report[device.id]
+            report['reinforcementEvents'] += 1
+            report['reinforcementTime'] += extra.duration
+            if not device.mute and (not audible_solo or device.solo):
+                self.activity[device.id].append((extra.start, extra.start + extra.duration))
+                self.events.append(AcousticEvent(extra.start, 'tone', device.id,
+                                                 extra.hz, extra.duration, extra.velocity))
+        for extra in plan.tray_events:
+            report = self.report[extra.device_id]
+            report['reinforcementEvents'] += 1
+            report['reinforcementTime'] += extra.duration
+            self.activity[extra.device_id].append((extra.start, extra.start + extra.duration))
+            self.events.append(AcousticEvent(extra.start, 'tray', extra.device_id,
+                                             duration=extra.duration, velocity=extra.velocity,
+                                             direction=extra.direction))
+        for intervals in self.activity.values():
+            intervals.sort()
 
         end = max(float(getattr(plan, 'duration', 0.0)),
-                  max((e.time + (e.duration if e.kind == 'tone' else .12)
+                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12)
                        for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values()
                        for interval in intervals), default=0.0))
@@ -367,6 +425,14 @@ class VirtualOrchestra:
             commands.append(Command(end, 'virtual', lane='virtual'))
 
         return Timeline.from_commands(commands)
+
+    def tray_state_at(self, position: float) -> dict:
+        result = {device.id: {'phase': 'idle'} for device in self.devices if device.type == 'DVD_TRAY'}
+        for event in self.tray_movements:
+            if event.start <= position < event.start + event.duration + event.cooldown:
+                result[event.device_id] = {**event.as_dict(), 'phase':
+                    'moving' if position < event.start + event.duration else 'recovery'}
+        return result
 
     def simulate(self, source: MidiSource, routes_by_device: dict | None = None) -> Timeline:
         self.events = []
@@ -386,7 +452,7 @@ class VirtualOrchestra:
             phases: list[dict] = []
             def reason(code):
                 reasons[code] = reasons.get(code, 0) + 1
-            if device.track is None and routes_by_device is None:
+            if device.type == 'DVD_TRAY' or (device.track is None and routes_by_device is None):
                 report[device.id] = {'name': device.name, 'type': device.type, **counts,
                                      'reasons': reasons, 'state': vars(state).copy(), 'phases': phases}
                 continue
@@ -524,7 +590,7 @@ class VirtualOrchestra:
         # Scheduler remains the PlaybackEngine worker; virtual commands are its clock markers.
         commands = [Command(e.time, 'virtual', lane='virtual') for e in self.events]
         end = max(float(getattr(source, 'duration', 0)),
-                  max((e.time + (e.duration if e.kind == 'tone' else .12) for e in self.events), default=0.0),
+                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12) for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values() for interval in intervals), default=0.0))
         if end:
             if not commands:
@@ -581,7 +647,7 @@ class WavePreview:
                 continue
 
             start = int(event.time * self.RATE)
-            length = min(n - start, int((event.duration if event.kind == 'tone' else .12) * self.RATE))
+            length = min(n - start, int((event.duration if event.kind in ('tone', 'tray') else .12) * self.RATE))
 
             if length > 0:
                 plan.append((d, effective_profile(d), event, start, length))
@@ -590,6 +656,7 @@ class WavePreview:
 
     def _render_python(self, plan: list[tuple], n: int, mix_count: int) -> tuple:
         """Wersja bez zaleznosci: ~2-4 mln probek/s, wiec dlugi utwor trwa."""
+        from .tray import tray_sound
         left = array('f', [0]) * n
         right = array('f', [0]) * n
         for d, profile, event, start, length in plan:
@@ -597,7 +664,9 @@ class WavePreview:
             gl, gr = gain * (1 - max(0, d.pan)), gain * (1 + min(0, d.pan))
             for i in range(length):
                 t = i / self.RATE
-                if event.kind == 'reversal':
+                if event.kind == 'tray':
+                    sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction)
+                elif event.kind == 'reversal':
                     sample = math.exp(-t * 85) * math.sin(2 * math.pi * 1700 * t)
                 elif event.kind == 'hit':
                     resonance = 230 if d.type == 'HDD_VCM' else (profile.get('resonanceHz') or 440)
@@ -627,7 +696,10 @@ class WavePreview:
         right = np.zeros(n, dtype=np.float32)
         for d, profile, event, start, length in plan:
             t = np.arange(length, dtype=np.float32) / self.RATE
-            if event.kind == 'reversal':
+            if event.kind == 'tray':
+                from .tray import tray_sound
+                sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction, np)
+            elif event.kind == 'reversal':
                 sample = np.exp(-t * 85) * np.sin(2 * np.pi * 1700 * t)
             elif event.kind == 'hit':
                 resonance = 230 if d.type == 'HDD_VCM' else (profile.get('resonanceHz') or 440)
@@ -669,7 +741,7 @@ class WavePreview:
         n = int((duration + .25) * self.RATE)
         # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
         mix_count = max(1, len([d for d in orchestra.devices
-                                if d.in_preview and d.type != 'DVD_SLED']))
+                                if d.in_preview and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
         plan = self._plan(orchestra, n)
 
         try:

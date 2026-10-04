@@ -27,7 +27,7 @@ DEFAULT_SONGS = (
 
 
 def measure(source, dvd_count: int) -> dict:
-    plan = allocate(source, default_orchestra(dvd_count=dvd_count))
+    plan = allocate(source, default_orchestra(dvd_count=dvd_count, fdd_count=3, hdd_count=3, tray_count=0))
     report = plan.report()
     devices = report['devices']
     return {

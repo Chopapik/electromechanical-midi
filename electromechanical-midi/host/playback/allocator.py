@@ -36,8 +36,9 @@ from .articulation import apply as apply_articulation
 from .articulation import params_from_policy
 from .capabilities import MIN_NOTE_S, DeviceCapability, capabilities_for
 from .orchestra import OrchestraConfig, parse_policy
-from .performance import PerformanceEvent, PerformancePlan
+from .performance import PerformanceEvent, PerformancePlan, ReinforcementEvent
 from .virtual import VirtualDeviceInstance
+from .tray import add_reinforcement as add_tray_reinforcement
 
 EPS = 1e-9
 
@@ -245,6 +246,8 @@ def _classify_slots(devices: list[VirtualDeviceInstance]):
 
     for device in devices:
         slot = _Slot(device=device, capability=caps[device.id])
+        if slot.capability.role_policy == 'reinforcement-only':
+            continue
 
         if not slot.capability.tonal:
             percussion.append(slot)
@@ -694,6 +697,72 @@ def manual_pins(arrangement, source: MidiSource) -> dict[str, ManualPin]:
     return pins
 
 
+def _dvd_reinforcements(plan: PerformancePlan) -> list[ReinforcementEvent]:
+    """Fill idle DVD intervals after normal allocation and articulation finish."""
+    dvd = [device for device in plan.devices if device['type'] == 'DVD_SLED'
+           and device.get('mode', 'virtual') in ('virtual', 'hybrid')
+           and not device.get('mute', False)]
+    if any(device.get('solo') and not device.get('mute') for device in plan.devices):
+        dvd = [device for device in dvd if device.get('solo')]
+    ids = {device['id'] for device in dvd}
+    if len(ids) < 2:
+        return []
+    capabilities = capabilities_for([VirtualDeviceInstance.parse(device) for device in dvd])
+
+    boundaries = []
+    for event in plan.events:
+        if event.played and event.device_id in ids and event.actual_duration > EPS:
+            boundaries.append((event.actual_start, 1, event))
+            boundaries.append((event.end, 0, event))
+    boundaries.sort(key=lambda item: (item[0], item[1], item[2].id))
+    active: dict[str, dict[str, PerformanceEvent]] = {device_id: {} for device_id in ids}
+    result: list[ReinforcementEvent] = []
+    previous: dict[tuple[str, str], int] = {}
+    index = 0
+    while index < len(boundaries):
+        time = boundaries[index][0]
+        while index < len(boundaries) and boundaries[index][0] == time:
+            _, kind, event = boundaries[index]
+            if kind == 0:
+                active[event.device_id].pop(event.id, None)
+            else:
+                active[event.device_id][event.id] = event
+            index += 1
+        if index == len(boundaries):
+            break
+        end = boundaries[index][0]
+        if end - time <= EPS:
+            continue
+        sources = [event for playing in active.values() for event in playing.values()]
+        sources.sort(key=lambda event: (-_priority(event.role, event.velocity,
+                                                   event.duration, plan.policy),
+                                        -event.actual_duration, event.id))
+        free = sorted(device_id for device_id in ids if not active[device_id])
+        current: dict[tuple[str, str], int] = {}
+        remaining = free[:]
+        for source in sources:
+            target = next((device_id for device_id in remaining
+                           if source.played_hz is not None
+                           and (capabilities[device_id].min_hz is None
+                                or source.played_hz >= capabilities[device_id].min_hz)
+                           and (capabilities[device_id].max_hz is None
+                                or source.played_hz <= capabilities[device_id].max_hz)), None)
+            if target is None:
+                continue
+            remaining.remove(target)
+            key = (source.id, target)
+            old = previous.get(key)
+            if old is not None and abs(result[old].start + result[old].duration - time) <= EPS:
+                result[old] = dataclasses.replace(result[old], duration=end - result[old].start)
+                current[key] = old
+            else:
+                current[key] = len(result)
+                result.append(ReinforcementEvent(source.id, target, time, end - time,
+                                                 source.played_hz or 0.0, source.velocity))
+        previous = current
+    return result
+
+
 def allocate(source: MidiSource, config: OrchestraConfig, *,
              midi_analysis: MidiAnalysis | None = None,
              pins: dict[str, ManualPin] | None = None,
@@ -701,7 +770,7 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
              origin: str = 'auto') -> PerformancePlan:
     """Buduje plan wykonania. To samo wejscie zawsze daje ten sam plan."""
     policy = parse_policy(config.policy)
-    devices = config.instances()
+    devices, _ = config.allocation_devices()
     midi_analysis = midi_analysis or analysis_module.analyze(source)
     pins = pins or {}
     lead_slots, accompaniment_slots, percussion = _classify_slots(devices)
@@ -778,6 +847,8 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
         origin=origin,
         lead_devices=tuple(slot.device.id for slot in lead_slots),
         duplicates=duplicates,
+        dvd_mode=config.dvd_mode,
+        tray_enabled=config.tray_enabled,
     )
 
     # Warstwa wykonawcza: sourceDuration -> performedDuration. Wirtualizacja
@@ -785,5 +856,9 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     # identyczna dlugosc wykonawcza.
     plan.articulation = apply_articulation(plan, capabilities_for(devices),
                                            params_from_policy(policy))
+
+    if config.dvd_mode == 'reinforcement':
+        plan.reinforcements = _dvd_reinforcements(plan)
+    add_tray_reinforcement(plan)
 
     return plan

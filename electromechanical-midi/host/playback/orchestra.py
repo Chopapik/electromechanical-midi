@@ -14,13 +14,6 @@ import dataclasses
 
 from .virtual import PROFILES, VirtualDeviceInstance
 
-# Domyslna orkiestra v1. Kolejnosc = kolejnosc w puli (deterministyczna).
-DEFAULT_INVENTORY = (
-    ('FDD', 3, 'FDD_CURRENT'),
-    ('VHS', 1, 'VHS_CURRENT'),
-    ('HDD_VCM', 3, 'WD_CAVIAR_CURRENT'),
-)
-
 # Preset BALANCED: chroni lead i bas, korzysta z kazdego wolnego urzadzenia,
 # dopuszcza krotkie przesuniecie, dropuje dopiero w ostatecznosci.
 BALANCED = {
@@ -59,47 +52,65 @@ _POLICY_KEYS = frozenset(BALANCED)
 class OrchestraConfig:
     """Dostepne urzadzenia + polityka wykonania."""
 
-    name: str = 'Balanced 3FDD + 4DVD + VHS + 3HDD'
+    name: str = 'Balanced 4FDD + 4DVD + VHS + 4HDD + 2Tray'
     devices: list[dict] = dataclasses.field(default_factory=list)
     policy: dict = dataclasses.field(default_factory=lambda: dict(BALANCED))
+    dvd_mode: str = 'independent'
+    tray_enabled: bool = True
 
     def instances(self) -> list[VirtualDeviceInstance]:
         return [VirtualDeviceInstance.parse(device) for device in self.devices]
 
     def as_dict(self) -> dict:
-        return {'name': self.name, 'devices': self.devices, 'policy': self.policy}
+        return {'name': self.name, 'devices': self.devices, 'policy': self.policy,
+                'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled}
+
+    def allocation_devices(self) -> tuple[list[VirtualDeviceInstance], dict[str, list[dict]]]:
+        """Reinforcement never changes the configured normal voice inventory."""
+        if self.dvd_mode not in ('independent', 'reinforcement'):
+            raise ValueError(f'unknown DVD mode: {self.dvd_mode}')
+        devices = self.instances()
+        return devices, {}
 
 
 def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual') -> dict:
     return {'id': ident, 'type': kind, 'name': name, 'track': None, 'role': '',
-            'volume': 0.2 if kind == 'DVD_SLED' else 0.6,
+            'volume': 0.2 if kind == 'DVD_SLED' else (0.35 if kind == 'DVD_TRAY' else 0.6),
             'pan': 0.0, 'mute': False, 'solo': False,
             'transpose': 0, 'gate': 1.0, 'profile': profile, 'mode': mode,
             'overrides': {}}
 
 
-def default_orchestra(*, dvd_count: int = 4) -> OrchestraConfig:
-    """Testowa orkiestra; dvd_count=0 odtwarza bazowe siedem urządzeń."""
-    if not 0 <= dvd_count <= 57:
-        raise ValueError('dvd_count poza zakresem 0..57')
+def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',
+                      fdd_count: int = 4, hdd_count: int = 4, tray_count: int = 2,
+                      tray_enabled: bool = True) -> OrchestraConfig:
+    """Configurable software inventory; saved explicit device lists stay intact."""
+    counts = (fdd_count, dvd_count, hdd_count, tray_count)
+    if any(not isinstance(count, int) or count < 0 for count in counts) or sum(counts) + 1 > 64:
+        raise ValueError('device counts must be nonnegative integers; maximum 64 devices')
+    if dvd_mode not in ('independent', 'reinforcement'):
+        raise ValueError(f'unknown DVD mode: {dvd_mode}')
     devices: list[dict] = []
     counters: dict[str, int] = {}
 
-    inventory = (DEFAULT_INVENTORY[0], ('DVD_SLED', dvd_count, 'DVD_REFERENCE'),
-                 *DEFAULT_INVENTORY[1:])
+    inventory = (('FDD', fdd_count, 'FDD_CURRENT'), ('DVD_SLED', dvd_count, 'DVD_REFERENCE'),
+                 ('VHS', 1, 'VHS_CURRENT'), ('HDD_VCM', hdd_count, 'WD_CAVIAR_CURRENT'),
+                 ('DVD_TRAY', tray_count, 'DVD_TRAY_REFERENCE'))
     for kind, count, profile in inventory:
         if profile not in PROFILES:
             raise ValueError(f'brak profilu {profile} dla {kind}')
 
         for _ in range(count):
             counters[kind] = counters.get(kind, 0) + 1
-            ident = f'{kind.lower()}-{counters[kind]}'
-            devices.append(_device(ident, kind, profile, f'{kind} #{counters[kind]}'))
+            number = counters[kind]
+            ident = (f'DVD_STEPPER_{number}' if kind == 'DVD_SLED' else
+                     f'DVD_TRAY_{number}' if kind == 'DVD_TRAY' else f'{kind.lower()}-{number}')
+            label = 'DVD Stepper' if kind == 'DVD_SLED' else 'DVD Tray' if kind == 'DVD_TRAY' else kind
+            devices.append(_device(ident, kind, profile, f'{label} {number}' if kind.startswith('DVD') else f'{label} #{number}'))
 
     return OrchestraConfig(
-        name=('Balanced 3FDD + 4DVD + VHS + 3HDD' if dvd_count == 4
-              else f'Balanced 3FDD + {dvd_count}DVD + VHS + 3HDD'),
-        devices=devices, policy=dict(BALANCED))
+        name=f'Balanced {fdd_count}FDD + {dvd_count}DVD + VHS + {hdd_count}HDD + {tray_count}Tray',
+        devices=devices, policy=dict(BALANCED), dvd_mode=dvd_mode, tray_enabled=tray_enabled)
 
 
 def parse_policy(payload: dict | None) -> dict:
@@ -134,11 +145,17 @@ def parse_policy(payload: dict | None) -> dict:
 def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     """Buduje konfiguracje z JSON-a; brak pola devices = domyslna orkiestra."""
     payload = payload or {}
+    dvd_mode = str(payload.get('dvdMode') or 'independent')
+    if dvd_mode not in ('independent', 'reinforcement'):
+        raise ValueError(f'unknown DVD mode: {dvd_mode}')
 
     if 'devices' not in payload or payload['devices'] is None:
         config = default_orchestra()
         config.policy = parse_policy(payload.get('policy'))
         config.name = str(payload.get('name') or config.name)
+        config.dvd_mode = dvd_mode
+        config.tray_enabled = bool(payload.get('trayEnabled', True))
+        config.allocation_devices()
 
         return config
 
@@ -147,8 +164,12 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     if len(devices) > 64 or len({device.id for device in devices}) != len(devices):
         raise ValueError('maximum 64 devices; ids must be unique')
 
-    return OrchestraConfig(
+    config = OrchestraConfig(
         name=str(payload.get('name') or 'Orchestra')[:100],
         devices=[dataclasses.asdict(device) for device in devices],
         policy=parse_policy(payload.get('policy')),
+        dvd_mode=dvd_mode,
+        tray_enabled=bool(payload.get('trayEnabled', True)),
     )
+    config.allocation_devices()
+    return config
