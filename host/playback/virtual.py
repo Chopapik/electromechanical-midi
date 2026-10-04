@@ -19,6 +19,7 @@ from midi_source import MidiSource
 from pitch import hz_to_midi, midi_to_hz
 from .timeline import Command, Timeline
 
+from .tonal_articulation import Curve, TonalArticulation, resolve as resolve_tonal, render as render_tonal, retarget as retarget_tonal
 from .hdd_articulation import HDDArticulation, classify as classify_hdd, adapt as adapt_hdd, sample as sample_hdd
 
 KINDS = ('FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
@@ -206,6 +207,7 @@ class AcousticEvent:
     source_note: int | None = None
     source_channel: int | None = None
     source_track: str = ''
+    tonal_articulation: TonalArticulation | None = None
 
 class MechanicalState:
     def __init__(self, profile: DeviceProfile):
@@ -225,6 +227,7 @@ class VirtualOrchestra:
         self.dvd_mode = 'independent'
         self.master_volume = 1.0
         self.hdd_mode = 'articulated'
+        self.tonal_mode = 'articulated'
         self.tray_enabled = True
         self.idle_reinforcement = {}
         self.tray_movements = []
@@ -235,6 +238,9 @@ class VirtualOrchestra:
         self.decisions: dict[str, list[dict]] = {}
 
     def set_config(self, payload: dict) -> None:
+        tonal_mode = str(payload.get('tonalMode', 'articulated'))
+        if tonal_mode not in ('raw', 'articulated'):
+            raise ValueError('tonalMode must be raw or articulated')
         hdd_mode = str(payload.get('hddMode', 'articulated'))
         if hdd_mode not in ('raw', 'articulated'):
             raise ValueError('hddMode must be raw or articulated')
@@ -251,6 +257,7 @@ class VirtualOrchestra:
         self.dvd_mode = dvd_mode
         self.master_volume = master
         self.hdd_mode = hdd_mode
+        self.tonal_mode = tonal_mode
         self.tray_enabled = bool(payload.get("trayEnabled", True))
         from .orchestra import parse_idle
         self.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
@@ -262,7 +269,7 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode,
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode, 'tonalMode': self.tonal_mode,
                 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
@@ -293,6 +300,7 @@ class VirtualOrchestra:
         poprawny, kazde jego zdarzenie jest zagrane.
         """
         self.load_plan(plan)
+        self.tonal_decisions, self.strum_groups = resolve_tonal(plan)
         by_device: dict[str, list] = {device.id: [] for device in self.devices}
 
         for event in plan.events:
@@ -340,6 +348,8 @@ class VirtualOrchestra:
                     'reason': event.outcome, 'outcome': event.outcome,
                     'originalNote': event.note, 'playedNote': event.played_note,
                     'deviceAvailableAt': None,
+                    'tonalArticulation': (self.tonal_decisions[event.id].debug()
+                                          if event.id in self.tonal_decisions else None),
                 })
 
                 if device.type in ('HDD_VCM', 'SOLENOID_RESONATOR'):
@@ -404,7 +414,9 @@ class VirtualOrchestra:
                 if audible:
                     self.activity[device.id].append((start, start + duration))
                     self.events.append(AcousticEvent(start, 'tone', device.id, hz,
-                                                     duration, event.velocity))
+                                                     duration, event.velocity, source_id=event.id,
+                        source_note=event.note, source_channel=event.channel, source_track=event.track_name,
+                        tonal_articulation=self.tonal_decisions.get(event.id)))
 
             state.playing = state.running = False
             state.phase = 'IDLE'
@@ -431,7 +443,11 @@ class VirtualOrchestra:
                         sources[extra.source_id].velocity, sources[extra.source_id].articulation)
                         if device.type == 'HDD_VCM' else None),
                     source_id=extra.source_id, reinforcement=True, source_note=sources[extra.source_id].note,
-                    source_channel=sources[extra.source_id].channel, source_track=sources[extra.source_id].track_name))
+                    source_channel=sources[extra.source_id].channel, source_track=sources[extra.source_id].track_name,
+                    tonal_articulation=(retarget_tonal(self.tonal_decisions[extra.source_id],
+                        device.type, extra.duration, extra.velocity,
+                        extra.start-sources[extra.source_id].actual_start)
+                        if extra.kind == "tone" and extra.source_id in self.tonal_decisions else None)))
         for extra in plan.tray_events:
             report = self.report[extra.device_id]
             report['reinforcementEvents'] += 1
@@ -444,6 +460,8 @@ class VirtualOrchestra:
             intervals.sort()
 
         end = max(float(getattr(plan, 'duration', 0.0)),
+                  max((e.time + e.tonal_articulation.gate + e.tonal_articulation.release
+                       for e in self.events if e.tonal_articulation is not None and not e.reinforcement), default=0.0),
                   max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12)
                        for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values()
@@ -676,12 +694,16 @@ class WavePreview:
         by_id = {d.id: d for d in orchestra.devices}
         ordinary = []
         hdd = {}
+        tonal = {}
+        self.tonal_stats = {'events': [], 'retriggers': 0, 'suppressedReinforcement': 0}
         self.hdd_stats = {'events': [], 'chokes': 0, 'suppressedReinforcement': 0}
         for event in orchestra.events:
             d = by_id[event.device]
             if not d.in_preview:
                 continue
-            if d.type == 'HDD_VCM' and event.kind == 'hit':
+            if event.kind == 'tone':
+                tonal.setdefault(d.id, []).append(event)
+            elif d.type == 'HDD_VCM' and event.kind == 'hit':
                 if event.hdd_articulation is None:
                     raise ValueError('HDD hit is missing its domain articulation')
                 hdd.setdefault(d.id, []).append(event)
@@ -690,6 +712,48 @@ class WavePreview:
                 length = min(n - start, int((event.duration if event.kind in ('tone', 'tray') else .12) * self.RATE))
                 if length > 0:
                     ordinary.append((d, effective_profile(d), event, start, length))
+        for ident, tones in tonal.items():
+            d = by_id[ident]
+            tones.sort(key=lambda e: (e.time, e.reinforcement))
+            next_primary = None
+            upcoming = [None]*len(tones)
+            for i in range(len(tones)-1, -1, -1):
+                upcoming[i] = next_primary
+                if not tones[i].reinforcement: next_primary = tones[i]
+            lane = []
+            for i, event in enumerate(tones):
+                start = int(event.time*self.RATE)
+                art = event.tonal_articulation
+                if art is None:
+                    # Manual legacy simulation has no semantic PerformancePlan.
+                    art = TonalArticulation('CONTINUOUS', d.type, .006, .1, .7, .035,
+                        event.duration, .5, .15, (event.velocity/127)**.65,
+                        source_duration=event.duration, velocity=event.velocity,
+                        frequency=Curve((0.,),(event.hz,)))
+                if orchestra.tonal_mode == 'raw':
+                    art = dataclasses.replace(art, attack=.001, decay=0., sustain=1., release=.002, raw=True)
+                duration = art.gate+art.release
+                if event.reinforcement:
+                    if lane and not lane[-1][2].reinforcement and lane[-1][3]+lane[-1][4]>start:
+                        self.tonal_stats['suppressedReinforcement'] += 1
+                        continue
+                    if upcoming[i]: duration=min(duration, max(0.,upcoming[i].time-event.time))
+                    duration=min(duration,event.duration) # never extend extra beyond its reservation
+                length=min(n-start,int(duration*self.RATE))
+                if length<=0: continue
+                if lane and lane[-1][3]+lane[-1][4]>start:
+                    previous=lane[-1]
+                    lane[-1]=(*previous[:4], max(0,start-previous[3]))
+                    self.tonal_stats['retriggers']+=1
+                event=dataclasses.replace(event,tonal_articulation=art)
+                lane.append((d,effective_profile(d),event,start,length))
+            for row in lane:
+                event,start,length=row[2:]
+                self.tonal_stats['events'].append(dict(event.tonal_articulation.debug(),
+                    sourceId=event.source_id, track=event.source_track, start=event.time,
+                    deviceId=ident, reinforcement=event.reinforcement, audioDuration=length/self.RATE,
+                    truncated=length<int((event.tonal_articulation.gate+event.tonal_articulation.release)*self.RATE)))
+            ordinary.extend(row for row in lane if row[4]>0)
         for ident, hits in hdd.items():
             d = by_id[ident]
             hits.sort(key=lambda e: (e.time, e.reinforcement))
@@ -766,6 +830,8 @@ class WavePreview:
                     sample = math.exp(-t * 32) * (math.sin(2 * math.pi * resonance * t) + .25 * math.sin(2 * math.pi * resonance * 3 * t))
                     exponent = profile.get('velocityExponent') or .6
                     sample *= (event.velocity / 127) ** exponent
+                elif event.kind == 'tone' and event.tonal_articulation is not None:
+                    sample = render_tonal(t, event.tonal_articulation, event.hz, (length-1)/self.RATE)
                 elif d.type == 'VHS':
                     sample = (math.sin(2 * math.pi * event.hz * t) + .2 * math.sin(2 * math.pi * event.hz * 3 * t)) * min(1, t * 40)
                 else:
@@ -801,6 +867,8 @@ class WavePreview:
                 resonance = 230 if d.type == 'HDD_VCM' else (profile.get('resonanceHz') or 440)
                 sample = np.exp(-t * 32) * (np.sin(2 * np.pi * resonance * t) + .25 * np.sin(2 * np.pi * resonance * 3 * t))
                 sample = sample * (event.velocity / 127) ** (profile.get('velocityExponent') or .6)
+            elif event.kind == 'tone' and event.tonal_articulation is not None:
+                sample = render_tonal(t, event.tonal_articulation, event.hz, (length-1)/self.RATE, np)
             elif d.type == 'VHS':
                 sample = (np.sin(2 * np.pi * event.hz * t) + .2 * np.sin(2 * np.pi * event.hz * 3 * t)) * np.minimum(1, t * 40)
             else:

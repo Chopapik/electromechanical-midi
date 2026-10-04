@@ -119,7 +119,8 @@ export interface IdleReinforcementConfig {
   enabled: boolean; maxCopiesPerEvent?: number; lookAheadMs?: number
   deviceTypes?: string[]; minScore?: number; minDurationMs?: number; percussionCooldownMs?: number; vhsEnabled?: boolean
 }
-export interface VirtualConfig { masterVolume?: number; hddMode?: 'raw' | 'articulated'; name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement'; trayEnabled?: boolean; idleReinforcement?: IdleReinforcementConfig }
+export interface VirtualConfig { masterVolume?: number; hddMode?: 'raw' | 'articulated'
+  tonalMode?: 'raw' | 'articulated'; name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement'; trayEnabled?: boolean; idleReinforcement?: IdleReinforcementConfig }
 export interface VirtualReport {
   name: string; type: string; accepted: number; played: number; dropped: number
   folded: number; delayed: number; busyConflicts: number; steps: number
@@ -130,6 +131,7 @@ export interface VirtualReport {
   reasons: Record<string, number>; state: Record<string, number | boolean>
 }
 export interface VirtualState {
+  tonalDebug?: Record<string, { profile: string; attackMs: number; decayMs: number; releaseMs: number; velocity: number; semanticRole: string; legato: boolean; staccato: boolean; strumLike: boolean; sustainPedal: boolean; ccGainAtStart: number }>
   enabled: boolean
   config: VirtualConfig
   report: Record<string, VirtualReport>

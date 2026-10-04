@@ -797,6 +797,8 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     plan.analysis['trackPrograms'] = {str(t.index): [program
         for index in getattr(t, 'source_tracks', (t.index,))
         for program in raw_source.programs(index)] for t in source.tracks}
+    from .tonal_articulation import capture
+    plan.expression = capture(source)
     apply_reinforcement(plan, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
 
     return plan

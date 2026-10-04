@@ -82,6 +82,10 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       <output>{Math.round((config.masterVolume ?? 1) * 100)}%</output>
     </label>
     <p className="muted">100% = dotychczasowy poziom · do 2000% wzmocnienia całego odsłuchu.</p>
+    <label>Tonal sound <select aria-label="Tonal sound" value={config.tonalMode ?? 'articulated'}
+      onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' }, enabled)}>
+      <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option>
+    </select></label>
     <label>HDD sound <select aria-label="HDD sound" value={config.hddMode ?? 'articulated'}
       onChange={e => configure({ ...config, hddMode: e.target.value as 'raw' | 'articulated' }, enabled)}>
       <option value="raw">HDD RAW / DRY</option><option value="articulated">HDD ARTICULATED</option>
@@ -151,6 +155,9 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
         {device.type === 'DVD_TRAY' && <p className="muted">Mechanical reinforcement · {tray?.phase ?? 'idle'}
           {tray?.note !== undefined && <> · GM {tray.note} · velocity {tray.velocity} · {tray.strength} · {Math.round((tray.duration ?? 0) * 1000)} ms</>}
         </p>}
+        {virtual?.tonalDebug?.[device.id] && <details><summary>Tonal articulation debug</summary>
+          <pre>{JSON.stringify(virtual.tonalDebug[device.id], null, 2)}</pre>
+        </details>}
         <div className="virtual-device-controls">
           <label>Name <input value={device.name} onChange={e => update(device.id, { name: e.target.value })} /></label>
           <label>Role <input value={device.role} onChange={e => update(device.id, { role: e.target.value })} /></label>

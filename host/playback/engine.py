@@ -1029,10 +1029,12 @@ class PlaybackEngine:
             previous = self._virtual.config()
             proposed = candidate.config()
             if enabled == self._virtual_mode and all(
-                proposed[key] == previous[key] for key in proposed if key not in ('masterVolume', 'hddMode')
+                proposed[key] == previous[key] for key in proposed if key not in ('masterVolume', 'hddMode', 'tonalMode')
             ):
-                mode_changed = self._virtual.hdd_mode != candidate.hdd_mode
+                mode_changed = (self._virtual.hdd_mode != candidate.hdd_mode
+                                or self._virtual.tonal_mode != candidate.tonal_mode)
                 self._virtual.hdd_mode = candidate.hdd_mode
+                self._virtual.tonal_mode = candidate.tonal_mode
                 self._virtual.master_volume = candidate.master_volume
                 self._preview.master_volume = candidate.master_volume
                 if mode_changed and self._virtual_mode and self._timeline:
@@ -1569,6 +1571,8 @@ class PlaybackEngine:
                 "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
                             "report": self._virtual.report,
                             "trayStatus": self._virtual.tray_state_at(position) if playing else {},
+                            "tonalDebug": {e['deviceId']: e for e in getattr(self._preview, 'tonal_stats', {}).get('events', [])
+                                           if playing and e['start'] <= position < e['start'] + e['audioDuration']},
                             "activity": (self._virtual.active_at(position, visual_hold=0.25) if self._virtual_mode and playing
                                          else {device.id: False for device in self._virtual.devices}),
                             "profiles": [profile.as_dict() for profile in PROFILES.values()]},

@@ -426,6 +426,27 @@ class MidiSource:
         return tuple(message.program for message in self._midi.tracks[track_index]
                      if message.type == 'program_change' and message.channel in channels)
 
+    def expression_events(self) -> tuple[dict, ...]:
+        """Timed expression in seconds; channel scope crosses track boundaries."""
+        events = []
+        for track, messages in enumerate(self._midi.tracks):
+            tick = 0
+            for order, message in enumerate(messages):
+                tick += message.time
+                if message.type not in ('control_change', 'pitchwheel', 'aftertouch', 'polytouch', 'program_change'):
+                    continue
+                item = {'time': self.tempo.seconds_at(tick), 'track': track,
+                        'order': order, 'channel': message.channel, 'kind': message.type}
+                if message.type == 'control_change':
+                    item.update(control=message.control, value=message.value)
+                elif message.type == 'pitchwheel': item['value'] = message.pitch
+                elif message.type == 'program_change': item['value'] = message.program
+                else:
+                    item['value'] = message.value
+                    if message.type == 'polytouch': item['note'] = message.note
+                events.append(item)
+        return tuple(sorted(events, key=lambda e: (e['time'], e['track'], e['order'])))
+
     def text_events(self) -> tuple[TimedText, ...]:
         """Timed text and karaoke events, including text-only tracks."""
         if self._text_cache is None:

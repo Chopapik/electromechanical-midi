@@ -213,6 +213,8 @@ class PerformancePlan:
     tray_report: dict = dataclasses.field(default_factory=dict)
     idle_reinforcement: dict = dataclasses.field(default_factory=dict)
     idle_report: dict = dataclasses.field(default_factory=dict)
+    # Audio expression sidecar; never changes allocator events/reservations.
+    expression: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -237,6 +239,7 @@ class PerformancePlan:
             'origin': self.origin,
             'policy': self.policy,
             'analysis': self.analysis,
+            'expression': self.expression,
             'midi': self.source_ref,
             'devices': self.devices,
             'idleReinforcement': self.idle_reinforcement,

@@ -26,3 +26,14 @@ it('switches RAW versus ARTICULATED without changing device routing', async () =
   fireEvent.change(selector, { target: { value: 'raw' } })
   expect(configure).toHaveBeenCalledWith({ ...virtual.config, hddMode: 'raw' }, true)
 })
+
+it('switches tonal articulation while preserving HDD mode and routing', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => ({ json: async () => ({ presets: {} }) })))
+  const configure = vi.fn()
+  const virtual = { enabled: true, config: { name: 'Test', devices: [], hddMode: 'raw' }, activity: {}, report: {}, profiles: [] } as VirtualState
+  await act(async () => { render(<VirtualOrchestra virtual={virtual} metadata={null} configure={configure} />) })
+  const selector = screen.getByRole('combobox', { name: 'Tonal sound' }) as HTMLSelectElement
+  expect(selector.value).toBe('articulated')
+  fireEvent.change(selector, { target: { value: 'raw' } })
+  expect(configure).toHaveBeenCalledWith({ ...virtual.config, tonalMode: 'raw' }, true)
+})
