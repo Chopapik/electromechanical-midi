@@ -19,7 +19,9 @@ from midi_source import MidiSource
 from pitch import hz_to_midi, midi_to_hz
 from .timeline import Command, Timeline
 
-KINDS = ('FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
+from .hdd_articulation import HDDArticulation, classify as classify_hdd, adapt as adapt_hdd, sample as sample_hdd
+
+KINDS = ('FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
 TONAL = {'FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS'}
 
 # Tryb instancji decyduje, dokad trafiaja jej zaakceptowane nuty:
@@ -56,6 +58,23 @@ def _p(value, provenance='UNKNOWN', source=''):
     return Parameter(value, provenance, source)
 
 PROFILES = {
+    'DVD_TRAY_REFERENCE': DeviceProfile('DVD_TRAY_REFERENCE', 'DVD_TRAY', {
+        'polyphony': _p(1, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'shortMinMs': _p(80, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'shortMaxMs': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'mediumMinMs': _p(140, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'mediumMaxMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'strongMinMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'strongMaxMs': _p(300, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'cooldownMs': _p(150, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'rideGapMs': _p(800, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'openHatGapMs': _p(1200, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'openHatMinVelocity': _p(100, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'rideMinVelocity': _p(75, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'motorHz': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'resonanceHz': _p(1050, 'ESTIMATED', 'software experiment; needs physical calibration'),
+        'gearHz': _p(57, 'ESTIMATED', 'software experiment; needs physical calibration'),
+    }),
     'FDD_CURRENT': DeviceProfile('FDD_CURRENT', 'FDD', {
         'polyphony': _p(1, 'RESEARCHED', 'single FDD head and firmware PLAY state'),
         'minPosition': _p(4, 'RESEARCHED', 'firmware/floppy/src/main.cpp MIN_TRACK'),
@@ -149,6 +168,8 @@ class VirtualDeviceInstance:
         mode = MODE_ALIASES.get(mode, mode)
         if mode not in MODES:
             raise ValueError(f'invalid mode: {mode} (expected one of {", ".join(MODES)})')
+        if kind == 'DVD_TRAY' and mode != 'virtual':
+            raise ValueError('DVD_TRAY supports virtual mode only')
         overrides = {}
         for key, item in (data.get('overrides') or {}).items():
             if key not in PROFILES[profile].parameters or key == 'polyphony':
@@ -178,6 +199,13 @@ class AcousticEvent:
     hz: float = 0.0
     duration: float = 0.0
     velocity: int = 100
+    direction: int = 1
+    hdd_articulation: HDDArticulation | None = None
+    source_id: str | None = None
+    reinforcement: bool = False
+    source_note: int | None = None
+    source_channel: int | None = None
+    source_track: str = ''
 
 class MechanicalState:
     def __init__(self, profile: DeviceProfile):
@@ -196,6 +224,10 @@ class VirtualOrchestra:
         self.name = name
         self.dvd_mode = 'independent'
         self.master_volume = 1.0
+        self.hdd_mode = 'articulated'
+        self.tray_enabled = True
+        self.idle_reinforcement = {}
+        self.tray_movements = []
         self.devices = devices or []
         self.report: dict = {}
         self.events: list[AcousticEvent] = []
@@ -203,6 +235,9 @@ class VirtualOrchestra:
         self.decisions: dict[str, list[dict]] = {}
 
     def set_config(self, payload: dict) -> None:
+        hdd_mode = str(payload.get('hddMode', 'articulated'))
+        if hdd_mode not in ('raw', 'articulated'):
+            raise ValueError('hddMode must be raw or articulated')
         master = float(payload.get('masterVolume', 1.0))
         if not math.isfinite(master) or not 0 <= master <= 20:
             raise ValueError('masterVolume outside supported range 0..20')
@@ -210,13 +245,16 @@ class VirtualOrchestra:
         dvd_mode = str(payload.get('dvdMode') or 'independent')
         if dvd_mode not in ('independent', 'reinforcement'):
             raise ValueError(f'unknown DVD mode: {dvd_mode}')
-        if dvd_mode == 'reinforcement' and len([d for d in devices if d.type == 'DVD_SLED']) != 4:
-            raise ValueError('reinforcement requires exactly four DVD_SLED devices')
         if len(devices) > 64 or len({d.id for d in devices}) != len(devices):
             raise ValueError('maximum 64 devices; ids must be unique')
         self.name = str(payload.get('name') or 'Virtual Orchestra')[:100]
         self.dvd_mode = dvd_mode
         self.master_volume = master
+        self.hdd_mode = hdd_mode
+        self.tray_enabled = bool(payload.get("trayEnabled", True))
+        from .orchestra import parse_idle
+        self.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
+        self.tray_movements = []
         self.devices = devices
         self.report = {}
         self.events = []
@@ -224,13 +262,17 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume,
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode,
+                'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
         """Podmienia sklad orkiestry na ten z planu wykonania."""
         self.name = plan.name
         self.dvd_mode = plan.dvd_mode
+        self.tray_enabled = plan.tray_enabled
+        self.idle_reinforcement = plan.idle_reinforcement
+        self.tray_movements = plan.tray_events
         self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
         self.report = {}
         self.events = []
@@ -327,7 +369,10 @@ class VirtualOrchestra:
                         self.events.append(AcousticEvent(
                             start + float(profile.get('parkMs') or 0) / 1000
                             + float(profile.get('settleMs') or 0) / 1000,
-                            'hit', device.id, 0.0, duration, event.velocity))
+                            'hit', device.id, 0.0, duration, event.velocity,
+                            hdd_articulation=(classify_hdd(event.note, event.channel, event.velocity, event.articulation)
+                                              if device.type == 'HDD_VCM' else None), source_id=event.id,
+                            source_note=event.note, source_channel=event.channel, source_track=event.track_name))
 
                     continue
 
@@ -371,6 +416,7 @@ class VirtualOrchestra:
         # Acoustic-only extras: normal commands and their statistics are already
         # fixed. The pass guarantees these intervals never overlap normal DVD notes.
         by_id = {device.id: device for device in self.devices}
+        sources = {e.id: e for e in plan.events}
         audible_solo = any(device.solo and not device.mute for device in self.devices)
         for extra in plan.reinforcements:
             device = by_id[extra.device_id]
@@ -379,13 +425,26 @@ class VirtualOrchestra:
             report['reinforcementTime'] += extra.duration
             if not device.mute and (not audible_solo or device.solo):
                 self.activity[device.id].append((extra.start, extra.start + extra.duration))
-                self.events.append(AcousticEvent(extra.start, 'tone', device.id,
-                                                 extra.hz, extra.duration, extra.velocity))
+                self.events.append(AcousticEvent(extra.start, extra.kind, device.id,
+                                                 extra.hz, extra.duration, extra.velocity,
+                    hdd_articulation=(classify_hdd(sources[extra.source_id].note, sources[extra.source_id].channel,
+                        sources[extra.source_id].velocity, sources[extra.source_id].articulation)
+                        if device.type == 'HDD_VCM' else None),
+                    source_id=extra.source_id, reinforcement=True, source_note=sources[extra.source_id].note,
+                    source_channel=sources[extra.source_id].channel, source_track=sources[extra.source_id].track_name))
+        for extra in plan.tray_events:
+            report = self.report[extra.device_id]
+            report['reinforcementEvents'] += 1
+            report['reinforcementTime'] += extra.duration
+            self.activity[extra.device_id].append((extra.start, extra.start + extra.duration))
+            self.events.append(AcousticEvent(extra.start, 'tray', extra.device_id,
+                                             duration=extra.duration, velocity=extra.velocity,
+                                             direction=extra.direction))
         for intervals in self.activity.values():
             intervals.sort()
 
         end = max(float(getattr(plan, 'duration', 0.0)),
-                  max((e.time + (e.duration if e.kind == 'tone' else .12)
+                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12)
                        for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values()
                        for interval in intervals), default=0.0))
@@ -398,6 +457,14 @@ class VirtualOrchestra:
             commands.append(Command(end, 'virtual', lane='virtual'))
 
         return Timeline.from_commands(commands)
+
+    def tray_state_at(self, position: float) -> dict:
+        result = {device.id: {'phase': 'idle'} for device in self.devices if device.type == 'DVD_TRAY'}
+        for event in self.tray_movements:
+            if event.start <= position < event.start + event.duration + event.cooldown:
+                result[event.device_id] = {**event.as_dict(), 'phase':
+                    'moving' if position < event.start + event.duration else 'recovery'}
+        return result
 
     def simulate(self, source: MidiSource, routes_by_device: dict | None = None) -> Timeline:
         self.events = []
@@ -417,7 +484,7 @@ class VirtualOrchestra:
             phases: list[dict] = []
             def reason(code):
                 reasons[code] = reasons.get(code, 0) + 1
-            if device.track is None and routes_by_device is None:
+            if device.type == 'DVD_TRAY' or (device.track is None and routes_by_device is None):
                 report[device.id] = {'name': device.name, 'type': device.type, **counts,
                                      'reasons': reasons, 'state': vars(state).copy(), 'phases': phases}
                 continue
@@ -546,7 +613,10 @@ class VirtualOrchestra:
                                     else max(start + cycle, start + .22))
                     self.activity[device.id].append((start, activity_end))
                     self.events.append(AcousticEvent(sound_time if event_kind == 'hit' else start,
-                                                     event_kind, device.id, hz, duration, span.velocity))
+                                                     event_kind, device.id, hz, duration, span.velocity,
+                        hdd_articulation=(classify_hdd(span.note, span.channel, span.velocity,
+                            getattr(incoming_note, 'articulation', None)) if device.type == 'HDD_VCM' else None),
+                        source_id=note_id, source_note=span.note, source_channel=span.channel))
             state.playing = state.running = False
             state.phase = 'IDLE'
             report[device.id] = {'name': device.name, 'type': device.type, **counts,
@@ -555,7 +625,7 @@ class VirtualOrchestra:
         # Scheduler remains the PlaybackEngine worker; virtual commands are its clock markers.
         commands = [Command(e.time, 'virtual', lane='virtual') for e in self.events]
         end = max(float(getattr(source, 'duration', 0)),
-                  max((e.time + (e.duration if e.kind == 'tone' else .12) for e in self.events), default=0.0),
+                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12) for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values() for interval in intervals), default=0.0))
         if end:
             if not commands:
@@ -604,24 +674,79 @@ class WavePreview:
         dubluje. Dzieki temu 'hybrid' nie brzmi podwojnie.
         """
         by_id = {d.id: d for d in orchestra.devices}
-        plan = []
-
+        ordinary = []
+        hdd = {}
+        self.hdd_stats = {'events': [], 'chokes': 0, 'suppressedReinforcement': 0}
         for event in orchestra.events:
             d = by_id[event.device]
-
             if not d.in_preview:
                 continue
-
-            start = int(event.time * self.RATE)
-            length = min(n - start, int((event.duration if event.kind == 'tone' else .12) * self.RATE))
-
-            if length > 0:
-                plan.append((d, effective_profile(d), event, start, length))
-
-        return plan
+            if d.type == 'HDD_VCM' and event.kind == 'hit':
+                if event.hdd_articulation is None:
+                    raise ValueError('HDD hit is missing its domain articulation')
+                hdd.setdefault(d.id, []).append(event)
+            else:
+                start = int(event.time * self.RATE)
+                length = min(n - start, int((event.duration if event.kind in ('tone', 'tray') else .12) * self.RATE))
+                if length > 0:
+                    ordinary.append((d, effective_profile(d), event, start, length))
+        for ident, hits in hdd.items():
+            d = by_id[ident]
+            hits.sort(key=lambda e: (e.time, e.reinforcement))
+            primary_indices = [i for i, event in enumerate(hits) if not event.reinforcement]
+            primary_gaps = {}
+            for position, i in enumerate(primary_indices):
+                neighbors = [primary_indices[j] for j in (position-1, position+1)
+                             if 0 <= j < len(primary_indices)]
+                primary_gaps[i] = min((abs(hits[i].time-hits[j].time) for j in neighbors), default=math.inf)
+            adapted = []
+            for i, event in enumerate(hits):
+                gaps = [abs(event.time - hits[j].time) for j in (i-1, i+1) if 0 <= j < len(hits)]
+                # An optional extra must not change a normal hit's timbre/decay.
+                gap = min(gaps, default=math.inf) if event.reinforcement else primary_gaps[i]
+                art = adapt_hdd(event.hdd_articulation, gap, orchestra.hdd_mode == 'raw')
+                adapted.append(dataclasses.replace(event, hdd_articulation=art))
+            next_primaries = [None] * len(adapted)
+            next_primary = None
+            for i in range(len(adapted) - 1, -1, -1):
+                next_primaries[i] = next_primary
+                if not adapted[i].reinforcement:
+                    next_primary = adapted[i]
+            lane = []
+            for i, event in enumerate(adapted):
+                start = int(event.time * self.RATE)
+                length = min(n - start, int(event.hdd_articulation.duration * self.RATE))
+                if length <= 0:
+                    continue
+                # Acoustic extras cannot interrupt a normal actuator gesture/tail.
+                if event.reinforcement and lane and not lane[-1][2].reinforcement and lane[-1][3] + lane[-1][4] > start:
+                    self.hdd_stats['suppressedReinforcement'] += 1
+                    continue
+                if event.reinforcement:
+                    next_primary = next_primaries[i]
+                    if next_primary is not None:
+                        length = min(length, max(0, int(next_primary.time * self.RATE) - start))
+                if lane and lane[-1][3] + lane[-1][4] > start:
+                    previous = lane[-1]
+                    lane[-1] = (*previous[:4], max(0, start - previous[3]))
+                    self.hdd_stats['chokes'] += 1
+                lane.append((d, effective_profile(d), event, start, length))
+            for item in lane:
+                event, start, length = item[2:]
+                art = event.hdd_articulation
+                self.hdd_stats['events'].append({
+                    'deviceId': ident, 'sourceId': event.source_id, 'reinforcement': event.reinforcement,
+                    'note': event.source_note, 'channel': event.source_channel, 'track': event.source_track,
+                    'start': event.time, 'duration': length / self.RATE, 'articulation': art.kind,
+                    'pitchBand': art.pitch_band, 'resonanceHz': art.resonance, 'decay': art.decay,
+                    'raw': art.raw, 'choked': length < int(art.duration * self.RATE),
+                })
+            ordinary.extend(item for item in lane if item[4] > 0)
+        return ordinary
 
     def _render_python(self, plan: list[tuple], n: int, mix_count: int) -> tuple:
         """Wersja bez zaleznosci: ~2-4 mln probek/s, wiec dlugi utwor trwa."""
+        from .tray import tray_sound
         left = array('f', [0]) * n
         right = array('f', [0]) * n
         for d, profile, event, start, length in plan:
@@ -629,8 +754,13 @@ class WavePreview:
             gl, gr = gain * (1 - max(0, d.pan)), gain * (1 + min(0, d.pan))
             for i in range(length):
                 t = i / self.RATE
-                if event.kind == 'reversal':
+                if event.kind == 'tray':
+                    sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction)
+                elif event.kind == 'reversal':
                     sample = math.exp(-t * 85) * math.sin(2 * math.pi * 1700 * t)
+                elif d.type == 'HDD_VCM' and event.kind == 'hit':
+                    sample = sample_hdd(t, event.hdd_articulation, d.id)
+                    sample *= min(1., (length - 1 - i) / max(1, int(.006 * self.RATE)))
                 elif event.kind == 'hit':
                     resonance = 230 if d.type == 'HDD_VCM' else (profile.get('resonanceHz') or 440)
                     sample = math.exp(-t * 32) * (math.sin(2 * math.pi * resonance * t) + .25 * math.sin(2 * math.pi * resonance * 3 * t))
@@ -659,8 +789,14 @@ class WavePreview:
         right = np.zeros(n, dtype=np.float32)
         for d, profile, event, start, length in plan:
             t = np.arange(length, dtype=np.float32) / self.RATE
-            if event.kind == 'reversal':
+            if event.kind == 'tray':
+                from .tray import tray_sound
+                sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction, np)
+            elif event.kind == 'reversal':
                 sample = np.exp(-t * 85) * np.sin(2 * np.pi * 1700 * t)
+            elif d.type == 'HDD_VCM' and event.kind == 'hit':
+                sample = sample_hdd(t, event.hdd_articulation, d.id, np)
+                sample *= np.minimum(1., np.maximum(0., (length - 1 - np.arange(length)) / max(1, int(.006 * self.RATE))))
             elif event.kind == 'hit':
                 resonance = 230 if d.type == 'HDD_VCM' else (profile.get('resonanceHz') or 440)
                 sample = np.exp(-t * 32) * (np.sin(2 * np.pi * resonance * t) + .25 * np.sin(2 * np.pi * resonance * 3 * t))
@@ -702,7 +838,7 @@ class WavePreview:
         n = int((duration + .25) * self.RATE)
         # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
         mix_count = max(1, len([d for d in orchestra.devices
-                                if d.in_preview and d.type != 'DVD_SLED']))
+                                if d.in_preview and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
         plan = self._plan(orchestra, n)
 
         try:

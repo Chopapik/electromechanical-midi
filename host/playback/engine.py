@@ -26,6 +26,7 @@ Zasady, ktore chronia przed wyscigami:
 from __future__ import annotations
 
 import dataclasses
+import copy
 import json
 import enum
 import threading
@@ -1028,11 +1029,16 @@ class PlaybackEngine:
             previous = self._virtual.config()
             proposed = candidate.config()
             if enabled == self._virtual_mode and all(
-                proposed[key] == previous[key] for key in proposed if key != 'masterVolume'
+                proposed[key] == previous[key] for key in proposed if key not in ('masterVolume', 'hddMode')
             ):
+                mode_changed = self._virtual.hdd_mode != candidate.hdd_mode
+                self._virtual.hdd_mode = candidate.hdd_mode
                 self._virtual.master_volume = candidate.master_volume
                 self._preview.master_volume = candidate.master_volume
-                if self._virtual_mode and self._state is PlaybackState.PLAYING:
+                if mode_changed and self._virtual_mode and self._timeline:
+                    self._preview_generation += 1
+                    self._request_preview_locked(copy.copy(self._virtual), self._timeline.duration)
+                elif self._virtual_mode and self._state is PlaybackState.PLAYING:
                     self._preview.play(self._position_locked())
                 self._wake.set()
                 return
@@ -1059,9 +1065,9 @@ class PlaybackEngine:
                 'name': candidate.name,
                 'devices': candidate.config()['devices'],
                 'policy': self._orchestra.policy,
-                'dvdMode': candidate.dvd_mode,
+                'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled, 'idleReinforcement': candidate.idle_reinforcement,
             })
-            if candidate.dvd_mode == 'reinforcement':
+            if candidate.dvd_mode == 'reinforcement' or candidate.idle_reinforcement.get('enabled'):
                 # Reinforcement runs after the normal PerformancePlan is built.
                 self._auto_arrange = True
             self._virtual_mode = enabled
@@ -1082,7 +1088,7 @@ class PlaybackEngine:
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
             'devices': arrangement.data['devices'],
             'policy': payload.get('policy'),
-            'dvdMode': payload.get('dvdMode'),
+            'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True), 'idleReinforcement': payload.get('idleReinforcement'),
         })
         bound, _ = bind_devices(orchestra.instances())
         preview_devices = [device for device in orchestra.instances() if device.in_preview]
@@ -1152,7 +1158,7 @@ class PlaybackEngine:
             'devices': self._orchestra.devices,
             'rules': list(self._arrangement.data['rules']) if self._arrangement is not None else [],
             'policy': self._orchestra.policy,
-            'dvdMode': self._orchestra.dvd_mode,
+            'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled, 'idleReinforcement': self._orchestra.idle_reinforcement,
             'origin': self._plan.origin,
         }
 
@@ -1163,11 +1169,36 @@ class PlaybackEngine:
 
         return list(self._source.tracks) if self._source is not None else []
 
+    def _reinforcement_notes_locked(self) -> list:
+        if not self._plan:
+            return []
+        sources = {e.id: e for e in self._plan.events}
+        notes = []
+        for index, extra in enumerate(self._plan.reinforcements):
+            source = sources[extra.source_id]
+            notes.append({**extra.as_dict(), 'id': f'reinforcement:{index}:{extra.source_id}',
+                'track': source.track, 'trackName': source.track_name, 'channel': source.channel,
+                'note': source.played_note if source.played_note is not None else source.note,
+                'name': source.name, 'isDrum': source.role == 'percussion',
+                'reinforcement': True, 'eventKind': 'reinforcement',
+                'deviceId': extra.device_id, 'status': 'ACCEPTED',
+                'routes': [{'ruleId': 'reinforcement', 'deviceId': extra.device_id,
+                            'status': 'ACCEPTED', 'reason': extra.reason}]})
+        return notes
+
     def arrangement_view(self) -> dict:
         with self._lock:
             return {
                 'arrangement': self._document_locked(),
                 'notes': self._arrangement_notes,
+                'trayNotes': [{**event.as_dict(), 'id': f'tray:{event.device_id}:{event.source_id}',
+                    'trackName': event.source_track_name or 'DVD tray reinforcement', 'name': f'GM {event.note} · tray',
+                    'isDrum': True, 'routes': [{'ruleId': 'tray-reinforcement', 'deviceId': event.device_id,
+                        'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}], 'deviceId': event.device_id,
+                    'actualStart': event.start, 'actualDuration': event.duration,
+                    'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}
+                    for event in (self._plan.tray_events if self._plan else [])],
+                'reinforcementNotes': self._reinforcement_notes_locked(),
                 'midiIdentity': midi_identity(self._source) if self._source else None,
                 'tracks': [{'index': t.index, 'name': t.name, 'isDrums': t.is_drums,
                             'noteCount': t.note_count,
@@ -1180,7 +1211,7 @@ class PlaybackEngine:
                 'orchestra': {
                     'name': self._orchestra.name,
                     'policy': self._orchestra.policy,
-                    'dvdMode': self._orchestra.dvd_mode,
+                    'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled, 'idleReinforcement': self._orchestra.idle_reinforcement,
                     'devices': [{'id': d['id'], 'type': d['type'], 'name': d['name']}
                                 for d in self._orchestra.devices],
                 },
@@ -1537,6 +1568,7 @@ class PlaybackEngine:
                 },
                 "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
                             "report": self._virtual.report,
+                            "trayStatus": self._virtual.tray_state_at(position) if playing else {},
                             "activity": (self._virtual.active_at(position, visual_hold=0.25) if self._virtual_mode and playing
                                          else {device.id: False for device in self._virtual.devices}),
                             "profiles": [profile.as_dict() for profile in PROFILES.values()]},

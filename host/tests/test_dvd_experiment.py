@@ -13,9 +13,13 @@ from playback import allocator  # noqa: E402
 from playback.allocator import ManualPin  # noqa: E402
 from playback.analysis import MidiAnalysis  # noqa: E402
 from playback.engine import PlaybackEngine  # noqa: E402
-from playback.orchestra import default_orchestra, parse_orchestra  # noqa: E402
+from playback.orchestra import default_orchestra as current_orchestra, parse_orchestra  # noqa: E402
 from playback.virtual import VirtualOrchestra, WavePreview  # noqa: E402
 from test_allocator import write_drums, write_tracks  # noqa: E402
+
+
+def default_orchestra(**kwargs):
+    return current_orchestra(fdd_count=3, hdd_count=3, tray_count=0, **kwargs)
 
 
 class DvdExperimentTest(unittest.TestCase):
@@ -54,7 +58,7 @@ class DvdExperimentTest(unittest.TestCase):
         by_id = {event.id: event for event in plan.events}
         self.assertEqual([by_id[f'1:{i}'].device_type for i in range(3)], ['FDD'] * 3)
         self.assertEqual(by_id['1:3'].device_type, 'DVD_SLED')
-        self.assertEqual(by_id['1:3'].device_id, 'dvd_sled-1')
+        self.assertEqual(by_id['1:3'].device_id, 'DVD_STEPPER_1')
         self.assertEqual(plan.report()['tonal']['dropped'], 0)
         self.assertEqual(plan.as_dict(), allocator.allocate(source, config, midi_analysis=analysis).as_dict())
 
@@ -65,7 +69,7 @@ class DvdExperimentTest(unittest.TestCase):
         self.assertEqual(plan.report()['tonal']['dropped'], 0)
         self.assertEqual({event.device_id for event in plan.events
                           if event.device_type == 'DVD_SLED'},
-                         {f'dvd_sled-{number}' for number in range(1, 5)})
+                         {f'DVD_STEPPER_{number}' for number in range(1, 5)})
 
     def test_dvd_is_accompaniment_only_and_hdd_percussion_only(self):
         source = self.harmony_source([(0, .5, 60), (0, .5, 64),
@@ -145,8 +149,8 @@ class DvdExperimentTest(unittest.TestCase):
         analysis = self.harmony_analysis(source)
         config = default_orchestra(dvd_mode='reinforcement')
         config.devices = [d for d in config.devices if d['type'] == 'DVD_SLED']
-        pins = {'1:0': ManualPin(device_id='dvd_sled-1', rule_id='a'),
-                '1:1': ManualPin(device_id='dvd_sled-2', rule_id='b')}
+        pins = {'1:0': ManualPin(device_id='DVD_STEPPER_1', rule_id='a'),
+                '1:1': ManualPin(device_id='DVD_STEPPER_2', rule_id='b')}
         plan = allocator.allocate(source, config, midi_analysis=analysis, pins=pins)
         self.assertTrue(plan.reinforcements)
         normal = [event for event in plan.events if event.played]
@@ -156,7 +160,7 @@ class DvdExperimentTest(unittest.TestCase):
                                 or event.end <= extra.start + 1e-9
                                 for event in normal if event.device_id == extra.device_id))
         self.assertTrue(any(abs(extra.start + extra.duration - .4) < .01
-                            for extra in plan.reinforcements if extra.device_id == 'dvd_sled-2'))
+                            for extra in plan.reinforcements if extra.device_id == 'DVD_STEPPER_2'))
 
         renderer = VirtualOrchestra()
         renderer.render_plan(plan)
@@ -167,12 +171,11 @@ class DvdExperimentTest(unittest.TestCase):
         self.assertEqual(len([e for e in renderer.events if e.kind == 'tone']),
                          len(normal) + len(plan.reinforcements))
 
-    def test_reinforcement_mode_requires_four_dvds(self):
+    def test_reinforcement_mode_accepts_configured_dvd_count(self):
         config = default_orchestra(dvd_mode='reinforcement')
         self.assertEqual(parse_orchestra(config.as_dict()).dvd_mode, 'reinforcement')
-        config.devices = [device for device in config.devices if device['id'] != 'dvd_sled-4']
-        with self.assertRaisesRegex(ValueError, 'exactly four'):
-            parse_orchestra(config.as_dict())
+        config.devices = [device for device in config.devices if device['id'] != 'DVD_STEPPER_4']
+        self.assertEqual(parse_orchestra(config.as_dict()).dvd_mode, 'reinforcement')
 
     def test_engine_switches_mode_without_changing_four_physical_dvds(self):
         source = self.harmony_source([(0, .5, note) for note in (60, 62, 64, 65, 67, 69, 71)])
