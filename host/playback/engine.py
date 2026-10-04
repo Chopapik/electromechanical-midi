@@ -1008,6 +1008,7 @@ class PlaybackEngine:
                     preview.close()
                     continue
                 old_preview = self._preview
+                preview.master_volume = self._virtual.master_volume
                 try:
                     if self._state is PlaybackState.PLAYING:
                         preview.play(self._position_locked())
@@ -1023,6 +1024,19 @@ class PlaybackEngine:
         candidate.set_config(payload)
         with self._lock:
             enabled = bool(payload.get('enabled', True))
+            # Output gain does not change the plan or require WAV regeneration.
+            previous = self._virtual.config()
+            proposed = candidate.config()
+            if enabled == self._virtual_mode and all(
+                proposed[key] == previous[key] for key in proposed if key != 'masterVolume'
+            ):
+                self._virtual.master_volume = candidate.master_volume
+                self._preview.master_volume = candidate.master_volume
+                if self._virtual_mode and self._state is PlaybackState.PLAYING:
+                    self._preview.play(self._position_locked())
+                self._wake.set()
+                return
+
             if not enabled and self._state is PlaybackState.PLAYING and self._transport is None:
                 raise EngineError('stop or pause before disabling virtual output without connected hardware')
             if self._arrangement is not None and self._source is not None:

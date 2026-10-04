@@ -115,7 +115,7 @@ export interface ArrangementHardware {
   unmapped: Array<{ deviceId: string; name: string; type: string; reason: string; lane?: string; boundTo?: string }>
 }
 
-export interface VirtualConfig { name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement' }
+export interface VirtualConfig { masterVolume?: number; name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement' }
 export interface VirtualReport {
   name: string; type: string; accepted: number; played: number; dropped: number
   folded: number; delayed: number; busyConflicts: number; steps: number

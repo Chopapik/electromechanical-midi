@@ -76,6 +76,12 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <h2>Virtual Orchestra</h2>
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
+    <label className="virtual-master">Master Volume <input aria-label="Master Volume" type="range" min="0" max="20" step="0.25"
+      value={config.masterVolume ?? 1}
+      onChange={e => configure({ ...config, masterVolume: Number(e.target.value) }, enabled)} />
+      <output>{Math.round((config.masterVolume ?? 1) * 100)}%</output>
+    </label>
+    <p className="muted">100% = dotychczasowy poziom · do 2000% wzmocnienia całego odsłuchu.</p>
     <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'independent'}
       disabled={!canReinforce}
       onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>

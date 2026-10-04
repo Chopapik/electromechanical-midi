@@ -195,6 +195,7 @@ class VirtualOrchestra:
     def __init__(self, devices: list[VirtualDeviceInstance] | None = None, name: str = 'Virtual Orchestra'):
         self.name = name
         self.dvd_mode = 'independent'
+        self.master_volume = 1.0
         self.devices = devices or []
         self.report: dict = {}
         self.events: list[AcousticEvent] = []
@@ -202,6 +203,9 @@ class VirtualOrchestra:
         self.decisions: dict[str, list[dict]] = {}
 
     def set_config(self, payload: dict) -> None:
+        master = float(payload.get('masterVolume', 1.0))
+        if not math.isfinite(master) or not 0 <= master <= 20:
+            raise ValueError('masterVolume outside supported range 0..20')
         devices = [VirtualDeviceInstance.parse(item) for item in payload.get('devices', [])]
         dvd_mode = str(payload.get('dvdMode') or 'independent')
         if dvd_mode not in ('independent', 'reinforcement'):
@@ -212,6 +216,7 @@ class VirtualOrchestra:
             raise ValueError('maximum 64 devices; ids must be unique')
         self.name = str(payload.get('name') or 'Virtual Orchestra')[:100]
         self.dvd_mode = dvd_mode
+        self.master_volume = master
         self.devices = devices
         self.report = {}
         self.events = []
@@ -219,7 +224,7 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'dvdMode': self.dvd_mode,
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
@@ -572,6 +577,7 @@ class WavePreview:
     RATE = 22050
 
     def __init__(self):
+        self.master_volume = 1.0
         self.process: subprocess.Popen | None = None
         self.path: Path | None = None
 
@@ -692,6 +698,7 @@ class WavePreview:
 
     def render(self, orchestra: VirtualOrchestra, duration: float):
         self.close()
+        self.master_volume = orchestra.master_volume
         n = int((duration + .25) * self.RATE)
         # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
         mix_count = max(1, len([d for d in orchestra.devices
@@ -728,7 +735,7 @@ class WavePreview:
             play_path = Path(tmp.name)
         with wave.open(str(play_path), 'wb') as output:
             output.setparams(params); output.writeframes(frames)
-        self.process = subprocess.Popen(['afplay', str(play_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.process = subprocess.Popen(['afplay', '-v', str(self.master_volume), str(play_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # Process owns the open file; clean stale slices on next start/stop.
         if hasattr(self, '_slice'):
             self._slice.unlink(missing_ok=True)
