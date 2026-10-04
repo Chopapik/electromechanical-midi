@@ -1,0 +1,1691 @@
+========================================================================
+0002-02-radiohead_1993-creep-[k] (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 7059
+  wykryty lead track 4 (Voice), bas track 3 (Bass)
+  role: {'harmony': 5122, 'bass': 428, 'lead': 243, 'percussion': 1266}
+
+  DUPLICATE DETECTION
+    groupsFound 2, tracksCollapsed 2, events 5793 -> 3259 (-2534)
+      Guitar 1 + Guitar Dub
+        confidence 0.981  primary track 1
+        + track 2 Guitar Dub: offset +21.74 ms [NEAR_DUPLICATE] pitch 1.000 timing-mad 0.00 ms
+      Guitar 2 + Guitar 2 Dub
+        confidence 1.000  primary track 5
+        + track 6 Guitar 2 Dub: offset +10.87 ms [EXACT_DUPLICATE] pitch 1.000 timing-mad 0.00 ms
+
+    metric                             before        after
+    tonal requested                      5793         3259
+    accompaniment demand [s]           2392.8       1344.7
+    demand / accompaniment capacity        1.274        0.716
+    played                               7012         4525
+    dropped                                47            0
+    drop rate                           0.007          0.0
+    shortened                               0            0
+    voice steals                            0            0
+    delayed + arpeggiated                 906           47
+    silent gap count                      590          581
+    orchestra silent [s]               36.983       42.668
+    max silent gap [ms]                2608.7       2608.7
+    planned coverage                   0.8424       0.8181
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 2593, mean +58.7 ms, max +180.0 ms, added 152.2 s
+
+    metric                           before        after
+    played                             4525         4525
+    dropped                               0            0
+    source tonal coverage            0.7032       0.8181
+    long gaps >150 ms                   241           20
+    silent gap count                    720          581
+    median gap [ms]                    19.0         19.0
+    total silence [s]                69.353       42.668
+    accompaniment continuity         0.3402       0.6493
+    FDD coverage                     0.3394        0.651
+    FDD utilization                   0.696        1.347
+    mean performed [ms]                61.5        119.2
+
+  STATIC (dawny routing)
+    requested     7059
+    played        3548
+    dropped       3511   (drop rate  49.7%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           0
+
+  AUTO (pula glosow)
+    requested     7059
+    played        7012
+    dropped         47   (drop rate   0.7%)
+    reassigned    3690   <- uratowane innym wolnym urzadzeniem
+    delayed          6   (mean 42.8 ms, max 62.5 ms)
+    arpeggiated    900
+    voice steals     0   (shortened 0)
+    folded          64
+    LEAD: requested 243, played 243, dropped 0, delayed 0, preservation 100.0%
+    VHS: notes 243, utilization 0.49, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  303 active=  18.7s util=0.08
+      DVD_STEPPER_2 DVD_SLED notes=  332 active=  20.6s util=0.09
+      DVD_STEPPER_3 DVD_SLED notes=  302 active=  18.8s util=0.08
+      DVD_STEPPER_4 DVD_SLED notes=  317 active=  19.8s util=0.08
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes= 1130 active= 124.2s util=0.53
+      fdd-2        FDD      notes= 1133 active= 125.1s util=0.54
+      fdd-3        FDD      notes=  980 active=  96.8s util=0.41
+      fdd-4        FDD      notes= 1006 active= 101.4s util=0.43
+      hdd_vcm-1    HDD_VCM  notes=  347 active=  36.4s util=0.16
+      hdd_vcm-2    HDD_VCM  notes=  240 active=  25.2s util=0.11
+      hdd_vcm-3    HDD_VCM  notes=  677 active=  71.1s util=0.30
+      hdd_vcm-4    HDD_VCM  notes=    2 active=   0.2s util=0.00
+      vhs-1        VHS      notes=  243 active= 113.3s util=0.49
+
+  => wiecej zagranych nut: +3464 (+97.6%)
+  => drop rate 49.7% -> 0.7%
+
+========================================================================
+0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 4710
+  wykryty lead track 3 (Thom Yorke - Voice), bas track 4 (Colin Greenwood - Bass)
+  role: {'harmony': 2550, 'lead': 156, 'bass': 211, 'percussion': 1793}
+
+  DUPLICATE DETECTION
+    groupsFound 1, tracksCollapsed 1, events 2917 -> 1829 (-1088)
+      Street Spirit + (Fade Out)
+        confidence 0.975  primary track 1
+        + track 2 (Fade Out): offset +0.00 ms [NEAR_DUPLICATE] pitch 1.000 timing-mad 0.00 ms
+
+    metric                             before        after
+    tonal requested                      2917         1829
+    accompaniment demand [s]           2005.5       1340.0
+    demand / accompaniment capacity        0.991        0.662
+    played                               4686         3598
+    dropped                                24           24
+    drop rate                           0.005        0.007
+    shortened                               0            0
+    voice steals                            0            0
+    delayed + arpeggiated                   5            5
+    silent gap count                        1            1
+    orchestra silent [s]                1.739        1.739
+    max silent gap [ms]                1739.1       1739.1
+    planned coverage                   1.0061       1.0061
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 70, mean +28.8 ms, max +28.8 ms, added 2.01 s
+
+    metric                           before        after
+    played                             3598         3598
+    dropped                              24           24
+    source tonal coverage            1.0061       1.0061
+    long gaps >150 ms                     1            1
+    silent gap count                      1            1
+    median gap [ms]                  1739.1       1739.1
+    total silence [s]                 1.739        1.739
+    accompaniment continuity         0.9839       0.9839
+    FDD coverage                     0.9888       0.9888
+    FDD utilization                   2.011        2.019
+    mean performed [ms]               317.2        318.5
+
+  STATIC (dawny routing)
+    requested     4710
+    played        1457
+    dropped       3253   (drop rate  69.1%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           0
+
+  AUTO (pula glosow)
+    requested     4710
+    played        4686
+    dropped         24   (drop rate   0.5%)
+    reassigned    2288   <- uratowane innym wolnym urzadzeniem
+    delayed          5   (mean 9.5 ms, max 10.7 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           7
+    LEAD: requested 156, played 156, dropped 0, delayed 1, preservation 100.0%
+    VHS: notes 156, utilization 0.71, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=   79 active=  25.6s util=0.10
+      DVD_STEPPER_2 DVD_SLED notes=  112 active=  36.3s util=0.14
+      DVD_STEPPER_3 DVD_SLED notes=  172 active=  55.8s util=0.22
+      DVD_STEPPER_4 DVD_SLED notes=  138 active=  44.8s util=0.18
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  584 active= 180.0s util=0.71
+      fdd-2        FDD      notes=  571 active= 185.2s util=0.73
+      fdd-3        FDD      notes=  556 active= 180.3s util=0.71
+      fdd-4        FDD      notes=  549 active= 178.0s util=0.70
+      hdd_vcm-1    HDD_VCM  notes=  653 active=  68.6s util=0.27
+      hdd_vcm-2    HDD_VCM  notes=  254 active=  26.7s util=0.10
+      hdd_vcm-3    HDD_VCM  notes=  832 active=  87.4s util=0.34
+      hdd_vcm-4    HDD_VCM  notes=   30 active=   3.1s util=0.01
+      vhs-1        VHS      notes=  156 active= 180.6s util=0.71
+
+  => wiecej zagranych nut: +3229 (+221.6%)
+  => drop rate 69.1% -> 0.5%
+
+========================================================================
+0032-01-radiohead_1997-airbag-[k].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 7316
+  wykryty lead track 15 (Vocals (Thom)), bas track 9 (Track 9)
+  role: {'harmony': 3081, 'bass': 384, 'percussion': 3669, 'lead': 182}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      3647         3647
+    accompaniment demand [s]           1509.2       1509.2
+    demand / accompaniment capacity        0.673        0.673
+    played                               6446         6446
+    dropped                               870          870
+    drop rate                           0.119        0.119
+    shortened                               0            0
+    voice steals                            0            0
+    delayed + arpeggiated                  24           24
+    silent gap count                      535          535
+    orchestra silent [s]               19.382       19.382
+    max silent gap [ms]                2500.0       2500.0
+    planned coverage                     0.93         0.93
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 1816, mean +25.7 ms, max +160.2 ms, added 46.7 s
+
+    metric                           before        after
+    played                             6446         6446
+    dropped                             870          870
+    source tonal coverage            0.9056         0.93
+    long gaps >150 ms                     2            2
+    silent gap count                    815          535
+    median gap [ms]                    14.9         14.9
+    total silence [s]                26.063       19.382
+    accompaniment continuity         0.6507       0.7017
+    FDD coverage                     0.6622       0.7158
+    FDD utilization                   1.409        1.579
+    mean performed [ms]               117.0        131.1
+
+  STATIC (dawny routing)
+    requested     7315
+    played        3914
+    dropped       3401   (drop rate  46.5%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          33
+
+  AUTO (pula glosow)
+    requested     7316
+    played        6446
+    dropped        870   (drop rate  11.9%)
+    reassigned    3470   <- uratowane innym wolnym urzadzeniem
+    delayed         24   (mean 1.7 ms, max 1.7 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         123
+    LEAD: requested 182, played 182, dropped 0, delayed 0, preservation 100.0%
+    VHS: notes 182, utilization 0.51, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=   71 active=  11.6s util=0.04
+      DVD_STEPPER_2 DVD_SLED notes=    9 active=   1.5s util=0.01
+      DVD_STEPPER_3 DVD_SLED notes=   26 active=   4.3s util=0.02
+      DVD_STEPPER_4 DVD_SLED notes=   42 active=   6.9s util=0.03
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes= 1178 active= 122.3s util=0.45
+      fdd-2        FDD      notes=  849 active= 119.7s util=0.44
+      fdd-3        FDD      notes=  712 active=  95.5s util=0.35
+      fdd-4        FDD      notes=  568 active=  96.0s util=0.35
+      hdd_vcm-1    HDD_VCM  notes=  765 active=  80.3s util=0.29
+      hdd_vcm-2    HDD_VCM  notes=  762 active=  80.0s util=0.29
+      hdd_vcm-3    HDD_VCM  notes=  645 active=  67.7s util=0.25
+      hdd_vcm-4    HDD_VCM  notes=  637 active=  66.9s util=0.24
+      vhs-1        VHS      notes=  182 active= 140.5s util=0.51
+
+  => wiecej zagranych nut: +2532 (+64.7%)
+  => drop rate 46.5% -> 11.9%
+
+========================================================================
+0036-05-radiohead_1997-let_down-[k].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 7290
+  wykryty lead track 6 (Thom Yorke (Vocals M & R)), bas track 5 (Colin Greenwood (Bass))
+  role: {'harmony': 4502, 'bass': 553, 'lead': 202, 'percussion': 2033}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      5257         5257
+    accompaniment demand [s]           3070.3       3070.3
+    demand / accompaniment capacity         1.29         1.29
+    played                               6645         6645
+    dropped                               645          645
+    drop rate                           0.088        0.088
+    shortened                             515          515
+    voice steals                          325          325
+    delayed + arpeggiated                 121          121
+    silent gap count                       48           48
+    orchestra silent [s]                1.295        1.295
+    max silent gap [ms]                 565.9        565.9
+    planned coverage                   0.9975       0.9975
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 35, mean +6.9 ms, max +6.9 ms, added 0.24 s
+
+    metric                           before        after
+    played                             6645         6645
+    dropped                             645          645
+    source tonal coverage            0.9975       0.9975
+    long gaps >150 ms                     1            1
+    silent gap count                     48           48
+    median gap [ms]                    12.2         12.2
+    total silence [s]                 1.295        1.295
+    accompaniment continuity         0.9824       0.9824
+    FDD coverage                     0.9898       0.9898
+    FDD utilization                   3.471        3.472
+    mean performed [ms]               381.9        382.0
+
+  STATIC (dawny routing)
+    requested     7290
+    played        3234
+    dropped       4056   (drop rate  55.6%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          70
+
+  AUTO (pula glosow)
+    requested     7290
+    played        6645
+    dropped        645   (drop rate   8.8%)
+    reassigned    4018   <- uratowane innym wolnym urzadzeniem
+    delayed         33   (mean 82.9 ms, max 85.5 ms)
+    arpeggiated     88
+    voice steals   325   (shortened 515)
+    folded          44
+    LEAD: requested 202, played 202, dropped 0, delayed 2, preservation 100.0%
+    VHS: notes 202, utilization 0.53, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  454 active= 177.1s util=0.60
+      DVD_STEPPER_2 DVD_SLED notes=  450 active= 182.7s util=0.62
+      DVD_STEPPER_3 DVD_SLED notes=  400 active= 157.5s util=0.54
+      DVD_STEPPER_4 DVD_SLED notes=  445 active= 179.7s util=0.61
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  745 active= 267.6s util=0.91
+      fdd-2        FDD      notes=  659 active= 259.9s util=0.88
+      fdd-3        FDD      notes=  652 active= 256.5s util=0.87
+      fdd-4        FDD      notes=  617 active= 237.0s util=0.81
+      hdd_vcm-1    HDD_VCM  notes=  655 active=  68.8s util=0.23
+      hdd_vcm-2    HDD_VCM  notes=  504 active=  52.9s util=0.18
+      hdd_vcm-3    HDD_VCM  notes=  607 active=  63.7s util=0.22
+      hdd_vcm-4    HDD_VCM  notes=  255 active=  26.8s util=0.09
+      vhs-1        VHS      notes=  202 active= 155.8s util=0.53
+
+  => wiecej zagranych nut: +3411 (+105.5%)
+  => drop rate 55.6% -> 8.8%
+
+========================================================================
+0041-10-radiohead_1997-no_surprises-[k] (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 5432
+  wykryty lead track 8 (Melody), bas track 4 (Bass)
+  role: {'harmony': 3829, 'bass': 688, 'lead': 175, 'percussion': 740}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      4692         4692
+    accompaniment demand [s]           2189.2       2189.2
+    demand / accompaniment capacity        1.208        1.208
+    played                               5114         5114
+    dropped                               318          318
+    drop rate                           0.059        0.059
+    shortened                             113          113
+    voice steals                          109          109
+    delayed + arpeggiated                 111          111
+    silent gap count                      268          268
+    orchestra silent [s]                11.27        11.27
+    max silent gap [ms]                3211.1       3211.1
+    planned coverage                   0.9514       0.9514
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 813, mean +10.6 ms, max +114.2 ms, added 8.62 s
+
+    metric                           before        after
+    played                             5114         5114
+    dropped                             318          318
+    source tonal coverage            0.9479       0.9514
+    long gaps >150 ms                     8            8
+    silent gap count                    273          268
+    median gap [ms]                    16.7         16.7
+    total silence [s]                12.065        11.27
+    accompaniment continuity         0.9158       0.9217
+    FDD coverage                     0.9171       0.9248
+    FDD utilization                   2.909        2.947
+    mean performed [ms]               260.5        263.9
+
+  STATIC (dawny routing)
+    requested     5428
+    played        2956
+    dropped       2472   (drop rate  45.5%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         488
+
+  AUTO (pula glosow)
+    requested     5432
+    played        5114
+    dropped        318   (drop rate   5.9%)
+    reassigned    3017   <- uratowane innym wolnym urzadzeniem
+    delayed         54   (mean 39.0 ms, max 83.6 ms)
+    arpeggiated     57
+    voice steals   109   (shortened 113)
+    folded         600
+    LEAD: requested 175, played 162, dropped 13, delayed 1, preservation 92.6%
+    VHS: notes 162, utilization 0.63, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  438 active= 120.0s util=0.53
+      DVD_STEPPER_2 DVD_SLED notes=  442 active= 119.7s util=0.53
+      DVD_STEPPER_3 DVD_SLED notes=  423 active= 116.8s util=0.52
+      DVD_STEPPER_4 DVD_SLED notes=  399 active= 113.8s util=0.51
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  614 active= 167.2s util=0.74
+      fdd-2        FDD      notes=  622 active= 170.3s util=0.76
+      fdd-3        FDD      notes=  645 active= 169.4s util=0.75
+      fdd-4        FDD      notes=  629 active= 155.5s util=0.69
+      hdd_vcm-1    HDD_VCM  notes=  229 active=  24.0s util=0.11
+      hdd_vcm-2    HDD_VCM  notes=  239 active=  25.1s util=0.11
+      hdd_vcm-3    HDD_VCM  notes=  255 active=  26.8s util=0.12
+      hdd_vcm-4    HDD_VCM  notes=   17 active=   1.8s util=0.01
+      vhs-1        VHS      notes=  162 active= 140.7s util=0.63
+
+  => wiecej zagranych nut: +2158 (+73.0%)
+  => drop rate 45.5% -> 5.9%
+
+========================================================================
+0054-02-radiohead_2001-pyramid_song.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 2503
+  wykryty lead track 2 (Thom Yorke(Vocals)), bas track 1 (Thom Yorke(piano))
+  role: {'bass': 1455, 'lead': 208, 'harmony': 258, 'percussion': 582}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      1921         1921
+    accompaniment demand [s]           1855.9       1855.9
+    demand / accompaniment capacity        0.819        0.819
+    played                               2503         2503
+    dropped                                 0            0
+    drop rate                             0.0          0.0
+    shortened                               6            6
+    voice steals                            6            6
+    delayed + arpeggiated                   0            0
+    silent gap count                      173          173
+    orchestra silent [s]               14.609       14.609
+    max silent gap [ms]                4571.4       4571.4
+    planned coverage                   0.9506       0.9506
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 0, mean +0.0 ms, max +0.0 ms, added 0.0 s
+
+    metric                           before        after
+    played                             2503         2503
+    dropped                               0            0
+    source tonal coverage            0.9506       0.9506
+    long gaps >150 ms                    13           13
+    silent gap count                    173          173
+    median gap [ms]                    23.8         23.8
+    total silence [s]                14.609       14.609
+    accompaniment continuity         0.9008       0.9008
+    FDD coverage                     0.9016       0.9016
+    FDD utilization                   3.586        3.586
+    mean performed [ms]               832.9        832.9
+
+  STATIC (dawny routing)
+    requested     2503
+    played        1074
+    dropped       1429   (drop rate  57.1%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          77
+
+  AUTO (pula glosow)
+    requested     2503
+    played        2503
+    dropped          0   (drop rate   0.0%)
+    reassigned     747   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     6   (shortened 6)
+    folded           0
+    LEAD: requested 208, played 208, dropped 0, delayed 0, preservation 100.0%
+    VHS: notes 208, utilization 0.57, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  208 active= 167.9s util=0.60
+      DVD_STEPPER_2 DVD_SLED notes=  110 active=  89.9s util=0.32
+      DVD_STEPPER_3 DVD_SLED notes=  109 active=  80.8s util=0.29
+      DVD_STEPPER_4 DVD_SLED notes=   82 active=  67.0s util=0.24
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  301 active= 250.8s util=0.90
+      fdd-2        FDD      notes=  301 active= 250.8s util=0.90
+      fdd-3        FDD      notes=  301 active= 250.8s util=0.90
+      fdd-4        FDD      notes=  301 active= 250.4s util=0.90
+      hdd_vcm-1    HDD_VCM  notes=  127 active=  13.3s util=0.05
+      hdd_vcm-2    HDD_VCM  notes=  177 active=  18.6s util=0.07
+      hdd_vcm-3    HDD_VCM  notes=  266 active=  27.9s util=0.10
+      hdd_vcm-4    HDD_VCM  notes=   12 active=   1.3s util=0.00
+      vhs-1        VHS      notes=  208 active= 158.8s util=0.57
+
+  => wiecej zagranych nut: +1429 (+133.1%)
+  => drop rate 57.1% -> 0.0%
+
+========================================================================
+0063-01-radiohead_2003-2+2=5-[k].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 6414
+  wykryty lead track 7 (Thom Melody), bas track 5 (Bass)
+  role: {'harmony': 4197, 'bass': 355, 'lead': 293, 'percussion': 1569}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      4845         4845
+    accompaniment demand [s]           1382.8       1382.8
+    demand / accompaniment capacity        0.926        0.926
+    played                               6034         6034
+    dropped                               380          380
+    drop rate                           0.059        0.059
+    shortened                              75           75
+    voice steals                           75           75
+    delayed + arpeggiated                 917          917
+    silent gap count                      315          315
+    orchestra silent [s]                6.743        6.743
+    max silent gap [ms]                1610.7       1610.7
+    planned coverage                   0.9661       0.9661
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 587, mean +55.6 ms, max +180.0 ms, added 32.61 s
+
+    metric                           before        after
+    played                             6034         6034
+    dropped                             380          380
+    source tonal coverage            0.9618       0.9661
+    long gaps >150 ms                    11           10
+    silent gap count                    319          315
+    median gap [ms]                    10.0         10.0
+    total silence [s]                 7.539        6.743
+    accompaniment continuity          0.924       0.9438
+    FDD coverage                     0.9086       0.9302
+    FDD utilization                   2.239        2.412
+    mean performed [ms]               156.8        169.0
+
+  STATIC (dawny routing)
+    requested     6414
+    played        3098
+    dropped       3316   (drop rate  51.7%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          67
+
+  AUTO (pula glosow)
+    requested     6414
+    played        6034
+    dropped        380   (drop rate   5.9%)
+    reassigned    4070   <- uratowane innym wolnym urzadzeniem
+    delayed        684   (mean 24.4 ms, max 89.9 ms)
+    arpeggiated    233
+    voice steals    75   (shortened 75)
+    folded         101
+    LEAD: requested 293, played 293, dropped 0, delayed 57, preservation 100.0%
+    VHS: notes 293, utilization 0.63, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  375 active=  60.9s util=0.32
+      DVD_STEPPER_2 DVD_SLED notes=  368 active=  61.4s util=0.33
+      DVD_STEPPER_3 DVD_SLED notes=  372 active=  62.4s util=0.33
+      DVD_STEPPER_4 DVD_SLED notes=  369 active=  62.1s util=0.33
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  725 active= 122.6s util=0.65
+      fdd-2        FDD      notes=  677 active= 113.7s util=0.60
+      fdd-3        FDD      notes=  731 active= 125.1s util=0.66
+      fdd-4        FDD      notes=  555 active=  92.8s util=0.49
+      hdd_vcm-1    HDD_VCM  notes=  477 active=  50.1s util=0.27
+      hdd_vcm-2    HDD_VCM  notes=  454 active=  47.7s util=0.25
+      hdd_vcm-3    HDD_VCM  notes=  391 active=  41.1s util=0.22
+      hdd_vcm-4    HDD_VCM  notes=  247 active=  25.9s util=0.14
+      vhs-1        VHS      notes=  293 active= 118.0s util=0.63
+
+  => wiecej zagranych nut: +2936 (+94.8%)
+  => drop rate 51.7% -> 5.9%
+
+========================================================================
+0071-09-radiohead_2003-there_there-[k] (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 8505
+  wykryty lead track 5 (Thom Yorke (voz)), bas track 3 (Colin)
+  role: {'percussion': 4471, 'harmony': 3192, 'bass': 689, 'lead': 153}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      4034         4034
+    accompaniment demand [s]           2423.6       1803.5
+    demand / accompaniment capacity        0.982        0.731
+    played                               8324         8324
+    dropped                               181          181
+    drop rate                           0.021        0.021
+    shortened                               8            8
+    voice steals                            8            8
+    delayed + arpeggiated                 114          114
+    silent gap count                      483          483
+    orchestra silent [s]               22.692       22.692
+    max silent gap [ms]                1889.8       1889.8
+    planned coverage                   0.9291       0.9291
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 133, mean +113.7 ms, max +180.0 ms, added 15.12 s
+
+    metric                           before        after
+    played                             8324         8324
+    dropped                             181          181
+    source tonal coverage            0.9287       0.9291
+    long gaps >150 ms                     1            1
+    silent gap count                    483          483
+    median gap [ms]                    13.8         13.8
+    total silence [s]                22.814       22.692
+    accompaniment continuity         0.8959       0.8964
+    FDD coverage                     0.8381       0.8385
+    FDD utilization                   2.631        2.679
+    mean performed [ms]               308.5        314.1
+
+  STATIC (dawny routing)
+    requested     8505
+    played        4685
+    dropped       3820   (drop rate  44.9%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           0
+
+  AUTO (pula glosow)
+    requested     8505
+    played        8324
+    dropped        181   (drop rate   2.1%)
+    reassigned    5475   <- uratowane innym wolnym urzadzeniem
+    delayed        114   (mean 6.8 ms, max 11.9 ms)
+    arpeggiated      0
+    voice steals     8   (shortened 8)
+    folded           0
+    LEAD: requested 153, played 153, dropped 0, delayed 10, preservation 100.0%
+    VHS: notes 153, utilization 0.50, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  281 active= 106.9s util=0.34
+      DVD_STEPPER_2 DVD_SLED notes=  256 active=  98.2s util=0.31
+      DVD_STEPPER_3 DVD_SLED notes=  253 active=  98.1s util=0.31
+      DVD_STEPPER_4 DVD_SLED notes=  229 active=  90.7s util=0.29
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  723 active= 216.7s util=0.68
+      fdd-2        FDD      notes=  691 active= 213.9s util=0.67
+      fdd-3        FDD      notes=  669 active= 209.0s util=0.66
+      fdd-4        FDD      notes=  622 active= 210.0s util=0.66
+      hdd_vcm-1    HDD_VCM  notes= 1328 active= 139.4s util=0.44
+      hdd_vcm-2    HDD_VCM  notes= 1235 active= 129.7s util=0.41
+      hdd_vcm-3    HDD_VCM  notes= 1287 active= 135.1s util=0.43
+      hdd_vcm-4    HDD_VCM  notes=  597 active=  62.7s util=0.20
+      vhs-1        VHS      notes=  153 active= 160.1s util=0.50
+
+  => wiecej zagranych nut: +3639 (+77.7%)
+  => drop rate 44.9% -> 2.1%
+
+========================================================================
+0080-02-radiohead_2007-bodysnatchers-[k] (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 9364
+  wykryty lead track 8 (Thom - Vocal), bas track 12 (Colin - Bass)
+  role: {'harmony': 6317, 'lead': 316, 'percussion': 1874, 'bass': 857}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      7490         7490
+    accompaniment demand [s]           1309.4       1309.4
+    demand / accompaniment capacity        0.692        0.692
+    played                               9269         9269
+    dropped                                95           95
+    drop rate                            0.01         0.01
+    shortened                               6            6
+    voice steals                            6            6
+    delayed + arpeggiated                 983          983
+    silent gap count                      639          639
+    orchestra silent [s]               16.878       16.878
+    max silent gap [ms]                2310.0       2310.0
+    planned coverage                   0.9296       0.9296
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 2656, mean +118.6 ms, max +180.0 ms, added 315.1 s
+
+    metric                           before        after
+    played                             9269         9269
+    dropped                              95           95
+    source tonal coverage            0.8922       0.9296
+    long gaps >150 ms                    25           21
+    silent gap count                    806          639
+    median gap [ms]                     6.0          6.0
+    total silence [s]                25.582       16.878
+    accompaniment continuity         0.6942       0.8242
+    FDD coverage                     0.6119         0.82
+    FDD utilization                   1.627        2.953
+    mean performed [ms]                92.0        167.2
+
+  STATIC (dawny routing)
+    requested     9364
+    played        3768
+    dropped       5596   (drop rate  59.8%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         117
+
+  AUTO (pula glosow)
+    requested     9364
+    played        9269
+    dropped         95   (drop rate   1.0%)
+    reassigned    5768   <- uratowane innym wolnym urzadzeniem
+    delayed        972   (mean 8.8 ms, max 88.4 ms)
+    arpeggiated     11
+    voice steals     6   (shortened 6)
+    folded         134
+    LEAD: requested 316, played 316, dropped 0, delayed 112, preservation 100.0%
+    VHS: notes 316, utilization 0.47, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  787 active=  80.9s util=0.34
+      DVD_STEPPER_2 DVD_SLED notes=  733 active=  73.5s util=0.31
+      DVD_STEPPER_3 DVD_SLED notes=  713 active=  77.0s util=0.32
+      DVD_STEPPER_4 DVD_SLED notes=  655 active=  68.7s util=0.29
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes= 1070 active= 172.4s util=0.73
+      fdd-2        FDD      notes= 1056 active= 173.2s util=0.73
+      fdd-3        FDD      notes= 1067 active= 181.7s util=0.77
+      fdd-4        FDD      notes=  999 active= 173.6s util=0.73
+      hdd_vcm-1    HDD_VCM  notes=  615 active=  64.6s util=0.27
+      hdd_vcm-2    HDD_VCM  notes=  566 active=  59.4s util=0.25
+      hdd_vcm-3    HDD_VCM  notes=  463 active=  48.6s util=0.20
+      hdd_vcm-4    HDD_VCM  notes=  229 active=  24.0s util=0.10
+      vhs-1        VHS      notes=  316 active= 111.2s util=0.47
+
+  => wiecej zagranych nut: +5501 (+146.0%)
+  => drop rate 59.8% -> 1.0%
+
+========================================================================
+0081-03-radiohead_2007-nude.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 2819
+  wykryty lead track 4 (Synth / FX), bas track 1 (Bass)
+  role: {'bass': 475, 'harmony': 1532, 'lead': 28, 'percussion': 784}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      2035         2035
+    accompaniment demand [s]           1443.3       1528.8
+    demand / accompaniment capacity        0.812         0.86
+    played                               2757         2757
+    dropped                                62           62
+    drop rate                           0.022        0.022
+    shortened                              51           51
+    voice steals                           50           50
+    delayed + arpeggiated                  13           13
+    silent gap count                      244          244
+    orchestra silent [s]               37.049       37.049
+    max silent gap [ms]                5338.7       5338.7
+    planned coverage                   0.8385       0.8385
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 433, mean +32.8 ms, max +169.8 ms, added 14.22 s
+
+    metric                           before        after
+    played                             2757         2757
+    dropped                              62           62
+    source tonal coverage            0.8342       0.8385
+    long gaps >150 ms                    90           90
+    silent gap count                    333          244
+    median gap [ms]                     8.1         16.2
+    total silence [s]                38.034       37.049
+    accompaniment continuity         0.7596       0.7708
+    FDD coverage                      0.696       0.7134
+    FDD utilization                   1.841        1.904
+    mean performed [ms]               330.4        341.7
+
+  STATIC (dawny routing)
+    requested     2819
+    played        1419
+    dropped       1400   (drop rate  49.7%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           6
+
+  AUTO (pula glosow)
+    requested     2819
+    played        2757
+    dropped         62   (drop rate   2.2%)
+    reassigned    1238   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 107.9 ms, max 72.6 ms)
+    arpeggiated     13
+    voice steals    50   (shortened 51)
+    folded          12
+    LEAD: requested 28, played 28, dropped 0, delayed 0, preservation 100.0%
+    VHS: notes 28, utilization 0.33, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  175 active=  60.7s util=0.27
+      DVD_STEPPER_2 DVD_SLED notes=  158 active=  59.9s util=0.26
+      DVD_STEPPER_3 DVD_SLED notes=  179 active=  62.1s util=0.27
+      DVD_STEPPER_4 DVD_SLED notes=  168 active=  60.0s util=0.26
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  331 active= 115.8s util=0.51
+      fdd-2        FDD      notes=  306 active= 106.0s util=0.47
+      fdd-3        FDD      notes=  328 active= 114.7s util=0.51
+      fdd-4        FDD      notes=  300 active=  95.7s util=0.42
+      hdd_vcm-1    HDD_VCM  notes=  255 active=  26.8s util=0.12
+      hdd_vcm-2    HDD_VCM  notes=   92 active=   9.7s util=0.04
+      hdd_vcm-3    HDD_VCM  notes=  435 active=  45.7s util=0.20
+      hdd_vcm-4    HDD_VCM  notes=    2 active=   0.2s util=0.00
+      vhs-1        VHS      notes=   28 active=  73.8s util=0.33
+
+  => wiecej zagranych nut: +1338 (+94.3%)
+  => drop rate 49.7% -> 2.2%
+
+========================================================================
+0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 7461
+  wykryty lead track 3 (Yorke), bas track 2 (C. Greenwood)
+  role: {'harmony': 4391, 'bass': 678, 'lead': 310, 'percussion': 2082}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      5379         5379
+    accompaniment demand [s]           2172.6       2172.6
+    demand / accompaniment capacity        1.159        1.159
+    played                               7270         7270
+    dropped                               191          191
+    drop rate                           0.026        0.026
+    shortened                             349          349
+    voice steals                          281          281
+    delayed + arpeggiated                 391          391
+    silent gap count                      120          120
+    orchestra silent [s]                1.757        1.757
+    max silent gap [ms]                1411.8       1411.8
+    planned coverage                    0.994        0.994
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 119, mean +109.5 ms, max +163.5 ms, added 13.03 s
+
+    metric                           before        after
+    played                             7270         7270
+    dropped                             191          191
+    source tonal coverage             0.994        0.994
+    long gaps >150 ms                     1            1
+    silent gap count                    120          120
+    median gap [ms]                     1.5          1.5
+    total silence [s]                 1.757        1.757
+    accompaniment continuity         0.9839        0.984
+    FDD coverage                     0.9844       0.9845
+    FDD utilization                   3.404         3.46
+    mean performed [ms]               248.2        252.3
+
+  STATIC (dawny routing)
+    requested     7461
+    played        4306
+    dropped       3155   (drop rate  42.3%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         322
+
+  AUTO (pula glosow)
+    requested     7461
+    played        7270
+    dropped        191   (drop rate   2.6%)
+    reassigned    4722   <- uratowane innym wolnym urzadzeniem
+    delayed        386   (mean 9.7 ms, max 82.4 ms)
+    arpeggiated      5
+    voice steals   281   (shortened 349)
+    folded         196
+    LEAD: requested 310, played 310, dropped 0, delayed 144, preservation 100.0%
+    VHS: notes 310, utilization 0.61, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  456 active= 130.1s util=0.56
+      DVD_STEPPER_2 DVD_SLED notes=  420 active= 121.4s util=0.52
+      DVD_STEPPER_3 DVD_SLED notes=  403 active= 119.0s util=0.51
+      DVD_STEPPER_4 DVD_SLED notes=  403 active= 120.6s util=0.52
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  828 active= 209.2s util=0.90
+      fdd-2        FDD      notes=  797 active= 200.3s util=0.86
+      fdd-3        FDD      notes=  783 active= 198.3s util=0.85
+      fdd-4        FDD      notes=  794 active= 199.9s util=0.86
+      hdd_vcm-1    HDD_VCM  notes=  656 active=  68.9s util=0.29
+      hdd_vcm-2    HDD_VCM  notes=  589 active=  61.8s util=0.26
+      hdd_vcm-3    HDD_VCM  notes=  657 active=  69.0s util=0.30
+      hdd_vcm-4    HDD_VCM  notes=  174 active=  18.3s util=0.08
+      vhs-1        VHS      notes=  310 active= 143.3s util=0.61
+
+  => wiecej zagranych nut: +2964 (+68.8%)
+  => drop rate 42.3% -> 2.6%
+
+========================================================================
+Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 927
+  wykryty lead track 2 (Pad), bas track 1 (www.kamitabs.com)
+  role: {'bass': 735, 'harmony': 128, 'lead': 64}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                       927          927
+    accompaniment demand [s]            241.5        433.5
+    demand / accompaniment capacity         0.18        0.323
+    played                                927          927
+    dropped                                 0            0
+    drop rate                             0.0          0.0
+    shortened                              13           13
+    voice steals                           13           13
+    delayed + arpeggiated                  22           22
+    silent gap count                        0            0
+    orchestra silent [s]                    0            0
+    max silent gap [ms]                   0.0          0.0
+    planned coverage                    1.002        1.002
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 21, mean +23.3 ms, max +23.3 ms, added 0.49 s
+
+    metric                           before        after
+    played                              927          927
+    dropped                               0            0
+    source tonal coverage             1.002        1.002
+    long gaps >150 ms                     0            0
+    silent gap count                      0            0
+    median gap [ms]                     0.0          0.0
+    total silence [s]                     0            0
+    accompaniment continuity         0.9999       0.9999
+    FDD coverage                     1.0019       1.0019
+    FDD utilization                   1.691        1.694
+    mean performed [ms]               329.2        329.8
+
+  STATIC (dawny routing)
+    requested      927
+    played         568
+    dropped        359   (drop rate  38.7%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           0
+
+  AUTO (pula glosow)
+    requested      927
+    played         927
+    dropped          0   (drop rate   0.0%)
+    reassigned     352   <- uratowane innym wolnym urzadzeniem
+    delayed         22   (mean 19.1 ms, max 12.0 ms)
+    arpeggiated      0
+    voice steals    13   (shortened 13)
+    folded           0
+    LEAD: requested 64, played 64, dropped 0, delayed 22, preservation 100.0%
+    VHS: notes 64, utilization 0.57, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_2 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_3 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_4 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  268 active=  89.3s util=0.53
+      fdd-2        FDD      notes=  260 active=  84.1s util=0.50
+      fdd-3        FDD      notes=  185 active=  61.2s util=0.36
+      fdd-4        FDD      notes=  150 active=  50.0s util=0.30
+      hdd_vcm-1    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-2    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-3    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-4    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      vhs-1        VHS      notes=   64 active=  95.8s util=0.57
+
+  => wiecej zagranych nut: +359 (+63.2%)
+  => drop rate 38.7% -> 0.0%
+
+========================================================================
+PSX_Bios_zb.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 85
+  wykryty lead track 3 ((bez nazwy)), bas track None (-)
+  role: {'harmony': 8, 'lead': 77}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                        85           85
+    accompaniment demand [s]             22.7         23.2
+    demand / accompaniment capacity        0.203        0.208
+    played                                 85           85
+    dropped                                 0            0
+    drop rate                             0.0          0.0
+    shortened                              52           52
+    voice steals                            5            5
+    delayed + arpeggiated                   3            3
+    silent gap count                        8            8
+    orchestra silent [s]                3.688        3.688
+    max silent gap [ms]                2551.6       2551.6
+    planned coverage                   0.7037       0.7037
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 3, mean +15.6 ms, max +15.6 ms, added 0.05 s
+
+    metric                           before        after
+    played                               85           85
+    dropped                               0            0
+    source tonal coverage            0.7037       0.7037
+    long gaps >150 ms                     2            2
+    silent gap count                      8            8
+    median gap [ms]                    87.9         87.9
+    total silence [s]                 3.688        3.688
+    accompaniment continuity         0.3625       0.3647
+    FDD coverage                     0.4265       0.4291
+    FDD utilization                   0.768        0.772
+    mean performed [ms]              1155.5       1161.4
+
+  STATIC (dawny routing)
+    requested       85
+    played          50
+    dropped         35   (drop rate  41.2%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          46
+
+  AUTO (pula glosow)
+    requested       85
+    played          85
+    dropped          0   (drop rate   0.0%)
+    reassigned       2   <- uratowane innym wolnym urzadzeniem
+    delayed          3   (mean 2.2 ms, max 1.4 ms)
+    arpeggiated      0
+    voice steals     5   (shortened 52)
+    folded          16
+    LEAD: requested 77, played 77, dropped 0, delayed 3, preservation 100.0%
+    VHS: notes 77, utilization 0.55, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_2 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_3 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_4 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=    2 active=   3.8s util=0.32
+      fdd-2        FDD      notes=    2 active=   3.8s util=0.32
+      fdd-3        FDD      notes=    3 active=   0.6s util=0.05
+      fdd-4        FDD      notes=    1 active=   1.0s util=0.09
+      hdd_vcm-1    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-2    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-3    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-4    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      vhs-1        VHS      notes=   77 active=   6.6s util=0.55
+
+  => wiecej zagranych nut: +35 (+70.0%)
+  => drop rate 41.2% -> 0.0%
+
+========================================================================
+Pink - Try [MIDIfind.com].mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 7107
+  wykryty lead track 1 (Vocal), bas track 10 (Electric Bass)
+  role: {'lead': 375, 'harmony': 4743, 'bass': 822, 'percussion': 1167}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      5940         5940
+    accompaniment demand [s]           1928.7       1928.7
+    demand / accompaniment capacity        1.042        1.042
+    played                               6781         6781
+    dropped                               326          326
+    drop rate                           0.046        0.046
+    shortened                             112          112
+    voice steals                          111          111
+    delayed + arpeggiated                 869          869
+    silent gap count                        1            1
+    orchestra silent [s]                0.012        0.012
+    max silent gap [ms]                  12.0         12.0
+    planned coverage                   1.0011       1.0011
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 310, mean +55.4 ms, max +121.8 ms, added 17.17 s
+
+    metric                           before        after
+    played                             6781         6781
+    dropped                             326          326
+    source tonal coverage            1.0011       1.0011
+    long gaps >150 ms                     0            0
+    silent gap count                      1            1
+    median gap [ms]                    12.0         12.0
+    total silence [s]                 0.012        0.012
+    accompaniment continuity         0.9905       0.9905
+    FDD coverage                     0.9987       0.9987
+    FDD utilization                   3.663        3.738
+    mean performed [ms]               243.0        248.0
+
+  STATIC (dawny routing)
+    requested     7102
+    played        4119
+    dropped       2983   (drop rate  42.0%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         269
+
+  AUTO (pula glosow)
+    requested     7107
+    played        6781
+    dropped        326   (drop rate   4.6%)
+    reassigned    3951   <- uratowane innym wolnym urzadzeniem
+    delayed        227   (mean 57.0 ms, max 87.3 ms)
+    arpeggiated    642
+    voice steals   111   (shortened 112)
+    folded         692
+    LEAD: requested 375, played 354, dropped 21, delayed 57, preservation 94.4%
+    VHS: notes 354, utilization 0.54, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  462 active= 116.0s util=0.51
+      DVD_STEPPER_2 DVD_SLED notes=  466 active= 112.7s util=0.49
+      DVD_STEPPER_3 DVD_SLED notes=  444 active= 103.1s util=0.45
+      DVD_STEPPER_4 DVD_SLED notes=  435 active= 107.6s util=0.47
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  872 active= 216.0s util=0.94
+      fdd-2        FDD      notes=  862 active= 213.7s util=0.93
+      fdd-3        FDD      notes=  856 active= 213.7s util=0.93
+      fdd-4        FDD      notes=  863 active= 213.0s util=0.93
+      hdd_vcm-1    HDD_VCM  notes=  239 active=  25.1s util=0.11
+      hdd_vcm-2    HDD_VCM  notes=  207 active=  21.7s util=0.09
+      hdd_vcm-3    HDD_VCM  notes=  721 active=  75.7s util=0.33
+      hdd_vcm-4    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      vhs-1        VHS      notes=  354 active= 123.1s util=0.54
+
+  => wiecej zagranych nut: +2662 (+64.6%)
+  => drop rate 42.0% -> 4.6%
+
+========================================================================
+Pink_Floyd_-_Time.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 6251
+  wykryty lead track 13 (lead guitaro1r), bas track 5 (bass)
+  role: {'harmony': 2909, 'bass': 394, 'percussion': 2802, 'lead': 146}
+
+  DUPLICATE DETECTION
+    groupsFound 1, tracksCollapsed 1, events 3449 -> 3342 (-107)
+      electic piano + digitbello1rw
+        confidence 0.998  primary track 7
+        + track 11 digitbello1rw: offset +0.00 ms [EXACT_DUPLICATE] pitch 1.000 timing-mad 0.00 ms
+
+    metric                             before        after
+    tonal requested                      3449         3342
+    accompaniment demand [s]           3869.5       3792.6
+    demand / accompaniment capacity        1.296         1.27
+    played                               5903         5816
+    dropped                               348          328
+    drop rate                           0.056        0.053
+    shortened                             147          145
+    voice steals                          123          121
+    delayed + arpeggiated                 107          157
+    silent gap count                      574          565
+    orchestra silent [s]               70.238       69.429
+    max silent gap [ms]                 390.9        390.9
+    planned coverage                   0.8148        0.817
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 965, mean +61.7 ms, max +180.0 ms, added 59.58 s
+
+    metric                           before        after
+    played                             5816         5816
+    dropped                             328          328
+    source tonal coverage             0.791        0.817
+    long gaps >150 ms                   135          121
+    silent gap count                    575          565
+    median gap [ms]                   124.9         57.9
+    total silence [s]                79.262       69.429
+    accompaniment continuity         0.4963       0.5525
+    FDD coverage                     0.4775       0.5352
+    FDD utilization                   1.064        1.221
+    mean performed [ms]               181.6        208.5
+
+  STATIC (dawny routing)
+    requested     6237
+    played        3387
+    dropped       2850   (drop rate  45.7%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          57
+
+  AUTO (pula glosow)
+    requested     6251
+    played        5903
+    dropped        348   (drop rate   5.6%)
+    reassigned    2690   <- uratowane innym wolnym urzadzeniem
+    delayed         59   (mean 34.1 ms, max 85.2 ms)
+    arpeggiated     48
+    voice steals   123   (shortened 147)
+    folded         241
+    LEAD: requested 146, played 145, dropped 1, delayed 3, preservation 99.3%
+    VHS: notes 145, utilization 0.42, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  186 active=  37.0s util=0.10
+      DVD_STEPPER_2 DVD_SLED notes=  181 active=  37.0s util=0.10
+      DVD_STEPPER_3 DVD_SLED notes=  175 active=  36.8s util=0.10
+      DVD_STEPPER_4 DVD_SLED notes=  178 active=  34.7s util=0.09
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  615 active= 125.2s util=0.33
+      fdd-2        FDD      notes=  572 active= 116.1s util=0.31
+      fdd-3        FDD      notes=  570 active= 117.1s util=0.31
+      fdd-4        FDD      notes=  580 active= 118.5s util=0.31
+      hdd_vcm-1    HDD_VCM  notes= 1147 active= 120.4s util=0.32
+      hdd_vcm-2    HDD_VCM  notes=  730 active=  76.7s util=0.20
+      hdd_vcm-3    HDD_VCM  notes=  702 active=  73.7s util=0.19
+      hdd_vcm-4    HDD_VCM  notes=  122 active=  12.8s util=0.03
+      vhs-1        VHS      notes=  145 active= 159.9s util=0.42
+
+  => wiecej zagranych nut: +2516 (+74.3%)
+  => drop rate 45.7% -> 5.6%
+
+========================================================================
+Queen - Bohemian Rhapsody (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 5925
+  wykryty lead track 1 ((bez nazwy)), bas track 4 ((bez nazwy))
+  role: {'harmony': 4202, 'lead': 129, 'bass': 480, 'percussion': 1114}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      4811         4811
+    accompaniment demand [s]           2198.4       2200.9
+    demand / accompaniment capacity        0.845        0.846
+    played                               5612         5612
+    dropped                               313          313
+    drop rate                           0.053        0.053
+    shortened                              73           73
+    voice steals                           58           58
+    delayed + arpeggiated                 485          485
+    silent gap count                      519          519
+    orchestra silent [s]                 75.1         75.1
+    max silent gap [ms]                2692.3       2692.3
+    planned coverage                   0.7681       0.7681
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 1022, mean +62.9 ms, max +170.3 ms, added 64.31 s
+
+    metric                           before        after
+    played                             5612         5612
+    dropped                             313          313
+    source tonal coverage            0.7483       0.7681
+    long gaps >150 ms                   299          296
+    silent gap count                    568          519
+    median gap [ms]                   152.2        152.2
+    total silence [s]                81.488         75.1
+    accompaniment continuity          0.683       0.6941
+    FDD coverage                      0.646       0.6779
+    FDD utilization                   1.612        1.811
+    mean performed [ms]               168.2        189.0
+
+  STATIC (dawny routing)
+    requested     5925
+    played        2588
+    dropped       3337   (drop rate  56.3%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         164
+
+  AUTO (pula glosow)
+    requested     5925
+    played        5612
+    dropped        313   (drop rate   5.3%)
+    reassigned    2915   <- uratowane innym wolnym urzadzeniem
+    delayed        153   (mean 52.5 ms, max 88.1 ms)
+    arpeggiated    332
+    voice steals    58   (shortened 73)
+    folded         517
+    LEAD: requested 129, played 129, dropped 0, delayed 2, preservation 100.0%
+    VHS: notes 129, utilization 0.20, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=  334 active=  54.3s util=0.17
+      DVD_STEPPER_2 DVD_SLED notes=  326 active=  53.0s util=0.16
+      DVD_STEPPER_3 DVD_SLED notes=  302 active=  49.6s util=0.15
+      DVD_STEPPER_4 DVD_SLED notes=  314 active=  51.3s util=0.16
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  786 active= 150.0s util=0.46
+      fdd-2        FDD      notes=  806 active= 149.7s util=0.46
+      fdd-3        FDD      notes=  741 active= 141.8s util=0.44
+      fdd-4        FDD      notes=  763 active= 143.7s util=0.44
+      hdd_vcm-1    HDD_VCM  notes=  394 active=  41.4s util=0.13
+      hdd_vcm-2    HDD_VCM  notes=  240 active=  25.2s util=0.08
+      hdd_vcm-3    HDD_VCM  notes=  431 active=  45.3s util=0.14
+      hdd_vcm-4    HDD_VCM  notes=   46 active=   4.8s util=0.01
+      vhs-1        VHS      notes=  129 active=  63.4s util=0.20
+
+  => wiecej zagranych nut: +3024 (+116.8%)
+  => drop rate 56.3% -> 5.3%
+
+========================================================================
+Radiohead — Sail to the Moon [MIDIfind.com] (1) (2).mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 1957
+  wykryty lead track 3 (Thom Vox), bas track 2 (Thom Piano)
+  role: {'harmony': 608, 'bass': 799, 'lead': 84, 'percussion': 466}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      1491         1491
+    accompaniment demand [s]           1116.1       1116.1
+    demand / accompaniment capacity        0.543        0.543
+    played                               1955         1955
+    dropped                                 2            2
+    drop rate                           0.001        0.001
+    shortened                               1            1
+    voice steals                            1            1
+    delayed + arpeggiated                  15           15
+    silent gap count                        9            9
+    orchestra silent [s]                1.059        1.059
+    max silent gap [ms]                 227.9        227.9
+    planned coverage                   1.0001       1.0001
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 10, mean +180.0 ms, max +180.0 ms, added 1.8 s
+
+    metric                           before        after
+    played                             1955         1955
+    dropped                               2            2
+    source tonal coverage            1.0001       1.0001
+    long gaps >150 ms                     3            3
+    silent gap count                      9            9
+    median gap [ms]                   115.2        115.2
+    total silence [s]                 1.059        1.059
+    accompaniment continuity         0.9943       0.9943
+    FDD coverage                     1.0001       1.0001
+    FDD utilization                   3.462         3.47
+    mean performed [ms]               787.5        789.1
+
+  STATIC (dawny routing)
+    requested     1947
+    played        1131
+    dropped        816   (drop rate  41.9%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          17
+
+  AUTO (pula glosow)
+    requested     1957
+    played        1955
+    dropped          2   (drop rate   0.1%)
+    reassigned    1003   <- uratowane innym wolnym urzadzeniem
+    delayed         15   (mean 12.8 ms, max 12.0 ms)
+    arpeggiated      0
+    voice steals     1   (shortened 1)
+    folded          40
+    LEAD: requested 84, played 84, dropped 0, delayed 15, preservation 100.0%
+    VHS: notes 84, utilization 0.16, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=   71 active=  46.9s util=0.18
+      DVD_STEPPER_2 DVD_SLED notes=   62 active=  32.2s util=0.13
+      DVD_STEPPER_3 DVD_SLED notes=   88 active=  48.3s util=0.19
+      DVD_STEPPER_4 DVD_SLED notes=   59 active=  42.8s util=0.17
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  286 active= 223.0s util=0.87
+      fdd-2        FDD      notes=  304 active= 234.2s util=0.91
+      fdd-3        FDD      notes=  263 active= 213.5s util=0.83
+      fdd-4        FDD      notes=  274 active= 218.6s util=0.85
+      hdd_vcm-1    HDD_VCM  notes=  156 active=  16.4s util=0.06
+      hdd_vcm-2    HDD_VCM  notes=   53 active=   5.6s util=0.02
+      hdd_vcm-3    HDD_VCM  notes=  253 active=  26.6s util=0.10
+      hdd_vcm-4    HDD_VCM  notes=    2 active=   0.2s util=0.00
+      vhs-1        VHS      notes=   84 active=  40.1s util=0.16
+
+  => wiecej zagranych nut: +824 (+72.9%)
+  => drop rate 41.9% -> 0.1%
+
+========================================================================
+Stay_Shakespears_Sister.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 3355
+  wykryty lead track 7 (WinJammer Demo), bas track 4 (WinJammer Demo)
+  role: {'harmony': 1838, 'bass': 47, 'lead': 232, 'percussion': 1238}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                      2117         2117
+    accompaniment demand [s]           1826.0       1826.0
+    demand / accompaniment capacity        0.958        0.958
+    played                               3035         3035
+    dropped                               320          320
+    drop rate                           0.095        0.095
+    shortened                              62           62
+    voice steals                           62           62
+    delayed + arpeggiated                  33           33
+    silent gap count                      399          399
+    orchestra silent [s]               33.601       33.601
+    max silent gap [ms]                6569.0       6569.0
+    planned coverage                   0.8614       0.8614
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 6, mean +40.3 ms, max +40.3 ms, added 0.24 s
+
+    metric                           before        after
+    played                             3035         3035
+    dropped                             320          320
+    source tonal coverage            0.8614       0.8614
+    long gaps >150 ms                    31           31
+    silent gap count                    399          399
+    median gap [ms]                     6.5          6.5
+    total silence [s]                33.601       33.601
+    accompaniment continuity         0.5811       0.5811
+    FDD coverage                     0.5537       0.5537
+    FDD utilization                   1.633        1.633
+    mean performed [ms]               297.4        297.6
+
+  STATIC (dawny routing)
+    requested     3355
+    played        2168
+    dropped       1187   (drop rate  35.4%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded         200
+
+  AUTO (pula glosow)
+    requested     3355
+    played        3035
+    dropped        320   (drop rate   9.5%)
+    reassigned    2101   <- uratowane innym wolnym urzadzeniem
+    delayed         24   (mean 26.6 ms, max 71.6 ms)
+    arpeggiated      9
+    voice steals    62   (shortened 62)
+    folded         237
+    LEAD: requested 232, played 232, dropped 0, delayed 22, preservation 100.0%
+    VHS: notes 232, utilization 0.57, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=   99 active=  28.1s util=0.12
+      DVD_STEPPER_2 DVD_SLED notes=  102 active=  28.9s util=0.12
+      DVD_STEPPER_3 DVD_SLED notes=   97 active=  28.1s util=0.12
+      DVD_STEPPER_4 DVD_SLED notes=   92 active=  26.4s util=0.11
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=  387 active= 116.1s util=0.48
+      fdd-2        FDD      notes=  315 active=  93.4s util=0.39
+      fdd-3        FDD      notes=  354 active= 106.0s util=0.44
+      fdd-4        FDD      notes=  264 active=  77.4s util=0.32
+      hdd_vcm-1    HDD_VCM  notes=  340 active=  35.7s util=0.15
+      hdd_vcm-2    HDD_VCM  notes=  297 active=  31.2s util=0.13
+      hdd_vcm-3    HDD_VCM  notes=  304 active=  31.9s util=0.13
+      hdd_vcm-4    HDD_VCM  notes=  152 active=  16.0s util=0.07
+      vhs-1        VHS      notes=  232 active= 137.7s util=0.57
+
+  => wiecej zagranych nut: +867 (+40.0%)
+  => drop rate 35.4% -> 9.5%
+
+========================================================================
+range-test.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 73
+  wykryty lead track 0 (Chromatic C1-C7), bas track 0 (Chromatic C1-C7)
+  role: {'lead': 73}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                        73           73
+    accompaniment demand [s]                0            0
+    demand / accompaniment capacity          0.0          0.0
+    played                                 73           73
+    dropped                                 0            0
+    drop rate                             0.0          0.0
+    shortened                               0            0
+    voice steals                            0            0
+    delayed + arpeggiated                   0            0
+    silent gap count                        0            0
+    orchestra silent [s]                    0            0
+    max silent gap [ms]                   0.0          0.0
+    planned coverage                   1.0139       1.0139
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 0, mean +0.0 ms, max +0.0 ms, added 0.0 s
+
+    metric                           before        after
+    played                               73           73
+    dropped                               0            0
+    source tonal coverage            1.0139       1.0139
+    long gaps >150 ms                     0            0
+    silent gap count                      0            0
+    median gap [ms]                     0.0          0.0
+    total silence [s]                     0            0
+    accompaniment continuity            0.0          0.0
+    FDD coverage                        0.0          0.0
+    FDD utilization                     0.0          0.0
+    mean performed [ms]                 0.0          0.0
+
+  STATIC (dawny routing)
+    requested       73
+    played          73
+    dropped          0   (drop rate   0.0%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded          29
+
+  AUTO (pula glosow)
+    requested       73
+    played          73
+    dropped          0   (drop rate   0.0%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           1
+    LEAD: requested 73, played 73, dropped 0, delayed 0, preservation 100.0%
+    VHS: notes 73, utilization 1.00, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_2 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_3 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_4 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=    0 active=   0.0s util=0.00
+      fdd-2        FDD      notes=    0 active=   0.0s util=0.00
+      fdd-3        FDD      notes=    0 active=   0.0s util=0.00
+      fdd-4        FDD      notes=    0 active=   0.0s util=0.00
+      hdd_vcm-1    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-2    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-3    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-4    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      vhs-1        VHS      notes=   73 active=   9.1s util=1.00
+
+  => wiecej zagranych nut: +0 (+0.0%)
+  => drop rate 0.0% -> 0.0%
+
+========================================================================
+test.mid
+========================================================================
+  orkiestra   15 urzadzen: FDD(fdd-1), FDD(fdd-2), FDD(fdd-3), FDD(fdd-4), DVD_SLED(DVD_STEPPER_1), DVD_SLED(DVD_STEPPER_2), DVD_SLED(DVD_STEPPER_3), DVD_SLED(DVD_STEPPER_4), VHS(vhs-1), HDD_VCM(hdd_vcm-1), HDD_VCM(hdd_vcm-2), HDD_VCM(hdd_vcm-3), HDD_VCM(hdd_vcm-4), DVD_TRAY(DVD_TRAY_1), DVD_TRAY(DVD_TRAY_2)
+  nut w pliku 54
+  wykryty lead track 1 (Melody), bas track 1 (Melody)
+  role: {'lead': 30, 'harmony': 24}
+
+  DUPLICATE DETECTION
+    brak grup - plik nie ma zdublowanych partii
+
+    metric                             before        after
+    tonal requested                        54           54
+    accompaniment demand [s]             28.8         28.8
+    demand / accompaniment capacity        0.213        0.213
+    played                                 54           54
+    dropped                                 0            0
+    drop rate                             0.0          0.0
+    shortened                               4            4
+    voice steals                            4            4
+    delayed + arpeggiated                  10           10
+    silent gap count                        2            2
+    orchestra silent [s]                0.024        0.024
+    max silent gap [ms]                  12.0         12.0
+    planned coverage                   1.0554       1.0554
+
+  FDD MECHANICAL SUSTAIN
+    params: preferred 190.0 ms, release 3.0 ms, max extension 200.0 ms
+    notes extended 0, mean +0.0 ms, max +0.0 ms, added 0.0 s
+
+    metric                           before        after
+    played                               54           54
+    dropped                               0            0
+    source tonal coverage            1.0554       1.0554
+    long gaps >150 ms                     0            0
+    silent gap count                      2            2
+    median gap [ms]                    12.0         12.0
+    total silence [s]                 0.024        0.024
+    accompaniment continuity            1.0          1.0
+    FDD coverage                     0.6009       0.6009
+    FDD utilization                   1.706        1.706
+    mean performed [ms]              1200.0       1200.0
+
+  STATIC (dawny routing)
+    requested       54
+    played          38
+    dropped         16   (drop rate  29.6%)
+    reassigned       0   <- uratowane innym wolnym urzadzeniem
+    delayed          0   (mean 0.0 ms, max 0.0 ms)
+    arpeggiated      0
+    voice steals     0   (shortened 0)
+    folded           0
+
+  AUTO (pula glosow)
+    requested       54
+    played          54
+    dropped          0   (drop rate   0.0%)
+    reassigned       8   <- uratowane innym wolnym urzadzeniem
+    delayed         10   (mean 16.8 ms, max 12.0 ms)
+    arpeggiated      0
+    voice steals     4   (shortened 4)
+    folded           0
+    LEAD: requested 30, played 30, dropped 0, delayed 10, preservation 100.0%
+    VHS: notes 30, utilization 1.00, non-lead events on VHS 0
+    per device:
+      DVD_STEPPER_1 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_2 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_3 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_STEPPER_4 DVD_SLED notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_1   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      DVD_TRAY_2   DVD_TRAY notes=    0 active=   0.0s util=0.00
+      fdd-1        FDD      notes=    2 active=   2.4s util=0.14
+      fdd-2        FDD      notes=    8 active=   9.6s util=0.57
+      fdd-3        FDD      notes=    7 active=   8.4s util=0.50
+      fdd-4        FDD      notes=    7 active=   8.4s util=0.50
+      hdd_vcm-1    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-2    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-3    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      hdd_vcm-4    HDD_VCM  notes=    0 active=   0.0s util=0.00
+      vhs-1        VHS      notes=   30 active=  16.8s util=1.00
+
+  => wiecej zagranych nut: +16 (+42.1%)
+  => drop rate 29.6% -> 0.0%

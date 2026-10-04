@@ -216,6 +216,7 @@ class VirtualOrchestra:
         self.name = name
         self.dvd_mode = 'independent'
         self.tray_enabled = True
+        self.idle_reinforcement = {}
         self.tray_movements = []
         self.devices = devices or []
         self.report: dict = {}
@@ -233,6 +234,8 @@ class VirtualOrchestra:
         self.name = str(payload.get('name') or 'Virtual Orchestra')[:100]
         self.dvd_mode = dvd_mode
         self.tray_enabled = bool(payload.get("trayEnabled", True))
+        from .orchestra import parse_idle
+        self.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
         self.tray_movements = []
         self.devices = devices
         self.report = {}
@@ -241,7 +244,7 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled,
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
@@ -249,6 +252,7 @@ class VirtualOrchestra:
         self.name = plan.name
         self.dvd_mode = plan.dvd_mode
         self.tray_enabled = plan.tray_enabled
+        self.idle_reinforcement = plan.idle_reinforcement
         self.tray_movements = plan.tray_events
         self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
         self.report = {}
@@ -398,7 +402,7 @@ class VirtualOrchestra:
             report['reinforcementTime'] += extra.duration
             if not device.mute and (not audible_solo or device.solo):
                 self.activity[device.id].append((extra.start, extra.start + extra.duration))
-                self.events.append(AcousticEvent(extra.start, 'tone', device.id,
+                self.events.append(AcousticEvent(extra.start, extra.kind, device.id,
                                                  extra.hz, extra.duration, extra.velocity))
         for extra in plan.tray_events:
             report = self.report[extra.device_id]

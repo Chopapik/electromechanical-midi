@@ -77,11 +77,30 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
     <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'independent'}
-      disabled={!canReinforce}
+      disabled={!canReinforce || config.idleReinforcement?.enabled}
       onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
       <option value="independent">{dvd.length}x DVD independent</option>
       <option value="reinforcement">{dvd.length}x DVD + dynamic reinforcement</option>
     </select></label>
+    <label><input type="checkbox" checked={config.idleReinforcement?.enabled ?? false}
+      onChange={event => configure({ ...config, idleReinforcement: { ...config.idleReinforcement, enabled: event.target.checked } }, enabled)} /> Idle device reinforcement</label>
+    {config.idleReinforcement?.enabled && <div className="virtual-toolbar">
+      <label>Max copies <select aria-label="Reinforcement max copies" value={config.idleReinforcement.maxCopiesPerEvent ?? 1}
+        onChange={event => configure({ ...config, idleReinforcement: { ...config.idleReinforcement!, maxCopiesPerEvent: Number(event.target.value) } }, enabled)}>
+        {[0, 1, 2].map(n => <option key={n} value={n}>{n}</option>)}
+      </select></label>
+      <label>Reservation (ms) <input aria-label="Reinforcement reservation" type="number" min="0" max="10000" value={config.idleReinforcement.lookAheadMs ?? 80}
+        onChange={event => configure({ ...config, idleReinforcement: { ...config.idleReinforcement!, lookAheadMs: Number(event.target.value) } }, enabled)} /></label>
+      <label>Min score <input aria-label="Reinforcement minimum score" type="number" min="0" max="10000" value={config.idleReinforcement.minScore ?? 75}
+        onChange={event => configure({ ...config, idleReinforcement: { ...config.idleReinforcement!, minScore: Number(event.target.value) } }, enabled)} /></label>
+      {['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY'].map(type => <label key={type}><input type="checkbox"
+        checked={(config.idleReinforcement?.deviceTypes ?? ['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY']).includes(type)}
+        onChange={event => {
+          const types = config.idleReinforcement?.deviceTypes ?? ['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY']
+          configure({ ...config, idleReinforcement: { ...config.idleReinforcement!, deviceTypes: event.target.checked ? [...types, type] : types.filter(t => t !== type) } }, enabled)
+        }} /> {LABEL[type]}</label>)}
+      <span className="muted">PRIMARY always has priority. VHS reinforcement is disabled by default.</span>
+    </div>}
     <label><input type="checkbox" checked={config.trayEnabled ?? true}
       onChange={event => configure({ ...config, trayEnabled: event.target.checked }, enabled)} /> DVD tray mechanical accents</label>
     {hardware && <div className="virtual-hardware" role="status">
@@ -169,7 +188,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       <div className="virtual-reports">{Object.entries(virtual?.report ?? {}).map(([id, r]) => <article key={id}>
         <strong>{r.name}</strong>{r.type !== 'DVD_TRAY' && <> · accepted {r.accepted} · played {r.played} · dropped {r.dropped} · folded {r.folded} · delayed {r.delayed} · busy {r.busyConflicts}</>}
         {r.type === 'FDD' || r.type === 'DVD_SLED' ? <> · steps {r.steps} · travel {r.travel} · reversals {r.reversals}</> : null}
-        {(r.type === 'DVD_SLED' || r.type === 'DVD_TRAY') && r.reinforcementEvents ? <> · reinforcement {r.reinforcementEvents} / {(r.reinforcementTime ?? 0).toFixed(2)}s</> : null}
+        {r.reinforcementEvents ? <> · reinforcement {r.reinforcementEvents} / {(r.reinforcementTime ?? 0).toFixed(2)}s</> : null}
         {r.type === 'HDD_VCM' ? <> · hits {r.acceptedHits}/{r.requestedHits} · dropped busy {r.droppedWhileBusy} · busy time {r.busyTime.toFixed(2)}s · max density {r.maxDensity.toFixed(1)}/s</> : null}
         {r.type === 'STEPPER_FREE' ? <> · active {r.activeTime.toFixed(2)}s</> : null}
         <div className="muted">{Object.entries(r.reasons).map(([code, count]) => `${code}: ${count}`).join(' · ')}</div>

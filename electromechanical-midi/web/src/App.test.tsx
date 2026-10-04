@@ -246,6 +246,19 @@ describe('App', () => {
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { trayEnabled: false, devices: [tray] } })
   })
 
+  it('enables idle reinforcement without changing normal devices', async () => {
+    const device = { id: 'DVD_STEPPER_1', type: 'DVD_SLED', name: 'DVD Stepper 1', track: null,
+      role: '', volume: .2, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
+      profile: 'DVD_REFERENCE', mode: 'virtual' as const, overrides: {} }
+    const socket = await renderApp({ virtual: { enabled: true,
+      config: { name: 'Test', devices: [device], idleReinforcement: { enabled: false } },
+      report: {}, activity: {}, profiles: [{ id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} }] } })
+    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+    fireEvent.click(screen.getByLabelText('Idle device reinforcement'))
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual',
+      config: { devices: [device], idleReinforcement: { enabled: true } } })
+  })
+
   it('shows each device LED from backend activity state', async () => {
     const socket = await renderApp({
       virtual: {

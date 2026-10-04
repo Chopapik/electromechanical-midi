@@ -28,7 +28,7 @@ def motion_duration(profile, velocity: int) -> tuple[str, float]:
     return strength, (low + max(0, high - low) * fraction) / 1000
 
 
-def add_reinforcement(plan) -> None:
+def add_reinforcement(plan, copy_counts=None, max_copies=1, min_score=None, potential=None) -> None:
     """Append tray-only copies of played GM accents; never edit normal events."""
     candidates = [event for event in plan.events
                   if event.channel == 9 and event.role == 'percussion' and event.note in GM_PRIORITY]
@@ -43,7 +43,7 @@ def add_reinforcement(plan) -> None:
     high_times = sorted(event.actual_start for event in candidates if event.played and GM_PRIORITY[event.note] == 3)
     last_sample = {46: float('-inf'), 59: float('-inf')}
     report = {'candidates': len(candidates), 'played': 0, 'skippedBusyCooldown': 0,
-              'skippedSampled': 0, 'skippedSourceDropped': 0, 'skippedDisabled': 0,
+              'skippedSampled': 0, 'skippedMaxCopies': 0, 'skippedScore': 0, 'skippedSourceDropped': 0, 'skippedDisabled': 0,
               'gmNotes': {}, 'devices': {device.id: {'events': 0, 'activeTime': 0.0} for device in trays}}
     plan.tray_events = []
     for event in candidates:
@@ -55,6 +55,25 @@ def add_reinforcement(plan) -> None:
             continue
         time = event.actual_start
         priority = GM_PRIORITY[event.note]
+        score = priority * 30 + event.velocity / 127 * 10
+        if min_score is not None:
+            score = 70 + priority * 10 + event.velocity / 127 * 10
+            if score < min_score:
+                report['skippedScore'] += 1
+                continue
+        if potential is not None:
+            for device in trays:
+                profile = profiles[device.id]
+                _, duration = motion_duration(profile, event.velocity)
+                cooldown = float(parameter(profile, 'cooldownMs')) / 1000
+                upcoming = bisect.bisect_left(high_times, time)
+                threshold = float(parameter(profile, 'openHatMinVelocity' if event.note == 46 else 'rideMinVelocity'))
+                if priority == 3 or (event.velocity >= threshold and
+                        (upcoming == len(high_times) or high_times[upcoming] >= time + duration + cooldown)):
+                    potential[device.id].append((time, time + duration))
+        if copy_counts is not None and copy_counts.get(event.id, 0) >= max_copies:
+            report['skippedMaxCopies'] += 1
+            continue
         available = []
         sampled = False
         for device in sorted(trays, key=lambda device: (last[device.id], device.id)):
@@ -80,7 +99,10 @@ def add_reinforcement(plan) -> None:
         direction = 1 if moves[device.id] % 2 == 0 else -1
         plan.tray_events.append(TrayEvent(event.id, device.id, event.track, event.note,
                                          event.velocity, time, duration, cooldown,
-                                         priority, strength, direction))
+                                         priority, strength, direction, source_device=event.device_id,
+                                         score=score, source_track_name=event.track_name))
+        if copy_counts is not None:
+            copy_counts[event.id] = copy_counts.get(event.id, 0) + 1
         busy[device.id] = time + duration + cooldown
         last[device.id] = time
         moves[device.id] += 1

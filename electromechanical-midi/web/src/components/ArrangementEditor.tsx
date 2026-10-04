@@ -159,7 +159,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     <button type="button" onClick={() => setRetry(value => value + 1)}>Spróbuj ponownie</button></section>
   if (!view?.arrangement) return <section className="arrangement"><h2>Arrangement</h2><p>Loading arrangement…</p></section>
   const doc = view.arrangement
-  const displayNotes = mode === 'source' ? view.notes : [...view.notes, ...(view.trayNotes ?? [])]
+  const displayNotes = mode === 'source' ? view.notes : [...view.notes, ...(view.trayNotes ?? []), ...(view.reinforcementNotes ?? [])]
   const selected = displayNotes.find(n => n.id === selectedId) ?? null
   const selectedClassification = view.report?.trackClassification?.find(item => item.index === selected?.track)
   const drumTracks = view.tracks.filter(t => t.isDrums)
@@ -196,7 +196,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     <PianoRoll notes={displayNotes} devices={doc.devices} position={state?.position ?? 0} playing={state?.state === 'playing'} mode={mode} selectedId={selectedId}
       hiddenTracks={hiddenTracks} hiddenDevices={hiddenDevices} onSelect={setSelectedId} onSeek={seek} />
     <div className="arrangement-bottom">
-      <aside className="arrangement-legend"><h3>Legend</h3><p>Fill: current view · left stripe: source track · border: destination device · dashed: tray reinforcement</p>
+      <aside className="arrangement-legend"><h3>Legend</h3><p>Fill: current view · left stripe: source track · border: destination device · dashed: reinforcement</p>
         <h4>MIDI Sources</h4>{view.tracks.filter(t => t.noteCount > 0).map(t => <label key={t.index}>
           <input type="checkbox" checked={!hiddenTracks.has(t.index)} onChange={() => toggle(hiddenTracks, setHiddenTracks, t.index)} />
           <span className="legend-swatch" style={{ background: sourceColor(t.index) }} /> {t.index} — {t.name}
@@ -209,6 +209,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
       </aside>
       <div className="arrangement-inspector"><h3>Note Inspector</h3>
         {selected ? <><p><strong>{selected.name ?? `MIDI ${selected.note}`}</strong> · MIDI {selected.note} · {selected.isDrum ? 'drum' : 'tonal'}</p>
+          <p><strong>{selected.reinforcement ? 'REINFORCEMENT' : 'PRIMARY'}</strong></p>
           <p>SOURCE: track {selected.track} — {selected.trackName} · channel {selected.channel} · velocity {selected.velocity}{selected.role ? ` · rola ${selected.role}` : ''}</p>
           {selectedClassification && <p>SEMANTIC: {selectedClassification.finalRole} · {(selectedClassification.confidence * 100).toFixed(0)}%
             {' · '}{selectedClassification.evidence.slice(0, 3).join('; ')}</p>}
@@ -216,6 +217,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
             partia logiczna z tracków {selected.sourceTracks!.join(' + ')}
             {selected.duplicateGroupId ? ` · grupa ${selected.duplicateGroupId}` : ''}
           </p>}
+          {selected.reinforcement && <p><strong>REINFORCEMENT</strong> · source {selected.sourceEventId ?? selected.id} · source device {selected.sourceDevice ?? '—'} · score {selected.score?.toFixed(1) ?? '—'} · {selected.semanticCompatibility ?? 'mechanical accent'}</p>}
           <p>AUTO ARRANGER: <strong>{selected.deviceId ?? 'DROP'}</strong>
             {selected.reassigned ? ' (reassigned)' : ''}{selected.folded ? ' (folded)' : ''}</p>
           <p>OUTCOME: <strong className={selected.outcome === 'DROPPED' ? 'report-bad' : ''}>{selected.outcome ?? selected.status}</strong>{selected.reason ? ` · ${selected.reason}` : ''}</p>

@@ -48,6 +48,35 @@ BALANCED = {
 _POLICY_KEYS = frozenset(BALANCED)
 
 
+IDLE_DEFAULTS = {
+    'enabled': False, 'maxCopiesPerEvent': 1, 'lookAheadMs': 80.0,
+    'deviceTypes': ['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY'],
+    'minScore': 75.0, 'minDurationMs': 40.0, 'percussionCooldownMs': 250.0, 'vhsEnabled': False,
+}
+
+
+def parse_idle(payload=None):
+    if payload is not None and not isinstance(payload, dict):
+        raise ValueError('idleReinforcement must be an object')
+    config = {**IDLE_DEFAULTS, **(payload or {})}
+    if set(config) - set(IDLE_DEFAULTS):
+        raise ValueError('unknown idleReinforcement setting')
+    count = config['maxCopiesPerEvent']
+    if isinstance(count, bool) or not isinstance(count, int) or not 0 <= count <= 2:
+        raise ValueError('maxCopiesPerEvent must be 0, 1 or 2')
+    for key in ('lookAheadMs', 'minScore', 'minDurationMs', 'percussionCooldownMs'):
+        config[key] = float(config[key])
+        if not 0 <= config[key] <= 10000:
+            raise ValueError(f'invalid idleReinforcement {key}')
+    if (not isinstance(config['deviceTypes'], list)
+            or any(kind not in ('FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY', 'VHS') for kind in config['deviceTypes'])):
+        raise ValueError('invalid idleReinforcement deviceTypes')
+    for key in ('enabled', 'vhsEnabled'):
+        if not isinstance(config[key], bool):
+            raise ValueError(f'idleReinforcement {key} must be boolean')
+    return config
+
+
 @dataclasses.dataclass
 class OrchestraConfig:
     """Dostepne urzadzenia + polityka wykonania."""
@@ -57,13 +86,14 @@ class OrchestraConfig:
     policy: dict = dataclasses.field(default_factory=lambda: dict(BALANCED))
     dvd_mode: str = 'independent'
     tray_enabled: bool = True
+    idle_reinforcement: dict = dataclasses.field(default_factory=parse_idle)
 
     def instances(self) -> list[VirtualDeviceInstance]:
         return [VirtualDeviceInstance.parse(device) for device in self.devices]
 
     def as_dict(self) -> dict:
         return {'name': self.name, 'devices': self.devices, 'policy': self.policy,
-                'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled}
+                'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement}
 
     def allocation_devices(self) -> tuple[list[VirtualDeviceInstance], dict[str, list[dict]]]:
         """Reinforcement never changes the configured normal voice inventory."""
@@ -155,6 +185,7 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         config.name = str(payload.get('name') or config.name)
         config.dvd_mode = dvd_mode
         config.tray_enabled = bool(payload.get('trayEnabled', True))
+        config.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
         config.allocation_devices()
 
         return config
@@ -170,6 +201,7 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         policy=parse_policy(payload.get('policy')),
         dvd_mode=dvd_mode,
         tray_enabled=bool(payload.get('trayEnabled', True)),
+        idle_reinforcement=parse_idle(payload.get('idleReinforcement')),
     )
     config.allocation_devices()
     return config

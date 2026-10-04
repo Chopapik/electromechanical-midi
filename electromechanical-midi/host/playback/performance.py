@@ -140,11 +140,24 @@ class ReinforcementEvent:
     duration: float
     hz: float
     velocity: int
+    kind: str = 'tone'
+    source_device: str | None = None
+    reason: str = 'idle compatible DVD'
+    score: float = 0.0
+    semantic_compatibility: str = 'DVD legacy'
+    role: str = ''
+    gm_family: str | None = None
+    gm_program: int | None = None
 
     def as_dict(self) -> dict:
         return {'sourceId': self.source_id, 'deviceId': self.device_id,
                 'start': round(self.start, 6), 'duration': round(self.duration, 6),
-                'hz': round(self.hz, 3), 'velocity': self.velocity}
+                'hz': round(self.hz, 3), 'velocity': self.velocity,
+                'eventKind': 'reinforcement', 'sourceEventId': self.source_id,
+                'sourceDevice': self.source_device, 'targetDevice': self.device_id,
+                'reason': self.reason, 'score': round(self.score, 3),
+                'semanticCompatibility': self.semantic_compatibility, 'role': self.role,
+                'gmFamily': self.gm_family, 'gmProgram': self.gm_program, 'kind': self.kind}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -160,13 +173,23 @@ class TrayEvent:
     priority: int
     strength: str
     direction: int
+    source_device: str | None = None
+    score: float = 0.0
+    reason: str = 'GM mechanical accent; idle tray'
+    semantic_compatibility: str = 'PERCUSSION'
+    source_track_name: str = ''
 
     def as_dict(self) -> dict:
         return {'sourceId': self.source_id, 'deviceId': self.device_id, 'track': self.track,
                 'note': self.note, 'velocity': self.velocity, 'channel': 9,
                 'start': round(self.start, 6), 'duration': round(self.duration, 6),
                 'cooldown': round(self.cooldown, 6), 'priority': self.priority,
-                'strength': self.strength, 'direction': self.direction, 'reinforcement': True}
+                'strength': self.strength, 'direction': self.direction, 'reinforcement': True,
+                'eventKind': 'reinforcement', 'sourceEventId': self.source_id,
+                'sourceDevice': self.source_device, 'targetDevice': self.device_id,
+                'sourceTrackName': self.source_track_name,
+                'reason': self.reason, 'score': self.score,
+                'semanticCompatibility': self.semantic_compatibility}
 
 
 @dataclasses.dataclass
@@ -188,6 +211,8 @@ class PerformancePlan:
     tray_enabled: bool = True
     tray_events: list[TrayEvent] = dataclasses.field(default_factory=list)
     tray_report: dict = dataclasses.field(default_factory=dict)
+    idle_reinforcement: dict = dataclasses.field(default_factory=dict)
+    idle_report: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -214,6 +239,7 @@ class PerformancePlan:
             'analysis': self.analysis,
             'midi': self.source_ref,
             'devices': self.devices,
+            'idleReinforcement': self.idle_reinforcement,
             'dvdMode': self.dvd_mode,
             'reinforcements': [event.as_dict() for event in self.reinforcements],
             'trayEnabled': self.tray_enabled,
@@ -474,6 +500,7 @@ def build_report(plan: PerformancePlan) -> dict:
             'totalSeconds': round(sum(event.duration for event in plan.reinforcements), 3),
         },
         'tray': plan.tray_report,
+        'idleReinforcement': plan.idle_report,
         'trackClassification': plan.analysis.get('trackClassification', []),
         'lead': {
             'requested': len(lead_events),

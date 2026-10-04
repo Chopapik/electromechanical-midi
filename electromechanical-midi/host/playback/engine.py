@@ -1045,9 +1045,9 @@ class PlaybackEngine:
                 'name': candidate.name,
                 'devices': candidate.config()['devices'],
                 'policy': self._orchestra.policy,
-                'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled,
+                'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled, 'idleReinforcement': candidate.idle_reinforcement,
             })
-            if candidate.dvd_mode == 'reinforcement':
+            if candidate.dvd_mode == 'reinforcement' or candidate.idle_reinforcement.get('enabled'):
                 # Reinforcement runs after the normal PerformancePlan is built.
                 self._auto_arrange = True
             self._virtual_mode = enabled
@@ -1068,7 +1068,7 @@ class PlaybackEngine:
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
             'devices': arrangement.data['devices'],
             'policy': payload.get('policy'),
-            'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True),
+            'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True), 'idleReinforcement': payload.get('idleReinforcement'),
         })
         bound, _ = bind_devices(orchestra.instances())
         preview_devices = [device for device in orchestra.instances() if device.in_preview]
@@ -1138,7 +1138,7 @@ class PlaybackEngine:
             'devices': self._orchestra.devices,
             'rules': list(self._arrangement.data['rules']) if self._arrangement is not None else [],
             'policy': self._orchestra.policy,
-            'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled,
+            'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled, 'idleReinforcement': self._orchestra.idle_reinforcement,
             'origin': self._plan.origin,
         }
 
@@ -1149,18 +1149,36 @@ class PlaybackEngine:
 
         return list(self._source.tracks) if self._source is not None else []
 
+    def _reinforcement_notes_locked(self) -> list:
+        if not self._plan:
+            return []
+        sources = {e.id: e for e in self._plan.events}
+        notes = []
+        for index, extra in enumerate(self._plan.reinforcements):
+            source = sources[extra.source_id]
+            notes.append({**extra.as_dict(), 'id': f'reinforcement:{index}:{extra.source_id}',
+                'track': source.track, 'trackName': source.track_name, 'channel': source.channel,
+                'note': source.played_note if source.played_note is not None else source.note,
+                'name': source.name, 'isDrum': source.role == 'percussion',
+                'reinforcement': True, 'eventKind': 'reinforcement',
+                'deviceId': extra.device_id, 'status': 'ACCEPTED',
+                'routes': [{'ruleId': 'reinforcement', 'deviceId': extra.device_id,
+                            'status': 'ACCEPTED', 'reason': extra.reason}]})
+        return notes
+
     def arrangement_view(self) -> dict:
         with self._lock:
             return {
                 'arrangement': self._document_locked(),
                 'notes': self._arrangement_notes,
                 'trayNotes': [{**event.as_dict(), 'id': f'tray:{event.device_id}:{event.source_id}',
-                    'trackName': 'DVD tray reinforcement', 'name': f'GM {event.note} · tray',
+                    'trackName': event.source_track_name or 'DVD tray reinforcement', 'name': f'GM {event.note} · tray',
                     'isDrum': True, 'routes': [{'ruleId': 'tray-reinforcement', 'deviceId': event.device_id,
                         'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}], 'deviceId': event.device_id,
                     'actualStart': event.start, 'actualDuration': event.duration,
                     'status': 'ACCEPTED', 'reason': 'TRAY_REINFORCEMENT'}
                     for event in (self._plan.tray_events if self._plan else [])],
+                'reinforcementNotes': self._reinforcement_notes_locked(),
                 'midiIdentity': midi_identity(self._source) if self._source else None,
                 'tracks': [{'index': t.index, 'name': t.name, 'isDrums': t.is_drums,
                             'noteCount': t.note_count,
@@ -1173,7 +1191,7 @@ class PlaybackEngine:
                 'orchestra': {
                     'name': self._orchestra.name,
                     'policy': self._orchestra.policy,
-                    'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled,
+                    'dvdMode': self._orchestra.dvd_mode, 'trayEnabled': self._orchestra.tray_enabled, 'idleReinforcement': self._orchestra.idle_reinforcement,
                     'devices': [{'id': d['id'], 'type': d['type'], 'name': d['name']}
                                 for d in self._orchestra.devices],
                 },
