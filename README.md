@@ -164,7 +164,7 @@ ale główny firmware nie ustala jej wartości.
 
 Stan OFF: D7=HIGH, D8=HIGH, D9=LOW, D10=LOW. PARK: D7=LOW i D10=HIGH
 przez 40 ms; następnie OFF przez 40 ms; STRIKE: D8=LOW i D9=HIGH przez
-25 ms; potem OFF. Polaryzacja cewki musi odpowiadać temu kierunkowi
+4 ms; potem OFF. Polaryzacja cewki musi odpowiadać temu kierunkowi
 parkowania. Przy włączaniu/resetowaniu Uno wejścia początkowo są wysokoimpedancyjne;
 stan OFF na ten czas musi zapewniać sam obwód mostka.
 
@@ -507,16 +507,18 @@ HDD   (HIT)                <- perkusja
         ^ wszystko z JEDNEGO timeline'u i jednego zegara
 ```
 
-**Mechanika (ustalona empirycznie w testach strojenia):**
+**Mechanika:** parkowanie i osiadanie zachowują zmierzone 40/40 ms.
+Impuls STRIKE skrócono z 25 do 4 ms, żeby osłabić głośne uderzenie;
+nowa głośność wymaga oceny na fizycznym HDD.
 
 | parametr | wartość | znaczenie |
 | --- | --- | --- |
 | `PARK` | 40 ms (D7 LOW + D10 HIGH) | odwozi ramię do parku |
 | `SETTLE` | 40 ms | ramię osiada w parku |
-| `STRIKE` | 25 ms (D8 LOW + D9 HIGH) | **uderzenie** |
+| `STRIKE` | 4 ms (D8 LOW + D9 HIGH) | **uderzenie** |
 
 Ramię **nie wraca samo** — dlatego każdy hit zaczyna się od aktywnego
-parkowania. Pełny cykl to ~105 ms, więc maksymalna gęstość to ~9,5
+parkowania. Pełny cykl to ~84 ms, więc maksymalna gęstość to ~11,9
 uderzenia/s; nuty bliższe niż `HDD_MIN_PERIOD_S = 0,11 s` są zlewane
 w jedno uderzenie (akord = jedno uderzenie).
 
@@ -1408,7 +1410,7 @@ Zielona dioda w prawym górnym rogu każdej karty pokazuje, że dana instancja j
 
 Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Tryb wyjścia ustala start backendu: `--no-hardware` oznacza preview; bez tej flagi działa Serial. `enabled` wybiera skład orkiestry, a `mode` jest wewnętrznym detalem adaptera.
 
-Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/25 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
+Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/4 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
 Każda instancja może mieć własne nadpisania parametrów wraz z provenance i notatką źródłową. W UI są pod rozwijanym **Device profile**.
 
 Renderer generuje przybliżony stereofoniczny WAV po stronie Pythona i na macOS odtwarza go przez systemowy `afplay`. `pyo` nie jest zainstalowane w obecnym środowisku Python 3.14, więc nie jest obowiązkową zależnością; interfejs `WavePreview` można zastąpić później backendem `pyo` lub PortAudio. Audio zawiera impulsy kroków, zdarzenia zawracania, prosty rezonans, uderzenia HDD/solenoidu i ton silnika VHS. Rezonatory i krzywa velocity są przybliżeniami do odsłuchu orkiestracji. Nie ma jeszcze próbek SFZ, artykulacji HDD, wzajemnych blokad zasobów ani modelu przyspieszenia silnika.

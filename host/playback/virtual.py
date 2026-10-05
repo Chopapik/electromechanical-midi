@@ -122,7 +122,7 @@ PROFILES = {
         'polyphony': _p(1, 'RESEARCHED', 'single current VCM'),
         'parkMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
         'settleMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
-        'strikeMs': _p(25, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
+        'strikeMs': _p(4, 'RESEARCHED', 'firmware/floppy/src/main.cpp; shorter impulse for quieter hardware hits'),
         'cooldownMs': _p(0, 'ESTIMATED', 'preview; calibrate separately'),
     }),
     'SOLENOID_REFERENCE': DeviceProfile('SOLENOID_REFERENCE', 'SOLENOID_RESONATOR', {

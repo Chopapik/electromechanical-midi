@@ -103,7 +103,7 @@ class VirtualMechanicsTest(unittest.TestCase):
             self.assertEqual(report['requestedHits'], 3)
             self.assertEqual(report['acceptedHits'], 2)
             self.assertEqual(report['droppedWhileBusy'], 1)
-            self.assertEqual(report['busyTime'], .21)
+            self.assertAlmostEqual(report['busyTime'], .168)
         self.assertAlmostEqual(next(e.time for e in orchestra.events if e.device == 'a'), .08)
         self.assertTrue(orchestra.active_at(.02)['a'])  # PARK: working before the strike sounds
         self.assertFalse(orchestra.active_at(.5)['a'])
