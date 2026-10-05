@@ -173,7 +173,7 @@ describe('App', () => {
   it('opens one monitor with no main navigation or legacy forms', async () => {
     await renderApp({}, false)
     for (const name of ['PLAYER', 'ORCHESTRA', 'ARRANGEMENT']) expect(screen.queryByRole('button', { name })).toBeNull()
-    expect(screen.getByText('CURRENT MUSICAL EVENT')).toBeDefined()
+    expect(screen.getByRole('region', { name: 'Virtual Instrument Grid' })).toBeDefined()
     expect(screen.queryByText('LIVE')).toBeNull()
     expect(screen.queryByText(/backend connected/i)).toBeNull()
     expect(screen.queryByLabelText('FDD Track')).toBeNull()
@@ -197,9 +197,16 @@ describe('App', () => {
     expect(screen.getByRole('slider', { name: 'Pozycja utworu' }).getAttribute('aria-valuenow')).toBe('13')
   })
 
-  it.each([['playing', '▶ PLAYING'], ['paused', 'Ⅱ PAUSED'], ['stopped', '■ STOPPED']] as const)('reflects %s transport from WS', async (state, label) => {
-    await renderApp({ state }, false)
-    expect(screen.getByText(label)).toBeDefined()
+  it.each([['playing', '▶', 'Pauza'], ['paused', 'Ⅱ', 'Play'], ['stopped', '▶', 'Play']] as const)('reflects %s with the state icon while keeping toggle actions', async (state, icon, action) => {
+    const socket = await renderApp({ state }, false)
+    const button = screen.getByRole('button', { name: action })
+    expect(button.textContent?.trim()).toBe(icon)
+    expect(button.classList.contains(state)).toBe(true)
+    expect(screen.queryByText(/PLAYING|PAUSED|STOPPED/)).toBeNull()
+    fireEvent.click(button)
+    expect(socket.actions().at(-1)).toEqual({ action: state === 'playing' ? 'pause' : state === 'paused' ? 'resume' : 'play' })
+    fireEvent.click(screen.getByTitle('Stop'))
+    expect(socket.actions().at(-1)).toEqual({ action: 'stop' })
   })
 
   it('changes global output independently of per-device mode and retains every sound option', async () => {
@@ -369,19 +376,17 @@ describe('App', () => {
   it('pokazuje plik, track i status sprzetu', async () => {
     await renderApp()
 
-    expect(screen.getByLabelText('MIDI')).toBeDefined()
-    expect(screen.getByText('Thom Vox')).toBeDefined()
+    expect(screen.getAllByLabelText('MIDI').length).toBeGreaterThan(0)
+    expect((screen.getByLabelText('FDD Track') as HTMLSelectElement).value).toBe('1')
     expect(screen.getAllByText('/dev/cu.usbmodem14101').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Arduino connected').length).toBeGreaterThan(0)
   })
 
-  it('pokazuje aktualna nuta i czestotliwosc z WebSocketa', async () => {
+  it('nie tworzy fikcyjnego kafla przy odtwarzaniu manualnym', async () => {
     await renderApp()
 
-    expect(screen.getByText('E3')).toBeDefined()
-    expect(screen.getByText('164.81 Hz')).toBeDefined()
-    // nuta zrodlowa (E4) rozni sie od granej (E3) - pokazujemy transpozycje
-    expect(screen.getByText('CURRENT MUSICAL EVENT')).toBeDefined()
+    expect(screen.queryByRole('article')).toBeNull()
+    expect(screen.getByRole('region', { name: 'Virtual Instrument Grid' })).toBeDefined()
   })
 
   it('przycisk play (stan stopped) wysyla akcje play', async () => {
@@ -494,7 +499,7 @@ describe('App', () => {
   it('selektor MIDI ma przycisk wgrywania', async () => {
     await renderApp()
 
-    expect(screen.getByText('Upload')).toBeDefined()
+    expect(screen.getByText('＋ Wgraj plik MIDI')).toBeDefined()
     expect(document.querySelector('input[accept*=".mid"]')).not.toBeNull()
   })
 
@@ -819,9 +824,9 @@ describe('App', () => {
 
     expect(screen.getByText('Arduino: homing…')).toBeDefined()
     expect(screen.getByText(/Play jest w kolejce/)).toBeDefined()
-    expect(screen.getByText('Arduino homing')).toBeDefined()
-    // Play nie moze wygladac na zepsuty, skoro tylko czeka na READY.
-    expect(screen.queryByText('Arduino disconnected')).toBeNull()
+    expect(screen.getByText('Arduino disconnected')).toBeDefined()
+    // Główny monitor pokazuje wyłącznie rzeczywisty stan połączenia.
+    expect(screen.queryByText('Arduino connected')).toBeNull()
   })
 
   it('bez homingu pokazuje zwykle rozlaczenie i blad', async () => {

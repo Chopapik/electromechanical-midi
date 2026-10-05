@@ -1,6 +1,6 @@
 /** Wybor pliku MIDI z katalogu midi/ + wgranie nowego z przegladarki. */
 
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent } from 'react'
 
 import { formatBytes } from '../format'
@@ -13,6 +13,7 @@ interface Props {
   onUpload: (file: File) => void
   uploading?: boolean
   compact?: boolean
+  showUpload?: boolean
 }
 
 const ACCEPTED = '.mid,.midi,audio/midi,audio/x-midi'
@@ -24,7 +25,9 @@ export function MidiFileSelector({
   onUpload,
   uploading = false,
   compact = false,
+  showUpload = true,
 }: Props) {
+  const selectId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [dragging, setDragging] = useState(false)
 
@@ -45,12 +48,12 @@ export function MidiFileSelector({
 
   return (
     <div className={`field ${compact ? 'compact-midi' : ''}`}>
-      <label className="field-label" htmlFor="midi-file">
+      <label className="field-label" htmlFor={selectId}>
         MIDI
       </label>
 
       <select
-        id="midi-file"
+        id={selectId}
         value={selected ?? ''}
         onChange={(event) => onSelect(event.target.value)}
         disabled={files.length === 0}
@@ -59,12 +62,12 @@ export function MidiFileSelector({
 
         {files.map((file) => (
           <option key={file.name} value={file.name}>
-            {file.name} · {formatBytes(file.size)}
+            {compact ? file.name : `${file.name} · ${formatBytes(file.size)}`}
           </option>
         ))}
       </select>
 
-      <div
+      {showUpload && <div
         className={`upload${dragging ? ' dragging' : ''}${uploading ? ' busy' : ''}`}
         onDragOver={(event) => {
           event.preventDefault()
@@ -79,7 +82,7 @@ export function MidiFileSelector({
           onClick={pick}
           disabled={uploading}
         >
-          {uploading ? 'Wgrywam…' : compact ? 'Upload' : '＋ Wgraj plik MIDI'}
+          {uploading ? 'Wgrywam…' : compact ? 'Wczytaj MIDI' : '＋ Wgraj plik MIDI'}
         </button>
 
         <span className="upload-hint">
@@ -96,7 +99,7 @@ export function MidiFileSelector({
             event.target.value = ''
           }}
         />
-      </div>
+      </div>}
     </div>
   )
 }

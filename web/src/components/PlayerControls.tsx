@@ -27,12 +27,14 @@ export function PlayerControls({ state, disabled, onRestart, onToggle, onStop }:
 
       <button
         type="button"
-        className="button icon primary"
+        className={`button icon playback-toggle ${state}`}
+        aria-label={playing ? 'Pauza' : 'Play'}
+        aria-description={state}
         title={playing ? 'Pauza' : 'Play'}
         onClick={onToggle}
         disabled={disabled}
       >
-        {playing ? '❚❚' : '▶'}
+        {state === 'paused' ? 'Ⅱ' : '▶'}
       </button>
 
       <button

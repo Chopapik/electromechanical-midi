@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import type { PlayerApi } from '../usePlayer'
 import { VirtualOrchestra } from './VirtualOrchestra'
 import { LegacyControls } from './LegacyControls'
+import { MidiFileSelector } from './MidiFileSelector'
 import { ArrangementImport } from './ArrangementImport'
 
 export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose: () => void }) {
@@ -17,7 +18,7 @@ export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose
     <header><h2>Settings</h2><button type="button" aria-label="Close Settings" onClick={onClose}>×</button></header>
     <div className="settings-body">
       <VirtualOrchestra virtual={player.state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={player.state?.arrangementActive} hardware={player.state?.arrangementHardware} />
-      <details className="manual-disclosure"><summary>ADVANCED / MANUAL HARDWARE</summary><LegacyControls player={player} /><ArrangementImport /></details>
+      <details className="manual-disclosure"><summary>ADVANCED / MANUAL HARDWARE</summary><MidiFileSelector files={player.files} selected={player.state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} /><LegacyControls player={player} /><ArrangementImport /></details>
     </div>
   </aside>
 }

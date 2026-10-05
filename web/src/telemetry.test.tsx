@@ -36,74 +36,80 @@ describe('renderer telemetry', () => {
     expect(streamAt(events, 3)[0].start).toBe(3)
     expect(streamAt(events, -1)).toEqual([])
   })
-  it('renders current folded note, real bend Hz, configured lanes, HDD and tray', () => {
+  const tile = (name: string) => screen.getByRole('article', { name })
+  const lit = (name: string) => tile(name).classList.contains('is-active')
+  it('renders the actual note and bent Hz, percussion velocity and source in independent tiles', () => {
     render(<TelemetryMonitor state={playing} view={view} error={null} />)
-    const focus = within(screen.getByRole('region', { name: 'Current Musical Event' }))
-    expect(focus.getByText('G3')).toBeDefined()
-    expect(focus.getByText('197.20 Hz')).toBeDefined()
-    expect(focus.getByText('PITCH BEND')).toBeDefined()
-    const activity = within(screen.getByRole('region', { name: 'Device Activity' }))
-    expect(activity.getByText('HARD_HIT')).toBeDefined()
-    expect(activity.getByText('OPENING')).toBeDefined()
-    expect(activity.getByText('VHS')).toBeDefined()
-    expect(activity.getByText('GM36 · VEL 92')).toBeDefined()
-    expect(within(screen.getByRole('region', { name: 'Event Stream' })).getAllByRole('listitem')).toHaveLength(3)
+    expect(within(tile('FDD 1')).getByText('G3')).toBeDefined()
+    expect(within(tile('FDD 1')).getByText('197.20 Hz')).toBeDefined()
+    expect(within(tile('FDD 1')).getByText('Guitar 1')).toBeDefined()
+    expect(lit('FDD 1')).toBe(true)
+    expect(within(tile('HDD 1')).getByText('HARD HIT')).toBeDefined()
+    expect(within(tile('HDD 1')).getByText('VEL 92')).toBeDefined()
+    expect(within(tile('HDD 1')).queryByText(/Hz/)).toBeNull()
+    expect(lit('VHS')).toBe(false)
+    expect(within(tile('VHS')).getByText('—')).toBeDefined()
+    expect(screen.queryByText('IDLE')).toBeNull()
+    const stream = within(screen.getByRole('region', { name: 'Event Stream' }))
+    expect(stream.getAllByRole('listitem')).toHaveLength(3)
+    expect(stream.getByText('CRASH')).toBeDefined()
+    expect(screen.queryByRole('meter')).toBeNull()
+    expect(screen.queryByText(/coverage|ORCHESTRA LOAD|CURRENT MUSICAL EVENT/)).toBeNull()
   })
-  it.each(['SOFT_TAP', 'MEDIUM_HIT', 'HARD_HIT', 'DOUBLE_TAP', 'BUZZ_ROLL'])('uses existing HDD category %s', kind => {
+  it.each(['SOFT_TAP', 'MEDIUM_HIT', 'HARD_HIT', 'DOUBLE_TAP', 'BUZZ_ROLL'])('uses the real HDD category %s', kind => {
     render(<TelemetryMonitor state={playing} view={{ ...view, events: [{ ...hit, articulation: kind }] }} error={null} />)
-    expect(within(screen.getByRole('region', { name: 'Device Activity' })).getByText(kind)).toBeDefined()
+    expect(within(tile('HDD 1')).getByText(kind.replaceAll('_', ' '))).toBeDefined()
   })
-  it('uses the audible interval and output clock, including release after the gate', () => {
-    const audible = { ...event, duration: 4 }
-    render(<TelemetryMonitor state={{ ...playing, position: 8, virtual: { ...playing.virtual!, audioPosition: 3.5 } }} view={{ ...view, audioEvents: [audible] }} error={null} />)
-    const activity = within(screen.getByRole('region', { name: 'Device Activity' }))
-    expect(activity.getByText('ACTIVE')).toBeDefined()
-    expect(activity.getByText('G3 · 196.00 Hz')).toBeDefined()
+  it('uses the output clock and audible release, even after the physical gate', () => {
+    render(<TelemetryMonitor state={{ ...playing, position: 8, virtual: { ...playing.virtual!, audioPosition: 3.5 } }} view={{ ...view, audioEvents: [{ ...event, duration: 4 }] }} error={null} />)
+    expect(lit('FDD 1')).toBe(true)
+    expect(within(tile('FDD 1')).getByText('196.00 Hz')).toBeDefined()
     expect(within(screen.getByRole('region', { name: 'Event Stream' })).getAllByRole('listitem')).toHaveLength(1)
   })
-  it('does not advance or light notes before the audio device starts', () => {
+  it('does not light tiles before the audio output starts', () => {
     render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, audioClockRunning: false } }} view={{ ...view, audioEvents: [event] }} error={null} />)
-    expect(within(screen.getByRole('region', { name: 'Device Activity' })).queryByText('ACTIVE')).toBeNull()
+    expect(lit('FDD 1')).toBe(false)
   })
-  it('omits extras suppressed by the final waveform renderer', () => {
+  it('omits reinforcement suppressed by the final renderer', () => {
     render(<TelemetryMonitor state={playing} view={{ ...view, audioEvents: [] }} error={null} />)
-    expect(within(screen.getByRole('region', { name: 'Device Activity' })).queryByText('ACTIVE')).toBeNull()
+    expect(lit('FDD 1')).toBe(false)
     expect(within(screen.getByRole('region', { name: 'Event Stream' })).queryByRole('listitem')).toBeNull()
   })
-  it('shows the actual tray recovery phase without claiming movement', () => {
-    const recovering = { ...playing, position: 2, virtual: { ...playing.virtual!, trayStatus: { tray: { phase: 'recovery', note: 57 } } } }
-    render(<TelemetryMonitor state={recovering} view={view} error={null} />)
-    const activity = within(screen.getByRole('region', { name: 'Device Activity' }))
-    expect(activity.getByText('RECOVERY')).toBeDefined()
-    expect(activity.queryByText('MOVING')).toBeNull()
+  it('does not light a tray during recovery', () => {
+    render(<TelemetryMonitor state={{ ...playing, position: 2, virtual: { ...playing.virtual!, trayStatus: { tray: { phase: 'recovery', note: 57 } } } }} view={view} error={null} />)
+    expect(lit('TRAY 1')).toBe(false)
   })
-  it.each(['paused', 'stopped'] as const)('never leaves devices ACTIVE after %s', transport => {
+  it.each(['paused', 'stopped'] as const)('clears all lit tiles after %s', transport => {
     render(<TelemetryMonitor state={{ ...playing, state: transport }} view={view} error={null} />)
-    const activity = within(screen.getByRole('region', { name: 'Device Activity' }))
-    expect(activity.queryByText('ACTIVE')).toBeNull()
-    expect(activity.queryByText('HIT')).toBeNull()
-    expect(activity.getAllByText('IDLE')).toHaveLength(devices.length)
+    expect(document.querySelectorAll('.instrument-tile.is-active')).toHaveLength(0)
+    expect(screen.queryByText('IDLE')).toBeNull()
   })
-  it('does not fabricate activity when virtual output is off or hardware unbound', () => {
+  it('does not fabricate activity with output off and hardware unbound', () => {
     render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, enabled: false } }} view={view} error={null} />)
-    expect(within(screen.getByRole('region', { name: 'Device Activity' })).getAllByText('IDLE')).toHaveLength(5)
+    expect(document.querySelectorAll('.instrument-tile.is-active')).toHaveLength(0)
   })
-  it('shows missing telemetry as unavailable, not mock percentages', () => {
-    render(<TelemetryMonitor state={playing} view={null} error="Telemetry unavailable" />)
-    expect(screen.getByText('Telemetry unavailable')).toBeDefined()
-    expect(screen.getByRole('meter', { name: 'FDD utilization' }).getAttribute('aria-valuenow')).toBeNull()
-  })
-  it('uses real report active time for load, and leaves the plan unchanged', () => {
+  it('respects mute and solo without changing the plan', () => {
     const before = JSON.stringify(view)
-    const report = { activeTime: 6, busyTime: 3 } as unknown as NonNullable<PlayerState['virtual']>['report'][string]
-    render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, report: { fdd: report } } }} view={view} error={null} />)
-    expect(screen.getByRole('meter', { name: 'FDD utilization' }).getAttribute('aria-valuenow')).toBe('60')
+    render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, config: { name: 'Test', devices: devices.map(d => ({ ...d, solo: d.id === 'hdd' })) } } }} view={view} error={null} />)
+    expect(lit('FDD 1')).toBe(false)
+    expect(lit('HDD 1')).toBe(true)
     expect(JSON.stringify(view)).toBe(before)
   })
-  it('reports real Arduino connected/disconnected/homing/waiting states', () => {
+  it('keeps an idle device role without inventing a note or frequency', () => {
+    render(<TelemetryMonitor state={{ ...playing, state: 'stopped', virtual: { ...playing.virtual!, config: { name: 'Test', devices: [{ ...devices[0], role: 'Bass' }] } } }} view={view} error={null} />)
+    expect(within(tile('FDD 1')).getByText('Bass')).toBeDefined()
+    expect(within(tile('FDD 1')).getByText('—')).toBeDefined()
+    expect(within(tile('FDD 1')).queryByText(/Hz/)).toBeNull()
+  })
+  it('shows a real telemetry error without fabricated measurements', () => {
+    render(<TelemetryMonitor state={playing} view={null} error="Telemetry unavailable" />)
+    expect(screen.getByRole('alert').textContent).toBe('Telemetry unavailable')
+    expect(lit('FDD 1')).toBe(false)
+  })
+  it('uses only the actual Arduino connection state', () => {
     expect(arduinoStatus(state)).toBe('Arduino disconnected')
     expect(arduinoStatus({ ...state, hardware: { ...state.hardware, connected: true } })).toBe('Arduino connected')
-    expect(arduinoStatus({ ...state, hardware: { ...state.hardware, connecting: true } })).toBe('Arduino homing')
-    expect(arduinoStatus({ ...state, hardware: { ...state.hardware, pendingPlay: true } })).toBe('Arduino waiting')
+    expect(arduinoStatus({ ...state, hardware: { ...state.hardware, connecting: true } })).toBe('Arduino disconnected')
+    expect(arduinoStatus({ ...state, hardware: { ...state.hardware, pendingPlay: true } })).toBe('Arduino disconnected')
   })
 })
