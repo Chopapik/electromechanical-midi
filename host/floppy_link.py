@@ -379,6 +379,27 @@ class FloppyLink:
 
         return False
 
+    def wait_boot(self, timeout: float = 10.0, echo=print) -> bool:
+        """Protocol failure is not a broken Serial transport; never blind-home."""
+        try:
+            return self.wait_ready(timeout=timeout, echo=echo,
+                                   home_retries=0, blind_fallback=False)
+        except SerialLinkError as exc:
+            if str(exc).startswith('Arduino zgloszil blad:'):
+                return False
+            raise
+
+    def wait_homed(self, timeout: float = 10.0, echo=print) -> bool:
+        """READY completes motion; confirm actual position with STATUS homed=1."""
+        started = time.monotonic()
+        if not self.wait_boot(timeout=timeout, echo=echo):
+            return False
+        self.send('STATUS')
+        line = self.wait_for('STATUS', timeout=max(0, timeout - (time.monotonic() - started)))
+        if line:
+            echo(line)
+        return bool(line and 'homed=1' in line.split())
+
     def drain(self, echo=print) -> list[str]:
         """Oproznij bufor i pokaz, co Arduino mial do powiedzenia."""
         lines = self.poll_lines()

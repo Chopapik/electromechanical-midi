@@ -1067,7 +1067,7 @@ class TestDrumPitch(DualVoiceTestCase):
 
         snapshot = self.engine.snapshot()
 
-        # FDD (130-330) sklada A4 do A3 = 220 Hz, a beben domyslnie w trybie
+        # FDD (130-410) sklada A4 do A3 = 220 Hz, a beben domyslnie w trybie
         # "low" (110-220) sklada ja do A2 = 110 Hz - kazdy mapper jest inny.
         self.assertEqual(snapshot["noteName"], "A3")
         self.assertEqual(snapshot["drum"]["toneHz"], 110.0)
@@ -1629,19 +1629,15 @@ class TestHddRate(EngineTestCase):
 
 
 class TestHomeRatujePolaczenie(EngineTestCase):
-    """Udany HOME po bledzie musi przywrocic flage connected.
-
-    Bez tego UI pokazywalo "Arduino disconnected" i przycisk Home
-    nie ratowal sytuacji, mimo ze stacja wlasnie sie zahomowala.
-    """
+    """HOME after a position error preserves Serial and clears the FDD error."""
 
     def test_home_przywraca_connected(self):
         self.transport.queue_line("HOMING")
         self.transport.queue_line("READY")
 
-        # symulujemy wczesniejsza awarie lacza
+        # symulujemy błąd pozycji przy działającym Serial
         with self.engine._lock:
-            self.engine._hardware.connected = False
+            self.engine._hardware.connected = True
 
         self.assertTrue(self.engine.home())
 
@@ -1655,7 +1651,7 @@ class TestHomeRatujePolaczenie(EngineTestCase):
 
         with self.engine._lock:
             self.engine._hardware.error = "Arduino: ERR HOME_FAILED"
-            self.engine._hardware.connected = False
+            self.engine._hardware.connected = True
 
         self.engine.home()
 
@@ -1823,7 +1819,8 @@ class TestHomingQueue(unittest.TestCase):
         try:
             thread.start()
             self.assertTrue(self.wait_until(lambda: engine.snapshot()["hardware"]["connecting"]))
-            self.assertFalse(engine.snapshot()["hardware"]["connected"])
+            self.assertTrue(engine.snapshot()["hardware"]["connected"])
+            self.assertFalse(engine.snapshot()["hardware"]["homed"])
         finally:
             thread.join()
             engine.shutdown()

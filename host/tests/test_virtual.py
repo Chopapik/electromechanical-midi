@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from midi_source import NoteSpan
-from playback.virtual import VirtualDeviceInstance, VirtualOrchestra, WavePreview
+from playback.virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
 
 class Source:
     tracks = [object()]
@@ -20,12 +20,30 @@ def span(start, end, note=69):
     return NoteSpan(start, end, note, 100, 0)
 
 class VirtualMechanicsTest(unittest.TestCase):
+    def test_fdd_calibrated_comfort_does_not_replace_firmware_limits(self):
+        profile = PROFILES['FDD_CURRENT']
+        self.assertEqual(profile.get('preferredMinHz'), 130)
+        self.assertEqual(profile.get('preferredMaxHz'), 410)
+        self.assertEqual(profile.parameters['preferredMaxHz'].provenance, 'MEASURED')
+        self.assertEqual(profile.get('minHz'), 40)
+        self.assertEqual(profile.get('maxHz'), 500)
+
+    def test_fdd_virtual_real_and_hybrid_share_the_musical_range(self):
+        from playback.capabilities import capability_for
+        from pitch import COMFORT_MIN_HZ, COMFORT_MAX_HZ
+        for mode in ('virtual', 'real', 'hybrid'):
+            capability = capability_for(device(mode=mode))
+            self.assertEqual((capability.min_hz, capability.max_hz), (COMFORT_MIN_HZ, COMFORT_MAX_HZ))
+        orchestra = VirtualOrchestra([device()])
+        orchestra.simulate(Source([span(0, 1, 69)]))
+        self.assertEqual(next(e.hz for e in orchestra.events if e.kind == 'tone'), 220)
+
     def test_fdd_reversals_do_not_add_knocks_to_preview_pcm(self):
         orchestra = VirtualOrchestra([device()])
         orchestra.simulate(Source([span(0, 2, 69)]))
         events = list(orchestra.events)
         reversals = orchestra.report['one']['reversals']
-        self.assertGreater(reversals, 10)
+        self.assertEqual(reversals, 6)  # 220 Hz after folding A4 into comfort.
         preview = WavePreview()
         n = int(2.25 * preview.RATE)
         rows = preview._plan(orchestra, n)
@@ -43,11 +61,11 @@ class VirtualMechanicsTest(unittest.TestCase):
         orchestra = VirtualOrchestra([device()])
         orchestra.simulate(Source([span(0, 2, 69)]))
         result = orchestra.report['one']
-        self.assertEqual(result['steps'], 880)
-        self.assertGreater(result['reversals'], 10)
+        self.assertEqual(result['steps'], 440)
+        self.assertEqual(result['reversals'], 6)
         self.assertEqual(result['reversals'], sum(e.kind == 'reversal' for e in orchestra.events))
         self.assertTrue(4 <= result['state']['position'] <= 72)
-        self.assertEqual(result['travel'], 880)
+        self.assertEqual(result['travel'], 440)
         self.assertEqual(orchestra.active_at(1), {'one': True})
         self.assertEqual(orchestra.active_at(2), {'one': False})
 
@@ -59,7 +77,7 @@ class VirtualMechanicsTest(unittest.TestCase):
         restored = VirtualOrchestra()
         restored.set_config(orchestra.config())
         restored.simulate(Source([span(0, .1)]))
-        self.assertGreater(restored.report['a']['reversals'], 10)
+        self.assertEqual(restored.report['a']['reversals'], 10)
         self.assertEqual(restored.config()['devices'][0]['overrides']['maxPosition']['provenance'], 'MEASURED')
 
     def test_fold_and_drop(self):

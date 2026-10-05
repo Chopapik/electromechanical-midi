@@ -101,7 +101,7 @@ class OrchestraConfig:
         """Reinforcement never changes the configured normal voice inventory."""
         if self.dvd_mode not in ('independent', 'reinforcement'):
             raise ValueError(f'unknown DVD mode: {self.dvd_mode}')
-        devices = self.instances()
+        devices = [device for device in self.instances() if device.enabled]
         return devices, {}
 
 
@@ -110,7 +110,7 @@ def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual
             'volume': 0.2 if kind == 'DVD_SLED' else (0.35 if kind == 'DVD_TRAY' else 0.6),
             'pan': 0.0, 'mute': False, 'solo': False,
             'transpose': 0, 'gate': 1.0, 'profile': profile, 'mode': mode,
-            'overrides': {}}
+            'overrides': {}, 'enabled': True}
 
 
 def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',

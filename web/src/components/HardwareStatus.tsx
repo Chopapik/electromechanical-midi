@@ -32,6 +32,8 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome }: Props) 
         </span>
       </div>
 
+      {connected && <p role="status">FDD: {hardware?.fddStatus === 'homing' ? 'Homing…' : hardware?.fddStatus === 'error' ? 'Error — Retry Home' : hardware?.homed ? 'Ready' : 'Not homed'}</p>}
+
       {connecting && (
         <p className="hardware-notice" role="status">
           Stacja dojeżdża do track 0. {pendingPlay
@@ -66,9 +68,9 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome }: Props) 
           className="button"
           onClick={onHome}
           disabled={!connected}
-          title="Powtórz homing stacji (gdy ERR HOME_FAILED)"
+          title="Ponów homing FDD bez rozłączania Arduino"
         >
-          Home
+          {hardware?.fddStatus === 'error' ? 'Retry Home' : 'Home'}
         </button>
 
         <button type="button" className="button" onClick={() => onReconnect()}>

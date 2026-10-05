@@ -160,7 +160,7 @@ constexpr uint16_t STEP_PULSE_US = 30;  // szerokosc impulsu /STEP
 constexpr uint16_t DIR_SETUP_US  = 30;  // setup czasu DIR przed krokiem
 
 // Twardy limit predkosci krokow (1 ms = 1000 krokow/s). Normalna praca to
-// 130-330 Hz, wiec limit nigdy nie przeszkadza - chroni tylko mechanike,
+// 130-410 Hz, wiec limit nigdy nie przeszkadza - chroni tylko mechanike,
 // gdyby host (albo blad w protokole) probowal krecic headem szybciej.
 constexpr uint32_t MIN_STEP_INTERVAL_US = 1000;
 
@@ -185,7 +185,7 @@ constexpr int  POSITION_LOSS_MARGIN = 6;
 // ============================================================
 // ZAKRES CZESTOTLIWOSCI PRZYJMOWANY OD HOSTA
 //
-// Host domyslnie sklada nuty do 130..330 Hz (COMFORT). Ten zakres jest
+// Host domyslnie sklada nuty do 130..410 Hz (COMFORT). Ten zakres jest
 // tylko bezpiecznikiem mechanicznym - chodzi o to, zeby zadna literowka
 // w protokole nie probowala krecic headem z absurdalna predkoscia.
 // ============================================================
@@ -1142,7 +1142,7 @@ void setup()
     delay(500);
 
     Serial.println(F("electromechanical-midi floppy controller v1"));
-    Serial.println(F("COMFORT 130-330 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS, HIT, DRUM <0-255>"));
+    Serial.println(F("COMFORT 130-410 Hz | komendy: PLAY <hz>, STOP, HOME, PING, STATUS, HIT, DRUM <0-255>"));
 
     drive.requestHome();
 }

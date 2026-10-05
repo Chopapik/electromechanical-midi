@@ -55,6 +55,7 @@ from floppy_link import SerialLinkError, describe_ports, scan_ports  # noqa: E40
 from midi_source import MidiSource, MidiSourceError  # noqa: E402
 from pitch import COMFORT_MAX_HZ, COMFORT_MIN_HZ, FOLD_MODES  # noqa: E402
 from playback.engine import EngineError, PlaybackEngine  # noqa: E402
+from firmware import flash_engine, platformio  # noqa: E402
 from playback.arrangement import ArrangementError, ArrangementMismatch  # noqa: E402
 
 # Jak czesto backend publikuje autorytatywny stan (frontend interpoluje
@@ -233,6 +234,8 @@ def create_app(
 
     clients: set[WebSocket] = set()
     connect_lock = asyncio.Lock()
+    file_load_lock = asyncio.Lock()
+    firmware_busy = False
 
     # --------------------------------------------------------
     # WebSocket: wysylka stanu
@@ -298,10 +301,18 @@ def create_app(
 
     async def load_file(name: str, track: int | None = None) -> None:
         path = library.resolve(name)
-        await asyncio.to_thread(engine.load_file, path, track)
+        # Reconnecting browser tabs can send the same automatic selection.
+        # Serialize these requests and never reset an already loaded song.
+        async with file_load_lock:
+            state = await asyncio.to_thread(engine.snapshot)
+            if state['file'] == name and (track is None or state['track'] == track):
+                return
+            await asyncio.to_thread(engine.load_file, path, track)
 
     async def handle_command(websocket: WebSocket, message: dict) -> None:
         action = str(message.get("action") or "")
+        if firmware_busy and action != 'snapshot':
+            raise EngineError('Trwa wgrywanie firmware Arduino. Poczekaj na zakończenie.')
 
         if action == "play":
             await asyncio.to_thread(engine.play)
@@ -401,6 +412,34 @@ def create_app(
     @app.get("/api/state")
     def api_state() -> dict:
         return engine.snapshot()
+
+    @app.post('/api/firmware/upload')
+    async def api_firmware_upload() -> dict:
+        nonlocal firmware_busy
+        if firmware_busy or connect_lock.locked():
+            raise HTTPException(409, 'Arduino jest zajęte: trwa połączenie lub upload.')
+        from floppy_link import resolve_port
+        try:
+            tool = platformio()
+            port = resolve_port(engine.snapshot()['hardware'].get('port') or serial_port,
+                                interactive=False).device
+        except (RuntimeError, SerialLinkError) as exc:
+            raise HTTPException(400, str(exc)) from exc
+        firmware_busy = True
+        try:
+            async with connect_lock:
+                # Shield the flash from client disconnects; always release the port
+                # and finish reconnecting before allowing another operation.
+                task = asyncio.create_task(asyncio.to_thread(flash_engine, engine, tool, port))
+                try:
+                    return await asyncio.shield(task)
+                except asyncio.CancelledError:
+                    await task
+                    raise
+        except RuntimeError as exc:
+            raise HTTPException(500, str(exc)) from exc
+        finally:
+            firmware_busy = False
 
     @app.get("/api/files")
     def api_files() -> dict:
@@ -704,6 +743,7 @@ def main(argv: list[str] | None = None) -> int:
     engine = PlaybackEngine(
         # GUI: MIDI -> Auto Arranger -> plan -> orkiestra. Bez JSON-a.
         auto_arrange=True,
+        preview_mode=args.no_hardware,
         connect_fn=connect_fn,
         min_hz=args.min_hz,
         max_hz=args.max_hz,

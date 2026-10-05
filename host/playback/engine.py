@@ -71,14 +71,15 @@ SPIN_MARGIN_S = 0.0015
 # dlugie nuty i przerwy musza byc podtrzymywane.
 KEEPALIVE_S = 1.0
 
-# Bledy Arduino, po ktorych dalsze granie nie ma sensu (stan mechaniki
-# wymaga homingu) - utwor zostaje wstrzymany, a nie "gra w ciszy".
-FATAL_ERRORS = (
+# Device/protocol errors pause playback; Serial remains connected.
+DEVICE_ERRORS = (
     "ERR NOT_HOMED",
     "ERR POS_LOST",
     "ERR HOME_FAILED",
+    "ERR TRACK0_STUCK",
     "ERR HOST_TIMEOUT",
 )
+FATAL_ERRORS = DEVICE_ERRORS  # Backward-compatible export; these do not disconnect Serial.
 
 WORKER_IDLE_SLEEP_S = 0.2
 
@@ -137,6 +138,10 @@ BLIND_HOME_WARNING = (
 @dataclasses.dataclass
 class HardwareStatus:
     connected: bool = False
+    homed: bool = False
+    fdd_status: str = "not_homed"
+    position_resyncs: int = 0
+    last_position_resync: str | None = None
     port: str | None = None
     label: str | None = None
     error: str | None = None
@@ -146,6 +151,10 @@ class HardwareStatus:
     def as_dict(self) -> dict:
         return {
             "connected": self.connected,
+            "homed": self.homed,
+            "fddStatus": self.fdd_status,
+            "positionResyncs": self.position_resyncs,
+            "lastPositionResync": self.last_position_resync,
             "port": self.port,
             "label": self.label,
             "error": self.error,
@@ -199,6 +208,7 @@ class PlaybackEngine:
         wait_ready: bool = True,
         realtime: bool = True,
         auto_arrange: bool = False,
+        preview_mode: bool | None = None,
     ):
         self._lock = threading.RLock()
         self._wake = threading.Event()
@@ -220,6 +230,7 @@ class PlaybackEngine:
         # naleza WYLACZNIE do wait_ready(). Bez tego watek roboczy podkradal
         # ERR/READY, oznaczal sprzet jako awaryjny ("Arduino disconnected")
         # i retry homingu nigdy nie dochodzil do skutku.
+        self._home_lock = threading.Lock()
         self._handshake = False
         self._wait_ready = wait_ready
         # Auto Arranger jako domyslne wyjscie: MIDI -> plan -> orkiestra.
@@ -262,7 +273,8 @@ class PlaybackEngine:
         self._current: Command | None = None
 
         self._transport: Transport | None = None
-        self._virtual_mode = False
+        self._runtime_preview = preview_mode
+        self._virtual_mode = bool(preview_mode)
         self._virtual = VirtualOrchestra()
         self._audio_revision = 0
         self._preview = WavePreview(clocked=True)
@@ -349,187 +361,111 @@ class PlaybackEngine:
     # ==========================================================
 
     def connect(self, port: str | None = None) -> bool:
-        """Otwiera port i czeka na READY. BLOKUJE - wolac z watku/w to_thread."""
+        """Open Serial, finish boot handshake, then explicitly home FDD."""
         self.disconnect()
-
+        with self._lock:
+            self._handshake = True
         try:
             transport = self._connect_fn(port)
-        except Exception as exc:  # SerialLinkError i wszystko inne
-            with self._lock:
-                self._hardware = HardwareStatus(
-                    connected=False,
-                    port=port,
-                    error=str(exc),
-                )
-
-            return False
-
-        log: list[str] = []
-        ready = True
-        error: str | None = None
-        blind = False
-
-        def echo(line: str) -> None:
-            nonlocal blind
-            log.append(line)
-
-            if "NA SLEPO" in line:
-                blind = True
-
-            if self._on_handshake is not None:
-                try:
-                    self._on_handshake(line)
-                except Exception:
-                    pass
-
-        if self._wait_ready and hasattr(transport, "wait_ready"):
-            with self._lock:
-                self._handshake = True
-
-            try:
-                ready = bool(
-                    transport.wait_ready(
-                        timeout=self._ready_timeout,
-                        echo=echo,
-                    )
-                )
-            except Exception as exc:
-                ready = False
-                error = str(exc)
-            # _handshake zdejmujemy dopiero po instalacji transportu (nizej).
-            # Inaczej miedzy koncem homingu a podlaczeniem jest okno, w ktorym
-            # Play wyglada jak "brak polaczenia z Arduino".
-
-            if not ready and error is None:
-                error = "brak READY po homingu (stacja nie odpowiedziala)"
-
-        device = getattr(transport, "port", port)
-        label = getattr(transport, "label", None)
-
-        with self._lock:
-            self._transport = transport
-            self._handshake = False
-            self._hardware = HardwareStatus(
-                connected=True,
-                port=str(device) if device else port,
-                label=label,
-                error=error,
-                warning=BLIND_HOME_WARNING if blind else None,
-                log=log,
-            )
-            self._last_io = time.monotonic()
-            self._drum_output = None
-            self._drum_current = None
-
-            # FAIL-SAFE: po (re)connect beben ma byc ZATRZYMOWANY i nie ma
-            # prawa ruszyc sam. Najpierw stop, potem odtworzenie ustawien.
-            self._drum_value = 0
-            self._drum_drive_sent = -1
-            self._drum_tone_sent = -1
-
-            self._send_raw_locked("DRUM 0")
-            self._drum_drive_sent = 0
-            self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
-            self._request_status_locked(force=True)
-
-            pending = self._pending_play
-            self._pending_play = False
-
-        # Play klikniety w trakcie homingu startuje teraz - bez tego uzytkownik
-        # widzi, ze "nic sie nie stalo", i musi klikac drugi raz.
-        if pending and ready:
-            try:
-                self.play()
-            except EngineError:
-                pass
-
-        return ready
-
-    def home(self) -> bool:
-        """Ponowny homing BEZ zrywania polaczenia. BLOKUJE - wolac z watku.
-
-        Locka trzymamy tylko na czas zatrzymania i sprzatania; sam homing
-        (moze potrwac kilka sekund) leci bez niego, zeby API i WebSocket
-        dalej odpowiadaly.
-        """
-        with self._lock:
-            transport = self._transport
-
-            if transport is None:
-                raise EngineError("brak polaczenia z Arduino")
-
-            self._safe_send_stop_locked()
-            self._apply_drum_locked(drive=0, force=True)
-            self._send_raw_locked("HDD 0")
-            self._state = PlaybackState.STOPPED
-            self._position_base = 0.0
-            self._next_index = 0
-            self._current = None
-            self._drum_current = None
-            self._hdd_current = None
-
-        log: list[str] = []
-        blind = False
-
-        def note(line: str) -> None:
-            nonlocal blind
-            log.append(line)
-
-            if "NA SLEPO" in line:
-                blind = True
-
-        try:
-            transport.send("HOME")
         except Exception as exc:
             with self._lock:
-                self._fail_locked(f"nie udalo sie wyslac HOME: {exc}")
-
+                self._hardware = HardwareStatus(error=str(exc), port=port)
+                self._handshake = False
+            return False
+        with self._lock:
+            self._transport = transport
+            self._hardware = HardwareStatus(connected=True,
+                port=getattr(transport, 'port', port), label=getattr(transport, 'label', None),
+                fdd_status='homing')
+        try:
+            if self._wait_ready and hasattr(transport, 'wait_ready'):
+                wait = getattr(transport, 'wait_boot', transport.wait_ready)
+                if not wait(timeout=self._ready_timeout, echo=self._record_handshake):
+                    with self._lock:
+                        self._hardware.error = 'Brak READY podczas handshake Arduino. Spróbuj Retry Home.'
+                        self._hardware.fdd_status = 'error'
+                        self._handshake = False
+                        self._pending_play = False
+                    return False
+            return self.home()
+        except Exception as exc:
+            with self._lock:
+                self._handshake = False
+                self._fail_locked(f'blad Serial: {exc}')
             return False
 
-        wait = getattr(transport, "wait_ready", None)
-        ok = True
-        error: str | None = None
-
-        if wait is not None:
-            with self._lock:
-                self._handshake = True
-
-            try:
-                ok = bool(wait(timeout=self._ready_timeout, echo=note))
-            except Exception as exc:
-                ok, error = False, str(exc)
-            finally:
-                with self._lock:
-                    self._handshake = False
-
-            if not ok and error is None:
-                error = "brak READY po homingu (stacja nie odpowiedziala)"
-
+    def _record_handshake(self, line: str) -> None:
         with self._lock:
-            self._hardware.error = error
-            self._hardware.log = log
+            self._hardware.log = (self._hardware.log + [line])[-20:]
+        if self._on_handshake is not None:
+            self._on_handshake(line)
 
-            # Udany homing = sprzet znow gotowy. Bez tego flaga connected
-            # zostawala False po wczesniejszym bledzie i przycisk "Home"
-            # nie ratowal sytuacji (UI dalej pokazywal rozlaczenie).
-            if ok:
-                self._hardware.connected = self._transport is not None
+    def _start_home_locked(self) -> None:
+        if self._handshake or self._transport is None or not self._hardware.connected:
+            return
+        self._handshake = True
+        self._hardware.homed = False
+        self._hardware.fdd_status = 'homing'
+        threading.Thread(target=self.home, name='fdd-home', daemon=True).start()
 
-            if ok and blind:
-                self._hardware.warning = BLIND_HOME_WARNING
-
-            pending = self._pending_play
-            self._pending_play = False
-
-        # Play klikniety w trakcie homingu (albo podczas reconnectu) startuje
-        # tutaj, zamiast przepasc.
-        if pending and ok:
-            try:
+    def home(self) -> bool:
+        """Recover position on the existing Serial connection; leave playback paused."""
+        with self._lock:
+            if self._transport is None or not self._hardware.connected:
+                raise EngineError('brak polaczenia z Arduino')
+        if not self._home_lock.acquire(blocking=False):
+            return False
+        transport = None
+        try:
+            with self._lock:
+                transport = self._transport
+                if transport is None or not self._hardware.connected:
+                    raise EngineError('brak polaczenia z Arduino')
+                self._handshake = True
+                self._hardware.homed = False
+                self._hardware.fdd_status = 'homing'
+                if self._state is PlaybackState.PLAYING:
+                    self._position_base = self._position_locked()
+                    self._state = PlaybackState.PAUSED
+                self._preview.stop()
+                self._reset_instruments_locked()
+                if not self._hardware.connected:
+                    return False
+                transport.send('HOME')
+            wait = getattr(transport, 'wait_homed', getattr(transport, 'wait_ready', None))
+            ok = bool(wait(timeout=self._ready_timeout, echo=self._record_handshake)) if wait and self._wait_ready else True
+            with self._lock:
+                if self._transport is not transport:
+                    return False
+                self._hardware.homed = ok
+                self._hardware.fdd_status = 'ready' if ok else 'error'
+                self._hardware.error = None if ok else 'FDD: homing nieudany. Sprawdź mechanikę i TRACK0; Retry Home.'
+                self._hardware.warning = 'Pozycja FDD odzyskana; możesz wznowić odtwarzanie.' if ok and self._state is PlaybackState.PAUSED else None
+                self._last_io = time.monotonic()
+                self._drum_value = 0
+                self._drum_drive_sent = 0
+                self._drum_tone_sent = -1
+                self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
+                self._request_status_locked(force=True)
+                ok = ok and self._hardware.connected
+                self._handshake = False
+                pending = self._pending_play
+                self._pending_play = False
+            if ok and pending:
                 self.play()
-            except EngineError:
-                pass
-
-        return ok
+            return ok
+        except EngineError:
+            return False
+        except Exception as exc:
+            with self._lock:
+                if self._transport is transport:
+                    self._fail_locked(f'blad Serial podczas HOME: {exc}')
+            return False
+        finally:
+            with self._lock:
+                if self._transport is transport:
+                    self._handshake = False
+            self._home_lock.release()
 
     def disconnect(self) -> None:
         with self._lock:
@@ -566,6 +502,9 @@ class PlaybackEngine:
                 pass
 
         self._hardware.connected = False
+        self._hardware.homed = False
+        self._hardware.fdd_status = 'not_homed'
+        self._handshake = False
 
     # ==========================================================
     # WCZYTANIE UTWORU
@@ -950,7 +889,7 @@ class PlaybackEngine:
         # Bez podlaczonego Arduino Auto Arranger gra na Virtual Orchestra.
         # Bez tego "wrzuc MIDI i nacisnij Play" konczylo sie bledem
         # "brak polaczenia z Arduino", mimo ze plan jest gotowy.
-        if self._transport is None and any(
+        if self._runtime_preview is None and self._transport is None and any(
                 device.get('mode', 'virtual') in ('virtual', 'hybrid')
                 for device in self._plan.devices):
             self._virtual_mode = True
@@ -1021,8 +960,21 @@ class PlaybackEngine:
                 self._audio_revision += 1
                 old_preview.close()
 
+    def _runtime_config(self, payload: dict) -> dict:
+        """Startup owns output mode; old per-device mode is only an internal detail."""
+        if self._runtime_preview is None:
+            return payload
+        payload = copy.deepcopy(payload)
+        payload['enabled'] = self._runtime_preview
+        if payload.get('devices') is not None:
+            for device in payload['devices']:
+                # Trays have no physical lane; they must be disabled for hardware.
+                device['mode'] = 'virtual' if self._runtime_preview or device['type'] == 'DVD_TRAY' else 'real'
+        return payload
+
     def configure_virtual(self, payload: dict) -> None:
         """Switch output without replacing MIDI source, tempo map or worker clock."""
+        payload = self._runtime_config(payload)
         candidate = VirtualOrchestra()
         candidate.set_config(payload)
         with self._lock:
@@ -1087,6 +1039,7 @@ class PlaybackEngine:
         allokatora. Regula NIE przybija nuty na stale: gdy wskazane urzadzenie
         jest zajete, inne wolne i tak ja uratuje.
         """
+        payload = self._runtime_config(payload)
         arrangement = Arrangement.parse(payload, self._source, allow_mismatch=allow_mismatch)
         orchestra = parse_orchestra({
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
@@ -1107,7 +1060,7 @@ class PlaybackEngine:
         # Import nie przelacza na sile wirtualizacji - patrz komentarz przy
         # render_plan. Podglad musi dzialac, gdy dokument ma cokolwiek do
         # uslyszenia albo nie ma gdzie wyslac komend sprzetowych.
-        if preview_devices or not bound or self._transport is None:
+        if self._runtime_preview is None and (preview_devices or not bound or self._transport is None):
             self._virtual_mode = True
 
     def set_arrangement(self, payload: dict, *, allow_mismatch: bool = False) -> None:
@@ -1128,7 +1081,8 @@ class PlaybackEngine:
     def set_orchestra(self, payload: dict) -> None:
         """Zmiana dostepnego sprzetu - plan powstaje od nowa."""
         with self._lock:
-            self._orchestra = parse_orchestra(payload)
+            self._orchestra = parse_orchestra(self._runtime_config(payload))
+            self._orchestra.devices = self._runtime_config({'devices': self._orchestra.devices})['devices']
             self._auto_arrange = True
             self._arrangement = None
             self._rebuild_locked(keep_position=True)
@@ -1354,6 +1308,21 @@ class PlaybackEngine:
 
             self._fail_locked("brak polaczenia z Arduino")
             return
+
+        if not self._virtual_mode or self._hardware_active:
+            if self._handshake:
+                self._pending_play = True
+                return
+            if self._transport is not None and not self._hardware.connected:
+                raise EngineError(self._hardware.error or 'brak polaczenia z Arduino')
+            if self._transport is not None and not self._hardware.homed:
+                if self._hardware.fdd_status == 'error':
+                    raise EngineError(self._hardware.error or 'FDD: Retry Home')
+                self._pending_play = True
+                self._start_home_locked()
+                return
+            if self._hardware.connected and self._hardware.homed:
+                self._hardware.error = None
 
         if self._virtual_mode:
             if self._preview.path is None:
@@ -1592,6 +1561,7 @@ class PlaybackEngine:
                     # connecting: trwa homing/reconnect (Play poczeka w kolejce).
                     "connecting": self._handshake,
                     "pendingPlay": self._pending_play,
+                    "ready": self._hardware.connected and self._hardware.homed and not self._handshake,
                 },
                 "drum": self._drum_snapshot_locked(),
                 "hdd": self._hdd_snapshot_locked(),
@@ -1611,7 +1581,9 @@ class PlaybackEngine:
                 "virtual": {"audioRevision": self._audio_revision,
                             "audioPosition": self._preview.clock_position() if playing else position,
                             "audioClockRunning": self._preview.clock_running,
-                            "enabled": self._virtual_mode, "config": self._virtual.config(),
+                            "enabled": self._virtual_mode,
+                            "runtimeMode": "virtual" if self._virtual_mode else "hardware",
+                            "config": {**self._virtual.config(), "devices": self._orchestra.devices},
                             "report": self._virtual.report,
                             "trayStatus": self._virtual.tray_state_at(position) if playing else {},
                             "tonalDebug": {e['deviceId']: e for e in getattr(self._preview, 'tonal_stats', {}).get('events', [])
@@ -1762,6 +1734,12 @@ class PlaybackEngine:
             self._fail_locked("brak polaczenia z Arduino")
             return False
 
+        if command.kind == 'play' and (not self._hardware.homed or self._handshake):
+            self._pause_fdd_locked('FDD: oczekiwanie na poprawny homing')
+            if self._hardware.fdd_status != 'error':
+                self._start_home_locked()
+            return False
+
         try:
             if command.kind == "play":
                 transport.play(command.hz)
@@ -1845,12 +1823,18 @@ class PlaybackEngine:
                     self._drum_tone_hz = int(value)
                 except ValueError:
                     pass
+            elif key == "homed":
+                self._hardware.homed = value == "1"
+                if self._hardware.homed or self._hardware.fdd_status != "error":
+                    self._hardware.fdd_status = "ready" if self._hardware.homed else "not_homed"
             elif key == "hdd":
                 self._hdd_busy = value == "1"
 
     def _fail_locked(self, message: str) -> None:
         """Awaria lacza: nie udajemy, ze utwor gra dalej."""
         self._hardware.connected = False
+        self._hardware.homed = False
+        self._hardware.fdd_status = "not_homed"
         self._hardware.error = message
 
         if self._state is PlaybackState.PLAYING:
@@ -1868,6 +1852,16 @@ class PlaybackEngine:
         self._hdd_busy = False
         self._wake.set()
 
+    def _pause_fdd_locked(self, message: str) -> None:
+        if self._state is PlaybackState.PLAYING:
+            self._position_base = self._position_locked()
+            self._state = PlaybackState.PAUSED
+        self._preview.stop()
+        self._hardware.error = message
+        self._current = None
+        self._reset_instruments_locked()
+        self._wake.set()
+
     def _poll_lines_locked(self) -> None:
         transport = self._transport
 
@@ -1883,14 +1877,33 @@ class PlaybackEngine:
         for line in lines:
             self._hardware.log = (self._hardware.log + [line])[-5:]
 
+            if line.startswith('POSITION_RESYNC '):
+                self._hardware.position_resyncs += 1
+                self._hardware.last_position_resync = line
+                continue
+
             if line.startswith("STATUS"):
                 self._parse_status_locked(line)
                 continue
 
-            if line.startswith(FATAL_ERRORS):
-                self._fail_locked(f"Arduino: {line}")
+            if line == 'READY' or line == 'HOMING' or line.startswith('electromechanical-midi floppy controller'):
+                self._pause_fdd_locked('Arduino: reset/homing — odzyskiwanie pozycji')
+                self._hardware.homed = False
+                self._start_home_locked()
+                break
+            if line.startswith(DEVICE_ERRORS):
+                self._pause_fdd_locked(f"Arduino: {line}")
+                if line.startswith('ERR HOST_TIMEOUT'):
+                    continue
+                self._hardware.homed = False
+                self._hardware.fdd_status = 'error' if line.startswith(('ERR HOME_FAILED', 'ERR TRACK0_STUCK')) else 'not_homed'
+                if not line.startswith(('ERR HOME_FAILED', 'ERR TRACK0_STUCK')):
+                    self._start_home_locked()
+                    break
 
     def _keepalive_locked(self) -> None:
+        if self._handshake:
+            return
         if self._virtual_mode:
             return
         transport = self._transport
@@ -1928,9 +1941,12 @@ class PlaybackEngine:
             with self._lock:
                 if self._shutdown:
                     return
+                if not self._handshake and self._transport is not None and not self._virtual_mode:
+                    self._poll_lines_locked()
 
                 if (
                     self._state is not PlaybackState.PLAYING
+                    or self._handshake
                     or self._timeline is None
                     or (self._transport is None and not self._virtual_mode)
                 ):
@@ -1957,7 +1973,8 @@ class PlaybackEngine:
             self._wake.clear()
 
             with self._lock:
-                self._keepalive_locked()
+                if not self._handshake:
+                    self._keepalive_locked()
 
     def _plan_locked(self) -> float | None:
         """Wysyla wszystkie komendy, ktorych czas juz nadszedl.

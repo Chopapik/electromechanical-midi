@@ -6,7 +6,9 @@ import { usePlaybackPosition } from '../usePlaybackPosition'
 import { eventAt, eventTime, frequencyAt, indexTelemetry, noteName, streamAt } from '../telemetry'
 
 export function arduinoStatus(state: PlayerState | null) {
-  return state?.hardware.connected ? 'Arduino connected' : 'Arduino disconnected'
+  if (!state?.hardware.connected) return 'Arduino disconnected'
+  const fdd = state.hardware.fddStatus
+  return `Arduino connected${fdd ? ` · FDD: ${fdd === 'ready' ? 'Ready' : fdd === 'homing' ? 'Homing…' : fdd === 'error' ? 'Error — Retry Home' : 'Not homed'}` : ''}`
 }
 function label(event: TelemetryEvent) {
   if (event.kind === 'hit') return (event.articulation ?? 'HIT').replaceAll('_', ' ')
@@ -17,7 +19,7 @@ function deviceName(name: string) {
   return name.replace(/^DVD Stepper /, 'DVD ').replace(/^HDD_VCM #/, 'HDD ').replace(/^FDD #/, 'FDD ').replace(/^DVD Tray /, 'TRAY ')
 }
 export function TelemetryMonitor({ state, view, error, metadata, onSettings, settingsOpen }: { state: PlayerState | null; view: TelemetryView | null; error: string | null; metadata?: FileMetadata | null; onSettings?: () => void; settingsOpen?: boolean }) {
-  const devices = state?.virtual?.config.devices ?? []
+  const devices = (state?.virtual?.config.devices ?? []).filter(device => device.enabled !== false)
   const realDeviceKey = JSON.stringify(devices.filter(d => d.mode === 'real').map(d => d.id))
   const index = useMemo(() => {
     if (!view) return null

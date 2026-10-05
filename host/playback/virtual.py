@@ -20,7 +20,7 @@ import wave
 from pathlib import Path
 
 from midi_source import MidiSource
-from pitch import hz_to_midi, midi_to_hz
+from pitch import COMFORT_MAX_HZ, COMFORT_MIN_HZ, hz_to_midi, midi_to_hz
 from .timeline import Command, Timeline
 
 from .tonal_articulation import Curve, TonalArticulation, resolve as resolve_tonal, render as render_tonal, retarget as retarget_tonal, apply_mode as apply_tonal_mode
@@ -54,6 +54,18 @@ class DeviceProfile:
     def get(self, name: str) -> float | int | None:
         return self.parameters.get(name, Parameter(None, 'UNKNOWN')).value
 
+    def playback_range(self):
+        """Shared musical range; firmware limits remain separate hard bounds."""
+        low, high = self.get('minHz'), self.get('maxHz')
+        if self.kind == 'FDD':
+            preferred_low = self.get('preferredMinHz')
+            preferred_high = self.get('preferredMaxHz')
+            if preferred_low is not None:
+                low = max(low, preferred_low) if low is not None else preferred_low
+            if preferred_high is not None:
+                high = min(high, preferred_high) if high is not None else preferred_high
+        return low, high
+
     def as_dict(self) -> dict:
         return {'id': self.id, 'kind': self.kind, 'overflow': self.overflow,
                 'busyPolicy': self.busy_policy,
@@ -86,8 +98,8 @@ PROFILES = {
         'maxPosition': _p(72, 'RESEARCHED', 'firmware/floppy/src/main.cpp MAX_TRACK'),
         'minHz': _p(40, 'RESEARCHED', 'firmware MIN_PLAY_HZ'),
         'maxHz': _p(500, 'RESEARCHED', 'firmware MAX_PLAY_HZ'),
-        'preferredMinHz': _p(130, 'RESEARCHED', 'host/pitch.py'),
-        'preferredMaxHz': _p(330, 'RESEARCHED', 'host/pitch.py'),
+        'preferredMinHz': _p(COMFORT_MIN_HZ, 'RESEARCHED', 'host/pitch.py'),
+        'preferredMaxHz': _p(COMFORT_MAX_HZ, 'MEASURED', 'README.md: Fizyczna kalibracja FDD; 410 Hz = 38/40, normal orientation'),
         'maxStepRate': _p(1000, 'RESEARCHED', 'firmware MIN_STEP_INTERVAL_US'),
     }, overflow='fold'),
     'DVD_REFERENCE': DeviceProfile('DVD_REFERENCE', 'DVD_SLED', {
@@ -138,18 +150,22 @@ class VirtualDeviceInstance:
     mode: str = 'virtual'
     overrides: dict[str, Parameter] = dataclasses.field(default_factory=dict)
 
+    enabled: bool = True
+
     @property
     def drives_hardware(self) -> bool:
         """Czy instancja ma wysylac komendy na fizyczna linie (Serial)."""
-        return self.mode in ('real', 'hybrid')
+        return self.enabled and self.mode in ('real', 'hybrid')
 
     @property
     def in_preview(self) -> bool:
         """Czy instancja ma byc slyszalna w podgladzie audio (WAV)."""
-        return self.mode in ('virtual', 'hybrid')
+        return self.enabled and self.mode in ('virtual', 'hybrid')
 
     @classmethod
     def parse(cls, data: dict) -> 'VirtualDeviceInstance':
+        if not isinstance(data.get('enabled', True), bool):
+            raise ValueError('device enabled must be boolean')
         kind = str(data.get('type', ''))
         if kind not in KINDS:
             raise ValueError(f'unknown device type: {kind}')
@@ -190,7 +206,7 @@ class VirtualDeviceInstance:
         return cls(ident, kind, str(data.get('name') or kind)[:80], track,
                    str(data.get('role') or '')[:80], volume, pan,
                    bool(data.get('mute', False)), bool(data.get('solo', False)),
-                   transpose, gate, profile, mode, overrides)
+                   transpose, gate, profile, mode, overrides, data.get('enabled', True))
 
 def effective_profile(device: VirtualDeviceInstance) -> DeviceProfile:
     base = PROFILES[device.profile or DEFAULT_PROFILE[device.type]]
@@ -292,8 +308,8 @@ class VirtualOrchestra:
         self.dvd_mode = plan.dvd_mode
         self.tray_enabled = plan.tray_enabled
         self.idle_reinforcement = plan.idle_reinforcement
-        self.tray_movements = plan.tray_events
-        self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices]
+        self.tray_movements = [e for e in plan.tray_events if any(d['id'] == e.device_id and d.get('enabled', True) for d in plan.devices)]
+        self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices if device.get('enabled', True)]
         self.report = {}
         self.events = []
         self.activity = {device.id: [] for device in self.devices}
@@ -323,10 +339,12 @@ class VirtualOrchestra:
         for device in self.devices:
             by_device[device.id].sort(key=lambda item: (item.actual_start, item.id))
 
-        audible_solo = any(d.solo and not d.mute for d in self.devices)
+        audible_solo = any(d.enabled and d.solo and not d.mute for d in self.devices)
         durations = [event.actual_duration for event in plan.events if event.played]
 
         for device in self.devices:
+            if not device.enabled:
+                continue
             profile = effective_profile(device)
             state = MechanicalState(profile)
             counts = dict(accepted=0, played=0, dropped=0, folded=0, delayed=0,
@@ -444,7 +462,9 @@ class VirtualOrchestra:
         sources = {e.id: e for e in plan.events}
         audible_solo = any(device.solo and not device.mute for device in self.devices)
         for extra in plan.reinforcements:
-            device = by_id[extra.device_id]
+            device = by_id.get(extra.device_id)
+            if device is None or not device.enabled:
+                continue
             report = self.report[device.id]
             report['reinforcementEvents'] += 1
             report['reinforcementTime'] += extra.duration
@@ -462,6 +482,8 @@ class VirtualOrchestra:
                         extra.start-sources[extra.source_id].actual_start)
                         if extra.kind == "tone" and extra.source_id in self.tonal_decisions else None)))
         for extra in plan.tray_events:
+            if extra.device_id not in by_id:
+                continue
             report = self.report[extra.device_id]
             report['reinforcementEvents'] += 1
             report['reinforcementTime'] += extra.duration
@@ -502,8 +524,10 @@ class VirtualOrchestra:
         self.activity = {device.id: [] for device in self.devices}
         self.decisions = {}
         report = {}
-        audible_solo = any(d.solo and not d.mute for d in self.devices)
+        audible_solo = any(d.enabled and d.solo and not d.mute for d in self.devices)
         for device in self.devices:
+            if not device.enabled:
+                continue
             profile = effective_profile(device)
             state = MechanicalState(profile)
             counts = dict(accepted=0, played=0, dropped=0, folded=0, delayed=0,
@@ -561,7 +585,7 @@ class VirtualOrchestra:
                     continue
                 note = span.note + device.transpose + getattr(incoming_note, 'transpose', 0)
                 hz = midi_to_hz(note)
-                lo, hi = profile.get('minHz'), profile.get('maxHz')
+                lo, hi = profile.playback_range()
                 if lo is not None and hi is not None and (hz < lo or hz > hi):
                     if profile.overflow == 'fold' and getattr(incoming_note, 'octave_fold', True):
                         candidates = [(abs(shift), midi_to_hz(note + shift)) for shift in range(-120, 121, 12)

@@ -40,7 +40,7 @@ dźwięku. Dlatego:
 
 * wysokość nuty = **tempo kroków** (okres w mikrosekundach),
 * głowica cały czas jedzie, więc co jakiś czas **zawraca**
-  (`MIN_TRACK` ↔ `MAX_TRACK`),
+  (fizyczny TRACK0 ↔ `MAX_TRACK`),
 * **zawracanie nie zmienia wysokości dźwięku** - zmienia się tylko kierunek,
   tempo kroków zostaje takie samo.
 
@@ -121,9 +121,94 @@ Ustalenia dla tej konkretnej stacji:
 Programowy licznik pozycji: `0 = TRACK0`, bezpieczny zakres
 `MIN_TRACK = 4` … `MAX_TRACK = 72`.
 
+### Podłączenie 1× FDD + 1× HDD VCM do jednego Uno
+
+Źródło pinów: `firmware/floppy/src/main.cpp`, definicje `PIN_*`,
+`FloppyDrive::begin()` i `HddPercussion`. To **jeden wspólny firmware**
+dla FDD i HDD, budowany dla Uno przez `firmware/floppy/platformio.ini`.
+Osobne szkice `firmware/hdd_*` służą do testów, nie są drugim programem
+wgrywanym równolegle. Host wysyła do wspólnego firmware `PLAY`/`STOP`
+dla FDD oraz `HIT`/`HDD 0` dla HDD.
+
+Kierunek w tabeli jest względem Arduino; „—” oznacza połączenie zasilania
+lub wyjść mostka, nie pin sygnałowy Arduino.
+
+| Arduino pin | Sygnał | Urządzenie/pin | Kierunek | Uwagi |
+| --- | --- | --- | --- | --- |
+| D2 | `DIR` | FDD, pin 18 | → FDD | HIGH: ku TRACK0; LOW: od TRACK0 |
+| D3 | `/STEP` | FDD, pin 20 | → FDD | impuls aktywny LOW, 30 µs |
+| D4 | `/TRACK0` | FDD, pin 26 | ← FDD | aktywne LOW, wejście `INPUT_PULLUP` |
+| D5 | `DRIVE SELECT` | wejście Select FDD | → FDD | aktywne LOW; numer pinu złącza **nie jest określony w firmware** — sprawdź selekcję/jumper konkretnej stacji |
+| D7 | `PIN_HDD_PNP_L` | wejście sterujące lewym górnym PNP mostka H | → mostek | LOW włącza, HIGH wyłącza |
+| D8 | `PIN_HDD_PNP_R` | wejście sterujące prawym górnym PNP mostka H | → mostek | LOW włącza, HIGH wyłącza |
+| D9 | `PIN_HDD_NPN_L` | wejście sterujące lewym dolnym NPN mostka H | → mostek | HIGH włącza, LOW wyłącza |
+| D10 | `PIN_HDD_NPN_R` | wejście sterujące prawym dolnym NPN mostka H | → mostek | HIGH włącza, LOW wyłącza |
+| brak | HDD `ENABLE/PWM` | brak osobnej linii w tym firmware | — | D7–D10 sterowane cyfrowo; D6 to VHS, nie HDD |
+| — | wyjścia mocy L i R | dwa końce cewki VCM, między wyjściami mostka | mostek → VCM | nie podłączać cewki do GPIO; kierunek A parkuje, B uderza |
+| — | zasilanie mostka | szyna dodatnia i GND jego stopnia mocy | zasilacz → mostek | główny firmware nie określa napięcia ani prądu — dobierz do istniejącego mostka i cewki |
+| — | zasilanie FDD | osobne złącze zasilania stacji | zasilacz → FDD | według oznaczeń konkretnej stacji; nie z GPIO |
+| GND | wspólna masa | GND sygnałowe FDD, GND mostka i minus zasilania | wspólna | połącz z GND Uno |
+| USB | Serial + zasilanie Uno | komputer → Uno | ↔ | 115200 baud; zasilanie obciążeń przez ich stopnie mocy |
+
+**Brak konfliktów pinów:** FDD używa D2–D5, HDD D7–D10. D6 jest
+zarezerwowany dla VHS; D0/D1 pozostają dla Serial. D9/D10 są używane jako
+zwykłe wyjścia cyfrowe, mimo że Uno pozwala na nich także na PWM.
+
+Mostek oczekiwany przez kod ma **cztery niezależne wejścia PNP/NPN**,
+nie dowolny moduł `IN1/IN2/ENA`. Tabela opisuje wejścia jego obwodów
+sterujących; firmware nie podaje rezystorów bazowych ani schematu drivera.
+Nie jest to instrukcja podłączenia gołych baz tranzystorów bezpośrednio
+do GPIO. Szkic testowy `firmware/hdd_dir/hdd_dir.ino` opisuje szynę +5 V,
+ale główny firmware nie ustala jej wartości.
+
+Stan OFF: D7=HIGH, D8=HIGH, D9=LOW, D10=LOW. PARK: D7=LOW i D10=HIGH
+przez 40 ms; następnie OFF przez 40 ms; STRIKE: D8=LOW i D9=HIGH przez
+25 ms; potem OFF. Polaryzacja cewki musi odpowiadać temu kierunkowi
+parkowania. Przy włączaniu/resetowaniu Uno wejścia początkowo są wysokoimpedancyjne;
+stan OFF na ten czas musi zapewniać sam obwód mostka.
+
 ---
 
 ## 4. Instalacja
+
+### Pierwszy test orkiestry: 1× FDD + 1× HDD
+
+Tryb wyjścia ustala uruchomienie backendu, nie kontrolka Settings:
+
+```bash
+./scripts/dev.sh                 # real hardware + Serial
+./scripts/dev.sh --no-hardware   # developerski odsłuch virtual, bez Serial
+# Przy wielu portach szeregowych wskaż Uno jawnie:
+./scripts/dev.sh --serial-port /dev/cu.usbmodem14101
+```
+
+`dev.sh` przekazuje dotychczasowe argumenty do `host.web.server`.
+Backend ustawia runtime mode raz na start. Import/preset ani zmiana
+urządzenia nie przełączają go na virtual przy braku Arduino. Settings
+nie zawierają globalnego virtual toggle ani wyboru virtual/real/hybrid
+dla urządzeń. Pole `mode` pozostaje wewnętrznym detalem zgodności;
+backend wyprowadza je z trybu uruchomienia. DVD tray nie ma fizycznej
+linii w tym firmware; na pierwszy test pozostaw go wyłączonego.
+
+Przy zwykłym uruchomieniu port Uno jest wybierany automatycznie na
+podstawie identyfikatora USB i opisu urządzenia. `--serial-port` jest
+potrzebny dopiero przy kilku równorzędnych kandydatach. Zamknij Serial
+Monitor Arduino IDE / PlatformIO przed połączeniem: port może mieć
+tylko jednego właściciela. `dev.sh` odmawia startu przy zajętym porcie
+backendu lub frontendu; Ctrl+C zatrzymuje również procesy potomne Vite.
+
+W **Settings → DEVICES** ustaw **FDD #1: Enabled ON** oraz
+**HDD_VCM #1: Enabled ON**. Wszystkie pozostałe ustaw na OFF.
+Załaduj MIDI i naciśnij Play. Na wspólnym Uno działa jedna linia FDD
+i jedna HDD; w hardware mode potrzebne jest połączenie Serial i READY.
+Nie ma automatycznego wykrywania instrumentów — wybierasz je ręcznie.
+
+`enabled: false` usuwa instrument z dostępnej polifonii, allocatora,
+routingu arrangement, reinforcement, komend hardware i zdarzeń audio.
+Kafelek znika z LIVE, ale konfiguracja pozostaje w Settings/presetach.
+Ponowne ON przywraca instrument wraz z parametrami. Stare konfiguracje
+bez `enabled` oznaczają ON. To niezależne od `mute` i od runtime mode.
+Parametry instrumentu można nadal otworzyć przez „Ustawienia …”.
 
 ### 4.1. Zależności Pythona (host + backend web)
 
@@ -234,7 +319,7 @@ Opcje backendu:
 | `--serial-port` | wskaż port Arduino ręcznie (domyślnie autodetekcja) |
 | `--no-hardware` | nie łączy się z Arduino |
 | `--fake-hardware` | bez Serial, ale silnik gra na atrapie (demo UI) |
-| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130–330 Hz) |
+| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130–410 Hz) |
 | `--transpose` | tryb składania oktawowego na start (`auto`/`low`/`high`) |
 | `--strategy` | strategia akordów (`highest`/`lowest`/`last`) |
 
@@ -267,7 +352,7 @@ Opcje backendu:
 * **Aktualna nuta** (`E3`) i **częstotliwość** (`164.81 Hz`), a w ciszy `REST`.
   Jeśli nuta została złożona oktawowo, UI pokazuje też nutę źródłową.
 * **Progress bar** z czasem `1:17 / 4:03`.
-* **Transpose** - `AUTO` / `LOW 130–260 Hz` / `HIGH 165–330 Hz`
+* **Transpose** - `AUTO` / `LOW 130–260 Hz` / `HIGH 205–410 Hz`
   (patrz sekcja 9).
 * **Status sprzętu** - zielona/czerwona kropka, port, komunikat błędu i
   przycisk **Reconnect** (plus wybór portu, gdy jest ich kilka).
@@ -388,7 +473,7 @@ Zasady działania:
 * przerwa → `DRUM 0`,
 * nuty stykające się nie dostają `DRUM 0` — dźwięk przechodzi płynnie,
 * osobny mapper wysokości: zakres **110–880 Hz** i składanie oktawowe,
-  niezależne od zakresu FDD (130–330 Hz),
+  niezależne od zakresu FDD (130–410 Hz),
 * monofonizacja: ta sama strategia co dla FDD (`highest`/`lowest`/`last`),
 * **seek** wznawia stan **obu** linii (jeśli w danej chwili trwa nuta bębna,
   od razu leci `DRUMF` + `DRUM 74`),
@@ -396,27 +481,14 @@ Zasady działania:
 * podczas gdy bęben gra z MIDI, **panel ręczny jest zablokowany**
   (`MIDI CONTROLLED`); wraca po pauzie/stopie.
 
-#### Homing: czujnik TRACK0 i awaryjny homing „na ślepo"
+#### Homing: czujnik TRACK0
 
-Poprawny homing opiera się na czujniku TRACK0. Jeśli czujnik (albo taśma)
-przestanie odpowiadać, firmware melduje `ERR HOME_FAILED` i **nic nie da się
-grać** — `PLAY` wymaga znanej pozycji głowicy. Dlatego host schodzi po
-drabince:
-
-1. `HOME` — normalny homing z czujnikiem (90 kroków),
-2. `HOME` × 2 — kolejne pełne budżety kroków w stronę TRACK0,
-3. `HOME BLIND` — **homing bez czujnika**: głowica jedzie pełną szerokość
-   stacji (95 kroków) do oporu, potem odjeżdża `START_TRACK`. Pozycja jest
-   znana „z założenia", więc granie wraca.
-
-Gdy zadziała wariant 3, UI pokazuje żółte ostrzeżenie:
-
-> ⚠ homing NA ŚLEPO: czujnik TRACK0 stacji nie odpowiada (sprawdź taśmę /
-> czujnik) — pozycja liczona z dojazdu do oporu
-
-To jest obejście, nie naprawa: przy padniętym czujniku stacja traci
-kontrolę pozycji (kontrola `POS_LOST` też nie działa) i dalej gra, ale
-warto wymienić taśmę/czujnik.
+Po starcie/reset oraz `HOME` firmware szuka fizycznego TRACK0 z budżetem
+90 kroków. Po wykryciu czujnika odjeżdża o `START_TRACK = 10` i zgłasza
+`READY`. Backend po connect/upload wysyła jawne `HOME` oraz potwierdza
+`STATUS homed=1`. Błąd mechaniki nie oznacza utraty połączenia Serial.
+Automatyczny handshake nie używa `HOME BLIND` jako obejścia niesprawnego
+czujnika; po `HOME_FAILED` dostępne jest Retry Home.
 
 #### Trzecia linia: HDD perkusja (VCM)
 
@@ -511,8 +583,10 @@ sterowanie), do zmiany razem z ewentualnym watchdogiem bębna.
 * **Awaria w trakcie grania** (np. wyjęty kabel) → utwór przechodzi w `paused`
   z komunikatem błędu; playback **nie udaje, że gra dalej w ciszy**.
 * Po podłączeniu sprzętu wciśnij **Reconnect** i wznów (`▶`).
-* Błędy krytyczne z Arduino (`ERR POS_LOST`, `ERR NOT_HOMED`, `ERR HOME_FAILED`,
-  `ERR HOST_TIMEOUT`) przerywają utwór; backend robi wtedy ponowny homing.
+* Błędy urządzenia zachowują Serial: `NOT_HOMED` i starsze `POS_LOST` uruchamiają
+  recovery HOME; `HOME_FAILED` i `TRACK0_STUCK` wymagają Retry Home po sprawdzeniu
+  mechaniki/czujnika. `HOST_TIMEOUT` tylko pauzuje. Zwykły `POSITION_RESYNC` nie
+  zatrzymuje utworu.
 
 ---
 
@@ -555,7 +629,7 @@ Po połączeniu serwer od razu wysyła stan, a potem publikuje go cyklicznie
     "frequency": 164.81,
     "transpose": "low",
     "strategy": "highest",
-    "range": { "minHz": 130, "maxHz": 330 },
+    "range": { "minHz": 130, "maxHz": 410 },
     "stats": { "notes": 84, "folded": 80, "skipped": 0, "playCommands": 84 },
     "hardware": { "connected": true, "port": "/dev/cu.usbmodem14101",
                   "label": "Arduino", "error": null, "log": [] },
@@ -645,7 +719,7 @@ Transpose mode:
 AUTO
 
 Range:
-130-330 Hz
+130-410 Hz
 
 Utwor: 16.87 s (1 zmian tempa z pliku MIDI)
 Nut: 30 (zlozone oktawowo: 0, pominiete: 0)
@@ -666,7 +740,7 @@ host czeka na to, zanim zacznie grać.
 | `--list-ports` | wypisz porty szeregowe i zakończ |
 | `--port PORT` | wskaż port ręcznie (domyślnie autodetekcja) |
 | `--baud N` | prędkość Serial (domyślnie 115200) |
-| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130-330) |
+| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130-410) |
 | `--transpose auto\|low\|high` | tryb składania oktawowego |
 | `--strategy highest\|lowest\|last` | co zrobić z akordem |
 | `--gate (0, 1]` | jaka część nuty ma zabrzmieć (staccato) |
@@ -697,8 +771,8 @@ Tekstowy, 115200 8N1, linie zakończone `\n`.
 
 Możliwe błędy: `ERR NOT_HOMED` (brak homingu), `ERR BUSY` (trwa homing/odjazd),
 `ERR FREQ_RANGE` (częstotliwość poza `MIN_PLAY_HZ`..`MAX_PLAY_HZ`),
-`ERR MISSING_FREQ`, `ERR BAD_FREQ`, `ERR HOME_FAILED`, `ERR POS_LOST`
-(utrata pozycji - host robi ponowny homing), `ERR HOST_TIMEOUT` (watchdog: host
+`ERR MISSING_FREQ`, `ERR BAD_FREQ`, `ERR HOME_FAILED`, `ERR TRACK0_STUCK`
+(czujnik aktywny mimo odjazdu od początku), `ERR HOST_TIMEOUT` (watchdog: host
 przestał się odzywać), `ERR MISSING_PWM`, `ERR BAD_PWM`, `ERR PWM_RANGE`,
 `ERR MISSING_DRUMF`, `ERR BAD_DRUMF`, `ERR DRUMF_RANGE`
 (sterowanie bębnem VHS), `ERR LINE_TOO_LONG`, `ERR UNKNOWN_CMD`.
@@ -749,13 +823,13 @@ o całe oktawy** - klasa wysokości dźwięku (C, C#, D…) nigdy się nie zmien
 
 | Tryb | Zasada | Efekt |
 | --- | --- | --- |
-| `auto` *(domyślny)* | nuta zostaje, jeśli mieści się w zakresie; inaczej najbliższa oktawa | zgodny z przykładem `523 → 261.5`; **melodia przechodząca przez granicę 330 Hz może mieć skok o oktawę** |
+| `auto` *(domyślny)* | nuta zostaje, jeśli mieści się w zakresie; inaczej najbliższa oktawa | zgodny z przykładem `523 → 261.5`; **melodia przechodząca przez granicę 410 Hz może mieć skok o oktawę** |
 | `low` | zawsze najniższa oktawa z zakresu (**130-260 Hz**) | melodia bez skoków, wszystko niżej |
-| `high` | zawsze najwyższa oktawa z zakresu (**165-330 Hz**) | melodia bez skoków, wszystko wyżej |
+| `high` | zawsze najwyższa oktawa z zakresu (**205-410 Hz**) | melodia bez skoków, wszystko wyżej |
 
-Dlaczego to ma znaczenie: przy zakresie szerszym niż oktawa (330/130 = 2.54)
-granica "zostaje / spada o oktawę" wypada na 330 Hz. W trybie `auto`
-`E4 = 329.6 Hz` zostaje, a `F4 = 349.2 Hz` spada do `174.6 Hz` - słychać skok.
+Dlaczego to ma znaczenie: przy zakresie szerszym niż oktawa (410/130 ≈ 3.15)
+granica "zostaje / spada o oktawę" wypada na 410 Hz. W trybie `auto`
+`G4 = 392.0 Hz` zostaje, a `G#4 = 415.3 Hz` spada do `207.7 Hz` - słychać skok.
 
 Tryby `low` i `high` wybierają dla każdej nuty tę samą, **dokładnie
 jednooktawową** część zakresu. W takim oknie każda klasa wysokości ma
@@ -772,7 +846,7 @@ python host/player.py midi/range-test.mid --track 0 --transpose low
 
 ### Gdy nuta nie mieści się w zakresie
 
-Przy 130-330 Hz (ponad oktawa) **każda** nuta MIDI ma swoją oktawę w zakresie,
+Przy 130-410 Hz (ponad oktawa) **każda** nuta MIDI ma swoją oktawę w zakresie,
 więc `in_range` jest zawsze prawdziwe. Gdyby jednak zakres był węższy niż
 oktawa (np. `--min-hz 100 --max-hz 130`), dla części nut nie istnieje dobra
 oktawa. Wtedy program:
@@ -882,8 +956,33 @@ nowy okres jest od razu uwzględniany.
   (`DETECT_POSITION_LOSS = false`).
 * `HOME` można wysłać w każdej chwili - także w trakcie grania.
 
-Mechanicznie najlepiej brzmi **130-330 Hz** (stąd `COMFORT_MIN_HZ` /
-`COMFORT_MAX_HZ`). Okolice 440 Hz są jeszcze możliwe, wyżej głowica gubi kroki.
+
+### Fizyczna kalibracja FDD
+
+Wyniki dotyczą **tej konkretnej stacji**, w normalnej/docelowej orientacji.
+Stress-test obejmował różne pozycje głowicy. Po próbie głowica wracała do
+TRACK0; delta kroków przy powrocie służyła do wykrywania utraty pozycji.
+Dokładne numery pozycji i sekwencja stress-testu nie zostały zapisane w tym
+podsumowaniu.
+
+| Częstotliwość | Poprawne próby | Interpretacja |
+| --- | --- | --- |
+| 410 Hz | 38/40 (95%) | zmierzona górna granica comfort: `COMFORT_MAX_HZ = 410.0` |
+| 411–423 Hz | brak liczbowego wyniku | strefa graniczna / niestabilna, poza comfort |
+| 424 Hz | 0/40 | praktycznie no-go |
+| 425 Hz | 0/40 | praktycznie no-go |
+| 5 Hz | 5/5, bez utraty kroków | mechaniczne minimum **≤ 5 Hz**, nie muzyczny dolny limit |
+
+Domyślny zakres hosta wynosi teraz **130–410 Hz**. Muzyczny dolny limit nie
+został jeszcze ustalony: `COMFORT_MIN_HZ` pozostaje **130.0**, a nie 5 Hz.
+Profil `FDD_CURRENT` pobiera obie granice comfort z `host/pitch.py`.
+Allocator orkiestry i symulacja FDD używają tego samego zakresu muzycznego;
+tryby virtual, real i hybrid nie zmieniają zakresu. Audio i komendy hardware
+powstają ze wspólnego planu. Jawne overrides profilu oraz parametry CLI
+mogą zmienić ustawienia domyślne. Zmiana kodu wymaga restartu backendu.
+Limity przyjmowane przez firmware (40–500 Hz) są ograniczeniami protokołu,
+nie potwierdzonym zakresem comfort; ten pomiar ich nie zmienia.
+410 Hz nie oznacza bezbłędnej pracy (2/40 prób nie przeszły).
 
 ---
 
@@ -892,7 +991,7 @@ Mechanicznie najlepiej brzmi **130-330 Hz** (stąd `COMFORT_MIN_HZ` /
 * **Jedna stacja = jedna nuta naraz.** Akordy są redukowane do pojedynczej
   linii (patrz sekcja 10).
 * Jedna stacja obsługiwana jednocześnie (`FloppyDrive drive` w firmware).
-* Zakres 130-330 Hz; poza nim trzeba zmienić `--min-hz` / `--max-hz`
+* Zakres 130-410 Hz; poza nim trzeba zmienić `--min-hz` / `--max-hz`
   (świadomie) albo liczyć się z gubieniem kroków.
 * Głowica cały czas jeździ - długie nuty to kilka przejazdów po ścieżkach,
   co słychać jako zmianę barwy.
@@ -1307,7 +1406,7 @@ przypisań nuta-po-nucie, bo plan jest deterministyczny.
 Uruchom backend i frontend jak wyżej, np. `./scripts/dev.sh`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.
 Zielona dioda w prawym górnym rogu każdej karty pokazuje, że dana instancja jest aktywna w bieżącej pozycji odtwarzania. Długie nuty świecą przez czas trwania, a uderzenia dają krótki błysk obejmujący pracę mechanizmu. Pauza i stop gaszą wszystkie diody.
 
-Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Realny tor Serial pozostaje dostępny po wyłączeniu trybu wirtualnego. Pole `mode` w instancji jest zarezerwowane dla przyszłego adaptera hybrydowego; pierwsza wersja przyjmuje tylko `virtual`.
+Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Tryb wyjścia ustala start backendu: `--no-hardware` oznacza preview; bez tej flagi działa Serial. `enabled` wybiera skład orkiestry, a `mode` jest wewnętrznym detalem adaptera.
 
 Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/25 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
 Każda instancja może mieć własne nadpisania parametrów wraz z provenance i notatką źródłową. W UI są pod rozwijanym **Device profile**.
@@ -1328,9 +1427,9 @@ Reguły obsługują `track`/`tracks`, `channel`/`channels`, `includeNotes`, `exc
 
 **Save Arrangement** zapisuje obok MIDI plik `<nazwa>.orchestra.json` w katalogu `midi/`. **Load Arrangement** odczytuje ten plik. Import/eksport pozwalają przenieść JSON jako osobny plik. Backend sprawdza `schemaVersion`, nazwę i SHA-256 MIDI oraz indeksy i nazwy tracków. Przy niezgodności import pokazuje mapowanie tracków do aktualnego pliku przed zastosowaniem. Format wersji 1:
 
-**Import jest wspólny dla wszystkich zakładek.** Przycisk *Import Arrangement JSON* siedzi w nagłówku obok zakładek, więc ten sam plik wczytasz z **PLAYER**, **ORCHESTRA** i **ARRANGEMENT** — nie ma osobnego dokumentu „dla sprzętu” i „dla wirtualizacji”. Import nie przełącza też na siłę na wirtualizację: o wyjściu decyduje pole `mode` każdej instancji, a nie zakładka.
+**Import jest wspólny dla wszystkich zakładek.** Przycisk *Import Arrangement JSON* siedzi w nagłówku obok zakładek, więc ten sam plik wczytasz z **PLAYER**, **ORCHESTRA** i **ARRANGEMENT** — nie ma osobnego dokumentu „dla sprzętu” i „dla wirtualizacji”. Import nie zmienia runtime mode ustalonego przy uruchomieniu backendu; stare pola `mode` są dopasowywane do tego trybu.
 
-`mode` instancji ma trzy wartości:
+`mode` pozostaje wewnętrzną reprezentacją adaptera (bez kontrolki w Settings). Backend web wybiera `virtual` albo `real` na podstawie flagi startowej; `hybrid` pozostaje dla wewnętrznych narzędzi/testów:
 
 | `mode` | Symulacja i piano roll | Podgląd audio (WAV) | Fizyczne linie Serial |
 | --- | --- | --- | --- |
@@ -1367,7 +1466,7 @@ Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.
 }
 ```
 
-`devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mode`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware (bez aranżacji); gdy aranżacja jest wczytana, routing obu wyjść pochodzi z jej reguł i pola `mode`.
+`devices` zawiera także pozostałe pola instancji z Virtual Orchestra, w tym `role`, `mode`, `mute`, `solo` i `overrides`. To one przechowują parametry miksu i profilu. Backend interpretuje JSON przez `host/playback/arrangement.py`, przekazuje wybrane nuty do istniejącego `VirtualOrchestra.simulate`, a wynik udostępnia przez `GET /api/arrangement`; zapis, odczyt i aktualizacja mają endpointy pod tym samym prefiksem. Browser tylko rysuje otrzymane nuty i wysyła edycje. Starsze kontrolki HDD w **PLAYER** nadal obsługują dotychczasowy tryb real hardware (bez aranżacji); gdy aranżacja jest wczytana, routing obu wyjść pochodzi z planu i włączonych urządzeń; tryb wyjścia ustala uruchomienie backendu.
 
 Piano roll używa cienkiego renderera Canvas bez nowego parsera MIDI ani zegara odtwarzania. Oceniono [react-piano-roll](https://github.com/PlayfulCreations/react-piano-roll), [@minagishl/react-piano-roll](https://www.npmjs.com/package/%40minagishl/react-piano-roll), [tween-midi-editor](https://github.com/tuomashatakka/tween-midi-editor) i [@tonejs/midi](https://www.npmjs.com/package/%40tonejs/midi). Gotowe edytory dodają własne odtwarzanie lub model MIDI i utrudniają niestandardowe kolory, wielokierunkowy routing oraz diagnostykę pojedynczej nuty; ostatnia biblioteka jest parserem, który powielałby `MidiSource`. Canvas rysuje tylko nuty widoczne w oknie, więc duży plik nie tworzy tysięcy elementów DOM. Loop range, fizyczny/hybrid adapter routingu i faktyczne warianty artykulacji pozostają kolejnym etapem.
 
@@ -1406,3 +1505,27 @@ Wynik: [`benchmarks/dvd-reinforcement.json`](benchmarks/dvd-reinforcement.json).
 | wykorzystanie DVD1 / DVD2 / DVD3 / DVD4 | 36,60% / 35,87% / 31,96% / 31,66% | 49,98% / 45,05% / 41,13% / 41,15% |
 
 Zwykłe przypisania i dropy są identyczne dla każdego pliku. Te wyniki dotyczą symulowanego podglądu akustycznego; rzeczywisty przyrost głośności napędów wymaga pomiaru sprzętowego.
+# Ponowne wgrywanie firmware Uno
+
+W aplikacji otwórz **Settings → Arduino firmware → Wgraj ponownie firmware**.
+Przycisk kompiluje aktualny projekt `firmware/floppy` dla Uno, zatrzymuje odtwarzanie,
+zwalnia port szeregowy, wgrywa firmware i ponownie łączy Arduino. Sukces połączenia
+jest potwierdzany odpowiedzią `READY` po homingu FDD; sam upload nie oznacza gotowości.
+Zamknij Serial Monitor przed wgrywaniem. Wymagane jest zainstalowane PlatformIO
+(`pio` na PATH albo `~/.platformio/penv/bin/pio`). Błąd kompilacji nie rozłącza Arduino;
+po błędzie uploadu aplikacja również próbuje przywrócić połączenie. Odtwarzanie nie
+uruchamia się automatycznie po wgraniu.
+
+### Stan USB i stan głowicy FDD
+
+`connected` oznacza otwarty, działający transport Serial. `homed` oznacza zakończony HOME potwierdzony fizycznym TRACK0; `ready` wymaga obu stanów i zakończenia homingu. Po connect/upload
+backend czeka na boot `READY`, wysyła jawne `HOME`, czeka na kolejne `READY`
+i potwierdza `STATUS homed=1`. Upload czeka także na ponowne pojawienie się portu USB.
+Play podczas homingu jest kolejkowane; Stop anuluje ten zamiar.
+
+`NOT_HOMED` i `POS_LOST` pauzują utwór i uruchamiają homing bez zamykania portu.
+Po poprawnym HOME utwór pozostaje w pauzie, z zachowaną pozycją do ręcznego
+wznowienia. `HOME_FAILED` pozostawia Arduino połączone, blokuje Play i udostępnia
+**Retry Home**. Nie stosujemy automatycznego `HOME BLIND` jako obejścia czujnika.
+`HOST_TIMEOUT` pauzuje utwór, ale nie kasuje stanu `homed` ani połączenia.
+Reset/banner/nowe `READY` uruchamiają ponowną weryfikację przez HOME.

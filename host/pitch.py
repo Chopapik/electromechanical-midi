@@ -1,23 +1,25 @@
 """Konwersja wysokosci dzwieku MIDI <-> Hz oraz skladanie oktawowe.
 
-Jedna stacja dyskietek ma mechanicznie wygodny zakres ok. 130-330 Hz.
+Domyslny zakres FDD to 130-410 Hz. Gorna granica jest skalibrowana
+dla konkretnej stacji w docelowej orientacji; muzyczny dol pozostaje
+dotychczasowym ustawieniem, nie nowym wynikiem pomiaru.
 Ten modul sprowadza dowolna nuta MIDI do tego zakresu wylacznie przez
 przesuniecie o cale oktawy - klasa wysokosci dzwieku nigdy sie nie zmienia.
 
-Przyklady (zakres 130-330 Hz):
+Przyklady (zakres 130-410 Hz):
 
     C5 = 523.25 Hz  ->  C4 = 261.63 Hz   (shift -1)
     C2 =  65.41 Hz  ->  C3 = 130.81 Hz   (shift +1)
     A4 = 440.00 Hz  ->  A3 = 220.00 Hz   (shift -1)
 
-Jesli zakres bylby wezszy niz oktawa (czego przy 130-330 Hz nie ma),
+Jesli zakres bylby wezszy niz oktawa (czego przy 130-410 Hz nie ma),
 dla czesci nut nie istnieje oktawa mieszczaca sie w zakresie. Wtedy
 zwracamy najblizsza czestotliwosc i ustawiamy ``in_range=False``.
 
 UWAGA o skokach oktawowych (tryb ``auto``):
     Przy zakresie szerszym niz oktawa granica "zostaje / spada o oktave"
-    wypada na 330 Hz. Melodia przechodzaca przez te granice (np. E4 =
-    329.6 Hz zostaje, F4 = 349.2 Hz spada do 174.6 Hz) dostanie skok
+    wypada na 410 Hz. Melodia przechodzaca przez te granice (np. G4 =
+    392.0 Hz zostaje, G#4 = 415.3 Hz spada do 207.7 Hz) dostanie skok
     o oktave w dol. Jest to nieuniknione przy skladaniu "o minimalna
     liczbe oktaw" i tak wlasnie dziala tryb ``auto``.
 
@@ -38,15 +40,20 @@ A4_HZ = 440.0
 
 NOTE_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
 
-# Domyslny komfortowy zakres stacji dyskietek (ustalony eksperymentalnie).
+# Profil tej konkretnej FDD w normalnej/docelowej orientacji.
+# Stress-test na roznych pozycjach, delta krokow po powrocie do TRACK0:
+# 410 Hz: 38/40; 411-423 Hz: graniczne/niestabilne; 424 i 425 Hz: 0/40 kazde.
+# Mechanical minimum <= 5 Hz (5/5 bez utraty krokow), NIE muzyczny comfort min.
+# Muzyczny dol nie zostal jeszcze ustalony; zachowujemy dotychczasowe 130 Hz.
+# Metodologia i wyniki: README.md, "Fizyczna kalibracja FDD".
 COMFORT_MIN_HZ = 130.0
-COMFORT_MAX_HZ = 330.0
+COMFORT_MAX_HZ = 410.0
 
 # Tryby skladania oktawowego:
 #   auto - jak najmniejsza ingerencja: nuta zostaje, jesli sie miesci
 #          (domyslne; C5 = 523 Hz -> C4 = 261.6 Hz)
 #   low  - zawsze najnizsza oktawa z zakresu (130-260 Hz): bez skokow
-#   high - zawsze najwyzsza oktawa z zakresu (165-330 Hz): bez skokow
+#   high - zawsze najwyzsza oktawa z zakresu (205-410 Hz): bez skokow
 FOLD_MODES = ("auto", "low", "high")
 
 # Ile oktaw w gore/dol rozwazamy przy szukaniu miejsca w zakresie.

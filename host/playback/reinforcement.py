@@ -96,7 +96,7 @@ def apply_reinforcement(plan, priority):
     rejects['cooldown'] += plan.tray_report['skippedBusyCooldown']
     rejects['scoreTooLow'] += plan.tray_report['skippedSampled'] + plan.tray_report['skippedScore']
     rejects['maxCopiesReached'] += plan.tray_report['skippedMaxCopies']
-    instances = [VirtualDeviceInstance.parse(d) for d in plan.devices]
+    instances = [VirtualDeviceInstance.parse(d) for d in plan.devices if d.get('enabled', True)]
     by_id = {d.id: d for d in instances}
     solo = any(d.solo and not d.mute for d in instances)
     targets = [d for d in instances if d.type in config['deviceTypes'] and d.in_preview
@@ -297,10 +297,10 @@ def apply_reinforcement(plan, priority):
         'potentialDefinition': 'compatible score-qualified idle tonal intervals before copy quota; free HDD accent cycles; compatible tray motion ignoring extra copy/cooldown/sample quotas'}
 def legacy_dvd(plan: PerformancePlan, priority) -> list[ReinforcementEvent]:
     """Fill idle DVD intervals after normal allocation and articulation finish."""
-    dvd = [device for device in plan.devices if device['type'] == 'DVD_SLED'
+    dvd = [device for device in plan.devices if device.get('enabled', True) and device['type'] == 'DVD_SLED'
            and device.get('mode', 'virtual') in ('virtual', 'hybrid')
            and not device.get('mute', False)]
-    if any(device.get('solo') and not device.get('mute') for device in plan.devices):
+    if any(device.get('enabled', True) and device.get('solo') and not device.get('mute') for device in plan.devices):
         dvd = [device for device in dvd if device.get('solo')]
     ids = {device['id'] for device in dvd}
     if len(ids) < 2:

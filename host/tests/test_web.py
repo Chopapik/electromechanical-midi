@@ -285,6 +285,22 @@ class TestRest(WebTestCase):
 
 
 class TestWebSocket(WebTestCase):
+    def test_repeated_file_selection_does_not_reset_playback(self):
+        from unittest.mock import patch
+        self.engine.load_file(self.midi_dir / 'song.mid', 1)
+        self.engine.play()
+        self.engine.seek(1.0)
+        revision = self.engine.snapshot()['arrangementRevision']
+        with self.client.websocket_connect('/ws') as websocket:
+            read_until_state(websocket)
+            with patch.object(self.engine, 'load_file') as load:
+                websocket.send_json({'action': 'set_file', 'file': 'song.mid'})
+                state = read_until_state(websocket)
+                self.assertEqual(state['state'], 'playing')
+                self.assertGreaterEqual(state['position'], 1.0)
+                self.assertEqual(state['arrangementRevision'], revision)
+                load.assert_not_called()
+
     def test_play_response_marks_completed_command(self):
         self.engine.load_file(self.midi_dir / "song.mid", 1)
         with self.client.websocket_connect("/ws") as websocket:

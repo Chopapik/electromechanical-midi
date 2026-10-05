@@ -41,6 +41,20 @@ class TestKonwersje(unittest.TestCase):
 
 
 class TestSkladanieOktawowe(unittest.TestCase):
+    def test_skalibrowana_gorna_granica_i_niezmieniony_dol(self):
+        self.assertEqual(COMFORT_MIN_HZ, 130.0)
+        self.assertEqual(COMFORT_MAX_HZ, 410.0)
+        # F4 and G4 now remain unchanged; G#4 is above comfort and folds.
+        for note in (65, 67):
+            self.assertEqual(fold_note(note).octave_shift, 0)
+        self.assertEqual(fold_note(68).octave_shift, -1)
+
+    def test_dokladna_granica_comfort(self):
+        for hz, expected_shift in ((410.0, 0), (411.0, -1), (423.0, -1), (424.0, -1), (425.0, -1)):
+            folded = fold_note(hz_to_midi(hz))
+            self.assertEqual(folded.octave_shift, expected_shift)
+            self.assertLessEqual(folded.hz, COMFORT_MAX_HZ + 1e-6)
+
     def test_przyklad_z_dokumentacji(self):
         """C5 = 523.25 Hz -> C4 = 261.63 Hz (jedna oktawa w dol)."""
         folded = fold_note(72)
@@ -65,7 +79,7 @@ class TestSkladanieOktawowe(unittest.TestCase):
         self.assertAlmostEqual(folded.hz, midi_to_hz(60), places=6)
 
     def test_wszystkie_nuty_mieszcza_sie_w_komfortowym_zakresie(self):
-        """130-330 Hz to wiecej niz oktawa, wiec kazda nuta ma swoja oktave."""
+        """130-410 Hz to wiecej niz oktawa, wiec kazda nuta ma swoja oktave."""
         for note in range(128):
             folded = fold_note(note)
 

@@ -5,11 +5,12 @@
 #   - frontend Vite (npm run dev) na porcie 5173
 #
 # Uzycie:
-#   ./scripts/dev.sh              # backend + frontend dev
-#   ./scripts/dev.sh --no-hardware
+#   ./scripts/dev.sh              # real hardware, Serial + frontend dev
+#   ./scripts/dev.sh --no-hardware # developer virtual/audio preview (no Serial)
 #   ./scripts/dev.sh --port 9000
 #
 # Ctrl+C konczy oba procesy.
+# Backend ustala runtime mode z --no-hardware; Settings wybiera tylko enabled devices.
 
 set -euo pipefail
 
@@ -39,20 +40,51 @@ if [[ ! -d "$ROOT/web/node_modules" ]]; then
   (cd "$ROOT/web" && npm install --no-audit --no-fund)
 fi
 
+# Refuse to attach the UI to an older backend with a different runtime mode.
+"$PYTHON" - "$BACKEND_HOST" "$BACKEND_PORT" "$FRONTEND_PORT" "$@" <<'PY'
+import socket
+import sys
+
+host, backend, frontend, *args = sys.argv[1:]
+for index, arg in enumerate(args[:-1]):
+    if arg == '--port':
+        backend = args[index + 1]
+    elif arg == '--host':
+        host = args[index + 1]
+for label, address, port in (('Backend', host, backend), ('Frontend', '127.0.0.1', frontend)):
+    with socket.socket() as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((address, int(port)))
+        except OSError as exc:
+            sys.exit(f'BLAD: {label}: {address}:{port} jest zajety lub niedostepny ({exc}). '
+                     'Zatrzymaj poprzednia aplikacje przed uruchomieniem nowej.')
+PY
+
 backend_pid=""
 frontend_pid=""
+
+stop_tree() {
+  local pid="$1" child
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do
+    stop_tree "$child"
+  done
+  kill "$pid" 2>/dev/null || true
+}
 
 cleanup() {
   echo
   echo "==> Zatrzymuje..."
 
-  [[ -n "$frontend_pid" ]] && kill "$frontend_pid" 2>/dev/null || true
-  [[ -n "$backend_pid" ]] && kill "$backend_pid" 2>/dev/null || true
+  [[ -n "$frontend_pid" ]] && stop_tree "$frontend_pid"
+  [[ -n "$backend_pid" ]] && stop_tree "$backend_pid"
 
   wait 2>/dev/null || true
 }
 
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 echo "==> Backend:  http://$BACKEND_HOST:$BACKEND_PORT"
 "$PYTHON" -m host.web.server --host "$BACKEND_HOST" --port "$BACKEND_PORT" "$@" &
@@ -67,4 +99,12 @@ echo "Otwórz: http://127.0.0.1:$FRONTEND_PORT"
 echo "Ctrl+C konczy oba procesy."
 echo
 
-wait -n "$backend_pid" "$frontend_pid" 2>/dev/null || wait
+# macOS ships Bash 3.2, which has no wait -n. Exit when either server exits.
+while kill -0 "$backend_pid" 2>/dev/null && kill -0 "$frontend_pid" 2>/dev/null; do
+  sleep 0.5
+done
+if ! kill -0 "$backend_pid" 2>/dev/null; then
+  wait "$backend_pid"
+else
+  wait "$frontend_pid"
+fi

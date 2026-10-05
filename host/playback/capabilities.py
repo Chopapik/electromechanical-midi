@@ -134,14 +134,15 @@ def capability_for(device: VirtualDeviceInstance) -> DeviceCapability:
         raise ValueError(f'brak capability dla typu urzadzenia: {kind}')
 
     profile = effective_profile(device)
+    low, high = profile.playback_range()
     retrigger = cycle_seconds(profile) if role == PERCUSSIVE else 0.0
 
     return DeviceCapability(
         kind=kind,
         role=role,
         monophonic=bool(profile.get('polyphony') or 1) <= 1,
-        min_hz=profile.get('minHz'),
-        max_hz=profile.get('maxHz'),
+        min_hz=low,
+        max_hz=high,
         min_note_s=MIN_NOTE_S,
         retrigger_s=retrigger,
         overflow=profile.overflow,

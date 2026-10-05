@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { ArrangementHardware, DeviceMode, FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
+import type { ArrangementHardware, FileMetadata, VirtualConfig, VirtualDevice, VirtualState } from '../types'
 
 const KINDS = ['FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR']
 let fallbackDeviceId = 0
@@ -7,11 +7,6 @@ const newDeviceId = (type: string) => globalThis.crypto?.randomUUID?.() ?? `${ty
 const LABEL: Record<string, string> = {
   FDD: 'FDD', DVD_SLED: 'DVD stepper', DVD_TRAY: 'DVD TRAY / DC MOTOR', STEPPER_FREE: 'Free stepper',
   VHS: 'VHS motor', HDD_VCM: 'HDD VCM', SOLENOID_RESONATOR: 'Solenoid + resonator',
-}
-const MODE_LABEL: Record<DeviceMode, string> = {
-  virtual: 'virtual — only simulation + audio preview',
-  real: 'real — only physical hardware',
-  hybrid: 'hybrid — hardware + preview',
 }
 const LANE_LABEL: Record<string, string> = {
   fdd: 'FDD (PLAY/STOP)', drum: 'VHS drum (DRUM/DRUMF)', hdd: 'HDD (HIT)',
@@ -30,7 +25,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   const [selectedPreset, setSelectedPreset] = useState('')
   const [notice, setNotice] = useState('')
   const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [], dvdMode: 'reinforcement' as const }
-  const dvd = config.devices.filter(device => device.type === 'DVD_SLED')
+  const dvd = config.devices.filter(device => device.enabled !== false && device.type === 'DVD_SLED')
   const canReinforce = dvd.length >= 2
   const enabled = virtual?.enabled ?? true
   const refresh = () => fetch('/api/virtual/presets').then(r => r.json()).then(data => setPresets(data.presets ?? {})).catch(() => setNotice('Could not load presets'))
@@ -45,8 +40,8 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     apply([...config.devices, {
       id, type, name: `${LABEL[type]} #${count}`, track: type === 'DVD_TRAY' ? null : metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
       role: '', volume: type === 'DVD_SLED' ? .2 : type === 'DVD_TRAY' ? .35 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
-      profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: 'virtual', overrides: {},
-    }], true)  }
+      profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: enabled || type === 'DVD_TRAY' ? 'virtual' : 'real', enabled: true, overrides: {},
+    }], enabled)  }
   const update = (id: string, patch: Partial<VirtualDevice>) => {
     const devices = config.devices.map(d => d.id === id ? { ...d, ...patch } : d)
     configure({ ...config, devices }, enabled)
@@ -73,8 +68,8 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   }
 
   return <section className="virtual-orchestra">
-    <h3>ORCHESTRA MODE</h3>
-    <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual instruments mode</label>
+    <h3>ORCHESTRA</h3>
+    <p className="muted">{enabled ? 'Developer preview · --no-hardware' : 'Physical hardware'}</p>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
     <h3>PLAYBACK</h3>
     <label className="virtual-master">Master Volume <input aria-label="Master Volume" type="range" min="0" max="20" step="0.25"
@@ -136,7 +131,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
             <span className="muted">({device.type})</span>
           </p>)}
           {!hardware.connected && <p className="muted">No Arduino connected — lanes stay queued until you connect.</p>}</>
-        : <p className="muted">No device drives physical hardware. Set a device <em>Mode</em> to <code>real</code> or <code>hybrid</code>.</p>}
+        : <p className="muted">{enabled ? 'Developer preview does not drive hardware.' : 'Enable devices to assign physical hardware lanes.'}</p>}
       {hardware.unmapped.length > 0 && <>
         <p className="import-error">Not wired to hardware ({hardware.unmapped.length}):</p>
         <ul>{hardware.unmapped.map(item => <li key={item.deviceId}>{item.name} — {item.reason === 'LANE_TAKEN'
@@ -150,19 +145,25 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       <button type="button" onClick={save}>Save preset</button>
       <select aria-label="Load preset" value={selectedPreset} onChange={e => {
         const name = e.target.value; setSelectedPreset(name)
-        if (presets[name]) configure(presets[name], true)
+        if (presets[name]) configure(presets[name], enabled)
       }}><option value="">Load preset…</option>{Object.keys(presets).map(name => <option key={name}>{name}</option>)}</select>
     </div>
     {notice && <p role="status">{notice}</p>}
     <div className="virtual-devices">{config.devices.map(device => {
       const profile = virtual?.profiles.find(p => p.id === device.profile)
       const tray = virtual?.trayStatus?.[device.id]
-      return <details key={device.id} className="virtual-device">
-        <summary>{device.name} · {device.mode ?? 'virtual'} · vol {device.volume.toFixed(2)} · pan {device.pan.toFixed(1)}{device.type === 'DVD_TRAY' && ` · ${tray?.phase ?? 'idle'}`}
-          <span className={`device-led ${virtual?.activity?.[device.id] ? 'is-active' : ''}`}
-            role="img" aria-label={`${device.name}: ${virtual?.activity?.[device.id] ? 'active' : 'idle'}`}
-            title={virtual?.activity?.[device.id] ? 'Device active' : 'Device idle'} />
-        </summary>
+      return <div key={device.id} className="orchestra-device">
+        <div className="orchestra-device-row">
+          <span>{device.name}<small>{LABEL[device.type] ?? device.type}</small></span>
+          <span className={`device-led ${device.enabled !== false && virtual?.activity?.[device.id] ? 'is-active' : ''}`}
+            role="img" aria-label={`${device.name}: ${device.enabled !== false && virtual?.activity?.[device.id] ? 'active' : 'idle'}`} />
+          <button type="button" role="switch" aria-label={`${device.name} Enabled`}
+            aria-checked={device.enabled !== false} className="device-enable-switch"
+            onClick={() => update(device.id, { enabled: device.enabled === false })}>
+            <span aria-hidden="true" />
+          </button>
+        </div>
+        <details className="device-options"><summary>Ustawienia {device.name}</summary>
         {device.type === 'DVD_TRAY' && <p className="muted">Mechanical reinforcement · {tray?.phase ?? 'idle'}
           {tray?.note !== undefined && <> · GM {tray.note} · velocity {tray.velocity} · {tray.strength} · {Math.round((tray.duration ?? 0) * 1000)} ms</>}
         </p>}
@@ -185,10 +186,6 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
           <label>Profile <select value={device.profile} onChange={e => update(device.id, { profile: e.target.value })}>
             {virtual?.profiles.filter(p => p.kind === device.type).map(p => <option key={p.id}>{p.id}</option>)}
           </select></label>
-          <label>Mode <select aria-label={`${device.name} mode`} value={device.mode ?? 'virtual'}
-            onChange={e => update(device.id, { mode: e.target.value as DeviceMode })}>
-            {(Object.keys(MODE_LABEL) as DeviceMode[]).filter(mode => device.type !== 'DVD_TRAY' || mode === 'virtual').map(mode => <option key={mode} value={mode}>{MODE_LABEL[mode]}</option>)}
-          </select></label>
           <button type="button" onClick={() => duplicate(device)}>Duplicate</button>
           <button type="button" onClick={() => apply(config.devices.filter(d => d.id !== device.id))}>Remove</button>
         </div>
@@ -209,7 +206,8 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
             </div>
           })}
         </details>}
-      </details>
+        </details>
+      </div>
     })}</div>
     <details className="simulation-report"><summary>Simulation Report · full MIDI</summary>
     {Object.entries(virtual?.report ?? {}).length === 0 ? <p className="muted">Add devices and load MIDI to see mechanical constraints.</p> :

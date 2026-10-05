@@ -58,7 +58,7 @@ const STATE: PlayerState = {
   frequency: 164.81,
   transpose: 'low',
   strategy: 'highest',
-  range: { minHz: 130, maxHz: 330 },
+  range: { minHz: 130, maxHz: 410 },
   stats: { notes: 84, skipped: 0, folded: 80, out_of_range: 0 },
   hardware: {
     connected: true,
@@ -211,10 +211,9 @@ describe('App', () => {
     expect(socket.actions().at(-1)).toEqual({ action: 'stop' })
   })
 
-  it('changes global output independently of per-device mode and retains every sound option', async () => {
+  it('keeps runtime output outside Settings and retains every sound option', async () => {
     const socket = await renderApp({ virtual: { enabled: true, config: { name: 'Test', devices: [], masterVolume: 19.5 }, report: {}, activity: {}, profiles: [] } })
-    fireEvent.click(screen.getByLabelText('Virtual instruments mode'))
-    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { enabled: false, devices: [] } })
+    expect(screen.queryByLabelText('Virtual instruments mode')).toBeNull()
     fireEvent.change(screen.getByLabelText('Master Volume'), { target: { value: '10' } })
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { masterVolume: 10 } })
     const modes = screen.getByLabelText('Tonal sound') as HTMLSelectElement
@@ -245,7 +244,7 @@ describe('App', () => {
   it('duplicates a device and retains reinforcement controls', async () => {
     const device = { id: 'fdd', type: 'FDD', name: 'FDD 1', track: 1, role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1, profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
     const socket = await renderApp({ virtual: { enabled: true, config: { name: 'Test', devices: [device], idleReinforcement: { enabled: true } }, report: {}, activity: {}, profiles: [] } })
-    fireEvent.click(screen.getByText(/FDD 1 · virtual/))
+    fireEvent.click(screen.getByText('Ustawienia FDD 1'))
     fireEvent.click(screen.getByText('Duplicate'))
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { devices: [device, { name: 'FDD 1 copy', mode: 'virtual' }] } })
     fireEvent.change(screen.getByLabelText('Reinforcement max copies'), { target: { value: '2' } })
@@ -267,11 +266,11 @@ describe('App', () => {
       },
     })
 
-    await waitFor(() => expect(screen.getByText('ORCHESTRA MODE')).toBeDefined())
+    await waitFor(() => expect(screen.getByText('ORCHESTRA')).toBeDefined())
     fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'FDD' } })
     expect(socket.actions().at(-1)).toMatchObject({
       action: 'set_virtual',
-      config: { enabled: true, devices: [{ type: 'FDD', track: 1 }] },
+      config: { enabled: false, devices: [{ type: 'FDD', track: 1, enabled: true, mode: 'real' }] },
     })
   })
 
@@ -294,7 +293,7 @@ describe('App', () => {
       action: 'set_virtual', config: { devices: [fdd, dvd, { type: 'DVD_SLED', volume: .2,
         profile: 'DVD_REFERENCE', mode: 'virtual' }] },
     })
-    const row = screen.getByText('DVD sled #1 · virtual · vol 0.20 · pan 0.0').closest('details')!
+    const row = screen.getByText('Ustawienia DVD sled #1').closest('details')!
     fireEvent.click(row.querySelector('summary')!)
     fireEvent.click(row.querySelector('button:last-of-type')!)
     expect(socket.actions().at(-1)).toMatchObject({
@@ -330,10 +329,9 @@ describe('App', () => {
       profiles: [{ id: 'DVD_TRAY_REFERENCE', kind: 'DVD_TRAY', parameters: {} }],
     } })
 
-    expect(screen.getByText('DVD Tray 1 · virtual · vol 0.35 · pan 0.0 · moving')).toBeTruthy()
-    fireEvent.click(screen.getByText('DVD Tray 1 · virtual · vol 0.35 · pan 0.0 · moving'))
+    fireEvent.click(screen.getByText('Ustawienia DVD Tray 1'))
     expect(screen.getByText(/GM 57 · velocity 110 · STRONG · 245 ms/)).toBeTruthy()
-    expect(screen.getByLabelText('DVD Tray 1 mode').querySelectorAll('option').length).toBe(1)
+    expect(screen.queryByLabelText('DVD Tray 1 mode')).toBeNull()
     fireEvent.click(screen.getByLabelText('DVD tray mechanical accents'))
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { trayEnabled: false, devices: [tray] } })
   })
@@ -783,7 +781,7 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByText(/Imported .Imported song./)).toBeDefined())
   })
 
-  it('tryb instancji decyduje o sprzecie i idzie do backendu', async () => {
+  it('toggles device Enabled without exposing runtime mode', async () => {
     const device = { id: 'a', type: 'FDD', name: 'FDD #1', track: 1, role: '', volume: .6, pan: 0,
       mute: false, solo: false, transpose: 0, gate: 1, profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
     const socket = await renderApp({
@@ -792,15 +790,20 @@ describe('App', () => {
     })
 
 
-    const mode = screen.getByLabelText('FDD #1 mode') as HTMLSelectElement
-    expect(mode.value).toBe('virtual')
-    expect([...mode.options].map(option => option.value)).toEqual(['virtual', 'real', 'hybrid'])
-
-    fireEvent.change(mode, { target: { value: 'real' } })
+    expect(screen.queryByLabelText('FDD #1 mode')).toBeNull()
+    const toggle = screen.getByRole('switch', { name: 'FDD #1 Enabled' })
+    expect(toggle.getAttribute('aria-checked')).toBe('true')
+    fireEvent.click(toggle)
     expect(socket.actions().at(-1)).toMatchObject({
-      action: 'set_virtual',
-      config: { devices: [{ id: 'a', mode: 'real' }] },
+      action: 'set_virtual', config: { devices: [{ id: 'a', enabled: false }] },
     })
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, virtual: {
+      enabled: true, config: { name: 'Test', devices: [{ ...device, enabled: false }] },
+      report: {}, activity: {}, profiles: [] } } }))
+    expect(screen.getByRole('switch', { name: 'FDD #1 Enabled' }).getAttribute('aria-checked')).toBe('false')
+    expect(screen.queryByRole('article', { name: 'FDD #1' })).toBeNull()
+    fireEvent.click(screen.getByRole('switch', { name: 'FDD #1 Enabled' }))
+    expect(socket.actions().at(-1)).toMatchObject({ config: { devices: [{ enabled: true }] } })
   })
 
   it('pokazuje ktore instancje trafily na fizyczne linie Serial', async () => {

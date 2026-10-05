@@ -33,8 +33,8 @@ def add_reinforcement(plan, copy_counts=None, max_copies=1, min_score=None, pote
     candidates = [event for event in plan.events
                   if event.channel == 9 and event.role == 'percussion' and event.note in GM_PRIORITY]
     candidates.sort(key=lambda event: (event.actual_start, -GM_PRIORITY[event.note], -event.velocity, event.id))
-    trays = [VirtualDeviceInstance.parse(device) for device in plan.devices if device['type'] == 'DVD_TRAY']
-    solo = any(device.get('solo') and not device.get('mute') for device in plan.devices)
+    trays = [VirtualDeviceInstance.parse(device) for device in plan.devices if device.get('enabled', True) and device['type'] == 'DVD_TRAY']
+    solo = any(device.get('enabled', True) and device.get('solo') and not device.get('mute') for device in plan.devices)
     trays = [device for device in trays if not device.mute and (not solo or device.solo)]
     profiles = {device.id: effective_profile(device) for device in trays}
     busy = {device.id: float('-inf') for device in trays}

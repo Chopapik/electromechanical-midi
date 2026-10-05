@@ -4,6 +4,9 @@ export type PlaybackStateValue = 'stopped' | 'playing' | 'paused'
 
 export interface HardwareState {
   connected: boolean
+  homed?: boolean
+  ready?: boolean
+  fddStatus?: 'ready' | 'homing' | 'not_homed' | 'error'
   port: string | null
   label: string | null
   error: string | null
@@ -91,6 +94,7 @@ export interface PlayerState {
 export type DeviceMode = 'virtual' | 'real' | 'hybrid'
 
 export interface VirtualDevice {
+  enabled?: boolean // Legacy configs without the flag are enabled.
   id: string
   type: string
   name: string
@@ -131,6 +135,7 @@ export interface VirtualReport {
   reasons: Record<string, number>; state: Record<string, number | boolean>
 }
 export interface VirtualState {
+  runtimeMode?: 'virtual' | 'hardware'
   audioRevision?: number
   audioPosition?: number | null
   audioClockRunning?: boolean

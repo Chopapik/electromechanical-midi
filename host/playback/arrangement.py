@@ -194,6 +194,7 @@ class Arrangement:
 
     def route(self, source: MidiSource) -> tuple[dict[str, list[RoutedNote]], list[dict]]:
         by_device: dict[str, list[RoutedNote]] = {d.id: [] for d in self.devices}
+        enabled_ids = {d.id for d in self.devices if d.enabled}
         notes = all_notes(source)
         spans = {(track.index, span.order): span for track in source.tracks for span in source.notes(track.index)}
         for note in notes:
@@ -207,6 +208,8 @@ class Arrangement:
                 target = rule['destination']['deviceId']
                 if target is None:
                     routes.append({'ruleId': rule['id'], 'deviceId': None, 'status': 'UNASSIGNED'})
+                    continue
+                if target not in enabled_ids:
                     continue
                 if target in routed_to:
                     continue

@@ -18,7 +18,7 @@ const MODES: Array<{ value: string; label: (range: Props['range']) => string }> 
   },
   {
     value: 'high',
-    label: (range) => `HIGH ${range ? `${range.maxHz / 2}–${range.maxHz}` : '165–330'} Hz — bez skoków`,
+    label: (range) => `HIGH ${range ? `${range.maxHz / 2}–${range.maxHz}` : '205–410'} Hz — bez skoków`,
   },
 ]
 

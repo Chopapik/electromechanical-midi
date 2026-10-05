@@ -120,6 +120,13 @@ describe('renderer telemetry', () => {
     expect(lit('HDD 1')).toBe(true)
     expect(JSON.stringify(view)).toBe(before)
   })
+  it('hides disabled devices even if telemetry still contains their notes', () => {
+    const hook = render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, config: {
+      name: 'Test', devices: devices.map(d => ({ ...d, enabled: d.id !== 'fdd' })) } } }} view={view} error={null} />)
+    expect(screen.queryByRole('article', { name: 'FDD 1' })).toBeNull()
+    hook.rerender(<TelemetryMonitor state={playing} view={view} error={null} />)
+    expect(lit('FDD 1')).toBe(true)
+  })
   it('keeps an idle device role without inventing a note or frequency', () => {
     render(<TelemetryMonitor state={{ ...playing, state: 'stopped', virtual: { ...playing.virtual!, config: { name: 'Test', devices: [{ ...devices[0], role: 'Bass' }] } } }} view={view} error={null} />)
     expect(within(tile('FDD 1')).getByText('Bass')).toBeDefined()

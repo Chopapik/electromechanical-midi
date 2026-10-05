@@ -119,7 +119,7 @@ class TestHarmonogram(unittest.TestCase):
         for command in commands:
             if command.kind == "play":
                 self.assertGreaterEqual(command.hz, 130.0 - 1e-6)
-                self.assertLessEqual(command.hz, 330.0 + 1e-6)
+                self.assertLessEqual(command.hz, 410.0 + 1e-6)
 
 
 class TestCLI(unittest.TestCase):
