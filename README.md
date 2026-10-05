@@ -40,7 +40,7 @@ dźwięku. Dlatego:
 
 * wysokość nuty = **tempo kroków** (okres w mikrosekundach),
 * głowica cały czas jedzie, więc co jakiś czas **zawraca**
-  (fizyczny TRACK0 ↔ `MAX_TRACK`),
+  (fizyczny TRACK0 ↔ `SAFE_AWAY_STEPS` komend STEP),
 * **zawracanie nie zmienia wysokości dźwięku** - zmienia się tylko kierunek,
   tempo kroków zostaje takie samo.
 
@@ -54,7 +54,7 @@ Podział odpowiedzialności:
 | `host/web/` | backend web playera (FastAPI: REST + WebSocket) |
 | `host/player.py` | CLI (używa tego samego silnika) |
 | `web/` | frontend (React + Vite + TypeScript) |
-| `firmware/floppy` | odbiór komend, homing, licznik pozycji, generowanie kroków, STOP |
+| `firmware/floppy` | odbiór komend, homing, licznik komend AWAY, generowanie kroków, STOP |
 
 Firmware **nie ma pojęcia o długości nuty** - to host wysyła `PLAY` i `STOP`
 w odpowiednich momentach.
@@ -118,8 +118,9 @@ Ustalenia dla tej konkretnej stacji:
 | `/STEP` | aktywne **LOW** (impuls ~30 µs) |
 | Drive Select | aktywne **LOW** (stacja cały czas wybrana) |
 
-Programowy licznik pozycji: `0 = TRACK0`, bezpieczny zakres
-`MIN_TRACK = 4` … `MAX_TRACK = 72`.
+Firmware nie śledzi pozycji fizycznej. `awaySteps` liczy tylko komendy STEP
+wysłane podczas ruchu od ostatniego TRACK0. Po `SAFE_AWAY_STEPS = 72` napęd
+zawraca; powrót kończy wyłącznie fizyczny `/TRACK0`, bez budżetu kroków.
 
 ### Podłączenie 1× FDD + 1× HDD VCM do jednego Uno
 
@@ -481,14 +482,17 @@ Zasady działania:
 * podczas gdy bęben gra z MIDI, **panel ręczny jest zablokowany**
   (`MIDI CONTROLLED`); wraca po pauzie/stopie.
 
-#### Homing: czujnik TRACK0
+#### Homing: wyłącznie fizyczny TRACK0
 
-Po starcie/reset oraz `HOME` firmware szuka fizycznego TRACK0 z budżetem
-90 kroków. Po wykryciu czujnika odjeżdża o `START_TRACK = 10` i zgłasza
-`READY`. Backend po connect/upload wysyła jawne `HOME` oraz potwierdza
-`STATUS homed=1`. Błąd mechaniki nie oznacza utraty połączenia Serial.
-Automatyczny handshake nie używa `HOME BLIND` jako obejścia niesprawnego
-czujnika; po `HOME_FAILED` dostępne jest Retry Home.
+Po starcie/reset oraz `HOME` firmware ustawia DIR w stronę TRACK0 i wysyła
+STEP co najmniej co 5 ms. Aktywny `/TRACK0` natychmiast kończy homing:
+`homed=1`, `awaySteps=0`, kierunek od początku, `READY`. Nie ma odjazdu
+na sztuczną pozycję startową ani homingu na ślepo.
+
+`HOME_TIMEOUT_MS = 2000` jest wyłącznie awaryjnym timeoutem startowego
+homingu przy niesprawnym czujniku; nie odpowiada oczekiwanej liczbie kroków.
+Po timeoutcie występuje `ERR HOME_FAILED`, Serial pozostaje połączony.
+`HOME BLIND` nie jest obsługiwane przez obecny firmware.
 
 #### Trzecia linia: HDD perkusja (VCM)
 
@@ -931,30 +935,26 @@ nowy okres jest od razu uwzględniany.
 
 ## 12. Bezpieczeństwo mechaniki
 
-* Firmware prowadzi programowy licznik ścieżek i **zawraca przed końcami**
-  (`MIN_TRACK = 4`, `MAX_TRACK = 72`). Dopóki licznik zgadza się
-  z rzeczywistością, głowica nie wjedzie w prowadnicę. Ponieważ jedynym
-  czujnikiem jest TRACK0, utrata kroków **w stronę MAX_TRACK jest
-  niewykrywalna** - licznik byłby wtedy zaniżony. Dlatego przy graniu warto
-  obserwować, czy dźwięk nie zaczyna „gubić" kroków.
-* `MIN_PLAY_HZ = 40`, `MAX_PLAY_HZ = 500` oraz twardy limit
-  `MIN_STEP_INTERVAL_US = 1000` (max 1000 kroków/s) w firmware to bezpieczniki
-  na wypadek błędnej komendy albo lawiny komend.
-* **Watchdog**: jeśli host przestanie się odzywać na dłużej niż
-  `HOST_TIMEOUT_MS = 3000` (awaria, wyjęty kabel USB), firmware sam zatrzymuje
-  kroki i zgłasza `ERR HOST_TIMEOUT`. Host podtrzymuje łącze wysyłając `PING`
-  co 1 s przy długich nutach i przerwach, więc normalne długie nuty nie
-  są przerywane.
-* **Detekcja utraty pozycji**: jeśli w trakcie grania czujnik `/TRACK0` jest
-  aktywny, a programowy licznik twierdzi, że jesteśmy znacznie dalej niż
-  `MIN_TRACK`, to znaczy że głowica zgubiła kroki. Wymagane są 3 aktywne
-  odczyty z rzędu (filtr na glitch), po czym firmware zatrzymuje granie
-  i wysyła `ERR POS_LOST`; host przerywa utwór i **sam robi ponowny homing**.
-  Margines (`POSITION_LOSS_MARGIN = 6`) chroni przed fałszywym alarmem, gdy
-  czujnik ma szerszą strefę niż jedna ścieżka. Jeśli Twoja stacja ma wyraźnie
-  szeroką strefę TRACK0, zwiększ tę stałą albo wyłącz wykrywanie
-  (`DETECT_POSITION_LOSS = false`).
-* `HOME` można wysłać w każdej chwili - także w trakcie grania.
+* TRACK0 jest jedynym fizycznym początkiem. `awaySteps` oznacza tylko liczbę
+  wysłanych STEP w kierunku AWAY. Po 72 komendach zmieniamy DIR na TOWARD.
+  Podczas powrotu licznik nie zmienia się i nie wyznacza końca ruchu.
+  Aktywny TRACK0 natychmiast ustawia AWAY i zeruje `awaySteps`.
+* Zgubione kroki są akceptowalne. Nie ma pozycji ujemnej, delty, oczekiwanego
+  dystansu powrotnego, `POSITION_RESYNC`, `POS_LOST` ani playbackowego
+  `HOME_FAILED` wynikającego z liczby kroków.
+* `STATUS away_steps=<n>` pokazuje komendy wysłane od TRACK0, nie pozycję
+  głowicy. `homed` pozostaje niezależny od połączenia USB/Serial.
+* Zachowany timing: po zmianie DIR co najmniej 5 ms do STEP; odstęp między
+  STEP, także po STOP/PLAY, liczony od rzeczywistego zbocza poprzedniego STEP.
+  Powrót gra w częstotliwości nuty, bez osobnej fazy zwalniania/search.
+  Runtime model nie generuje logów pozycji w ścieżce STEP.
+* Startowy `HOME` używa czujnika, z awaryjnym timeoutem 2 s. W muzycznym
+  powrocie nie ma limitu liczby kroków ani timeoutu pozycji.
+* `MIN_PLAY_HZ = 40`, `MAX_PLAY_HZ = 500`, `MIN_STEP_INTERVAL_US = 1000`
+  pozostają bez zmian; comfort oraz pitch/folding także pozostają bez zmian.
+* `HOST_TIMEOUT_MS = 3000` nadal zatrzymuje granie po utracie aktywności hosta.
+  To watchdog komunikacji, nie licznika głowicy. Host wysyła `PING` co 1 s.
+* `HOME` można wysłać w każdej chwili — także w trakcie grania.
 
 
 ### Fizyczna kalibracja FDD
@@ -1017,7 +1017,7 @@ wielu instrumentów naraz, logowania, Dockera i chmury.
 Kod jest tak ułożony, żeby nie trzeba było przepisywać logiki:
 
 * **Firmware**: cała obsługa jednej stacji siedzi w klasie `FloppyDrive`
-  (homing, licznik pozycji, generowanie kroków). Wystarczy `FloppyDrive
+  (homing, licznik komend AWAY, generowanie kroków). Wystarczy `FloppyDrive
   drives[N]` z różnymi pinami i wybór stacji w `handleCommand()`.
 * **Host**: `FloppyLink` wysyła komendy jako tekst, a harmonogram to lista
   `Command` z osią czasu - dodanie drugiego instrumentu to druga instancja
@@ -1523,7 +1523,9 @@ backend czeka na boot `READY`, wysyła jawne `HOME`, czeka na kolejne `READY`
 i potwierdza `STATUS homed=1`. Upload czeka także na ponowne pojawienie się portu USB.
 Play podczas homingu jest kolejkowane; Stop anuluje ten zamiar.
 
-`NOT_HOMED` i `POS_LOST` pauzują utwór i uruchamiają homing bez zamykania portu.
+`NOT_HOMED` pauzuje utwór i uruchamia homing bez zamykania portu.
+Obsługa `POS_LOST` w backendzie pozostaje zgodnością ze starszym firmware;
+obecny prosty model FDD nie generuje tego błędu.
 Po poprawnym HOME utwór pozostaje w pauzie, z zachowaną pozycją do ręcznego
 wznowienia. `HOME_FAILED` pozostawia Arduino połączone, blokuje Play i udostępnia
 **Retry Home**. Nie stosujemy automatycznego `HOME BLIND` jako obejścia czujnika.

@@ -13,25 +13,21 @@
 //   PING            -> PONG
 //   PLAY <hz>       -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
 //   STOP            -> (brak odpowiedzi, patrz ACK_PLAY_STOP)
-//   HOME            -> OK ... po dojechaniu -> READY
-//   HOME BLIND      -> jak HOME, ale BEZ czujnika TRACK0: jedzie pelna
-//                      szerokosc stacji do oporu i odjezdza START_TRACK.
-//                      Awaryjne, gdy czujnik TRACK0 nie odpowiada (uszkodzona
-//                      tasma/czujnik) - inaczej ERR HOME_FAILED na zawsze.
+//   HOME            -> OK / HOMING, po fizycznym TRACK0 -> READY
 //   HIT             -> (brak odpowiedzi) jedno uderzenie perkusyjne HDD
 //                      (VCM). Sekwencja park->settle->strike ~105 ms; kolejne
 //                      HIT w trakcie trwania sa kolejkowane (jedno).
 //   DRUM <0-255>    -> (brak odpowiedzi) amplituda bebna VHS; 0 = stop
 //   DRUMF <hz>      -> (brak odpowiedzi) czestotliwosc kluczowania bebna;
 //                      0 = tryb DC (zwykly PWM 976 Hz). 20..2000 Hz.
-//   STATUS          -> STATUS track=<n> dir=<...> homed=<0|1> playing=<0|1>
+//   STATUS          -> STATUS away_steps=<n> dir=<...> homed=<0|1> playing=<0|1>
 //                             track0=<0|1> hz=<...>
 //                             drum=<0-255> drum_out=<0-255> drumf=<0-2000>
 //                             hdd=<0|1>
 //   cokolwiek innego-> ERR UNKNOWN_CMD
 //
 // Bledy: ERR NOT_HOMED / ERR BUSY / ERR FREQ_RANGE / ERR MISSING_FREQ
-//        ERR BAD_FREQ / ERR HOME_FAILED / ERR POS_LOST / ERR HOST_TIMEOUT
+//        ERR BAD_FREQ / ERR HOME_FAILED / ERR HOST_TIMEOUT
 //        ERR MISSING_PWM / ERR BAD_PWM / ERR PWM_RANGE
 //        ERR MISSING_DRUMF / ERR BAD_DRUMF / ERR DRUMF_RANGE
 //        ERR LINE_TOO_LONG / ERR UNKNOWN_CMD
@@ -144,17 +140,9 @@ constexpr uint16_t DRUM_TONE_MAX_HZ = 2000;
 // MECHANIKA
 // ============================================================
 
-constexpr int MIN_TRACK = 4;    // bezpieczny zakres programowego licznika
-constexpr int MAX_TRACK = 72;   // (0 == TRACK0, licznik idzie w gore)
-
-constexpr int START_TRACK       = 10;  // ile sciezek odjechac po homingu
-constexpr int HOMING_MAX_STEPS  = 90;  // 80 sciezek + zapas
-// Homing na slepo: wiecej niz cala szerokosc stacji (80 sciezek), zeby
-// dojechac do oporu niezaleznie od tego, gdzie glowica byla.
-constexpr int BLIND_HOME_STEPS  = 95;
-
-constexpr uint16_t HOMING_STEP_MS = 5;  // tempo dojazdu do TRACK0
-constexpr uint16_t START_STEP_MS  = 5;  // tempo odjazdu od TRACK0
+constexpr uint8_t SAFE_AWAY_STEPS = 72; // komendy STEP od TRACK0, nie pozycja fizyczna
+constexpr unsigned long HOME_TIMEOUT_MS = 2000; // tylko awaryjny czas startowego HOME
+constexpr uint16_t HOMING_STEP_MS = 5;
 
 constexpr uint16_t STEP_PULSE_US = 30;  // szerokosc impulsu /STEP
 constexpr uint16_t DIR_SETUP_US  = 30;  // setup czasu DIR przed krokiem
@@ -167,20 +155,6 @@ constexpr uint32_t MIN_STEP_INTERVAL_US = 1000;
 // Watchdog: brak jakiejkolwiek komendy przez tyle ms zatrzymuje kroki.
 // Host wysyla PING co KEEPALIVE (1 s), wiec to nie grozi dlugim nutom.
 constexpr unsigned long HOST_TIMEOUT_MS = 3000;
-
-// Ile kolejnych aktywnych odczytow /TRACK0 uznajemy za pewna utrate
-// pozycji (filtr na pojedynczy glitch na linii czujnika).
-constexpr uint8_t POSITION_LOSS_SAMPLES = 3;
-
-// Zabezpieczenie przed utrata pozycji.
-// TRACK0 to jedyny prawdziwy czujnik. Jesli podczas grania czujnik jest
-// aktywny, a programowy licznik mowi, ze jestesmy znacznie dalej niz
-// MIN_TRACK, to znaczy ze head zgubil kroki -> trzeba zrobic homing.
-// Margines chroni przed falszywym alarmem, gdy czujnik ma szersza strefe
-// niz jedna sciezka. Jesli Twoja stacja ma wyraznie szeroka strefe
-// TRACK0, zwieksz POSITION_LOSS_MARGIN.
-constexpr bool DETECT_POSITION_LOSS = true;
-constexpr int  POSITION_LOSS_MARGIN = 6;
 
 // ============================================================
 // ZAKRES CZESTOTLIWOSCI PRZYJMOWANY OD HOSTA
@@ -238,8 +212,8 @@ public:
         digitalWrite(dirPin_, DIR_TOWARD_TRACK0);
         digitalWrite(selectPin_, SELECT_ACTIVE); // stacja wybrana
 
-        track_ = 0;
-        positionKnown_ = false;
+        awaySteps_ = 0;
+        homed_ = false;
         directionAway_ = false;
         playing_ = false;
         motion_ = Motion::Idle;
@@ -254,36 +228,22 @@ public:
             updatePlayback();
     }
 
-    // --- homing + odjazd na pozycje startowa (nieblokujaco) ---
-    void requestHome(bool blind = false)
+    // HOME konczy sie wylacznie po fizycznym TRACK0, bez liczenia krokow.
+    void requestHome()
     {
         stopNote();
-
-        positionKnown_ = false;
-        directionAway_ = false;      // zawsze w strone TRACK0
+        homed_ = false;
+        directionAway_ = false;
         applyDirection();
-
-        if (blind)
-        {
-            motionStepsLeft_ = BLIND_HOME_STEPS;
-            motionNextMs_ = millis();
-            motion_ = Motion::BlindHoming;
-
-            Serial.println(F("HOMING_BLIND"));
-            return;
-        }
-
-        motionStepsLeft_ = HOMING_MAX_STEPS;
-        motionNextMs_ = millis();
+        homeStartedMs_ = millis();
         motion_ = Motion::Homing;
-
         Serial.println(F("HOMING"));
     }
 
     // --- start/zmiana nuty; false = odmowa (host dostaje ERR) ---
     bool startNote(float hz)
     {
-        if (!positionKnown_)
+        if (!homed_)
             return false;
 
         if (hz < MIN_PLAY_HZ || hz > MAX_PLAY_HZ)
@@ -332,15 +292,15 @@ public:
         playing_ = false;
     }
 
-    bool positionKnown() const { return positionKnown_; }
+    bool homed() const { return homed_; }
     bool playing()       const { return playing_; }
-    int  track()         const { return track_; }
+    uint8_t awaySteps()  const { return awaySteps_; }
     bool directionAway() const { return directionAway_; }
 
-    // true, gdy trwa homing albo odjazd na pozycje startowa
+    // true, gdy trwa startowy homing
     bool busy() const { return motion_ != Motion::Idle; }
 
-    // surowy stan czujnika /TRACK0 (do diagnostyki sprzetu)
+    // Znormalizowany stan: true = /TRACK0 LOW (aktywny).
     bool track0Active() const
     {
         return digitalRead(track0Pin_) == LOW;  // /TRACK0 aktywne LOW
@@ -355,13 +315,14 @@ public:
     }
 
 private:
-    enum class Motion : uint8_t { Idle, Homing, BlindHoming, SeekingStart };
+    enum class Motion : uint8_t { Idle, Homing };
 
     // ---------- niskopoziomowe ----------
 
     void stepPulse()
     {
         digitalWrite(stepPin_, LOW);   // /STEP aktywny
+        lastStepUs_ = micros();        // czas rzeczywistego zbocza, nigdy sprzed logowania
         delayMicroseconds(STEP_PULSE_US);
         digitalWrite(stepPin_, HIGH);  // /STEP nieaktywny
     }
@@ -376,88 +337,34 @@ private:
         digitalWrite(dirPin_,
                      directionAway_ ? DIR_AWAY_TRACK0 : DIR_TOWARD_TRACK0);
         delayMicroseconds(DIR_SETUP_US);
+        directionReadyUs_ = micros() + HOMING_STEP_MS * 1000UL;
     }
 
     // ---------- maszyna stanow ruchu ----------
 
     void updateMotion()
     {
-        if (motion_ == Motion::Idle)
-            return;
-
-        const unsigned long now = millis();
-
-        if (static_cast<long>(now - motionNextMs_) < 0)
-            return;
-
-        if (motion_ == Motion::Homing)
+        if (motion_ == Motion::Idle) return;
+        if (isTrackZero())
         {
-            // Sprawdzamy czujnik PRZED krokiem, tak jak w dzialajacym
-            // prototypie - jesli head juz stoi na TRACK0, nie ruszamy nim.
-            if (isTrackZero())
-            {
-                track_ = 0;
-                positionKnown_ = true;
-                directionAway_ = true;
-                applyDirection();
-
-                motionStepsLeft_ = START_TRACK;
-                motionNextMs_ = now + START_STEP_MS;
-                motion_ = Motion::SeekingStart;
-                return;
-            }
-
-            if (motionStepsLeft_ <= 0)
-            {
-                motion_ = Motion::Idle;
-                positionKnown_ = false;
-                Serial.println(F("ERR HOME_FAILED"));
-                return;
-            }
-
-            stepPulse();
-            motionStepsLeft_--;
-            motionNextMs_ = now + HOMING_STEP_MS;
-            return;
-        }
-
-        if (motion_ == Motion::BlindHoming)
-        {
-            // Bez czujnika: jedziemy cala szerokosc stacji. Glowica dojedzie
-            // do opory (TRACK0) niezaleznie od punktu startu, wiec pozycja
-            // jest znana "z zalozenia". Opór jest tu normalnym elementem
-            // homingu - tak samo konczy sie homing z czujnikiem.
-            if (motionStepsLeft_ <= 0)
-            {
-                track_ = 0;
-                positionKnown_ = true;
-                directionAway_ = true;
-                applyDirection();
-
-                motionStepsLeft_ = START_TRACK;
-                motionNextMs_ = now + START_STEP_MS;
-                motion_ = Motion::SeekingStart;
-                return;
-            }
-
-            stepPulse();
-            motionStepsLeft_--;
-            motionNextMs_ = now + HOMING_STEP_MS;
-            return;
-        }
-
-        // Motion::SeekingStart - odjazd od TRACK0 na pozycje startowa
-        if (motionStepsLeft_ <= 0)
-        {
+            awaySteps_ = 0;
+            homed_ = true;
+            directionAway_ = true;
+            applyDirection();
             motion_ = Motion::Idle;
             Serial.println(F("READY"));
             return;
         }
-
+        if (millis() - homeStartedMs_ >= HOME_TIMEOUT_MS)
+        {
+            motion_ = Motion::Idle;
+            Serial.println(F("ERR HOME_FAILED"));
+            return;
+        }
+        const uint32_t now = micros();
+        if (static_cast<long>(now - directionReadyUs_) < 0) return;
+        if (now - lastStepUs_ < HOMING_STEP_MS * 1000UL) return;
         stepPulse();
-        track_++;
-        motionStepsLeft_--;
-        motionNextMs_ = now + START_STEP_MS;
     }
 
     // ---------- generator krokow grania ----------
@@ -477,6 +384,9 @@ private:
 
         const unsigned long now = micros();
 
+        if (static_cast<long>(now - directionReadyUs_) < 0)
+            return;
+
         if (static_cast<long>(now - nextStepUs_) < 0)
             return;
 
@@ -488,65 +398,43 @@ private:
             return;
         }
 
+        const uint32_t interval = stepIntervalUs_;
+        // STOP/PLAY nie moze tworzyc impulsow co 1 ms pomiedzy nutami:
+        // fizyczny odstep musi respektowac okres aktualnej nuty.
+        if (static_cast<unsigned long>(now - lastStepUs_) < interval)
+            return;
+
+        const uint32_t previousStepUs = lastStepUs_;
         musicalStep();
-        lastStepUs_ = now;
+        // DIR/resync/probka TRACK0 nie sa impulsem STEP. Bez nadrabiania
+        // opoznien; nastepny impuls odnosi sie do fizycznego zbocza.
+        nextStepUs_ = (lastStepUs_ != previousStepUs ? lastStepUs_ : micros()) + interval;
 
-        nextStepUs_ += stepIntervalUs_;
-
-        // Jesli z jakiegos powodu jestesmy spoznieni, nie nadrabiamy
-        // serii krokow (mechanika by tego nie lubila) - po prostu
-        // przesuwamy harmonogram.
-        if (static_cast<long>(now - nextStepUs_) > 0)
-            nextStepUs_ = now + stepIntervalUs_;
-
-        checkPosition();
     }
 
-    // Jeden krok = jeden "klik" slyszalnego dzwieku.
-    // Zmiana kierunku NIE zmienia czestotliwosci krokow - decyduje o niej
-    // wylacznie stepIntervalUs_, wiec zawracanie nie zmienia wysokosci nuty.
     void musicalStep()
     {
-        if (directionAway_ && track_ >= MAX_TRACK)
+        if (directionAway_)
         {
-            directionAway_ = false;
-            applyDirection();
+            if (awaySteps_ >= SAFE_AWAY_STEPS)
+            {
+                directionAway_ = false;
+                applyDirection();
+                return;
+            }
+            stepPulse();
+            ++awaySteps_;
+            return;
         }
-        else if (!directionAway_ && track_ <= MIN_TRACK)
+        if (isTrackZero())
         {
+            awaySteps_ = 0;
             directionAway_ = true;
             applyDirection();
+            return;
         }
-
+        // Powrot nie ma licznika ani oczekiwanej odleglosci do TRACK0.
         stepPulse();
-
-        track_ += directionAway_ ? 1 : -1;
-    }
-
-    void checkPosition()
-    {
-        if (!DETECT_POSITION_LOSS)
-            return;
-
-        // Czujnik czytamy przy kazdym kroku. Pojedynczy glitch nie moze
-        // przerywac utworu, wiec wymagamy kilku aktywnych odczytow z rzedu
-        // (kolejne kroki, wiec realnie kilka ms).
-        if (track_ > (MIN_TRACK + POSITION_LOSS_MARGIN) && isTrackZero())
-        {
-            positionLossSamples_++;
-
-            if (positionLossSamples_ >= POSITION_LOSS_SAMPLES)
-            {
-                playing_ = false;
-                positionKnown_ = false;
-                motion_ = Motion::Idle;
-                Serial.println(F("ERR POS_LOST"));
-            }
-
-            return;
-        }
-
-        positionLossSamples_ = 0;
     }
 
     // ---------- stan ----------
@@ -558,8 +446,8 @@ private:
 
     Motion motion_ = Motion::Idle;
 
-    int  track_ = 0;
-    bool positionKnown_ = false;
+    uint8_t awaySteps_ = 0;
+    bool homed_ = false;
     bool directionAway_ = true;
 
     bool playing_ = false;
@@ -567,12 +455,10 @@ private:
     uint32_t stepIntervalUs_ = 1000;
     uint32_t nextStepUs_ = 0;
     uint32_t lastStepUs_ = 0;
+    uint32_t directionReadyUs_ = 0;
 
-    uint8_t positionLossSamples_ = 0;
     unsigned long lastCommandMs_ = 0;
-
-    int motionStepsLeft_ = 0;
-    unsigned long motionNextMs_ = 0;
+    unsigned long homeStartedMs_ = 0;
 };
 
 // ============================================================
@@ -856,14 +742,14 @@ uint16_t drumSetTone(uint16_t hz)
 
 void printStatus()
 {
-    Serial.print(F("STATUS track="));
-    Serial.print(drive.track());
+    Serial.print(F("STATUS away_steps="));
+    Serial.print(drive.awaySteps());
 
     Serial.print(F(" dir="));
     Serial.print(drive.directionAway() ? F("away") : F("toward"));
 
     Serial.print(F(" homed="));
-    Serial.print(drive.positionKnown() ? 1 : 0);
+    Serial.print(drive.homed() ? 1 : 0);
 
     Serial.print(F(" playing="));
     Serial.print(drive.playing() ? 1 : 0);
@@ -928,7 +814,7 @@ void handleCommand(char *line)
             return;
         }
 
-        if (!drive.positionKnown())
+        if (!drive.homed())
         {
             Serial.println(F("ERR NOT_HOMED"));
             return;
@@ -954,15 +840,13 @@ void handleCommand(char *line)
 
     if (strcasecmp(cmd, "HOME") == 0)
     {
-        Serial.println(F("OK"));
         const char *arg = strtok(nullptr, " \t");
-
-        if (arg != nullptr && strcasecmp(arg, "BLIND") == 0)
+        if (arg != nullptr)
         {
-            drive.requestHome(true);
+            Serial.println(F("ERR UNKNOWN_CMD"));
             return;
         }
-
+        Serial.println(F("OK"));
         drive.requestHome();
         return;
     }
