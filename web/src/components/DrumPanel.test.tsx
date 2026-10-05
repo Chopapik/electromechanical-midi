@@ -50,7 +50,7 @@ function toneSlider(): HTMLInputElement {
 
 describe('DrumPanel', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.useFakeTimers()
   })
 
   afterEach(() => {

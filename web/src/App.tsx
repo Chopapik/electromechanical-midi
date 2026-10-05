@@ -14,9 +14,11 @@ export default function App() {
   const telemetry = useTelemetry(state?.file ?? null, state?.arrangementRevision ?? 0, state?.virtual?.config.tonalMode, state?.virtual?.config.hddMode, state?.virtual?.audioRevision)
   return <div className="workstation">
     <header className="top-bar">
-      <MidiFileSelector compact files={player.files} selected={state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} />
-      <PlayerControls state={state?.state ?? 'stopped'} disabled={!state?.file} onRestart={() => player.seek(0)} onToggle={player.toggle} onStop={player.stop} />
-      <ProgressBar position={state?.position ?? 0} duration={state?.duration ?? 0} playing={state?.state === 'playing' && state?.virtual?.audioClockRunning !== false} onSeek={player.seek} />
+      <div className="top-bar-content">
+        <MidiFileSelector compact files={player.files} selected={state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} />
+        <PlayerControls loadingFrom={player.startingFrom} loading={player.starting} state={state?.state ?? 'stopped'} disabled={!state?.file} onRestart={() => player.seek(0)} onToggle={player.toggle} onStop={player.stop} />
+        <ProgressBar position={state?.position ?? 0} duration={state?.duration ?? 0} playing={state?.state === 'playing' && state?.virtual?.audioClockRunning !== false} onSeek={player.seek} />
+      </div>
     </header>
     {player.error && <div className="banner error" role="alert">{player.error}<button onClick={player.dismissError}>Zamknij</button></div>}
     {!player.socketConnected && <div className="banner warning" role="alert">Brak połączenia z backendem — próbuję ponownie…</div>}

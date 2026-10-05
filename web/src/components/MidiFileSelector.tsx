@@ -1,5 +1,6 @@
 /** Wybor pliku MIDI z katalogu midi/ + wgranie nowego z przegladarki. */
 
+import { Plus } from '@phosphor-icons/react'
 import { useId, useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent } from 'react'
 
@@ -82,7 +83,8 @@ export function MidiFileSelector({
           onClick={pick}
           disabled={uploading}
         >
-          {uploading ? 'Wgrywam…' : compact ? 'Wczytaj MIDI' : '＋ Wgraj plik MIDI'}
+          {!compact && !uploading && <Plus size={14} weight="fill" aria-hidden="true" />}
+          {uploading ? 'Wgrywam…' : compact ? 'Wczytaj MIDI' : 'Wgraj plik MIDI'}
         </button>
 
         <span className="upload-hint">

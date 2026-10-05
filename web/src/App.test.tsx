@@ -197,10 +197,12 @@ describe('App', () => {
     expect(screen.getByRole('slider', { name: 'Pozycja utworu' }).getAttribute('aria-valuenow')).toBe('13')
   })
 
-  it.each([['playing', '▶', 'Pauza'], ['paused', 'Ⅱ', 'Play'], ['stopped', '▶', 'Play']] as const)('reflects %s with the state icon while keeping toggle actions', async (state, icon, action) => {
+  it.each([['playing', 'Pauza'], ['paused', 'Play'], ['stopped', 'Play']] as const)('reflects %s with the state icon while keeping toggle actions', async (state, action) => {
     const socket = await renderApp({ state }, false)
     const button = screen.getByRole('button', { name: action })
-    expect(button.textContent?.trim()).toBe(icon)
+    expect(button.textContent?.trim()).toBe('')
+    expect(button.querySelector('svg')?.getAttribute('width')).toBe('18')
+    expect(button.querySelector('svg')?.getAttribute('height')).toBe('18')
     expect(button.classList.contains(state)).toBe(true)
     expect(screen.queryByText(/PLAYING|PAUSED|STOPPED/)).toBeNull()
     fireEvent.click(button)
@@ -499,7 +501,7 @@ describe('App', () => {
   it('selektor MIDI ma przycisk wgrywania', async () => {
     await renderApp()
 
-    expect(screen.getByText('＋ Wgraj plik MIDI')).toBeDefined()
+    expect(screen.getByText('Wgraj plik MIDI')).toBeDefined()
     expect(document.querySelector('input[accept*=".mid"]')).not.toBeNull()
   })
 
@@ -839,4 +841,50 @@ describe('App', () => {
     expect(screen.getAllByText(/brak polaczenia z Arduino/).length).toBeGreaterThan(0)
     expect(screen.queryByText('Arduino: homing…')).toBeNull()
   })
+  it('shows loading immediately, waits for the audio clock and prevents duplicate Play', async () => {
+    const virtual = { enabled: true, config: { name: 'Test', devices: [] }, report: {}, activity: {}, profiles: [], audioClockRunning: false }
+    const socket = await renderApp({ state: 'stopped', virtual }, false)
+    fireEvent.click(screen.getByTitle('Play'))
+    expect((screen.getByRole('button', { name: 'Ładowanie odtwarzania' }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByRole('button', { name: 'Ładowanie odtwarzania' }).classList.contains('stopped')).toBe(true)
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, state: 'stopped', virtual } }))
+    expect(screen.getByRole('button', { name: 'Ładowanie odtwarzania' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Ładowanie odtwarzania' }))
+    expect(socket.actions().filter(a => a.action === 'play')).toHaveLength(1)
+    await act(async () => socket.emit({ type: 'state', completedAction: 'play', state: { ...STATE, virtual } }))
+    expect(screen.getByRole('button', { name: 'Ładowanie odtwarzania' })).toBeDefined()
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, virtual: { ...virtual, audioClockRunning: true } } }))
+    expect(screen.getByRole('button', { name: 'Pauza' }).getAttribute('aria-busy')).toBe('false')
+  })
+  it('retains the orange pause style throughout resume, including waiting for audio after acknowledgment', async () => {
+    const virtual = { enabled: true, config: { name: 'Test', devices: [] }, report: {}, activity: {}, profiles: [], audioClockRunning: false }
+    const socket = await renderApp({ state: 'paused', virtual }, false)
+    fireEvent.click(screen.getByTitle('Play'))
+    const loading = () => screen.getByRole('button', { name: 'Ładowanie odtwarzania' })
+    expect(loading().classList.contains('paused')).toBe(true)
+    await act(async () => socket.emit({ type: 'state', completedAction: 'resume', state: { ...STATE, virtual } }))
+    expect(loading().classList.contains('paused')).toBe(true)
+    expect(loading().classList.contains('playing')).toBe(false)
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, virtual: { ...virtual, audioClockRunning: true } } }))
+    expect(screen.getByRole('button', { name: 'Pauza' }).classList.contains('playing')).toBe(true)
+  })
+  it('waits for Arduino READY, then shows playback, and clears rejected starts', async () => {
+    const socket = await renderApp({ state: 'stopped' }, false)
+    fireEvent.click(screen.getByTitle('Play'))
+    await act(async () => socket.emit({ type: 'state', completedAction: 'play', state: { ...STATE, state: 'stopped', hardware: { ...STATE.hardware, connected: false, connecting: true, pendingPlay: true } } }))
+    expect(screen.getByRole('button', { name: 'Ładowanie odtwarzania' })).toBeDefined()
+    await act(async () => socket.emit({ type: 'state', state: STATE }))
+    expect(screen.getByRole('button', { name: 'Pauza' })).toBeDefined()
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, state: 'stopped' } }))
+    fireEvent.click(screen.getByTitle('Play'))
+    await act(async () => socket.emit({ type: 'state', completedAction: 'play', state: { ...STATE, state: 'stopped' } }))
+    expect(screen.getByRole('button', { name: 'Play' })).toBeDefined()
+    fireEvent.click(screen.getByTitle('Play'))
+    await act(async () => socket.emit({ type: 'error', message: 'Start failed' }))
+    expect(screen.getByRole('button', { name: 'Play' })).toBeDefined()
+    fireEvent.click(screen.getByTitle('Play'))
+    await act(async () => socket.onclose?.(new CloseEvent('close')))
+    expect(screen.queryByRole('button', { name: 'Ładowanie odtwarzania' })).toBeNull()
+  })
+
 })

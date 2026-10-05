@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
+import { Circle } from '@phosphor-icons/react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { FileMetadata, PlayerState, TelemetryEvent, TelemetryView, VirtualDevice } from '../types'
+import { StaffNote } from './StaffNote'
 import { usePlaybackPosition } from '../usePlaybackPosition'
 import { eventAt, eventTime, frequencyAt, indexTelemetry, noteName, streamAt } from '../telemetry'
 
@@ -39,21 +41,40 @@ export function TelemetryMonitor({ state, view, error, metadata, onSettings, set
     const event = index && enabledFor(device) ? eventAt(index.lanes.get(device.id) ?? [], position) : null
     if (event) active.set(device.id, event)
   }
+  // Keep the last audible frame for Stop, including the frequency of a glide.
+  // This is presentation only: stopped devices remain inactive.
+  const lastFrame = useRef<{ file: PlayerState['file']; events: Map<string, TelemetryEvent>; position: number } | null>(null)
+  useEffect(() => {
+    if (playing && (!virtual || clockReady)) lastFrame.current = { file: state!.file, events: active, position }
+  })
+  const frozen = state?.state === 'stopped' && lastFrame.current?.file === state.file ? lastFrame.current : null
+  const displayed = frozen?.events ?? active
+  const displayedPosition = frozen?.position ?? position
   const recent = index && state?.state !== 'stopped' ? streamAt(index.events, position) : []
   const connected = Boolean(state?.hardware.connected)
   return <>
     <main className="monitor-layout">
       <section className="instrument-grid" aria-label="Virtual Instrument Grid">
         {devices.map(device => {
-          const event = active.get(device.id)
+          const event = displayed.get(device.id)
           const tray = device.type === 'DVD_TRAY' && enabledFor(device) ? state?.virtual?.trayStatus?.[device.id] : null
           const moving = tray && !['idle', 'cooldown', 'recovery'].includes(tray.phase)
-          const lit = Boolean(event || moving)
+          const lit = Boolean(active.get(device.id) || moving)
+          const tonal = ['FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS'].includes(device.type)
+          const pitch = tonal && event?.kind === 'tone' ? event.note ?? (event.hz > 0 ? Math.round(69 + 12 * Math.log2(event.hz / 440)) : null) : null
           const source = event?.track || metadata?.tracks.find(t => t.index === device.track)?.name || device.role || ''
           return <article key={device.id} aria-label={device.name} className={`instrument-tile${lit ? ' is-active' : ''}`}>
             <h2>{deviceName(device.name)}</h2>
+            {tonal ? <>
+              <div className="instrument-staff">{pitch != null && <StaffNote midiNote={pitch} />}</div>
+              <div className="instrument-pitch-row">
+                <span className="note-name">{event ? label(event) : '—'}</span>
+                <span className="hz">{event?.kind === 'tone' && event.hz > 0 ? `${frequencyAt(event, displayedPosition).toFixed(2)} Hz` : ''}</span>
+              </div>
+            </> : <>
             <div className={`instrument-event${event?.kind !== 'tone' ? ' instrument-action' : ''}`}>{event ? label(event) : moving ? tray.phase.replaceAll('_', ' ').toUpperCase() : '—'}</div>
-            <div className="instrument-detail">{event?.kind === 'tone' && event.hz > 0 ? `${frequencyAt(event, position).toFixed(2)} Hz` : event ? `VEL ${event.velocity}` : ' '}</div>
+            <div className="instrument-detail">{event?.kind === 'tone' && event.hz > 0 ? `${frequencyAt(event, displayedPosition).toFixed(2)} Hz` : event ? `VEL ${event.velocity}` : ' '}</div>
+            </>}
             <div className="instrument-source" title={source}>{source}</div>
           </article>
         })}
@@ -69,7 +90,7 @@ export function TelemetryMonitor({ state, view, error, metadata, onSettings, set
       </section>
     </main>
     <footer className="workstation-status">
-      <span className={connected ? 'arduino-connected' : ''}><span aria-hidden="true">{connected ? '●' : '○'}</span> {arduinoStatus(state)}</span>
+      <span className={connected ? 'arduino-connected' : ''}><Circle size={10} weight={connected ? 'fill' : 'regular'} aria-hidden="true" /> {arduinoStatus(state)}</span>
       {onSettings && <button className="settings-trigger" type="button" aria-label="Settings" aria-expanded={settingsOpen} onClick={onSettings}>Settings</button>}
     </footer>
   </>

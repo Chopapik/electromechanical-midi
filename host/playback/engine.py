@@ -1308,6 +1308,7 @@ class PlaybackEngine:
     def stop(self) -> None:
         """STOP + DRUM 0, playhead = 0, stan STOPPED."""
         with self._lock:
+            self._pending_play = False
             self._preview.stop()
             self._reset_instruments_locked()
             self._state = PlaybackState.STOPPED

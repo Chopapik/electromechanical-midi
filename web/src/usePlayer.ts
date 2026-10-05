@@ -21,6 +21,8 @@ export interface PlayerApi {
   ports: PortInfo[]
   socketConnected: boolean
   uploading: boolean
+  starting: boolean
+  startingFrom: 'stopped' | 'paused'
   error: string | null
   dismissError: () => void
   play: () => void
@@ -62,6 +64,8 @@ export function usePlayer(): PlayerApi {
   const [metadata, setMetadata] = useState<FileMetadata | null>(null)
   const [ports, setPorts] = useState<PortInfo[]>([])
   const [socketConnected, setSocketConnected] = useState(false)
+  const [startRequested, setStartRequested] = useState(false)
+  const [startingFrom, setStartingFrom] = useState<'stopped' | 'paused'>('stopped')
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -76,6 +80,11 @@ export function usePlayer(): PlayerApi {
       return
     }
 
+    if (action === 'play' || action === 'resume') {
+      setStartingFrom(action === 'resume' ? 'paused' : 'stopped')
+      setStartRequested(true)
+    }
+    if (['stop', 'pause', 'set_file'].includes(action)) setStartRequested(false)
     socket.send(JSON.stringify({ action, ...payload }))
   }, [])
 
@@ -98,10 +107,11 @@ export function usePlayer(): PlayerApi {
 
       socket.onclose = () => {
         setSocketConnected(false)
+        setStartRequested(false)
         if (!disposed) timer = window.setTimeout(connect, RECONNECT_MS)
       }
 
-      socket.onerror = () => setSocketConnected(false)
+      socket.onerror = () => { setSocketConnected(false); setStartRequested(false) }
 
       socket.onmessage = (event: MessageEvent<string>) => {
         let message: ServerMessage
@@ -114,7 +124,9 @@ export function usePlayer(): PlayerApi {
 
         if (message.type === 'state' && message.state) {
           setState(message.state)
+          if (message.state.state === 'playing' || ['play', 'resume', 'stop'].includes(message.completedAction ?? '')) setStartRequested(false)
         } else if (message.type === 'error') {
+          setStartRequested(false)
           setError(message.message ?? 'Nieznany błąd backendu')
         }
       }
@@ -274,6 +286,9 @@ export function usePlayer(): PlayerApi {
     ports,
     socketConnected,
     uploading,
+    startingFrom,
+    starting: socketConnected && (startRequested || Boolean(state?.hardware.pendingPlay) ||
+      (state?.state === 'playing' && Boolean(state.virtual?.enabled) && state.virtual?.audioClockRunning === false)),
     error,
     dismissError,
     play,

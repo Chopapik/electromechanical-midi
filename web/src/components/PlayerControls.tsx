@@ -1,16 +1,19 @@
 /** Przyciski: od poczatku, play/pause, stop. */
 
+import { Rewind, Play, Pause, Stop, CircleNotch } from '@phosphor-icons/react'
 import type { PlaybackStateValue } from '../types'
 
 interface Props {
   state: PlaybackStateValue
   disabled: boolean
+  loading?: boolean
+  loadingFrom?: 'stopped' | 'paused'
   onRestart: () => void
   onToggle: () => void
   onStop: () => void
 }
 
-export function PlayerControls({ state, disabled, onRestart, onToggle, onStop }: Props) {
+export function PlayerControls({ state, disabled, loading = false, loadingFrom = 'stopped', onRestart, onToggle, onStop }: Props) {
   const playing = state === 'playing'
 
   return (
@@ -19,32 +22,35 @@ export function PlayerControls({ state, disabled, onRestart, onToggle, onStop }:
         type="button"
         className="button icon"
         title="Od początku"
+        aria-label="Od początku"
         onClick={onRestart}
         disabled={disabled}
       >
-        ⏮
+        <Rewind size={18} weight="fill" aria-hidden="true" />
       </button>
 
       <button
         type="button"
-        className={`button icon playback-toggle ${state}`}
-        aria-label={playing ? 'Pauza' : 'Play'}
-        aria-description={state}
-        title={playing ? 'Pauza' : 'Play'}
+        className={`button icon playback-toggle ${loading ? loadingFrom : state}${loading ? ' loading' : ''}`}
+        aria-label={loading ? 'Ładowanie odtwarzania' : playing ? 'Pauza' : 'Play'}
+        aria-busy={loading}
+        aria-description={loading ? 'loading' : state}
+        title={loading ? 'Ładowanie odtwarzania' : playing ? 'Pauza' : 'Play'}
         onClick={onToggle}
-        disabled={disabled}
+        disabled={disabled || loading}
       >
-        {state === 'paused' ? 'Ⅱ' : '▶'}
+        {loading ? <CircleNotch className="playback-spinner" size={18} weight="bold" aria-hidden="true" /> : state === 'paused' ? <Pause size={18} weight="fill" aria-hidden="true" /> : <Play size={18} weight="fill" aria-hidden="true" />}
       </button>
 
       <button
         type="button"
         className="button icon"
         title="Stop"
+        aria-label="Stop"
         onClick={onStop}
         disabled={disabled}
       >
-        ■
+        <Stop size={18} weight="fill" aria-hidden="true" />
       </button>
     </div>
   )

@@ -183,6 +183,7 @@ export interface PortsResponse {
 
 export interface ServerMessage {
   type: 'state' | 'error'
+  completedAction?: string
   state?: PlayerState
   message?: string
 }

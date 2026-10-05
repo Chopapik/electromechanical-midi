@@ -1,8 +1,14 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { Element } from 'vexflow/bravura'
 import { TelemetryMonitor, arduinoStatus } from './components/TelemetryMonitor'
 import { chooseFocus, eventAt, frequencyAt, indexTelemetry, streamAt } from './telemetry'
 import type { PlayerState, TelemetryEvent, TelemetryView, VirtualDevice } from './types'
+
+// jsdom has no canvas text metrics. VexFlow still draws the actual SVG engraving.
+beforeAll(() => Element.setTextMeasurementCanvas({ getContext: () => ({
+  measureText: (text: string) => ({ width: text.length * 8, actualBoundingBoxAscent: 16, actualBoundingBoxDescent: 4 }),
+}) } as unknown as HTMLCanvasElement))
 
 const event: TelemetryEvent = { id: 'tone', deviceId: 'fdd', start: 1, duration: 2, kind: 'tone', note: 55, sourceNote: 55, hz: 196, track: 'Guitar 1', velocity: 92, role: 'lead', reinforcement: false, profile: 'PLUCKED', articulation: null, direction: 1, frequencyCurve: { times: [0, 1, 2], values: [196, 208, 196] } }
 const devices: VirtualDevice[] = ['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY', 'VHS'].map((type, i) => ({ id: ['fdd', 'dvd', 'hdd', 'tray', 'vhs'][i], type, name: ['FDD 1', 'DVD 1', 'HDD 1', 'TRAY 1', 'VHS'][i], track: 1, role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1, profile: '', mode: 'virtual', overrides: {} }))
@@ -42,11 +48,14 @@ describe('renderer telemetry', () => {
     render(<TelemetryMonitor state={playing} view={view} error={null} />)
     expect(within(tile('FDD 1')).getByText('G3')).toBeDefined()
     expect(within(tile('FDD 1')).getByText('197.20 Hz')).toBeDefined()
+    expect(within(tile('FDD 1')).getByText('G3').parentElement).toBe(within(tile('FDD 1')).getByText('197.20 Hz').parentElement)
+    expect(within(tile('FDD 1')).getByRole('img', { name: /G3/ })).toBeDefined()
     expect(within(tile('FDD 1')).getByText('Guitar 1')).toBeDefined()
     expect(lit('FDD 1')).toBe(true)
     expect(within(tile('HDD 1')).getByText('HARD HIT')).toBeDefined()
     expect(within(tile('HDD 1')).getByText('VEL 92')).toBeDefined()
     expect(within(tile('HDD 1')).queryByText(/Hz/)).toBeNull()
+    expect(within(tile('HDD 1')).queryByRole('img')).toBeNull()
     expect(lit('VHS')).toBe(false)
     expect(within(tile('VHS')).getByText('—')).toBeDefined()
     expect(screen.queryByText('IDLE')).toBeNull()
@@ -83,6 +92,22 @@ describe('renderer telemetry', () => {
     render(<TelemetryMonitor state={{ ...playing, state: transport }} view={view} error={null} />)
     expect(document.querySelectorAll('.instrument-tile.is-active')).toHaveLength(0)
     expect(screen.queryByText('IDLE')).toBeNull()
+  })
+  it('freezes the audible note and Hz on Stop, then follows playback again', () => {
+    const hook = render(<TelemetryMonitor state={playing} view={view} error={null} />)
+    hook.rerender(<TelemetryMonitor state={{ ...playing, state: 'stopped', position: 0 }} view={view} error={null} />)
+    expect(within(tile('FDD 1')).getByText('G3')).toBeDefined()
+    expect(within(tile('FDD 1')).getByText('197.20 Hz')).toBeDefined()
+    expect(within(tile('FDD 1')).getByRole('img', { name: /G3/ })).toBeDefined()
+    expect(lit('FDD 1')).toBe(false)
+    hook.rerender(<TelemetryMonitor state={{ ...playing, position: 0 }} view={view} error={null} />)
+    expect(within(tile('FDD 1')).queryByText('G3')).toBeNull()
+    expect(within(tile('FDD 1')).getByText('—')).toBeDefined()
+  })
+  it('does not retain frozen notes when a different MIDI is loaded', () => {
+    const hook = render(<TelemetryMonitor state={playing} view={view} error={null} />)
+    hook.rerender(<TelemetryMonitor state={{ ...playing, state: 'stopped', file: 'other.mid', position: 0 }} view={null} error={null} />)
+    expect(within(tile('FDD 1')).queryByText('G3')).toBeNull()
   })
   it('does not fabricate activity with output off and hardware unbound', () => {
     render(<TelemetryMonitor state={{ ...playing, virtual: { ...playing.virtual!, enabled: false } }} view={view} error={null} />)

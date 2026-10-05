@@ -1848,6 +1848,22 @@ class TestHomingQueue(unittest.TestCase):
             thread.join()
             engine.shutdown()
 
+    def test_stop_cancels_play_queued_during_homing(self):
+        engine, _ = self.engine(homing=0.5)
+        thread = threading.Thread(target=engine.connect, daemon=True)
+        try:
+            thread.start()
+            self.assertTrue(self.wait_until(lambda: engine.snapshot()["hardware"]["connecting"]))
+            engine.play()
+            self.assertTrue(engine.snapshot()["hardware"]["pendingPlay"])
+            engine.stop()
+            self.assertFalse(engine.snapshot()["hardware"]["pendingPlay"])
+            thread.join()
+            self.assertEqual(engine.state, PlaybackState.STOPPED)
+        finally:
+            thread.join()
+            engine.shutdown()
+
     def test_failed_homing_does_not_pretend_to_play(self):
         engine, _ = self.engine(homing=0.2, ready=False)
         thread = threading.Thread(target=engine.connect, daemon=True)

@@ -285,6 +285,20 @@ class TestRest(WebTestCase):
 
 
 class TestWebSocket(WebTestCase):
+    def test_play_response_marks_completed_command(self):
+        self.engine.load_file(self.midi_dir / "song.mid", 1)
+        with self.client.websocket_connect("/ws") as websocket:
+            read_until_state(websocket)
+            websocket.send_json({"action": "play"})
+            for _ in range(20):
+                message = websocket.receive_json()
+                if message.get("completedAction") == "play":
+                    self.assertEqual(message["state"]["state"], "playing")
+                    break
+            else:
+                self.fail("missing completed play response")
+
+
     def test_pierwsza_wiadomosc_to_stan(self):
         with self.client.websocket_connect("/ws") as websocket:
             state = read_until_state(websocket)
