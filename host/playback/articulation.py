@@ -174,3 +174,48 @@ def apply(plan: PerformancePlan, capabilities: dict[str, DeviceCapability],
         'sustainedDevices': sorted(by_device),
         'params': params.as_dict(),
     }
+
+
+def apply_source_continuity(plan: PerformancePlan,
+                            capabilities: dict[str, DeviceCapability],
+                            amount: float = 1.) -> dict:
+    """Recover source NOTE_OFF only in unused normal actuator reservations.
+
+    Runs after allocation/legacy sustain and before reinforcement. Normal IDs,
+    outcomes, onsets, pitches and routing are immutable. Explicit steals remain
+    authoritative. Physical output and audio consume the same extended gates.
+    """
+    lanes: dict[str, list[int]] = {}
+    for i, event in enumerate(plan.events):
+        capability = capabilities.get(event.device_id)
+        if event.played and capability is not None and capability.tonal:
+            lanes.setdefault(event.device_id, []).append(i)
+    extensions = []
+    for device_id, indices in lanes.items():
+        indices.sort(key=lambda i: (plan.events[i].actual_start, plan.events[i].id))
+        capability = capabilities[device_id]
+        for order, i in enumerate(indices):
+            event = plan.events[i]
+            if event.outcome == 'SHORTENED':
+                continue
+            source_end = event.start + event.duration
+            current_end = event.actual_start + event.actual_duration
+            limit = float('inf')
+            if order + 1 < len(indices):
+                following = plan.events[indices[order + 1]]
+                gap = max(.003, capability.retrigger_s)
+                if event.played_note == following.played_note:
+                    gap = max(gap, ARTICULATION_S)
+                limit = following.actual_start - gap
+            end = min(source_end, limit)
+            gain = (end - current_end) * amount
+            end = current_end + gain
+            if gain <= MIN_EXTENSION_S:
+                continue
+            plan.events[i] = dataclasses.replace(event,
+                actual_duration=end-event.actual_start,
+                sustain_added=event.sustain_added+gain)
+            extensions.append(gain)
+    return {'extended': len(extensions), 'amount': amount,
+            'addedSeconds': round(sum(extensions), 3),
+            'maxExtensionMs': round(max(extensions, default=0.)*1000, 3)}

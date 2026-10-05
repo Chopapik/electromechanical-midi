@@ -29,10 +29,10 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   const [presets, setPresets] = useState<Record<string, VirtualConfig>>({})
   const [selectedPreset, setSelectedPreset] = useState('')
   const [notice, setNotice] = useState('')
-  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [], dvdMode: 'independent' as const }
+  const config = virtual?.config ?? { name: 'Virtual Orchestra', devices: [], dvdMode: 'reinforcement' as const }
   const dvd = config.devices.filter(device => device.type === 'DVD_SLED')
   const canReinforce = dvd.length >= 2
-  const enabled = virtual?.enabled ?? false
+  const enabled = virtual?.enabled ?? true
   const refresh = () => fetch('/api/virtual/presets').then(r => r.json()).then(data => setPresets(data.presets ?? {})).catch(() => setNotice('Could not load presets'))
   useEffect(() => { refresh() }, [])
 
@@ -77,20 +77,26 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
     <label className="virtual-master">Master Volume <input aria-label="Master Volume" type="range" min="0" max="20" step="0.25"
-      value={config.masterVolume ?? 1}
+      value={config.masterVolume ?? 19.5}
       onChange={e => configure({ ...config, masterVolume: Number(e.target.value) }, enabled)} />
-      <output>{Math.round((config.masterVolume ?? 1) * 100)}%</output>
+      <output>{Math.round((config.masterVolume ?? 19.5) * 100)}%</output>
     </label>
     <p className="muted">100% = dotychczasowy poziom · do 2000% wzmocnienia całego odsłuchu.</p>
-    <label>Tonal sound <select aria-label="Tonal sound" value={config.tonalMode ?? 'articulated'}
-      onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' | 'extreme' }, enabled)}>
-      <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option><option value="extreme">TONAL EXTREME · diagnostic</option>
+    <label>Tonal sound <select aria-label="Tonal sound" value={config.tonalMode ?? 'extreme_v15'}
+      onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' | 'extreme' | 'extreme_v15' | 'extreme_v2' }, enabled)}>
+      <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option><option value="extreme">TONAL EXTREME v1 · diagnostic</option><option value="extreme_v15">TONAL EXTREME 1.5</option><option value="extreme_v2">TONAL EXTREME v2 · diagnostic</option>
+    </select></label>
+    <label>Note length <select aria-label="Note length" value={(config.sourceContinuity ?? true) ? ((config.sourceContinuityAmount ?? 1) === .5 ? 'source_v15' : 'source') : 'balanced'}
+      onChange={e => configure({ ...config, sourceContinuity: e.target.value !== 'balanced', sourceContinuityAmount: e.target.value === 'source_v15' ? .5 : 1 }, enabled)}>
+      <option value="balanced">BALANCED · short gates</option>
+      <option value="source_v15">SOURCE CONTINUITY 1.5 · half extensions</option>
+      <option value="source">SOURCE CONTINUITY · sustain in free gaps</option>
     </select></label>
     <label>HDD sound <select aria-label="HDD sound" value={config.hddMode ?? 'articulated'}
       onChange={e => configure({ ...config, hddMode: e.target.value as 'raw' | 'articulated' }, enabled)}>
       <option value="raw">HDD RAW / DRY</option><option value="articulated">HDD ARTICULATED</option>
     </select></label>
-    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'independent'}
+    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'reinforcement'}
       disabled={!canReinforce || config.idleReinforcement?.enabled}
       onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
       <option value="independent">{dvd.length}x DVD independent</option>

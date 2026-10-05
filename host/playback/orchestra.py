@@ -34,6 +34,8 @@ BALANCED = {
     # nie ma naturalnego wybrzmienia. Krotkie nuty dostaja dluzszy NOTE_OFF
     # (bez ruszania NOTE_ON) wypelniajacy przerwe do nastepnej nuty.
     'mechanicalSustain': True,
+    'sourceContinuity': False,
+    'sourceContinuityAmount': 1.0,
     'minMechanicalSustainMs': 120.0,
     'preferredMechanicalSustainMs': 190.0,
     'releaseGapMs': 3.0,
@@ -156,15 +158,18 @@ def parse_policy(payload: dict | None) -> dict:
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
                    'leadMaxMicroDelayMs', 'capacitySafety',
                    'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
-                   'releaseGapMs', 'maxSustainExtensionMs'):
+                   'releaseGapMs', 'maxSustainExtensionMs', 'sourceContinuityAmount'):
         policy[key] = float(policy[key])
 
         if policy[key] < 0:
             raise ValueError(f'{key} nie moze byc ujemny')
 
     for key in ('preserveLead', 'preserveBass', 'allowVoiceSteal', 'softenRepeats',
-                'mechanicalSustain'):
+                'mechanicalSustain', 'sourceContinuity'):
         policy[key] = bool(policy[key])
+
+    if not 0 <= policy['sourceContinuityAmount'] <= 1:
+        raise ValueError('sourceContinuityAmount must be between 0 and 1')
 
     if policy['mode'] not in ('balanced', 'melody', 'rhythm', 'strict'):
         raise ValueError(f'nieznany tryb polityki: {policy["mode"]}')
@@ -205,3 +210,13 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     )
     config.allocation_devices()
     return config
+
+
+def web_startup_config() -> dict:
+    """User-selected web player defaults; explicit presets/overrides stay editable."""
+    orchestra = default_orchestra(dvd_mode='reinforcement')
+    return {'name': orchestra.name, 'devices': orchestra.devices, 'enabled': True,
+            'masterVolume': 19.5, 'tonalMode': 'extreme_v15', 'hddMode': 'articulated',
+            'sourceContinuity': True, 'sourceContinuityAmount': 1.,
+            'dvdMode': 'reinforcement', 'trayEnabled': True,
+            'idleReinforcement': parse_idle({'enabled': False})}

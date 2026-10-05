@@ -33,7 +33,7 @@ from pitch import fold_note, midi_to_hz, note_name
 from . import analysis as analysis_module
 from .analysis import BASS, HARMONY, LEAD, PERCUSSION, MidiAnalysis
 from .articulation import apply as apply_articulation
-from .articulation import params_from_policy
+from .articulation import params_from_policy, apply_source_continuity
 from .capabilities import MIN_NOTE_S, DeviceCapability, capabilities_for
 from .orchestra import OrchestraConfig, parse_policy
 from .performance import PerformanceEvent, PerformancePlan, ReinforcementEvent
@@ -792,6 +792,9 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     # identyczna dlugosc wykonawcza.
     plan.articulation = apply_articulation(plan, capabilities_for(devices),
                                            params_from_policy(policy))
+
+    if policy.get('sourceContinuity'):
+        plan.articulation['sourceContinuity'] = apply_source_continuity(plan, capabilities_for(devices), policy['sourceContinuityAmount'])
 
     raw_source = getattr(source, 'source', source)
     plan.analysis['trackPrograms'] = {str(t.index): [program

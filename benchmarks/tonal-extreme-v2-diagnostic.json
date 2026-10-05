@@ -1,0 +1,539 @@
+{
+  "input": "0002-02-radiohead_1993-creep-[k] (2).mid",
+  "soloWindow": [
+    0,
+    233.96257599999996
+  ],
+  "commonGain": 1.0,
+  "normalization": "none",
+  "primaryTotals": {
+    "requested": 4525,
+    "played": 4525,
+    "dropped": 0,
+    "dropRate": 0.0,
+    "retention": 1.0,
+    "delayed": 0,
+    "arpeggiated": 47,
+    "reassigned": 737,
+    "voiceSteals": 0,
+    "shortened": 0,
+    "folded": 45,
+    "meanDelayMs": 62.5,
+    "maxDelayMs": 62.5
+  },
+  "solo": {
+    "Guitar 1": {
+      "raw": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar1-raw.wav",
+        "peak": 0.09439374980925931,
+        "rms": 0.003204506782870382,
+        "sha256": "cd1e3a7dad2aa6801d5bfb37363888550d0ba62e20bb2c73b3a2493645b1af82",
+        "clippedSamples": 0,
+        "notes": 942
+      },
+      "articulated": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar1-articulated.wav",
+        "peak": 0.07013153477584155,
+        "rms": 0.001994790485686292,
+        "sha256": "1db79656d15d1ab3eb119b3829527a9eb3a3a837e8ee87e859e63a943b3f9887",
+        "clippedSamples": 0,
+        "notes": 942
+      },
+      "extreme-v1": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar1-extreme-v1.wav",
+        "peak": 0.08566545609912411,
+        "rms": 0.0026427143807723815,
+        "sha256": "ea21727391d986417f93036bd6865c8d0d9a95841c71f81fda91d8213a30142c",
+        "clippedSamples": 0,
+        "notes": 942
+      },
+      "extreme-v2": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar1-extreme-v2.wav",
+        "peak": 0.1686758018738365,
+        "rms": 0.004240503705729028,
+        "sha256": "a104b6b4dd876819625cc24be7cd52afe8659eb9514f79df64bf7a2744d31749",
+        "clippedSamples": 0,
+        "notes": 942
+      },
+      "comparison": {
+        "raw_vs_articulated": {
+          "rmsDifference": 0.0014648283708045666,
+          "relativeRmsDifference": 0.45711507887415725,
+          "changedPcmSamples": 2778590,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.9434512250243356,
+          "bestFitScalarGain": 0.5892731160721602,
+          "gainRemovedResidualRelativeRms": 0.20064302169039855
+        },
+        "raw_vs_extreme-v1": {
+          "rmsDifference": 0.0026436564833510466,
+          "relativeRmsDifference": 0.8249807731669198,
+          "changedPcmSamples": 3939246,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.5918714476724701,
+          "bestFitScalarGain": 0.49975750463936613,
+          "gainRemovedResidualRelativeRms": 0.6560112208876119
+        },
+        "raw_vs_extreme-v2": {
+          "rmsDifference": 0.0038473998706835652,
+          "relativeRmsDifference": 1.2006215406532306,
+          "changedPcmSamples": 8709620,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.48473422915941733,
+          "bestFitScalarGain": 0.6548070945142972,
+          "gainRemovedResidualRelativeRms": 1.1499277985520986
+        },
+        "v1_vs_v2": {
+          "rmsDifference": 0.003977004348925612,
+          "relativeRmsDifference": 1.5048937478303122,
+          "changedPcmSamples": 8697206,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.39753037522279105,
+          "bestFitScalarGain": 0.6550205403018534,
+          "gainRemovedResidualRelativeRms": 1.4648188845878312
+        }
+      }
+    },
+    "Guitar 2": {
+      "raw": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar2-raw.wav",
+        "peak": 0.12359996337778863,
+        "rms": 0.003794763878658044,
+        "sha256": "794d407c3704c752bd31ad5f81800fc9d6a86b0190519f268ad126db6c93a801",
+        "clippedSamples": 0,
+        "notes": 1592
+      },
+      "articulated": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar2-articulated.wav",
+        "peak": 0.08749656666768395,
+        "rms": 0.0023398751803473325,
+        "sha256": "c90593543862749dd68895301ef8539f6edc4cd4cc0f7a353705a7e7672cc264",
+        "clippedSamples": 0,
+        "notes": 1592
+      },
+      "extreme-v1": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar2-extreme-v1.wav",
+        "peak": 0.30832850123599964,
+        "rms": 0.003485660283393871,
+        "sha256": "c1397234504a3543a3f85a97005c32f5521b3b9a3b2e1dfe338bef9df7b6db9f",
+        "clippedSamples": 0,
+        "notes": 1592
+      },
+      "extreme-v2": {
+        "file": "/tmp/tonal-extreme-v2/creep-guitar2-extreme-v2.wav",
+        "peak": 0.6782128360850856,
+        "rms": 0.0049401131328447555,
+        "sha256": "230222c0efabd0d339db1edbfc72f0ba5c35c0d7e0f81cc76a90a38302644d9f",
+        "clippedSamples": 0,
+        "notes": 1592
+      },
+      "comparison": {
+        "raw_vs_articulated": {
+          "rmsDifference": 0.001806354998323714,
+          "relativeRmsDifference": 0.4760124888093174,
+          "changedPcmSamples": 1950148,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.9332525364764747,
+          "bestFitScalarGain": 0.5768076980352218,
+          "gainRemovedResidualRelativeRms": 0.2179361490441472
+        },
+        "raw_vs_extreme-v1": {
+          "rmsDifference": 0.003233480585161122,
+          "relativeRmsDifference": 0.8520900610829546,
+          "changedPcmSamples": 2289168,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.6012967753809413,
+          "bestFitScalarGain": 0.5588334552988785,
+          "gainRemovedResidualRelativeRms": 0.7289921481283779
+        },
+        "raw_vs_extreme-v2": {
+          "rmsDifference": 0.004911999673152368,
+          "relativeRmsDifference": 1.2944151020245867,
+          "changedPcmSamples": 3270628,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.3866176507786275,
+          "bestFitScalarGain": 0.5096171005802583,
+          "gainRemovedResidualRelativeRms": 1.1979294922097916
+        },
+        "v1_vs_v2": {
+          "rmsDifference": 0.005210833701038774,
+          "relativeRmsDifference": 1.4949344679009162,
+          "changedPcmSamples": 3287264,
+          "totalPcmSamples": 10317748,
+          "correlation": 0.2676248696163978,
+          "bestFitScalarGain": 0.38690909112009453,
+          "gainRemovedResidualRelativeRms": 1.3634326535502246
+        }
+      }
+    }
+  },
+  "probes": {
+    "long": {
+      "sourceId": "1:209",
+      "track": "Guitar 1",
+      "sourceDuration": 5.198354316666666,
+      "modes": {
+        "raw": {
+          "attackParameterMs": 1.0,
+          "peakSample": 0.034089175084688866,
+          "peak5msRms": 0.006109888468518208,
+          "measuredPeakTimeMs": 144.67120181405895,
+          "rms0to50ms": 0.004274857162326102,
+          "rms50to200ms": 0.0043963234647943945,
+          "rms200to500ms": 0.0,
+          "sustainRms": 0.004390224329607886,
+          "releaseRms": 0.00233547730351742,
+          "postPeakToMinus6dBMs": 4.988662131519274,
+          "postPeakToMinus20dBMs": null,
+          "scheduledAudioDurationMs": 191.97278911564624,
+          "audibleDurationMinus60dBMs": 191.83673469387756,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 1.0,
+            "decayMs": 0.0,
+            "releaseMs": 2.0,
+            "gateMs": 189.99999999999773,
+            "sourceDuration": 5.198354316666666,
+            "velocity": 87,
+            "semanticRole": "GUITAR",
+            "program": 26,
+            "legato": false,
+            "staccato": false,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.6614173228346457,
+            "raw": true,
+            "extreme": false,
+            "extremeV2": false,
+            "sustainLevel": 1.0,
+            "brightness": 0.6637795275590551,
+            "transient": 0.33976377952755904
+          }
+        },
+        "articulated": {
+          "attackParameterMs": 3.555905511811024,
+          "peakSample": 0.029969176305429245,
+          "peak5msRms": 0.005076003083014589,
+          "measuredPeakTimeMs": 14.965986394557822,
+          "rms0to50ms": 0.0036852525704635306,
+          "rms50to200ms": 0.0021999702809290074,
+          "rms200to500ms": 0.00027703138643362735,
+          "sustainRms": 0.0020182761967332823,
+          "releaseRms": 0.0006536900500316974,
+          "postPeakToMinus6dBMs": 4.988662131519274,
+          "postPeakToMinus20dBMs": 189.56916099773244,
+          "scheduledAudioDurationMs": 234.96598639455783,
+          "audibleDurationMinus60dBMs": 229.65986394557822,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 3.555905511811024,
+            "decayMs": 79.40728346456599,
+            "releaseMs": 45.0,
+            "gateMs": 189.99999999999773,
+            "sourceDuration": 5.198354316666666,
+            "velocity": 87,
+            "semanticRole": "GUITAR",
+            "program": 26,
+            "legato": false,
+            "staccato": false,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.6614173228346457,
+            "raw": false,
+            "extreme": false,
+            "extremeV2": false,
+            "sustainLevel": 0.322755905511811,
+            "brightness": 0.6637795275590551,
+            "transient": 0.33976377952755904
+          }
+        },
+        "extreme-v1": {
+          "attackParameterMs": 29.7244094488189,
+          "peakSample": 0.032013916440321054,
+          "peak5msRms": 0.01228100342072974,
+          "measuredPeakTimeMs": 24.943310657596374,
+          "rms0to50ms": 0.005769652571975668,
+          "rms50to200ms": 0.001916632047619741,
+          "rms200to500ms": 0.0003487260413524648,
+          "sustainRms": null,
+          "releaseRms": 0.00032853395691804187,
+          "postPeakToMinus6dBMs": 9.977324263038549,
+          "postPeakToMinus20dBMs": 29.931972789115644,
+          "scheduledAudioDurationMs": 626.984126984127,
+          "audibleDurationMinus60dBMs": 619.3650793650794,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 29.7244094488189,
+            "decayMs": 281.4960629921259,
+            "releaseMs": 437.00787401574803,
+            "gateMs": 189.99999999999773,
+            "sourceDuration": 5.198354316666666,
+            "velocity": 87,
+            "semanticRole": "GUITAR",
+            "program": 26,
+            "legato": false,
+            "staccato": false,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.6614173228346457,
+            "raw": false,
+            "extreme": true,
+            "extremeV2": false,
+            "sustainLevel": 0.16850393700787403,
+            "brightness": 0.5122118226913619,
+            "transient": 0.7572440066139976
+          }
+        },
+        "extreme-v2": {
+          "attackParameterMs": 49.4488188976378,
+          "peakSample": 0.06015198217719046,
+          "peak5msRms": 0.01852826965929998,
+          "measuredPeakTimeMs": 44.897959183673464,
+          "rms0to50ms": 0.006962471855922866,
+          "rms50to200ms": 0.0050526439053523815,
+          "rms200to500ms": 0.0008556994192449697,
+          "sustainRms": null,
+          "releaseRms": 0.000555213455786335,
+          "postPeakToMinus6dBMs": 9.977324263038549,
+          "postPeakToMinus20dBMs": 159.63718820861678,
+          "scheduledAudioDurationMs": 1086.077097505669,
+          "audibleDurationMinus60dBMs": 1062.6303854875282,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 49.4488188976378,
+            "decayMs": 412.992125984252,
+            "releaseMs": 896.0944881889764,
+            "gateMs": 189.99999999999773,
+            "sourceDuration": 5.198354316666666,
+            "velocity": 87,
+            "semanticRole": "GUITAR",
+            "program": 26,
+            "legato": false,
+            "staccato": false,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.6614173228346457,
+            "raw": false,
+            "extreme": true,
+            "extremeV2": true,
+            "sustainLevel": 0.09795275590551182,
+            "brightness": 0.46044544434801565,
+            "transient": 0.944935433130833
+          }
+        }
+      }
+    },
+    "short": {
+      "sourceId": "5:63",
+      "track": "Guitar 2",
+      "sourceDuration": 0.062499816666672814,
+      "modes": {
+        "raw": {
+          "attackParameterMs": 1.0,
+          "peakSample": 0.028839991454817346,
+          "peak5msRms": 0.005187614549728713,
+          "measuredPeakTimeMs": 49.88662131519275,
+          "rms0to50ms": 0.0037525599698589427,
+          "rms50to200ms": 0.0038847736414328224,
+          "rms200to500ms": 0.0,
+          "sustainRms": 0.0038702132435287258,
+          "releaseRms": 0.00025190868291116047,
+          "postPeakToMinus6dBMs": 4.988662131519274,
+          "postPeakToMinus20dBMs": null,
+          "scheduledAudioDurationMs": 71.51927437641724,
+          "audibleDurationMinus60dBMs": 70.43083900226758,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 1.0,
+            "decayMs": 0.0,
+            "releaseMs": 2.0,
+            "gateMs": 69.52150000000756,
+            "sourceDuration": 0.062499816666672814,
+            "velocity": 56,
+            "semanticRole": "GUITAR",
+            "program": 30,
+            "legato": false,
+            "staccato": true,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.8188976377952756,
+            "raw": true,
+            "extreme": false,
+            "extremeV2": false,
+            "sustainLevel": 1.0,
+            "brightness": 0.4807086614173228,
+            "transient": 0.2543307086614173
+          }
+        },
+        "articulated": {
+          "attackParameterMs": 4.141732283464567,
+          "peakSample": 0.02435377056184576,
+          "peak5msRms": 0.003665729085622069,
+          "measuredPeakTimeMs": 14.965986394557822,
+          "rms0to50ms": 0.002612778803746405,
+          "rms50to200ms": 0.0013573583085858228,
+          "rms200to500ms": 0.0,
+          "sustainRms": 0.0016928148885243825,
+          "releaseRms": 0.00024106467121209047,
+          "postPeakToMinus6dBMs": 4.988662131519274,
+          "postPeakToMinus20dBMs": 54.87528344671202,
+          "scheduledAudioDurationMs": 79.50113378684807,
+          "audibleDurationMinus60dBMs": 77.00680272108843,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 4.141732283464567,
+            "decayMs": 30.96443816929471,
+            "releaseMs": 9.99997066666765,
+            "gateMs": 69.52150000000756,
+            "sourceDuration": 0.062499816666672814,
+            "velocity": 56,
+            "semanticRole": "GUITAR",
+            "program": 30,
+            "legato": false,
+            "staccato": true,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.8188976377952756,
+            "raw": false,
+            "extreme": false,
+            "extremeV2": false,
+            "sustainLevel": 0.28614173228346457,
+            "brightness": 0.4807086614173228,
+            "transient": 0.2543307086614173
+          }
+        },
+        "extreme-v1": {
+          "attackParameterMs": 19.34193963254804,
+          "peakSample": 0.027558214056825465,
+          "peak5msRms": 0.005016990993251054,
+          "measuredPeakTimeMs": 14.965986394557822,
+          "rms0to50ms": 0.0027846150618074856,
+          "rms50to200ms": 0.0014665396953050154,
+          "rms200to500ms": 0.0,
+          "sustainRms": null,
+          "releaseRms": 0.0005777993377179775,
+          "postPeakToMinus6dBMs": 19.954648526077097,
+          "postPeakToMinus20dBMs": 59.86394557823129,
+          "scheduledAudioDurationMs": 81.49659863945578,
+          "audibleDurationMinus60dBMs": 80.68027210884354,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 19.34193963254804,
+            "decayMs": 177.2250836614366,
+            "releaseMs": 34.76075000000378,
+            "gateMs": 69.52150000000756,
+            "sourceDuration": 0.062499816666672814,
+            "velocity": 56,
+            "semanticRole": "GUITAR",
+            "program": 30,
+            "legato": false,
+            "staccato": true,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.8188976377952756,
+            "raw": false,
+            "extreme": true,
+            "extremeV2": false,
+            "sustainLevel": 0.14409448818897638,
+            "brightness": 0.15860095011528605,
+            "transient": 0.23861472683575286
+          }
+        },
+        "extreme-v2": {
+          "attackParameterMs": 10.590551181102363,
+          "peakSample": 0.02368236335337382,
+          "peak5msRms": 0.00523408897675087,
+          "measuredPeakTimeMs": 9.977324263038549,
+          "rms0to50ms": 0.0031597585082491888,
+          "rms50to200ms": 0.0012525070668773365,
+          "rms200to500ms": 0.0,
+          "sustainRms": null,
+          "releaseRms": 0.0007054170250926026,
+          "postPeakToMinus6dBMs": 9.977324263038549,
+          "postPeakToMinus20dBMs": null,
+          "scheduledAudioDurationMs": 81.49659863945578,
+          "audibleDurationMinus60dBMs": 81.04308390022676,
+          "articulation": {
+            "profile": "PLUCKED",
+            "deviceType": "FDD",
+            "attackMs": 10.590551181102363,
+            "decayMs": 144.7244094488189,
+            "releaseMs": 198.8503937007874,
+            "gateMs": 69.52150000000756,
+            "sourceDuration": 0.062499816666672814,
+            "velocity": 56,
+            "semanticRole": "GUITAR",
+            "program": 30,
+            "legato": false,
+            "staccato": true,
+            "strumLike": false,
+            "sustainPedal": false,
+            "ccGainAtStart": 0.8188976377952756,
+            "raw": false,
+            "extreme": true,
+            "extremeV2": true,
+            "sustainLevel": 0.07204724409448819,
+            "brightness": 0.09560790767932828,
+            "transient": 0.17877660612658938
+          }
+        }
+      }
+    }
+  },
+  "fullMix": {
+    "extreme-v1": {
+      "file": "/tmp/tonal-extreme-v2/creep-full-extreme-v1.wav",
+      "peak": 0.0499893185216834,
+      "rms": 0.0027717827973597164,
+      "sha256": "d39346d289b49c6f5518567611e6728e14fb2e3f83116359caffe65470363960",
+      "clippedSamples": 0
+    },
+    "extreme-v2": {
+      "file": "/tmp/tonal-extreme-v2/creep-full-extreme-v2.wav",
+      "peak": 0.07730338450270088,
+      "rms": 0.0028747591156621684,
+      "sha256": "6c861112138d46aee80ec72e52188c3a15f40e1726bf92a9bcf4341f0a97617a",
+      "clippedSamples": 0
+    },
+    "comparison": {
+      "rmsDifference": 0.000997130083990214,
+      "relativeRmsDifference": 0.35974322552980637,
+      "changedPcmSamples": 8898868,
+      "totalPcmSamples": 10317748,
+      "correlation": 0.9380828917809366,
+      "bestFitScalarGain": 0.9731341836072626,
+      "gainRemovedResidualRelativeRms": 0.3587386461257566
+    }
+  },
+  "legacyRegression": {
+    "raw": {
+      "bitIdenticalFloatSamples": true,
+      "checkedTones": 4975,
+      "modeParametersIdentical": true
+    },
+    "articulated": {
+      "bitIdenticalFloatSamples": true,
+      "checkedTones": 4748,
+      "modeParametersIdentical": true
+    },
+    "extreme": {
+      "bitIdenticalFloatSamples": true,
+      "checkedTones": 4624,
+      "modeParametersIdentical": true
+    }
+  },
+  "planUnchanged": true,
+  "soloIdsOnsetsGatesIdentical": true,
+  "metricDefinitions": {
+    "decibelTimes": "first post-peak 5ms block RMS crossing relative to peak block; not fitted envelope",
+    "sustain": "attack+decay to gate; null when no sustain window",
+    "audibleDuration": "last PCM sample above -60dB of own peak; gain used for every file is identical"
+  }
+}

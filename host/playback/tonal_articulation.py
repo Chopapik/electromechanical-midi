@@ -62,6 +62,8 @@ class TonalArticulation:
     modulation: Curve = Curve((0.,), (0.,))
     raw: bool = False
     extreme: bool = False
+    extreme_v2: bool = False
+    extreme_v15: bool = False
 
     def debug(self):
         return {'profile':self.profile,'deviceType':self.device,'attackMs':self.attack*1000,
@@ -69,7 +71,7 @@ class TonalArticulation:
             'sourceDuration':self.source_duration,'velocity':self.velocity,'semanticRole':self.role,
             'program':self.program,'legato':self.legato,'staccato':self.staccato,
             'strumLike':self.strum_like,'sustainPedal':self.pedal,'ccGainAtStart':self.gain.values[0],
-            'raw':self.raw, 'extreme':self.extreme, 'sustainLevel':self.sustain,
+            'raw':self.raw, 'extreme':self.extreme, 'extremeV2':self.extreme_v2, 'extremeV15':self.extreme_v15, 'sustainLevel':self.sustain,
             'brightness':self.brightness, 'transient':self.transient}
 
 
@@ -218,6 +220,27 @@ def apply_mode(art, mode):
     """Temporary diagnostic exaggeration, after semantic/physical decisions."""
     if mode == 'raw':
         return dataclasses.replace(art, attack=.001, decay=0., sustain=1., release=.002, raw=True)
+    if mode == 'extreme_v15' and art.profile == 'PLUCKED':
+        v1=apply_mode(art,'extreme')
+        v2=apply_mode(art,'extreme_v2')
+        fields=('attack','decay','sustain','release','brightness','transient')
+        return dataclasses.replace(art,**{k:(getattr(v1,k)+getattr(v2,k))*.5 for k in fields},
+            extreme=True,extreme_v15=True,extreme_v2=False)
+    if mode == 'extreme_v2' and art.profile == 'PLUCKED':
+        v=art.velocity/127
+        # Source length shapes sound; the allocated gate stays untouched.
+        x=max(0.,min(1.,(art.source_duration-.08)/.72))
+        blend=x*x*(3-2*x)
+        dvd=art.device=='DVD_SLED'
+        attack=(.015-.010*v)*(1-blend)+(.070-.030*v)*blend
+        release=(.150+.150*v)*(1-blend)+(.700+.400*v)*blend
+        return dataclasses.replace(art,
+            attack=min(art.gate*.35,attack*(1.08 if dvd else 1.)),
+            decay=(.180-.080*v)*(1-blend)+(.550-.200*v)*blend,
+            sustain=(.05+.05*v)*(1-blend)+(.05+.07*v)*blend,
+            release=release*(1. if dvd else .92),
+            brightness=.02+2.0*v**4, transient=.02+4.2*v**4,
+            extreme=True,extreme_v2=True)
     if mode != 'extreme' or art.profile != 'PLUCKED':
         return art
     v=art.velocity/127
@@ -241,6 +264,11 @@ def envelope(t, art, length, np=None):
 
 
 def render(t, art, hz, length, np=None):
+    if art.extreme_v15:
+        # One envelope/gate, halfway between existing mechanical carriers.
+        v1=dataclasses.replace(art,extreme_v15=False,extreme_v2=False)
+        v2=dataclasses.replace(art,extreme_v15=False,extreme_v2=True)
+        return .5*(render(t,v1,hz,length,np)+render(t,v2,hz,length,np))
     exp=math.exp if np is None else np.exp; sin=math.sin if np is None else np.sin
     minimum=min if np is None else np.minimum; maximum=max if np is None else np.maximum
     phase=art.frequency.integral(t,np)
@@ -257,5 +285,17 @@ def render(t, art, hz, length, np=None):
         # EXTREME deliberately puts a conspicuous mechanical burst at the
         # envelope peak. Regular ARTICULATED math is unchanged.
         burst=(exp(-abs(t-art.attack)/.003) if art.extreme else exp(-t/.003))
-        carrier+=art.transient*burst*sin(2*math.pi*(1800 if art.device=='FDD' else 1400)*t)
+        carrier+=art.transient*(.45 if art.extreme_v2 and art.device=='DVD_SLED' else 1.)*burst*sin(2*math.pi*(1800 if art.device=='FDD' else 1400)*t)
+    if art.extreme_v2 and art.device!='VHS':
+        v=art.velocity/127
+        dvd=art.device=='DVD_SLED'
+        burst=exp(-abs(t-art.attack)/(.0045 if dvd else .0018))
+        # Deterministic short mechanical impact: inharmonic modes, no samples.
+        impact=(sin(2*math.pi*(1250 if dvd else 2300)*t)
+                +.55*sin(2*math.pi*(2170 if dvd else 3710)*t)
+                +.30*sin(2*math.pi*(3190 if dvd else 5270)*t))
+        carrier+=(.03+3.2*v**4)*burst*impact*(.45 if dvd else 1.)
+        # Velocity changes sustained body/harmonic energy as well as gain.
+        carrier+=(.04+.28*v*v)*sin(2*math.pi*phase)
+        carrier+=(.02+.25*v**4)*sin((4 if dvd else 8)*math.pi*phase)
     return carrier*envelope(t,art,length,np)*art.intensity*art.gain.at(t,np)

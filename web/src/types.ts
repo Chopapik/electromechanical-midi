@@ -120,7 +120,7 @@ export interface IdleReinforcementConfig {
   deviceTypes?: string[]; minScore?: number; minDurationMs?: number; percussionCooldownMs?: number; vhsEnabled?: boolean
 }
 export interface VirtualConfig { masterVolume?: number; hddMode?: 'raw' | 'articulated'
-  tonalMode?: 'raw' | 'articulated' | 'extreme'; name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement'; trayEnabled?: boolean; idleReinforcement?: IdleReinforcementConfig }
+  sourceContinuity?: boolean; sourceContinuityAmount?: number; tonalMode?: 'raw' | 'articulated' | 'extreme' | 'extreme_v15' | 'extreme_v2'; name: string; devices: VirtualDevice[]; dvdMode?: 'independent' | 'reinforcement'; trayEnabled?: boolean; idleReinforcement?: IdleReinforcementConfig }
 export interface VirtualReport {
   name: string; type: string; accepted: number; played: number; dropped: number
   folded: number; delayed: number; busyConflicts: number; steps: number

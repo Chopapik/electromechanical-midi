@@ -652,7 +652,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-hardware",
         action="store_true",
-        help="nie laczy sie z Arduino (UI dziala, ale PLAY zglosi brak polaczenia)",
+        help="nie laczy sie z Arduino; domyslnie odtwarza wirtualna orkiestre",
     )
     parser.add_argument(
         "--fake-hardware",
@@ -708,6 +708,9 @@ def main(argv: list[str] | None = None) -> int:
         drum_strategy=args.drum_strategy,
     )
 
+    from playback.orchestra import web_startup_config
+    engine.configure_virtual(web_startup_config())
+
     app = create_app(
         midi_dir=args.midi_dir,
         engine=engine,
@@ -721,7 +724,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.fake_hardware:
         print("Tryb: FAKE hardware (atrapa - nic nie idzie po Serial)")
     elif args.no_hardware:
-        print("Tryb: bez sprzetu (PLAY zglosi brak polaczenia)")
+        print("Tryb: bez sprzetu (wirtualny odsluch audio)")
     else:
         print("Porty szeregowe:")
         print(describe_ports(scan_ports()))

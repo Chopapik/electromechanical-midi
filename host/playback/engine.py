@@ -1066,10 +1066,10 @@ class PlaybackEngine:
             self._orchestra = parse_orchestra({
                 'name': candidate.name,
                 'devices': candidate.config()['devices'],
-                'policy': self._orchestra.policy,
+                'policy': {**self._orchestra.policy, 'sourceContinuity': candidate.source_continuity, 'sourceContinuityAmount': candidate.source_continuity_amount},
                 'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled, 'idleReinforcement': candidate.idle_reinforcement,
             })
-            if candidate.dvd_mode == 'reinforcement' or candidate.idle_reinforcement.get('enabled'):
+            if candidate.dvd_mode == 'reinforcement' or candidate.idle_reinforcement.get('enabled') or candidate.source_continuity:
                 # Reinforcement runs after the normal PerformancePlan is built.
                 self._auto_arrange = True
             self._virtual_mode = enabled

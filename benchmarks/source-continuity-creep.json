@@ -1,0 +1,201 @@
+{
+  "input": "0002-02-radiohead_1993-creep-[k] (2).mid",
+  "tonalMode": "extreme_v2",
+  "commonGain": 1.0,
+  "window": [
+    0,
+    238.5770210833333
+  ],
+  "normalization": "none",
+  "modes": {
+    "balanced": {
+      "primary": {
+        "requested": 4525,
+        "played": 4525,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "retention": 1.0,
+        "delayed": 0,
+        "arpeggiated": 47,
+        "reassigned": 737,
+        "voiceSteals": 0,
+        "shortened": 0,
+        "folded": 45,
+        "meanDelayMs": 62.5,
+        "maxDelayMs": 62.5
+      },
+      "articulation": {
+        "extended": 2593,
+        "meanExtensionMs": 58.7,
+        "maxExtensionMs": 180.0,
+        "addedSeconds": 152.2,
+        "sustainedDevices": [
+          "fdd-1",
+          "fdd-2",
+          "fdd-3",
+          "fdd-4"
+        ],
+        "params": {
+          "enabled": true,
+          "minMechanicalSustainMs": 120.0,
+          "preferredMechanicalSustainMs": 190.0,
+          "releaseGapMs": 3.0,
+          "maxSustainExtensionMs": 200.0
+        }
+      },
+      "Guitar 1": {
+        "notes": 942,
+        "medianSourceMs": 633.1503166666437,
+        "medianPerformedMs": 189.99999999999773,
+        "performedVoiceSeconds": 128.39310351666654,
+        "sourceVoiceSeconds": 812.209574033333,
+        "sourceActiveSeconds": 226.57813971666667,
+        "performedActiveSeconds": 102.30621889999924,
+        "sourceActiveTimeCoverage": 0.4504753728417951
+      },
+      "Guitar 2": {
+        "notes": 1592,
+        "medianSourceMs": 62.499816666672814,
+        "medianPerformedMs": 69.52150000000756,
+        "performedVoiceSeconds": 121.54154788333327,
+        "sourceVoiceSeconds": 234.0726829499999,
+        "sourceActiveSeconds": 96.0907507416666,
+        "performedActiveSeconds": 57.18766800000007,
+        "sourceActiveTimeCoverage": 0.5133210812274176
+      },
+      "reinforcementEvents": 1856,
+      "wav": {
+        "Guitar 1": {
+          "file": "/tmp/source-continuity/creep-guitar1-balanced.wav",
+          "peak": 0.1686758018738365,
+          "rms": 0.004199294351481366,
+          "clippedSamples": 0
+        },
+        "Guitar 2": {
+          "file": "/tmp/source-continuity/creep-guitar2-balanced.wav",
+          "peak": 0.6782128360850856,
+          "rms": 0.004892104951212964,
+          "clippedSamples": 0
+        },
+        "full": {
+          "file": "/tmp/source-continuity/creep-full-balanced.wav",
+          "peak": 0.07730338450270088,
+          "rms": 0.002846822141289994,
+          "clippedSamples": 0
+        }
+      }
+    },
+    "continuity": {
+      "primary": {
+        "requested": 4525,
+        "played": 4525,
+        "dropped": 0,
+        "dropRate": 0.0,
+        "retention": 1.0,
+        "delayed": 0,
+        "arpeggiated": 47,
+        "reassigned": 737,
+        "voiceSteals": 0,
+        "shortened": 0,
+        "folded": 45,
+        "meanDelayMs": 62.5,
+        "maxDelayMs": 62.5
+      },
+      "articulation": {
+        "extended": 2593,
+        "meanExtensionMs": 58.7,
+        "maxExtensionMs": 180.0,
+        "addedSeconds": 152.2,
+        "sustainedDevices": [
+          "fdd-1",
+          "fdd-2",
+          "fdd-3",
+          "fdd-4"
+        ],
+        "params": {
+          "enabled": true,
+          "minMechanicalSustainMs": 120.0,
+          "preferredMechanicalSustainMs": 190.0,
+          "releaseGapMs": 3.0,
+          "maxSustainExtensionMs": 200.0
+        },
+        "sourceContinuity": {
+          "extended": 1267,
+          "addedSeconds": 713.414,
+          "maxExtensionMs": 5145.582
+        }
+      },
+      "Guitar 1": {
+        "notes": 942,
+        "medianSourceMs": 633.1503166666437,
+        "medianPerformedMs": 323.0859999999893,
+        "performedVoiceSeconds": 539.6253697000013,
+        "sourceVoiceSeconds": 812.209574033333,
+        "sourceActiveSeconds": 226.57813971666667,
+        "performedActiveSeconds": 223.16210515000037,
+        "sourceActiveTimeCoverage": 0.9838714295007915
+      },
+      "Guitar 2": {
+        "notes": 1592,
+        "medianSourceMs": 62.499816666672814,
+        "medianPerformedMs": 69.52150000000756,
+        "performedVoiceSeconds": 245.5815074333334,
+        "sourceVoiceSeconds": 234.0726829499999,
+        "sourceActiveSeconds": 96.0907507416666,
+        "performedActiveSeconds": 103.9530106750001,
+        "sourceActiveTimeCoverage": 1.0
+      },
+      "reinforcementEvents": 837,
+      "wav": {
+        "Guitar 1": {
+          "file": "/tmp/source-continuity/creep-guitar1-continuity.wav",
+          "peak": 0.1703848384044923,
+          "rms": 0.004310227893220463,
+          "clippedSamples": 0
+        },
+        "Guitar 2": {
+          "file": "/tmp/source-continuity/creep-guitar2-continuity.wav",
+          "peak": 0.6782128360850856,
+          "rms": 0.004905288136892748,
+          "clippedSamples": 0
+        },
+        "full": {
+          "file": "/tmp/source-continuity/creep-full-continuity.wav",
+          "peak": 0.07757805108798486,
+          "rms": 0.0028562052667445606,
+          "clippedSamples": 0
+        }
+      }
+    }
+  },
+  "normalAllocationIdenticalExceptDurations": true,
+  "pcmComparison": {
+    "Guitar 1": {
+      "rmsDifference": 0.000812558659140026,
+      "relativeRmsDifference": 0.19349885745765438,
+      "changedPcmSamples": 8824370,
+      "totalPcmSamples": 10521246,
+      "correlation": 0.9824473730002179,
+      "bestFitScalarGain": 1.0080452163762244,
+      "gainRemovedResidualRelativeRms": 0.19333153475539727
+    },
+    "Guitar 2": {
+      "rmsDifference": 0.00032884671845246564,
+      "relativeRmsDifference": 0.06721988218403417,
+      "changedPcmSamples": 2041856,
+      "totalPcmSamples": 10521246,
+      "correlation": 0.9977728917892635,
+      "bestFitScalarGain": 1.0004391626530815,
+      "gainRemovedResidualRelativeRms": 0.06721844759438862
+    },
+    "full": {
+      "rmsDifference": 0.00018062711329928414,
+      "relativeRmsDifference": 0.0634486821917985,
+      "changedPcmSamples": 8786784,
+      "totalPcmSamples": 10521246,
+      "correlation": 0.9980792902802187,
+      "bestFitScalarGain": 1.0012885640581843,
+      "gainRemovedResidualRelativeRms": 0.06343559627325816
+    }
+  }
+}

@@ -37,6 +37,73 @@ def lane(p,mode='articulated'):
 
 
 class TonalTest(unittest.TestCase):
+    def test_v15_interpolates_parameters_without_changing_gate(self):
+        for device in ('FDD','DVD_SLED'):
+            for duration in (.0625,1.):
+                a=dataclasses.replace(resolve(plan())[0]['a'],device=device,
+                    gate=duration,source_duration=duration)
+                v1=apply_mode(a,'extreme');v2=apply_mode(a,'extreme_v2')
+                mid=apply_mode(a,'extreme_v15')
+                for field in ('attack','decay','sustain','release','brightness','transient'):
+                    self.assertAlmostEqual(getattr(mid,field),(getattr(v1,field)+getattr(v2,field))*.5)
+                self.assertEqual(mid.gate,a.gate)
+                self.assertEqual(mid.source_duration,a.source_duration)
+                t=np.arange(int((duration+mid.release)*22050),dtype=np.float32)/22050
+                y=render(t,mid,220.,duration+mid.release,np)
+                self.assertTrue(np.isfinite(y).all())
+                self.assertGreater(float(np.max(np.abs(y))),0.)
+                indexes=(0,110,220,1000)
+                for i in indexes:
+                    if i<len(t):self.assertAlmostEqual(float(y[i]),render(float(t[i]),mid,220.,duration+mid.release),places=3)
+        p=plan();snapshot=dataclasses.asdict(p)
+        w,rows,_=lane(p,'extreme_v15')
+        self.assertTrue(rows[0][2].tonal_articulation.extreme_v15)
+        self.assertEqual(snapshot,dataclasses.asdict(p))
+
+    def test_v2_source_length_velocity_and_device_profiles(self):
+        base=resolve(plan())[0]['a']
+        short=apply_mode(dataclasses.replace(base,source_duration=.0625,gate=.0625),'extreme_v2')
+        long=apply_mode(dataclasses.replace(base,source_duration=1.,gate=.4),'extreme_v2')
+        v1=apply_mode(dataclasses.replace(base,source_duration=1.,gate=.4),'extreme')
+        self.assertLess(short.attack,.016)
+        self.assertLessEqual(short.release,.300)
+        self.assertGreater(long.release,v1.release*1.5)
+        mid=apply_mode(dataclasses.replace(base,source_duration=.44),'extreme_v2')
+        self.assertTrue(short.release<mid.release<long.release)
+        low=apply_mode(dataclasses.replace(base,velocity=40),'extreme_v2')
+        high=apply_mode(dataclasses.replace(base,velocity=120),'extreme_v2')
+        self.assertGreater(high.transient-low.transient,base.transient)
+        fdd=apply_mode(dataclasses.replace(base,device='FDD'),'extreme_v2')
+        self.assertNotEqual(fdd.attack,mid.attack)
+        dvd=apply_mode(dataclasses.replace(base,device='DVD_SLED'),'extreme_v2')
+        self.assertLess(fdd.release,dvd.release)
+        continuous=dataclasses.replace(base,profile='CONTINUOUS')
+        self.assertEqual(apply_mode(continuous,'extreme_v2'),continuous)
+
+    def test_v2_pcm_and_retrigger_preserve_normal_plan(self):
+        p=plan([event(duration=1.),event('b',start=.2,duration=.0625)])
+        frozen=dataclasses.asdict(p)
+        w,rows,o=lane(p,'extreme_v2')
+        self.assertLessEqual(rows[0][3]+rows[0][4],rows[1][3])
+        self.assertEqual(dataclasses.asdict(p),frozen)
+        self.assertEqual(o.report['dvd']['played'],2)
+        for mode in ('raw','articulated','extreme'):
+            _,_,previous=lane(p,mode)
+            self.assertEqual(o.report,previous.report)
+        y,_=w._render_numpy(np,rows,22050,1)
+        _,old,_=lane(p,'extreme')
+        v1,_=w._render_numpy(np,old,22050,1)
+        self.assertGreater(np.linalg.norm(y-v1)/np.linalg.norm(v1),.25)
+        py,_=w._render_python(rows,22050,1)
+        self.assertTrue(np.allclose(y,py,atol=2e-4))
+        # Both offline solo and the application consume these same scheduled rows.
+        o.tonal_mode='extreme_v2'
+        with tempfile.TemporaryDirectory() as folder:
+            w.render(o,1.)
+            self.assertTrue(w.path.exists())
+            w.close()
+        self.assertEqual(dataclasses.asdict(p),frozen)
+
     def test_note_off_has_tail_but_raw_has_minimal_release(self):
         p=plan();w,rows,_=lane(p);_,raw,_=lane(p,'raw')
         self.assertGreater(rows[0][4]/w.RATE,.45)
@@ -218,6 +285,8 @@ class TonalTest(unittest.TestCase):
                 rebuild.assert_not_called()
                 engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='extreme'))
                 self.assertEqual(engine._virtual.tonal_mode,'extreme')
+                engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='extreme_v2'))
+                self.assertEqual(engine._virtual.tonal_mode,'extreme_v2')
                 self.assertIs(engine._plan,original);self.assertEqual(engine._position_base,12.)
                 rebuild.assert_not_called()
         finally: engine.shutdown()

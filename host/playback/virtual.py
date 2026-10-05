@@ -228,6 +228,8 @@ class VirtualOrchestra:
         self.master_volume = 1.0
         self.hdd_mode = 'articulated'
         self.tonal_mode = 'articulated'
+        self.source_continuity = False
+        self.source_continuity_amount = 1.
         self.tray_enabled = True
         self.idle_reinforcement = {}
         self.tray_movements = []
@@ -239,14 +241,17 @@ class VirtualOrchestra:
 
     def set_config(self, payload: dict) -> None:
         tonal_mode = str(payload.get('tonalMode', 'articulated'))
-        if tonal_mode not in ('raw', 'articulated', 'extreme'):
-            raise ValueError('tonalMode must be raw, articulated or extreme')
+        if tonal_mode not in ('raw', 'articulated', 'extreme', 'extreme_v15', 'extreme_v2'):
+            raise ValueError('tonalMode must be raw, articulated, extreme, extreme_v15 or extreme_v2')
         hdd_mode = str(payload.get('hddMode', 'articulated'))
         if hdd_mode not in ('raw', 'articulated'):
             raise ValueError('hddMode must be raw or articulated')
         master = float(payload.get('masterVolume', 1.0))
         if not math.isfinite(master) or not 0 <= master <= 20:
             raise ValueError('masterVolume outside supported range 0..20')
+        amount = float(payload.get('sourceContinuityAmount', 1.))
+        if not math.isfinite(amount) or not 0 <= amount <= 1:
+            raise ValueError('sourceContinuityAmount must be between 0 and 1')
         devices = [VirtualDeviceInstance.parse(item) for item in payload.get('devices', [])]
         dvd_mode = str(payload.get('dvdMode') or 'independent')
         if dvd_mode not in ('independent', 'reinforcement'):
@@ -258,6 +263,8 @@ class VirtualOrchestra:
         self.master_volume = master
         self.hdd_mode = hdd_mode
         self.tonal_mode = tonal_mode
+        self.source_continuity = bool(payload.get('sourceContinuity', False))
+        self.source_continuity_amount = amount
         self.tray_enabled = bool(payload.get("trayEnabled", True))
         from .orchestra import parse_idle
         self.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
@@ -269,12 +276,14 @@ class VirtualOrchestra:
         self.decisions = {}
 
     def config(self) -> dict:
-        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode, 'tonalMode': self.tonal_mode,
+        return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode, 'tonalMode': self.tonal_mode, 'sourceContinuity': self.source_continuity, 'sourceContinuityAmount': self.source_continuity_amount,
                 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
         """Podmienia sklad orkiestry na ten z planu wykonania."""
+        self.source_continuity = bool(plan.policy.get('sourceContinuity', False))
+        self.source_continuity_amount = float(plan.policy.get('sourceContinuityAmount', 1.))
         self.name = plan.name
         self.dvd_mode = plan.dvd_mode
         self.tray_enabled = plan.tray_enabled
