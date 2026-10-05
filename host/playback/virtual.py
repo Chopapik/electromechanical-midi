@@ -11,6 +11,10 @@ from array import array
 import math
 import struct
 import subprocess
+import shutil
+import threading
+import time
+import re
 import tempfile
 import wave
 from pathlib import Path
@@ -673,12 +677,19 @@ class WavePreview:
     """Disposable host-side PCM preview. Renderer consumes only accepted mechanical events."""
     RATE = 22050
 
-    def __init__(self):
+    def __init__(self, *, clocked: bool = False):
+        self.clocked = clocked
+        self._audio_anchor = None
+        self._audio_start = None
+        self._audio_end = 0.0
+        self.audio_events = []
         self.master_volume = 1.0
         self.process: subprocess.Popen | None = None
         self.path: Path | None = None
 
     def stop(self):
+        self._audio_start = None
+        self._audio_anchor = None
         if self.process is not None:
             self.process.terminate()
             try: self.process.wait(timeout=.5)
@@ -921,6 +932,8 @@ class WavePreview:
         mix_count = max(1, len([d for d in orchestra.devices
                                 if d.in_preview and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
         plan = self._plan(orchestra, n)
+        # Exact audible intervals, including tails, chokes and suppressed extras.
+        self.audio_events = [dataclasses.replace(row[2], duration=row[4] / self.RATE) for row in plan]
 
         try:
             import numpy as np
@@ -943,6 +956,18 @@ class WavePreview:
         if not self.path:
             return
         self.stop()
+        player = shutil.which('ffplay') if self.clocked else None
+        if player:
+            with wave.open(str(self.path), 'rb') as source:
+                self._audio_end = source.getnframes() / source.getframerate()
+            self._audio_start = position
+            process = subprocess.Popen([player, '-nodisp', '-autoexit', '-hide_banner', '-stats',
+                '-ss', str(position), '-af', f'volume={self.master_volume}', str(self.path)],
+                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+            self.process = process
+            threading.Thread(target=self._read_audio_clock, args=(process,), daemon=True,
+                             name='virtual-audio-clock').start()
+            return
         # afplay has no seek option. A trimmed temporary slice is made on seek.
         with wave.open(str(self.path), 'rb') as source:
             source.setpos(min(source.getnframes(), int(position * source.getframerate())))
@@ -957,3 +982,37 @@ class WavePreview:
         if hasattr(self, '_slice'):
             self._slice.unlink(missing_ok=True)
         self._slice = play_path
+
+    def _read_audio_clock(self, process):
+        """ffplay reports the SDL output clock, corrected for queued audio samples."""
+        line = bytearray()
+        try:
+            while process.stderr:
+                byte = process.stderr.read(1)
+                if not byte:
+                    break
+                if byte in (b'\r', b'\n'):
+                    match = re.match(rb'\s*(\d+\.\d+)\s+M-A:', line)
+                    if match and self.process is process and self._audio_start is not None:
+                        self._audio_anchor = (float(match[1]), time.monotonic())
+                    line.clear()
+                elif len(line) < 4096:
+                    line.extend(byte)
+        finally:
+            if process.stderr:
+                process.stderr.close()
+
+    def clock_position(self):
+        """None for legacy afplay; freeze at seek target until audio actually starts."""
+        if self._audio_start is None:
+            return None
+        anchor = self._audio_anchor
+        if self.process and self.process.poll() == 0:
+            return self._audio_end
+        if anchor is None:
+            return self._audio_start
+        return max(self._audio_start, min(self._audio_end, anchor[0] + min(.12, max(0., time.monotonic() - anchor[1]))))
+
+    @property
+    def clock_running(self):
+        return self._audio_start is None or (self._audio_anchor is not None and self._audio_anchor[0] >= self._audio_start)

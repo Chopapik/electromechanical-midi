@@ -12,6 +12,7 @@ interface Props {
   onSelect: (name: string) => void
   onUpload: (file: File) => void
   uploading?: boolean
+  compact?: boolean
 }
 
 const ACCEPTED = '.mid,.midi,audio/midi,audio/x-midi'
@@ -22,6 +23,7 @@ export function MidiFileSelector({
   onSelect,
   onUpload,
   uploading = false,
+  compact = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -42,7 +44,7 @@ export function MidiFileSelector({
   }
 
   return (
-    <div className="field">
+    <div className={`field ${compact ? 'compact-midi' : ''}`}>
       <label className="field-label" htmlFor="midi-file">
         MIDI
       </label>
@@ -77,7 +79,7 @@ export function MidiFileSelector({
           onClick={pick}
           disabled={uploading}
         >
-          {uploading ? 'Wgrywam…' : '＋ Wgraj plik MIDI'}
+          {uploading ? 'Wgrywam…' : compact ? 'Upload' : '＋ Wgraj plik MIDI'}
         </button>
 
         <span className="upload-hint">

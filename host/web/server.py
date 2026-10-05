@@ -509,6 +509,10 @@ def create_app(
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return engine.arrangement_view()
 
+    @app.get('/api/telemetry')
+    def api_telemetry() -> dict:
+        return engine.telemetry_view()
+
     @app.get('/api/orchestra')
     def api_orchestra() -> dict:
         view = engine.arrangement_view()

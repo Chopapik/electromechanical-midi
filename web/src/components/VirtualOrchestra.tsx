@@ -73,15 +73,17 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
   }
 
   return <section className="virtual-orchestra">
-    <h2>Virtual Orchestra</h2>
-    <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual hardware output</label>
+    <h3>ORCHESTRA MODE</h3>
+    <label className="virtual-toggle"><input type="checkbox" checked={enabled} onChange={e => configure(config, e.target.checked)} /> Virtual instruments mode</label>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
+    <h3>PLAYBACK</h3>
     <label className="virtual-master">Master Volume <input aria-label="Master Volume" type="range" min="0" max="20" step="0.25"
       value={config.masterVolume ?? 19.5}
       onChange={e => configure({ ...config, masterVolume: Number(e.target.value) }, enabled)} />
       <output>{Math.round((config.masterVolume ?? 19.5) * 100)}%</output>
     </label>
     <p className="muted">100% = dotychczasowy poziom · do 2000% wzmocnienia całego odsłuchu.</p>
+    <h3>SOUND</h3>
     <label>Tonal sound <select aria-label="Tonal sound" value={config.tonalMode ?? 'extreme_v15'}
       onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' | 'extreme' | 'extreme_v15' | 'extreme_v2' }, enabled)}>
       <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option><option value="extreme">TONAL EXTREME v1 · diagnostic</option><option value="extreme_v15">TONAL EXTREME 1.5</option><option value="extreme_v2">TONAL EXTREME v2 · diagnostic</option>
@@ -96,12 +98,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       onChange={e => configure({ ...config, hddMode: e.target.value as 'raw' | 'articulated' }, enabled)}>
       <option value="raw">HDD RAW / DRY</option><option value="articulated">HDD ARTICULATED</option>
     </select></label>
-    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'reinforcement'}
-      disabled={!canReinforce || config.idleReinforcement?.enabled}
-      onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
-      <option value="independent">{dvd.length}x DVD independent</option>
-      <option value="reinforcement">{dvd.length}x DVD + dynamic reinforcement</option>
-    </select></label>
+    <h3>REINFORCEMENT</h3>
     <label><input type="checkbox" checked={config.idleReinforcement?.enabled ?? false}
       onChange={event => configure({ ...config, idleReinforcement: { ...config.idleReinforcement, enabled: event.target.checked } }, enabled)} /> Idle device reinforcement</label>
     {config.idleReinforcement?.enabled && <div className="virtual-toolbar">
@@ -121,8 +118,16 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
         }} /> {LABEL[type]}</label>)}
       <span className="muted">PRIMARY always has priority. VHS reinforcement is disabled by default.</span>
     </div>}
+    <h3>DVD</h3>
+    <label>DVD mode <select aria-label="DVD mode" value={config.dvdMode ?? 'reinforcement'}
+      disabled={!canReinforce || config.idleReinforcement?.enabled}
+      onChange={event => configure({ ...config, dvdMode: event.target.value as 'independent' | 'reinforcement' }, enabled)}>
+      <option value="independent">{dvd.length}x DVD independent</option>
+      <option value="reinforcement">{dvd.length}x DVD + dynamic reinforcement</option>
+    </select></label>
     <label><input type="checkbox" checked={config.trayEnabled ?? true}
       onChange={event => configure({ ...config, trayEnabled: event.target.checked }, enabled)} /> DVD tray mechanical accents</label>
+    <h3>DEVICES</h3>
     {hardware && <div className="virtual-hardware" role="status">
       <h3>Hardware lanes</h3>
       {hardware.active
@@ -153,7 +158,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       const profile = virtual?.profiles.find(p => p.id === device.profile)
       const tray = virtual?.trayStatus?.[device.id]
       return <details key={device.id} className="virtual-device">
-        <summary>{device.name} · {LABEL[device.type]}{device.type === 'DVD_TRAY' && ` · ${tray?.phase ?? 'idle'}`}
+        <summary>{device.name} · {device.mode ?? 'virtual'} · vol {device.volume.toFixed(2)} · pan {device.pan.toFixed(1)}{device.type === 'DVD_TRAY' && ` · ${tray?.phase ?? 'idle'}`}
           <span className={`device-led ${virtual?.activity?.[device.id] ? 'is-active' : ''}`}
             role="img" aria-label={`${device.name}: ${virtual?.activity?.[device.id] ? 'active' : 'idle'}`}
             title={virtual?.activity?.[device.id] ? 'Device active' : 'Device idle'} />
@@ -170,7 +175,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
           <label>Track <select disabled={arrangementActive || device.type === 'DVD_TRAY'} value={device.track ?? ''} onChange={e => update(device.id, { track: e.target.value === '' ? null : Number(e.target.value) })}>
             <option value="">None</option>{metadata?.tracks.filter(t => t.noteCount > 0).map(t => <option key={t.index} value={t.index}>{t.label}</option>)}
           </select></label>
-          {arrangementActive && <span className="muted">Routing is edited in Arrangement.</span>}
+          {arrangementActive && <span className="muted">Routing follows PerformancePlan.</span>}
           <label>Volume <input type="range" min="0" max="1" step="0.05" value={device.volume} onChange={e => update(device.id, { volume: Number(e.target.value) })} /></label>
           <label>Pan <input type="range" min="-1" max="1" step="0.1" value={device.pan} onChange={e => update(device.id, { pan: Number(e.target.value) })} /></label>
           <label><input type="checkbox" checked={device.mute} onChange={e => update(device.id, { mute: e.target.checked })} /> Mute</label>
@@ -206,7 +211,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
         </details>}
       </details>
     })}</div>
-    <h3>Simulation Report · full MIDI</h3>
+    <details className="simulation-report"><summary>Simulation Report · full MIDI</summary>
     {Object.entries(virtual?.report ?? {}).length === 0 ? <p className="muted">Add devices and load MIDI to see mechanical constraints.</p> :
       <div className="virtual-reports">{Object.entries(virtual?.report ?? {}).map(([id, r]) => <article key={id}>
         <strong>{r.name}</strong>{r.type !== 'DVD_TRAY' && <> · accepted {r.accepted} · played {r.played} · dropped {r.dropped} · folded {r.folded} · delayed {r.delayed} · busy {r.busyConflicts}</>}
@@ -216,5 +221,6 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
         {r.type === 'STEPPER_FREE' ? <> · active {r.activeTime.toFixed(2)}s</> : null}
         <div className="muted">{Object.entries(r.reasons).map(([code, count]) => `${code}: ${count}`).join(' · ')}</div>
       </article>)}</div>}
+    </details>
   </section>
 }

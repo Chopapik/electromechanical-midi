@@ -137,7 +137,7 @@ function mockFetch(url: string, init?: RequestInit): Promise<Response> {
   return Promise.resolve({ ok: true, json: () => Promise.resolve(body) } as Response)
 }
 
-async function renderApp(overrides: Partial<PlayerState> = {}): Promise<MockWebSocket> {
+async function renderApp(overrides: Partial<PlayerState> = {}, manual = true): Promise<MockWebSocket> {
   render(<App />)
 
   await waitFor(() => expect(MockWebSocket.instances.length).toBe(1))
@@ -149,6 +149,12 @@ async function renderApp(overrides: Partial<PlayerState> = {}): Promise<MockWebS
     socket.emit({ type: 'state', state: { ...STATE, ...overrides } })
   })
 
+  if (manual) {
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    })
+    fireEvent.click(screen.getByText('ADVANCED / MANUAL HARDWARE'))
+  }
   return socket
 }
 
@@ -164,6 +170,83 @@ describe('App', () => {
     vi.unstubAllGlobals()
   })
 
+  it('opens one monitor with no main navigation or legacy forms', async () => {
+    await renderApp({}, false)
+    for (const name of ['PLAYER', 'ORCHESTRA', 'ARRANGEMENT']) expect(screen.queryByRole('button', { name })).toBeNull()
+    expect(screen.getByText('CURRENT MUSICAL EVENT')).toBeDefined()
+    expect(screen.queryByText('LIVE')).toBeNull()
+    expect(screen.queryByText(/backend connected/i)).toBeNull()
+    expect(screen.queryByLabelText('FDD Track')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Import Arrangement JSON' })).toBeNull()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(fetch).not.toHaveBeenCalledWith('/api/arrangement/initialize', expect.anything())
+  })
+
+  it('opens and closes Settings without sending playback commands', async () => {
+    const socket = await renderApp({}, false)
+    socket.sent = []
+    const button = screen.getByRole('button', { name: 'Settings' })
+    button.focus()
+    fireEvent.click(button)
+    expect(screen.getByRole('dialog', { name: 'Settings' })).toBeDefined()
+    expect(screen.getByText('SOUND')).toBeDefined()
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(button)
+    expect(socket.actions()).toEqual([])
+    expect(screen.getByRole('slider', { name: 'Pozycja utworu' }).getAttribute('aria-valuenow')).toBe('13')
+  })
+
+  it.each([['playing', '▶ PLAYING'], ['paused', 'Ⅱ PAUSED'], ['stopped', '■ STOPPED']] as const)('reflects %s transport from WS', async (state, label) => {
+    await renderApp({ state }, false)
+    expect(screen.getByText(label)).toBeDefined()
+  })
+
+  it('changes global output independently of per-device mode and retains every sound option', async () => {
+    const socket = await renderApp({ virtual: { enabled: true, config: { name: 'Test', devices: [], masterVolume: 19.5 }, report: {}, activity: {}, profiles: [] } })
+    fireEvent.click(screen.getByLabelText('Virtual instruments mode'))
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { enabled: false, devices: [] } })
+    fireEvent.change(screen.getByLabelText('Master Volume'), { target: { value: '10' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { masterVolume: 10 } })
+    const modes = screen.getByLabelText('Tonal sound') as HTMLSelectElement
+    expect([...modes.options].map(o => o.value)).toEqual(['raw', 'articulated', 'extreme', 'extreme_v15', 'extreme_v2'])
+    fireEvent.change(modes, { target: { value: 'raw' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { tonalMode: 'raw' } })
+    fireEvent.change(screen.getByLabelText('HDD sound'), { target: { value: 'raw' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { hddMode: 'raw' } })
+    fireEvent.change(screen.getByLabelText('Note length'), { target: { value: 'source_v15' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { sourceContinuity: true, sourceContinuityAmount: .5 } })
+    expect(socket.actions().some(a => ['stop', 'seek', 'play'].includes(String(a.action)))).toBe(false)
+  })
+
+  it('loads and saves presets with the complete config', async () => {
+    const config = { name: 'Test', devices: [], masterVolume: 10 }
+    vi.spyOn(window, 'prompt').mockReturnValue('Test')
+    vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => url.startsWith('/api/virtual/presets')
+      ? Promise.resolve({ ok: true, json: async () => ({ presets: { Test: config } }) } as Response) : mockFetch(url, init)))
+    const socket = await renderApp({ virtual: { enabled: true, config, report: {}, activity: {}, profiles: [] } })
+    await waitFor(() => expect(screen.getByRole('option', { name: 'Test' })).toBeDefined())
+    fireEvent.change(screen.getByLabelText('Load preset'), { target: { value: 'Test' } })
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config })
+    fireEvent.click(screen.getByText('Save preset'))
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/virtual/presets/Test', expect.objectContaining({ method: 'PUT', body: JSON.stringify(config) })))
+    vi.restoreAllMocks()
+  })
+
+  it('duplicates a device and retains reinforcement controls', async () => {
+    const device = { id: 'fdd', type: 'FDD', name: 'FDD 1', track: 1, role: '', volume: .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1, profile: 'FDD_CURRENT', mode: 'virtual' as const, overrides: {} }
+    const socket = await renderApp({ virtual: { enabled: true, config: { name: 'Test', devices: [device], idleReinforcement: { enabled: true } }, report: {}, activity: {}, profiles: [] } })
+    fireEvent.click(screen.getByText(/FDD 1 · virtual/))
+    fireEvent.click(screen.getByText('Duplicate'))
+    expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual', config: { devices: [device, { name: 'FDD 1 copy', mode: 'virtual' }] } })
+    fireEvent.change(screen.getByLabelText('Reinforcement max copies'), { target: { value: '2' } })
+    expect(socket.actions().at(-1)).toMatchObject({ config: { idleReinforcement: { maxCopiesPerEvent: 2 } } })
+    fireEvent.change(screen.getByLabelText('Reinforcement reservation'), { target: { value: '120' } })
+    expect(socket.actions().at(-1)).toMatchObject({ config: { idleReinforcement: { lookAheadMs: 120 } } })
+    fireEvent.change(screen.getByLabelText('Reinforcement minimum score'), { target: { value: '90' } })
+    expect(socket.actions().at(-1)).toMatchObject({ config: { idleReinforcement: { minScore: 90 } } })
+  })
+
   it('adds a virtual device without Arduino and sends its track to the backend', async () => {
     const socket = await renderApp({
       virtual: {
@@ -174,8 +257,8 @@ describe('App', () => {
         profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
       },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
-    await waitFor(() => expect(screen.getByText('Virtual Orchestra')).toBeDefined())
+
+    await waitFor(() => expect(screen.getByText('ORCHESTRA MODE')).toBeDefined())
     fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'FDD' } })
     expect(socket.actions().at(-1)).toMatchObject({
       action: 'set_virtual',
@@ -196,13 +279,13 @@ describe('App', () => {
         { id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} },
       ],
     } })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
     fireEvent.change(screen.getByLabelText('Add device'), { target: { value: 'DVD_SLED' } })
     expect(socket.actions().at(-1)).toMatchObject({
       action: 'set_virtual', config: { devices: [fdd, dvd, { type: 'DVD_SLED', volume: .2,
         profile: 'DVD_REFERENCE', mode: 'virtual' }] },
     })
-    const row = screen.getByText('DVD sled #1 · DVD stepper').closest('details')!
+    const row = screen.getByText('DVD sled #1 · virtual · vol 0.20 · pan 0.0').closest('details')!
     fireEvent.click(row.querySelector('summary')!)
     fireEvent.click(row.querySelector('button:last-of-type')!)
     expect(socket.actions().at(-1)).toMatchObject({
@@ -221,7 +304,7 @@ describe('App', () => {
       enabled: true, config: { name: 'Four DVD', devices: dvd, dvdMode: 'independent' },
       report: {}, activity: {}, profiles: [{ id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} }],
     } })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
     fireEvent.change(screen.getByLabelText('DVD mode'), { target: { value: 'reinforcement' } })
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual',
       config: { dvdMode: 'reinforcement', devices: dvd } })
@@ -237,9 +320,9 @@ describe('App', () => {
       trayStatus: { DVD_TRAY_1: { phase: 'moving', note: 57, velocity: 110, duration: .245, strength: 'STRONG' } },
       profiles: [{ id: 'DVD_TRAY_REFERENCE', kind: 'DVD_TRAY', parameters: {} }],
     } })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
-    expect(screen.getByText('DVD Tray 1 · DVD TRAY / DC MOTOR · moving')).toBeTruthy()
-    fireEvent.click(screen.getByText('DVD Tray 1 · DVD TRAY / DC MOTOR · moving'))
+
+    expect(screen.getByText('DVD Tray 1 · virtual · vol 0.35 · pan 0.0 · moving')).toBeTruthy()
+    fireEvent.click(screen.getByText('DVD Tray 1 · virtual · vol 0.35 · pan 0.0 · moving'))
     expect(screen.getByText(/GM 57 · velocity 110 · STRONG · 245 ms/)).toBeTruthy()
     expect(screen.getByLabelText('DVD Tray 1 mode').querySelectorAll('option').length).toBe(1)
     fireEvent.click(screen.getByLabelText('DVD tray mechanical accents'))
@@ -253,7 +336,7 @@ describe('App', () => {
     const socket = await renderApp({ virtual: { enabled: true,
       config: { name: 'Test', devices: [device], idleReinforcement: { enabled: false } },
       report: {}, activity: {}, profiles: [{ id: 'DVD_REFERENCE', kind: 'DVD_SLED', parameters: {} }] } })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
     fireEvent.click(screen.getByLabelText('Idle device reinforcement'))
     expect(socket.actions().at(-1)).toMatchObject({ action: 'set_virtual',
       config: { devices: [device], idleReinforcement: { enabled: true } } })
@@ -270,7 +353,7 @@ describe('App', () => {
         profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }],
       },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
     expect(screen.getByLabelText('FDD #1: idle').classList.contains('is-active')).toBe(false)
     await act(async () => {
       socket.emit({ type: 'state', state: { ...STATE, virtual: {
@@ -286,10 +369,10 @@ describe('App', () => {
   it('pokazuje plik, track i status sprzetu', async () => {
     await renderApp()
 
-    expect(screen.getByText('song.mid')).toBeDefined()
+    expect(screen.getByLabelText('MIDI')).toBeDefined()
     expect(screen.getByText('Thom Vox')).toBeDefined()
-    expect(screen.getByText('/dev/cu.usbmodem14101')).toBeDefined()
-    expect(screen.getByText('Arduino connected')).toBeDefined()
+    expect(screen.getAllByText('/dev/cu.usbmodem14101').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Arduino connected').length).toBeGreaterThan(0)
   })
 
   it('pokazuje aktualna nuta i czestotliwosc z WebSocketa', async () => {
@@ -298,7 +381,7 @@ describe('App', () => {
     expect(screen.getByText('E3')).toBeDefined()
     expect(screen.getByText('164.81 Hz')).toBeDefined()
     // nuta zrodlowa (E4) rozni sie od granej (E3) - pokazujemy transpozycje
-    expect(screen.getByText(/z E4/)).toBeDefined()
+    expect(screen.getByText('CURRENT MUSICAL EVENT')).toBeDefined()
   })
 
   it('przycisk play (stan stopped) wysyla akcje play', async () => {
@@ -411,8 +494,8 @@ describe('App', () => {
   it('selektor MIDI ma przycisk wgrywania', async () => {
     await renderApp()
 
-    expect(screen.getByText('＋ Wgraj plik MIDI')).toBeDefined()
-    expect(screen.getByText('albo przeciągnij .mid w to miejsce')).toBeDefined()
+    expect(screen.getByText('Upload')).toBeDefined()
+    expect(document.querySelector('input[accept*=".mid"]')).not.toBeNull()
   })
 
   it('reconnect wysyla akcje bez portu', async () => {
@@ -664,7 +747,7 @@ describe('App', () => {
     expect((screen.getByTitle('Start bębna') as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('wspolny import aranzacji jest dostepny w kazdej zakladce', async () => {
+  it('import aranzacji pozostaje w Advanced / Manual hardware', async () => {
     const documents: Array<Record<string, unknown>> = []
     const arrangement = {
       schemaVersion: 1, name: 'Imported song', midi: { file: 'song.mid', sha256: 'abc', tracks: [] },
@@ -682,12 +765,7 @@ describe('App', () => {
 
     await renderApp()
 
-    // Ten sam przycisk widac na kazdej zakladce - nie ma osobnego importu
-    // "dla sprzetu" i "dla wirtualizacji".
-    for (const tab of ['PLAYER', 'ORCHESTRA', 'ARRANGEMENT']) {
-      fireEvent.click(screen.getByRole('button', { name: tab }))
-      expect(screen.getAllByRole('button', { name: 'Import Arrangement JSON' }).length).toBeGreaterThan(0)
-    }
+    expect(screen.getAllByRole('button', { name: 'Import Arrangement JSON' })).toHaveLength(1)
 
     const input = screen.getAllByLabelText('Arrangement JSON file').at(-1) as HTMLInputElement
     Object.defineProperty(File.prototype, 'text', { configurable: true, value: vi.fn(async () => JSON.stringify(arrangement)) })
@@ -705,7 +783,7 @@ describe('App', () => {
       virtual: { enabled: true, config: { name: 'Test', devices: [device] }, report: {}, activity: {},
         profiles: [{ id: 'FDD_CURRENT', kind: 'FDD', parameters: {} }] },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
 
     const mode = screen.getByLabelText('FDD #1 mode') as HTMLSelectElement
     expect(mode.value).toBe('virtual')
@@ -726,7 +804,7 @@ describe('App', () => {
         unmapped: [{ deviceId: 'fdd-2', name: 'FDD · extra', type: 'FDD', reason: 'LANE_TAKEN', lane: 'fdd', boundTo: 'fdd' }],
       },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'ORCHESTRA' }))
+
 
     expect(screen.getByText('Hardware lanes')).toBeDefined()
     expect(screen.getByText(/FDD · Yorke/)).toBeDefined()
@@ -741,7 +819,7 @@ describe('App', () => {
 
     expect(screen.getByText('Arduino: homing…')).toBeDefined()
     expect(screen.getByText(/Play jest w kolejce/)).toBeDefined()
-    expect(screen.getByText(/czekam na Arduino \(homing\)/)).toBeDefined()
+    expect(screen.getByText('Arduino homing')).toBeDefined()
     // Play nie moze wygladac na zepsuty, skoro tylko czeka na READY.
     expect(screen.queryByText('Arduino disconnected')).toBeNull()
   })
@@ -752,8 +830,8 @@ describe('App', () => {
         warning: null, log: [], connecting: false, pendingPlay: false },
     })
 
-    expect(screen.getByText('Arduino disconnected')).toBeDefined()
-    expect(screen.getByText(/brak polaczenia z Arduino/)).toBeDefined()
+    expect(screen.getAllByText('Arduino disconnected').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/brak polaczenia z Arduino/).length).toBeGreaterThan(0)
     expect(screen.queryByText('Arduino: homing…')).toBeNull()
   })
 })

@@ -137,6 +137,50 @@ class WebTestCase(unittest.TestCase):
 
 
 class TestRest(WebTestCase):
+    def test_telemetry_is_read_only_and_empty_before_loading(self):
+        before = self.engine.snapshot()
+        response = self.client.get('/api/telemetry')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['events'], [])
+        self.assertIsNone(response.json()['file'])
+        after = self.engine.snapshot()
+        for field in ('file', 'state', 'position', 'arrangementRevision', 'arrangementActive'):
+            self.assertEqual(before[field], after[field])
+        self.assertIsNone(self.engine._plan)
+
+    def test_telemetry_projects_renderer_and_frequency_curves_without_changing_plan(self):
+        from playback.orchestra import web_startup_config
+        self.engine.configure_virtual(web_startup_config())
+        midi = mido.MidiFile(self.midi_dir / 'song.mid')
+        midi.tracks[1].insert(2, mido.Message('pitchwheel', pitch=4096, time=240))
+        midi.save(self.midi_dir / 'song.mid')
+        self.engine.load_file(self.midi_dir / 'song.mid')
+        plan = self.engine._plan
+        before = plan.as_dict() if hasattr(plan, 'as_dict') else repr(plan)
+        self.engine.seek(.5)
+        self.engine.pause()
+        state = self.engine.snapshot()
+        view = self.client.get('/api/telemetry').json()
+        self.assertEqual(view['file'], 'song.mid')
+        self.assertEqual(view['revision'], state['arrangementRevision'])
+        self.assertTrue(view['events'])
+        acoustic = [e for e in self.engine._virtual.events if e.kind in ('tone', 'hit', 'tray')]
+        self.assertEqual(len(view['events']), len(acoustic))
+        self.assertEqual(sorted(e.time for e in acoustic), [e['start'] for e in view['events']])
+        tone = next(e for e in view['events'] if e['kind'] == 'tone')
+        original = next(e for e in acoustic if e.device == tone['deviceId'] and e.time == tone['start'] and e.kind == 'tone')
+        self.assertEqual(tone['frequencyCurve']['values'], list(original.tonal_articulation.frequency.values))
+        self.assertGreater(len(set(tone['frequencyCurve']['values'])), 1)
+        self.assertEqual(tone['note'], round(__import__('pitch').hz_to_midi(original.hz)))
+        self.assertEqual(tone['profile'], original.tonal_articulation.profile)
+        self.assertEqual(tone['track'], original.source_track)
+        self.assertEqual(view['activity'], {k: [list(row) for row in rows] for k, rows in self.engine._virtual.activity.items()})
+        self.assertIs(plan, self.engine._plan)
+        self.assertEqual(before, plan.as_dict() if hasattr(plan, 'as_dict') else repr(plan))
+        after = self.engine.snapshot()
+        self.assertEqual(after['position'], state['position'])
+        self.assertEqual(after['state'], state['state'])
+
     def test_arrangement_api_save_load_and_mismatch(self):
         self.engine.load_file(self.midi_dir / 'song.mid')
         initialized = self.client.post('/api/arrangement/initialize')

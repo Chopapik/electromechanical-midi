@@ -131,6 +131,9 @@ export interface VirtualReport {
   reasons: Record<string, number>; state: Record<string, number | boolean>
 }
 export interface VirtualState {
+  audioRevision?: number
+  audioPosition?: number | null
+  audioClockRunning?: boolean
   tonalDebug?: Record<string, { profile: string; attackMs: number; decayMs: number; releaseMs: number; velocity: number; semanticRole: string; legato: boolean; staccato: boolean; strumLike: boolean; sustainPedal: boolean; ccGainAtStart: number }>
   enabled: boolean
   config: VirtualConfig
@@ -365,4 +368,33 @@ export interface ArrangementView {
   revision: number
   report?: ArrangementReport | null
   orchestra?: OrchestraView
+}
+
+/** Read-only projection of the renderer's scheduled onsets and expression. */
+export interface TelemetryEvent {
+  id: string
+  deviceId: string
+  start: number
+  duration: number
+  kind: 'tone' | 'hit' | 'tray'
+  note: number | null
+  sourceNote: number | null
+  hz: number
+  track: string
+  velocity: number
+  role: string
+  reinforcement: boolean
+  profile: string | null
+  articulation: string | null
+  direction: number
+  frequencyCurve: { times: number[]; values: number[] } | null
+}
+export interface TelemetryView {
+  audioEvents?: TelemetryEvent[]
+  audioRevision?: number
+  file: string | null
+  revision: number
+  events: TelemetryEvent[]
+  activity: Record<string, [number, number][]>
+  report: ArrangementReport | null
 }

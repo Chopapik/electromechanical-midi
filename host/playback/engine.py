@@ -264,7 +264,8 @@ class PlaybackEngine:
         self._transport: Transport | None = None
         self._virtual_mode = False
         self._virtual = VirtualOrchestra()
-        self._preview = WavePreview()
+        self._audio_revision = 0
+        self._preview = WavePreview(clocked=True)
         self._preview_generation = 0
         self._preview_request: tuple[int, VirtualOrchestra, float] | None = None
         self._preview_worker_running = False
@@ -998,7 +999,7 @@ class PlaybackEngine:
                     self._preview_worker_running = False
                     return
             generation, orchestra, duration = request
-            preview = WavePreview()
+            preview = WavePreview(clocked=True)
             try:
                 preview.render(orchestra, duration)
             except Exception:
@@ -1017,6 +1018,7 @@ class PlaybackEngine:
                     preview.close()
                     continue
                 self._preview = preview
+                self._audio_revision += 1
                 old_preview.close()
 
     def configure_virtual(self, payload: dict) -> None:
@@ -1188,6 +1190,42 @@ class PlaybackEngine:
                             'status': 'ACCEPTED', 'reason': extra.reason}]})
         return notes
 
+    def telemetry_view(self) -> dict:
+        """Read-only renderer metadata. No plan initialization or playback changes."""
+        with self._lock:
+            sources = {e.id: e for e in self._plan.events} if self._plan else {}
+            trays = {(e.device_id, e.start): e for e in self._plan.tray_events} if self._plan else {}
+            intervals = {(device, start): end for device, rows in self._virtual.activity.items() for start, end in rows}
+            def project(rows, audible=False):
+                events = []
+                for i, event in enumerate(rows):
+                    if event.kind not in ('tone', 'hit', 'tray'):
+                        continue
+                    source = sources.get(event.source_id)
+                    tray = trays.get((event.device, event.time))
+                    art = event.tonal_articulation
+                    events.append({
+                        'id': f'{event.device}:{i}', 'deviceId': event.device,
+                        'start': event.time, 'duration': event.duration if audible else intervals.get((event.device, event.time), event.time + event.duration) - event.time,
+                        'kind': event.kind, 'hz': event.hz,
+                        'note': round(hz_to_midi(event.hz)) if event.kind == 'tone' and event.hz > 0 else event.source_note,
+                        'sourceNote': tray.note if tray else event.source_note,
+                        'track': tray.source_track_name if tray else event.source_track,
+                        'velocity': event.velocity, 'role': source.role if source else '',
+                        'reinforcement': event.reinforcement or tray is not None,
+                        'profile': art.profile if art else None,
+                        'articulation': event.hdd_articulation.kind if event.hdd_articulation else None,
+                        'direction': event.direction,
+                        'frequencyCurve': {'times': art.frequency.times, 'values': art.frequency.values} if art else None,
+                    })
+                events.sort(key=lambda e: e['start'])
+                return events
+            return {'file': self._file_name, 'revision': self._arrangement_revision,
+                    'events': project(self._virtual.events),
+                    'audioEvents': project(self._preview.audio_events, audible=True) if self._preview.path else [],
+                    'audioRevision': self._audio_revision, 'activity': self._virtual.activity,
+                    'report': self._plan_report if self._plan else None}
+
     def arrangement_view(self) -> dict:
         with self._lock:
             return {
@@ -1319,6 +1357,7 @@ class PlaybackEngine:
         if self._virtual_mode:
             if self._preview.path is None:
                 self._preview.render(self._virtual, timeline.duration)
+                self._audio_revision += 1
             self._preview.play(position)
 
             if not (self._hardware_active and self._transport is not None):
@@ -1568,7 +1607,10 @@ class PlaybackEngine:
                               for lane, device in self._hardware_bound.items()},
                     "unmapped": self._hardware_unmapped,
                 },
-                "virtual": {"enabled": self._virtual_mode, "config": self._virtual.config(),
+                "virtual": {"audioRevision": self._audio_revision,
+                            "audioPosition": self._preview.clock_position() if playing else position,
+                            "audioClockRunning": self._preview.clock_running,
+                            "enabled": self._virtual_mode, "config": self._virtual.config(),
                             "report": self._virtual.report,
                             "trayStatus": self._virtual.tray_state_at(position) if playing else {},
                             "tonalDebug": {e['deviceId']: e for e in getattr(self._preview, 'tonal_stats', {}).get('events', [])
@@ -1700,7 +1742,8 @@ class PlaybackEngine:
         duration = self._timeline.duration if self._timeline else 0.0
 
         if self._state is PlaybackState.PLAYING:
-            position = time.monotonic() - self._origin
+            audio = self._preview.clock_position() if self._virtual_mode and not (self._hardware_active and self._transport is not None) else None
+            position = audio if audio is not None else time.monotonic() - self._origin
         else:
             position = self._position_base
 
@@ -1926,7 +1969,8 @@ class PlaybackEngine:
             return None
 
         now = time.monotonic()
-        position = now - self._origin if self._realtime else float("inf")
+        audio_clock = self._realtime and self._virtual_mode and not (self._hardware_active and self._transport is not None) and self._preview.clock_position() is not None
+        position = self._position_locked() if audio_clock else now - self._origin if self._realtime else float("inf")
         commands = timeline.commands
 
         while self._next_index < len(commands):
@@ -1960,9 +2004,10 @@ class PlaybackEngine:
             self._next_index += 1
 
             if self._realtime:
-                position = time.monotonic() - self._origin
+                position = self._position_locked() if audio_clock else time.monotonic() - self._origin
 
-        if self._next_index >= len(commands) and position >= timeline.duration:
+        audio_finished = not audio_clock or self._preview.process is None or self._preview.process.poll() is not None
+        if self._next_index >= len(commands) and position >= timeline.duration and audio_finished:
             # Koniec utworu: playhead zostaje na koncu (STOP jawnie zeruje).
             self._state = PlaybackState.STOPPED
             self._position_base = timeline.duration
@@ -1974,6 +2019,9 @@ class PlaybackEngine:
         else:
             target = self._origin + timeline.duration
 
+        if audio_clock:
+            # Output clock may be waiting for the audio device to start. No busy spin.
+            return max(.005, min(.05, target - self._origin - position))
         return max(0.0, target - time.monotonic())
 
     def _wait(self, timeout: float) -> bool:

@@ -1,0 +1,23 @@
+import { useEffect, useRef } from 'react'
+import type { PlayerApi } from '../usePlayer'
+import { VirtualOrchestra } from './VirtualOrchestra'
+import { LegacyControls } from './LegacyControls'
+import { ArrangementImport } from './ArrangementImport'
+
+export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose: () => void }) {
+  const panel = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null
+    panel.current?.querySelector<HTMLButtonElement>('button')?.focus()
+    return () => previous?.focus()
+  }, [])
+  return <aside ref={panel} className="settings-drawer" role="dialog" aria-label="Settings" onKeyDown={e => {
+    if (e.key === 'Escape') { e.preventDefault(); onClose() }
+  }}>
+    <header><h2>Settings</h2><button type="button" aria-label="Close Settings" onClick={onClose}>×</button></header>
+    <div className="settings-body">
+      <VirtualOrchestra virtual={player.state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={player.state?.arrangementActive} hardware={player.state?.arrangementHardware} />
+      <details className="manual-disclosure"><summary>ADVANCED / MANUAL HARDWARE</summary><LegacyControls player={player} /><ArrangementImport /></details>
+    </div>
+  </aside>
+}

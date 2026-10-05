@@ -40,7 +40,7 @@ export function ProgressBar({ position, duration, playing, onSeek }: Props) {
     let frame = 0
 
     const tick = () => {
-      setDisplay(anchorRef.current.position + (performance.now() - anchorRef.current.at) / 1000)
+      setDisplay(anchorRef.current.position + Math.min(.2, Math.max(0, (performance.now() - anchorRef.current.at) / 1000)))
       frame = requestAnimationFrame(tick)
     }
 
@@ -110,7 +110,7 @@ export function ProgressBar({ position, duration, playing, onSeek }: Props) {
 
   return (
     <div className="progress">
-      <span className="time">{formatTime(shown)}</span>
+      <span className="time">{formatTime(shown)}.{Math.floor(Math.max(0, shown) * 10) % 10}</span>
 
       <div
         ref={barRef}
@@ -131,7 +131,7 @@ export function ProgressBar({ position, duration, playing, onSeek }: Props) {
         <div className="progress-thumb" style={{ left: `${ratio * 100}%` }} />
       </div>
 
-      <span className="time">{formatTime(duration)}</span>
+      <span className="time">{formatTime(duration)}.{Math.floor(duration * 10) % 10}</span>
     </div>
   )
 }

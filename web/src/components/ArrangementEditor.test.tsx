@@ -75,6 +75,8 @@ describe('ArrangementEditor', () => {
     const context = Object.fromEntries(['setTransform', 'clearRect', 'fillRect', 'fillText', 'strokeRect', 'beginPath', 'moveTo', 'lineTo', 'stroke', 'fill', 'setLineDash'].map(name => [name, vi.fn()]))
     vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(context as unknown as CanvasRenderingContext2D)
     await open()
+    // Wait for auto-scroll and the canvas hit map before clicking the block.
+    await waitFor(() => expect(context.fillText.mock.calls.some(call => call[0] === '× C4')).toBe(true))
     fireEvent.click(screen.getByLabelText('MIDI piano roll'), { clientX: 80, clientY: 80 })
     expect(screen.getByText(/NOTE_DROPPED_POLYPHONY/)).toBeDefined()
   })
