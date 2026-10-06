@@ -118,11 +118,12 @@ class EnabledDevicesTest(unittest.TestCase):
                 finally:
                     engine.shutdown()
 
-    def test_dev_script_forwards_existing_no_hardware_flag(self):
-        root = Path(__file__).resolve().parents[2]
-        script = (root / 'scripts/dev.sh').read_text()
-        self.assertIn('"$@"', script)
-        self.assertIn('--no-hardware', script)
+    def test_container_mode_preserves_existing_no_hardware_flag(self):
         from host.web.server import build_parser
         self.assertTrue(build_parser().parse_args(['--no-hardware']).no_hardware)
         self.assertFalse(build_parser().parse_args([]).no_hardware)
+        with patch.dict('os.environ', {'ORCHESTRA_MODE': 'virtual',
+                                      'ORCHESTRA_SERIAL_PORT': '/host-dev/cu.usbmodem123'}):
+            args = build_parser().parse_args([])
+            self.assertEqual(args.runtime_mode, 'virtual')
+            self.assertEqual(args.serial_port, '/host-dev/cu.usbmodem123')

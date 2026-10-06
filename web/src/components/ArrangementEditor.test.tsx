@@ -48,7 +48,7 @@ describe('ArrangementEditor', () => {
       ? { ok: true, status: 200, json: async () => view } as Response
       : { ok: false, status: 404, json: async () => ({ detail: 'Not Found' }) } as Response))
     render(<ArrangementEditor file="song.mid" state={state} seek={() => {}} />)
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Uruchom ponownie ./scripts/dev.sh'))
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Uruchom ponownie docker compose up --build'))
     available = true
     fireEvent.click(screen.getByRole('button', { name: 'Spróbuj ponownie' }))
     await waitFor(() => expect(screen.getByText('Song · 3 MIDI notes')).toBeDefined())

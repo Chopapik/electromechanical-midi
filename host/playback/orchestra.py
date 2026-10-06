@@ -220,3 +220,14 @@ def web_startup_config() -> dict:
             'sourceContinuity': True, 'sourceContinuityAmount': 1.,
             'dvdMode': 'reinforcement', 'trayEnabled': True,
             'idleReinforcement': parse_idle({'enabled': False})}
+
+
+def esp32_startup_config() -> dict:
+    """Explicit target preset. Uncalibrated sleds/trays start disabled."""
+    config = web_startup_config()
+    config.update(name='ESP32 bring-up', dvdMode='independent', trayEnabled=False)
+    for device in config['devices']:
+        device['mode'] = 'real'
+        device['enabled'] = device['type'] not in ('DVD_SLED', 'DVD_TRAY')
+        if device['type'] == 'HDD_VCM': device['profile'] = 'DRV8833_HDD_START'
+    return config

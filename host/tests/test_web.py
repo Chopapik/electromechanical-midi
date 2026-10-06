@@ -215,7 +215,7 @@ class TestRest(WebTestCase):
         saved = self.client.get('/api/virtual/presets').json()['presets']['Two FDD']
         self.assertEqual([d['id'] for d in saved['devices']], ['a', 'b'])
         self.assertEqual(self.client.delete('/api/virtual/presets/Two FDD').status_code, 200)
-        self.assertEqual(self.client.get('/api/virtual/presets').json()['presets'], {})
+        self.assertEqual(set(self.client.get('/api/virtual/presets').json()['presets']), {'ESP32 bring-up'})
 
     def test_four_dvd_instances_survive_virtual_preset_save_and_load(self):
         config = {'name': 'DVD overflow', 'devices': [

@@ -165,10 +165,11 @@ class HardwareStatus:
 
 def default_connect(port: str | None = None):
     """Domyslne lacze: wykryj Arduino i otworz port (bez pytania w terminalu)."""
-    from floppy_link import FloppyLink, resolve_port
+    from floppy_link import resolve_port
+    from orchestra_link import OrchestraLink
 
     candidate = resolve_port(port, interactive=False)
-    link = FloppyLink(candidate.device)
+    link = OrchestraLink(candidate.device)
     link.label = candidate.label  # do wyswietlenia w UI
 
     return link
@@ -387,6 +388,10 @@ class PlaybackEngine:
                         self._handshake = False
                         self._pending_play = False
                     return False
+            if getattr(transport, 'protocol_version', 1) == 2:
+                with self._lock:
+                    if self._source is not None:
+                        self._rebuild_locked(keep_position=True)
             return self.home()
         except Exception as exc:
             with self._lock:
@@ -431,7 +436,11 @@ class PlaybackEngine:
                 self._reset_instruments_locked()
                 if not self._hardware.connected:
                     return False
-                transport.send('HOME')
+                if getattr(transport, 'protocol_version', 1) == 2:
+                    self._sync_v2_devices_locked(force=True)
+                    transport.send('FDD ALL HOME')
+                else:
+                    transport.send('HOME')
             wait = getattr(transport, 'wait_homed', getattr(transport, 'wait_ready', None))
             ok = bool(wait(timeout=self._ready_timeout, echo=self._record_handshake)) if wait and self._wait_ready else True
             with self._lock:
@@ -899,9 +908,11 @@ class PlaybackEngine:
         # wszystkich zdarzeniach planu.
         self._plan_report = self._plan.report()
 
-        bound, unmapped = bind_devices(self._virtual.devices)
+        bound, unmapped = bind_devices(self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
         self._hardware_bound = bound
         self._hardware_unmapped = unmapped
+        if getattr(self._transport, 'protocol_version', 1) == 2:
+            self._sync_v2_devices_locked()
         hardware_commands = build_commands(self._virtual, bound)
         self._hardware_active = bool(hardware_commands)
 
@@ -968,8 +979,7 @@ class PlaybackEngine:
         payload['enabled'] = self._runtime_preview
         if payload.get('devices') is not None:
             for device in payload['devices']:
-                # Trays have no physical lane; they must be disabled for hardware.
-                device['mode'] = 'virtual' if self._runtime_preview or device['type'] == 'DVD_TRAY' else 'real'
+                device['mode'] = 'virtual' if self._runtime_preview else 'real'
         return payload
 
     def configure_virtual(self, payload: dict) -> None:
@@ -1030,6 +1040,8 @@ class PlaybackEngine:
             if not enabled:
                 self._preview.close()
             self._rebuild_locked(keep_position=True)
+            if getattr(self._transport, 'protocol_version', 1) == 2:
+                self._sync_v2_devices_locked()
             self._wake.set()
 
     def _configure_arrangement_locked(self, payload: dict, *, allow_mismatch: bool = False) -> None:
@@ -1047,7 +1059,7 @@ class PlaybackEngine:
             'policy': payload.get('policy'),
             'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True), 'idleReinforcement': payload.get('idleReinforcement'),
         })
-        bound, _ = bind_devices(orchestra.instances())
+        bound, _ = bind_devices(orchestra.instances(), getattr(self._transport, 'protocol_version', 1))
         preview_devices = [device for device in orchestra.instances() if device.in_preview]
 
         if not self._virtual_mode and not bound:
@@ -1369,7 +1381,9 @@ class PlaybackEngine:
         # One-shot "hit" DOKLADNIE w chwili startu/seeku: index_after je
         # pominie, a wznowienie ich nie obejmuje (to nie nuty). Wysylamy je tu.
         for command in timeline.commands_at(position):
-            if command.lane == LANE_HDD and command.kind == "hit":
+            if ':' in command.lane and command.kind in ('hit', 'tray_pulse'):
+                self._send_locked(command)
+            elif command.lane == LANE_HDD and command.kind == "hit":
                 self._send_raw_locked("HIT")
                 self._hdd_current = command
                 self._hdd_count += 1
@@ -1386,9 +1400,11 @@ class PlaybackEngine:
         if self._transport is None:
             return True
 
-        if self._virtual_mode and not self._hardware_active:
+        if self._virtual_mode and not self._hardware_active and not self._handshake:
             return True
 
+        if getattr(self._transport, 'protocol_version', 1) == 2:
+            return self._send_raw_locked('ALL STOP')
         stop_ok = self._safe_send_stop_locked()
         drum_ok = self._apply_drum_locked(drive=0, force=True)
         hdd_ok = self._send_raw_locked("HDD 0")
@@ -1562,6 +1578,9 @@ class PlaybackEngine:
                     "connecting": self._handshake,
                     "pendingPlay": self._pending_play,
                     "ready": self._hardware.connected and self._hardware.homed and not self._handshake,
+                    "board": getattr(self._transport, "board", "uno"),
+                    "protocol": getattr(self._transport, "protocol_version", 1),
+                    "devices": getattr(self._transport, "device_status", {}),
                 },
                 "drum": self._drum_snapshot_locked(),
                 "hdd": self._hdd_snapshot_locked(),
@@ -1726,6 +1745,34 @@ class PlaybackEngine:
     # WYSYLKA
     # ==========================================================
 
+    def _sync_v2_devices_locked(self, force: bool = False) -> None:
+        bound, _ = bind_devices(self._virtual.devices, 2)
+        for family, count in (('fdd', 4), ('sled', 4), ('hdd', 4), ('tray', 2), ('drum', 1)):
+            for ident in range(1, count+1):
+                on = f'{family}:{ident}' in bound
+                prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
+                status_key = 'VHS' if family == 'drum' else f'{family.upper()}:{ident}'
+                known = self._transport.device_status.get(status_key, {}).get('enabled')
+                if force or known != str(int(on)):
+                    if not self._send_raw_locked(f'{prefix} ENABLE {int(on)}'):
+                        raise EngineError('blad Serial podczas konfiguracji urządzeń')
+                    if family == 'fdd' and on:
+                        self._hardware.homed = False
+                        self._hardware.fdd_status = 'not_homed'
+                    self._transport.device_status.setdefault(status_key, {})['enabled'] = str(int(on))
+
+    def _v2_command_locked(self, command: Command) -> None:
+        family, ident = command.lane.split(':')
+        prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
+        if command.kind == 'play': text = f'{prefix} PLAY {command.hz:.2f}'
+        elif command.kind == 'hit': text = f'{prefix} HIT'
+        elif command.kind == 'tray_pulse': text = f'{prefix} PULSE FWD {int(command.hz)}'
+        elif command.kind == 'drum_on':
+            self._transport.send(f'VHS AMP {DRUM_DRIVE_DEFAULT}')
+            text = f'VHS FREQ {command.hz:.2f}'
+        else: text = f'{prefix} STOP'
+        self._transport.send(text)
+
     def _send_locked(self, command: Command) -> bool:
         """Wysyla komende. False = lacze padlo (stan -> PAUSED + blad)."""
         transport = self._transport
@@ -1741,7 +1788,9 @@ class PlaybackEngine:
             return False
 
         try:
-            if command.kind == "play":
+            if ':' in command.lane and getattr(transport, 'protocol_version', 1) == 2:
+                self._v2_command_locked(command)
+            elif command.kind == "play":
                 transport.play(command.hz)
             else:
                 transport.stop()
@@ -1807,6 +1856,13 @@ class PlaybackEngine:
 
     def _parse_status_locked(self, line: str) -> None:
         """STATUS ... drum=<n> drum_out=<n> drumf=<n> -> stan potwierdzony."""
+        if getattr(self._transport, 'protocol_version', 1) == 2:
+            if line == 'STATUS END':
+                fdds = [v for k, v in self._transport.device_status.items()
+                        if k.startswith('FDD:') and v.get('enabled') == '1']
+                self._hardware.homed = all(v.get('homed') == '1' for v in fdds)
+                self._hardware.fdd_status = 'ready' if self._hardware.homed else 'not_homed'
+            return
         for token in line.split()[1:]:
             key, separator, value = token.partition("=")
 
@@ -1886,7 +1942,7 @@ class PlaybackEngine:
                 self._parse_status_locked(line)
                 continue
 
-            if line == 'READY' or line == 'HOMING' or line.startswith('electromechanical-midi floppy controller'):
+            if line.startswith('READY protocol=2') or line == 'READY' or line == 'HOMING' or line.startswith('electromechanical-midi floppy controller'):
                 self._pause_fdd_locked('Arduino: reset/homing — odzyskiwanie pozycji')
                 self._hardware.homed = False
                 self._start_home_locked()
@@ -1904,7 +1960,7 @@ class PlaybackEngine:
     def _keepalive_locked(self) -> None:
         if self._handshake:
             return
-        if self._virtual_mode:
+        if self._virtual_mode and not self._hardware_active:
             return
         transport = self._transport
 
@@ -1941,7 +1997,7 @@ class PlaybackEngine:
             with self._lock:
                 if self._shutdown:
                     return
-                if not self._handshake and self._transport is not None and not self._virtual_mode:
+                if not self._handshake and self._transport is not None and (not self._virtual_mode or self._hardware_active):
                     self._poll_lines_locked()
 
                 if (
@@ -1962,7 +2018,7 @@ class PlaybackEngine:
                 # recznym sterowaniu bebna przychodza tu STATUS-y i bledy.
                 # Podczas handshake'u NIE dotykamy bufora (patrz _handshake).
                 with self._lock:
-                    if not self._handshake and not self._virtual_mode:
+                    if not self._handshake and (not self._virtual_mode or self._hardware_active):
                         self._poll_lines_locked()
 
                 self._wake.wait(timeout=WORKER_IDLE_POLL_S)
@@ -2002,6 +2058,9 @@ class PlaybackEngine:
                 # zostaja w planie (zagraja po podlaczeniu), ale nie mamy
                 # gdzie ich teraz wyslac.
                 pass
+            elif ':' in command.lane:
+                if not self._send_locked(command):
+                    return None
             elif command.lane == LANE_DRUM:
                 if not self._dispatch_drum_locked(command):
                     return None

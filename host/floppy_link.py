@@ -16,6 +16,8 @@ moze opoznic wysylki kolejnych komend.
 from __future__ import annotations
 
 import dataclasses
+import os
+from pathlib import Path
 import sys
 import time
 
@@ -144,6 +146,22 @@ def scan_ports() -> list[PortCandidate]:
                 pid=port.pid,
             )
         )
+
+    # OrbStack forwards macOS callout devices as Linux character devices,
+    # which pyserial's Linux enumerator does not discover. The mounted device
+    # directory also covers Linux ACM/USB devices without baking in a port ID.
+    forwarded = os.environ.get('ORCHESTRA_SERIAL_DIR')
+    if forwarded:
+        from serial.tools.list_ports_common import ListPortInfo
+        seen = {candidate.device for candidate in candidates}
+        for pattern in ('cu.*', 'ttyACM*', 'ttyUSB*'):
+            for path in Path(forwarded).glob(pattern):
+                if not path.is_char_device() or str(path) in seen:
+                    continue
+                port = ListPortInfo(str(path))
+                candidates.append(PortCandidate(device=port.device,
+                    label=_label(port), score=_score(port)))
+                seen.add(port.device)
 
     candidates.sort(key=lambda candidate: (-candidate.score, candidate.device))
 

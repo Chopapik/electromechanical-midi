@@ -9,12 +9,13 @@ ktore widzi symulacja. Dzięki temu jeden dokument aranzacji opisuje
 jednoczesnie wirtualizacje i realny sprzet - nie ma drugiego modelu
 mechaniki, ktory moglby sie rozjechac z podgladem.
 
-Sprzet ma dokladnie jedna linie kazdego rodzaju, wiec dla kazdej linii
-wybierana jest pierwsza instancja z trybem 'real'/'hybrid'. Pozostale
-takie instancje trafiaja do listy ``unmapped`` (widocznej w UI) zamiast
-byc po cichu ignorowane.
+Uno ma jedna linie kazdego rodzaju. Protokol v2 ESP32 adresuje niezalezne
+instancje: 4 FDD, 4 SLED, 4 HDD, 2 TRAY, 1 VHS. Kolejnosc w konfiguracji
+(wlacznie z disabled) wyznacza stabilne ID sprzetowe. Nadmiarowe instancje
+trafiaja do listy unmapped.
 """
 from __future__ import annotations
+import dataclasses
 
 from .timeline import (
     ARTICULATION_S,
@@ -44,7 +45,7 @@ LANE_FOR_TYPE = {
 MONOPHONIC_LANES = (LANE_FDD, LANE_DRUM)
 
 
-def bind_devices(devices: list[VirtualDeviceInstance]) -> tuple[dict[str, VirtualDeviceInstance], list[dict]]:
+def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1) -> tuple[dict[str, VirtualDeviceInstance], list[dict]]:
     """Przypisuje instancje sprzetowe do linii.
 
     Zwraca ``(lane -> instancja, lista nieprzypisanych)``. Instancje
@@ -54,11 +55,21 @@ def bind_devices(devices: list[VirtualDeviceInstance]) -> tuple[dict[str, Virtua
     bound: dict[str, VirtualDeviceInstance] = {}
     unmapped: list[dict] = []
 
+    ordinal: dict[str, int] = {}
     for device in devices:
+        family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
+                  'HDD_VCM': 'hdd', 'DVD_TRAY': 'tray'}.get(device.type)
+        ordinal[family] = ordinal.get(family, 0) + 1
         if not device.drives_hardware:
             continue
 
         lane = LANE_FOR_TYPE.get(device.type)
+        if protocol_version == 2:
+            family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
+                      'HDD_VCM': 'hdd', 'DVD_TRAY': 'tray'}.get(device.type)
+            capacity = {'fdd': 4, 'sled': 4, 'hdd': 4, 'tray': 2, 'drum': 1}
+            lane = f'{family}:{ordinal[family]}' if ordinal[family] <= capacity.get(family, 0) else None
+
 
         if lane is None:
             unmapped.append({'deviceId': device.id, 'name': device.name, 'type': device.type,
@@ -151,9 +162,9 @@ def _drum_commands(events) -> list[Command]:
     return commands
 
 
-def _hit_commands(events) -> list[Command]:
+def _hit_commands(events, lane=LANE_HDD) -> list[Command]:
     """Uderzenia HDD/solenoidu: one-shot, bez stanu do wznowienia."""
-    return [Command(event.time, 'hit', lane=LANE_HDD)
+    return [Command(event.time, 'hit', lane=lane)
             for event in sorted(events, key=lambda item: item.time)]
 
 
@@ -183,10 +194,12 @@ def build_commands(orchestra: VirtualOrchestra,
         if not events:
             continue
 
-        if lane == LANE_HDD:
-            commands.extend(_hit_commands(events))
-        elif lane == LANE_DRUM:
-            commands.extend(_drum_commands(events))
+        if lane == LANE_HDD or lane.startswith('hdd:'):
+            commands.extend(_hit_commands(events, lane))
+        elif lane.startswith('tray:'):
+            commands.extend(Command(e.time, 'tray_pulse', hz=max(1, min(60000, e.duration * 1000)), lane=lane) for e in events)
+        elif lane == LANE_DRUM or lane.startswith('drum:'):
+            commands.extend(dataclasses.replace(c, lane=lane) for c in _drum_commands(events))
         else:
             commands.extend(_tone_commands(events, lane))
 

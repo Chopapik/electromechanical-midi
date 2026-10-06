@@ -40,7 +40,7 @@ export function ArrangementEditor({ file, state, seek }: Props) {
     setLoadError('')
     setView(previous => previous?.midiIdentity?.file === file ? previous : null)
     const failure = async (response: Response) => {
-      if (response.status === 404) return 'Backend nie obsługuje jeszcze Arrangement. Uruchom ponownie ./scripts/dev.sh i odśwież stronę.'
+      if (response.status === 404) return 'Backend nie obsługuje jeszcze Arrangement. Uruchom ponownie docker compose up --build i odśwież stronę.'
       const body = await response.json().catch(() => ({})) as { detail?: string }
       return typeof body.detail === 'string' ? body.detail : `Nie udało się wczytać aranżacji (HTTP ${response.status}).`
     }

@@ -90,8 +90,9 @@ electromechanical-midi/
 │       ├── useThrottled.ts     # dławienie suwaków sprzętowych
 │       └── components/         # ProgressBar, DrumPanel, PlayerControls...
 ├── midi/                       # pliki .mid dla playera (tu wrzucasz swoje)
-├── scripts/
-│   └── dev.sh                  # backend + frontend jednym poleceniem
+├── Dockerfile                  # frontend build + backend/audio/PlatformIO
+├── compose.yaml                # aplikacja i kontenery testów
+├── scripts/                    # benchmarki i diagnostyka (bez launchera)
 └── README.md
 ```
 
@@ -164,165 +165,110 @@ ale główny firmware nie ustala jej wartości.
 
 Stan OFF: D7=HIGH, D8=HIGH, D9=LOW, D10=LOW. PARK: D7=LOW i D10=HIGH
 przez 40 ms; następnie OFF przez 40 ms; STRIKE: D8=LOW i D9=HIGH przez
-4 ms; potem OFF. Polaryzacja cewki musi odpowiadać temu kierunkowi
+2 ms; potem OFF. Polaryzacja cewki musi odpowiadać temu kierunkowi
 parkowania. Przy włączaniu/resetowaniu Uno wejścia początkowo są wysokoimpedancyjne;
 stan OFF na ten czas musi zapewniać sam obwód mostka.
 
 ---
 
-## 4. Instalacja
+## 4. Uruchamianie w Dockerze
 
-### Pierwszy test orkiestry: 1× FDD + 1× HDD
-
-Tryb wyjścia ustala uruchomienie backendu, nie kontrolka Settings:
-
-```bash
-./scripts/dev.sh                 # real hardware + Serial
-./scripts/dev.sh --no-hardware   # developerski odsłuch virtual, bez Serial
-# Przy wielu portach szeregowych wskaż Uno jawnie:
-./scripts/dev.sh --serial-port /dev/cu.usbmodem14101
-```
-
-`dev.sh` przekazuje dotychczasowe argumenty do `host.web.server`.
-Backend ustawia runtime mode raz na start. Import/preset ani zmiana
-urządzenia nie przełączają go na virtual przy braku Arduino. Settings
-nie zawierają globalnego virtual toggle ani wyboru virtual/real/hybrid
-dla urządzeń. Pole `mode` pozostaje wewnętrznym detalem zgodności;
-backend wyprowadza je z trybu uruchomienia. DVD tray nie ma fizycznej
-linii w tym firmware; na pierwszy test pozostaw go wyłączonego.
-
-Przy zwykłym uruchomieniu port Uno jest wybierany automatycznie na
-podstawie identyfikatora USB i opisu urządzenia. `--serial-port` jest
-potrzebny dopiero przy kilku równorzędnych kandydatach. Zamknij Serial
-Monitor Arduino IDE / PlatformIO przed połączeniem: port może mieć
-tylko jednego właściciela. `dev.sh` odmawia startu przy zajętym porcie
-backendu lub frontendu; Ctrl+C zatrzymuje również procesy potomne Vite.
-
-W **Settings → DEVICES** ustaw **FDD #1: Enabled ON** oraz
-**HDD_VCM #1: Enabled ON**. Wszystkie pozostałe ustaw na OFF.
-Załaduj MIDI i naciśnij Play. Na wspólnym Uno działa jedna linia FDD
-i jedna HDD; w hardware mode potrzebne jest połączenie Serial i READY.
-Nie ma automatycznego wykrywania instrumentów — wybierasz je ręcznie.
-
-`enabled: false` usuwa instrument z dostępnej polifonii, allocatora,
-routingu arrangement, reinforcement, komend hardware i zdarzeń audio.
-Kafelek znika z LIVE, ale konfiguracja pozostaje w Settings/presetach.
-Ponowne ON przywraca instrument wraz z parametrami. Stare konfiguracje
-bez `enabled` oznaczają ON. To niezależne od `mute` i od runtime mode.
-Parametry instrumentu można nadal otworzyć przez „Ustawienia …”.
-
-### 4.1. Zależności Pythona (host + backend web)
+Wymagany Docker Compose. Na tym Macu używamy **OrbStack 2.2.3**, który
+przekazuje porty Serial oraz kartę dźwiękową ALSA do kontenerów.
+Nie trzeba instalować lokalnego Pythona, Node ani PlatformIO.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r host/requirements.txt
+docker compose up --build
 ```
 
-Zależności: `mido` (parsowanie MIDI), `pyserial` (Serial), `fastapi` +
-`uvicorn` (web player), `numpy` (wektorowy render podglądu Virtual Orchestra).
+Otwórz **http://127.0.0.1:5173**. Jeden kontener serwuje frontend,
+API i WebSocket, generuje audio oraz obsługuje Arduino. Nie uruchamiamy
+osobnego Vite ani procesów aplikacji na macOS.
 
-> `numpy` jest opcjonalny w kodzie (jest fallback czysto-pythonowy), ale bez
-> niego `WavePreview.render` liczy próbka po próbce i pierwszy `Play` w trybie
-> wirtualnym potrafi zamrozić UI na kilkanaście/kilkadziesiąt sekund:
-> przykładowa aranżacja 6 urządzeń ≈ 5.9 s vs 0.2 s, duża aranżacja 40 urządzeń
-> ≈ 24 s vs 0.9 s.
-
-> Na macOS port Arduino nazywa się zwykle `/dev/cu.usbmodemXXXX`.
-> Program wykrywa go sam - nigdzie nie ma zaszytego numeru portu.
-
-### 4.2. Frontend (Node 18+)
+**Ctrl+C zatrzymuje aplikację i jej procesy potomne**, w tym odtwarzacz
+audio. `init: true` obsługuje procesy potomne, a Docker ogranicza zamykanie
+do 10 sekund. Można od razu ponownie wykonać tę samą komendę.
+Pełne usunięcie kontenera i sieci (bez usuwania MIDI i cache):
 
 ```bash
-cd web
-npm install
+docker compose down
 ```
 
-`npm install` jest potrzebny raz. Dalej wystarczy `./scripts/dev.sh` albo
-zbudowany frontend (`npm run build`) serwowany przez backend.
+### 4.1. Hardware / virtual
 
-### 4.3. Firmware (PlatformIO)
+Domyślny tryb to **hardware**, z automatycznym wykrywaniem Arduino.
+Przy kilku równorzędnych portach wybierz urządzenie w Settings → Arduino.
+Lista obejmuje aktualne porty przekazane przez OrbStack, również po
+podłączeniu/resetowaniu USB. Zamknij Serial Monitor przed połączeniem.
 
 ```bash
-# instalacja PlatformIO (jeśli nie ma)
-python3 -m pip install platformio
-
-# kompilacja dla Arduino Uno
-pio run -d firmware/floppy
-
-# wgranie na płytkę
-pio run -d firmware/floppy --target upload
-
-# podgląd Serial (opcjonalnie)
-pio device monitor -d firmware/floppy
+# Bez Arduino, z wirtualnym odsłuchem przez głośniki Maca:
+ORCHESTRA_MODE=virtual docker compose up --build
+# Atrapa hardware do testowania UI:
+ORCHESTRA_MODE=fake docker compose up --build
+# Jawny port, jeśli chcesz ominąć wybór w UI:
+ORCHESTRA_SERIAL_PORT=/host-dev/cu.usbmodem14101 docker compose up --build
+# Inny port strony:
+APP_PORT=9000 docker compose up --build
 ```
 
-W VS Code: **Open Folder → `firmware/floppy`** i użyj przycisków
-PlatformIO (Build / Upload / Monitor).
+Tryb ustala uruchomienie backendu. Settings wybiera Enabled dla instrumentów;
+import i preset nie zmieniają trybu wyjścia. Na wspólnym Uno do pierwszego
+testu włącz tylko **FDD #1** i **HDD_VCM #1**. Pozostałe wyłącz.
+`enabled: false` usuwa urządzenie z allocatora, routingu, reinforcement,
+komend hardware i audio, zachowując jego konfigurację.
 
-Firmware zajmuje ok. **6.9 kB flash (21%)** i **299 B RAM (15%)** Arduino Uno,
-więc zostaje dużo miejsca na rozbudowę.
+Compose montuje `midi/` do kontenera: importy i presety pozostają na dysku
+po zatrzymaniu aplikacji. Plików MIDI nie kopiujemy do obrazu ani Gita.
+Cache PlatformIO jest w osobnym wolumenie. Po zmianach kodu wykonaj
+Ctrl+C i `docker compose up --build`, aby załadować nową wersję.
 
-`platformio.ini`:
+### 4.2. Dźwięk i Serial
 
-```ini
-[platformio]
-default_envs = uno
+Odsłuch zachowuje istniejący renderer WAV, master gain i zegar `ffplay`.
+Kontener ma FFmpeg i kartę `/dev/snd`; dźwięk trafia na domyślne wyjście
+Maca dzięki OrbStack. Porty są dostępne pod `/host-dev/cu.*`.
+Nie zapisujemy na sztywno numeru Arduino. Kontener nie używa `privileged`;
+reguła urządzeń dopuszcza dynamiczne numery urządzeń znakowych w montowanym
+katalogu VM `/dev`, aby podłączenie USB nie wymagało przebudowy Compose.
 
-[env:uno]
-platform = atmelavr
-board = uno
-framework = arduino
-monitor_speed = 115200
+Ta konfiguracja jest dla **OrbStack**. Zwykły Docker Desktop na macOS nie
+udostępnia automatycznie Serial i ALSA. Na Linuxie również potrzebne są
+odpowiednie urządzenia `/dev/snd` i `/dev/ttyACM*` lub `/dev/ttyUSB*`.
+
+Źródła: [OrbStack Serial/USB](https://docs.orbstack.dev/features/usb),
+[OrbStack sound](https://docs.orbstack.dev/features/sound).
+
+### 4.3. Firmware i testy
+
+Panel **Wgraj ponownie firmware** korzysta z PlatformIO w kontenerze.
+Możesz też skompilować firmware bez lokalnej instalacji:
+
+```bash
+docker compose exec orchestra pio run -d firmware/floppy -e uno
+docker compose exec orchestra pio run -d firmware/floppy -e esp32
 ```
 
----
+Wgrywaj przez panel, który zatrzymuje playback, zwalnia Serial i po uploadzie
+ponownie wykonuje handshake/homing. Nie uruchamiaj ręcznego uploadu równolegle
+z aktywnym połączeniem aplikacji.
+
+```bash
+docker compose --profile test run --rm --build backend-tests
+docker compose --profile test run --rm --build frontend-tests
+```
+
+Build frontendu jest częścią budowy obrazu. Benchmarki i diagnostyka pozostają
+w `scripts/` i można uruchamiać je w kontenerze, np.:
+
+```bash
+docker compose exec orchestra python scripts/benchmark_dvd.py
+```
 
 ## 5. Web player (przeglądarka)
 
-### 5.1. Tryb dev - jedno polecenie
-
-```bash
-./scripts/dev.sh
-```
-
-Skrypt uruchamia:
-
-* backend FastAPI na `http://127.0.0.1:8000` (`python -m host.web.server`),
-* frontend Vite na `http://127.0.0.1:5173` (proxy `/api` i `/ws` → backend).
-
-Otwórz **http://127.0.0.1:5173**. `Ctrl+C` kończy oba procesy.
-
-Przydatne warianty:
-
-```bash
-./scripts/dev.sh --no-hardware     # bez Arduino: PLAY zgłosi brak połączenia
-./scripts/dev.sh --fake-hardware   # atrapa Serial: UI gra "na sucho" (demo, testy)
-./scripts/dev.sh --port 9000       # inny port backendu
-```
-
-### 5.2. Tryb produkcyjny (jeden proces, bez Node)
-
-```bash
-cd web && npm run build && cd ..     # raz (albo po każdej zmianie frontendu)
-python -m host.web.server            # http://127.0.0.1:8000
-```
-
-Backend sam serwuje `web/dist`, więc wystarczy jeden proces i jedna strona.
-Jeśli `web/dist` nie istnieje, backend pokaże instrukcję, a API i tak działa.
-
-Opcje backendu:
-
-| Opcja | Znaczenie |
-| --- | --- |
-| `--host`, `--port` | adres nasłuchu (domyślnie `127.0.0.1:8000`) |
-| `--midi-dir` | katalog z plikami `.mid` (domyślnie `midi/`) |
-| `--serial-port` | wskaż port Arduino ręcznie (domyślnie autodetekcja) |
-| `--no-hardware` | nie łączy się z Arduino |
-| `--fake-hardware` | bez Serial, ale silnik gra na atrapie (demo UI) |
-| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130–410 Hz) |
-| `--transpose` | tryb składania oktawowego na start (`auto`/`low`/`high`) |
-| `--strategy` | strategia akordów (`highest`/`lowest`/`last`) |
+Aplikacja i API są pod **http://127.0.0.1:5173**. Jedynym sposobem
+uruchamiania całego zestawu jest opisany wyżej `docker compose up --build`.
 
 ### 5.3. Co potrafi UI
 
@@ -508,17 +454,17 @@ HDD   (HIT)                <- perkusja
 ```
 
 **Mechanika:** parkowanie i osiadanie zachowują zmierzone 40/40 ms.
-Impuls STRIKE skrócono z 25 do 4 ms, żeby osłabić głośne uderzenie;
+Impuls STRIKE skrócono z 25 do 2 ms, żeby osłabić głośne uderzenie;
 nowa głośność wymaga oceny na fizycznym HDD.
 
 | parametr | wartość | znaczenie |
 | --- | --- | --- |
 | `PARK` | 40 ms (D7 LOW + D10 HIGH) | odwozi ramię do parku |
 | `SETTLE` | 40 ms | ramię osiada w parku |
-| `STRIKE` | 4 ms (D8 LOW + D9 HIGH) | **uderzenie** |
+| `STRIKE` | 2 ms (D8 LOW + D9 HIGH) | **uderzenie** |
 
 Ramię **nie wraca samo** — dlatego każdy hit zaczyna się od aktywnego
-parkowania. Pełny cykl to ~84 ms, więc maksymalna gęstość to ~11,9
+parkowania. Pełny cykl to ~82 ms, więc maksymalna gęstość to ~12,2
 uderzenia/s; nuty bliższe niż `HDD_MIN_PERIOD_S = 0,11 s` są zlewane
 w jedno uderzenie (akord = jedno uderzenie).
 
@@ -1088,7 +1034,7 @@ pio run -d firmware/floppy
 
 | Objaw | Przyczyna / rozwiązanie |
 | --- | --- |
-| `Brak połączenia z backendem` w UI | backend nie działa - uruchom `python -m host.web.server` (albo `./scripts/dev.sh`) |
+| `Brak połączenia z backendem` w UI | backend nie działa - uruchom `docker compose up --build` |
 | strona pokazuje „Brak zbudowanego frontendu” | uruchom `cd web && npm run build` albo używaj Vite dev (`npm run dev`) |
 | UI działa, ale `PLAY` nic nie robi | tryb `--no-hardware`; uruchom backend bez tej flagi albo z `--fake-hardware` do demo |
 | `Arduino disconnected` mimo podłączonego kabla | port zajęty przez inny program (Serial Monitor) albo `ERR HOME_FAILED` - patrz wyżej |
@@ -1405,12 +1351,12 @@ przypisań nuta-po-nucie, bo plan jest deterministyczny.
 
 ## Virtual Orchestra (pierwszy etap)
 
-Uruchom backend i frontend jak wyżej, np. `./scripts/dev.sh`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.
+Uruchom aplikację przez `ORCHESTRA_MODE=virtual docker compose up --build`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.
 Zielona dioda w prawym górnym rogu każdej karty pokazuje, że dana instancja jest aktywna w bieżącej pozycji odtwarzania. Długie nuty świecą przez czas trwania, a uderzenia dają krótki błysk obejmujący pracę mechanizmu. Pauza i stop gaszą wszystkie diody.
 
 Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Tryb wyjścia ustala start backendu: `--no-hardware` oznacza preview; bez tej flagi działa Serial. `enabled` wybiera skład orkiestry, a `mode` jest wewnętrznym detalem adaptera.
 
-Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/4 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
+Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/2 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
 Każda instancja może mieć własne nadpisania parametrów wraz z provenance i notatką źródłową. W UI są pod rozwijanym **Device profile**.
 
 Renderer generuje przybliżony stereofoniczny WAV po stronie Pythona i na macOS odtwarza go przez systemowy `afplay`. `pyo` nie jest zainstalowane w obecnym środowisku Python 3.14, więc nie jest obowiązkową zależnością; interfejs `WavePreview` można zastąpić później backendem `pyo` lub PortAudio. Audio zawiera impulsy kroków, zdarzenia zawracania, prosty rezonans, uderzenia HDD/solenoidu i ton silnika VHS. Rezonatory i krzywa velocity są przybliżeniami do odsłuchu orkiestracji. Nie ma jeszcze próbek SFZ, artykulacji HDD, wzajemnych blokad zasobów ani modelu przyspieszenia silnika.
@@ -1533,3 +1479,10 @@ wznowienia. `HOME_FAILED` pozostawia Arduino połączone, blokuje Play i udostę
 **Retry Home**. Nie stosujemy automatycznego `HOME BLIND` jako obejścia czujnika.
 `HOST_TIMEOUT` pauzuje utwór, ale nie kasuje stanu `homed` ani połączenia.
 Reset/banner/nowe `READY` uruchamiają ponowną weryfikację przez HOME.
+
+### Docelowy ESP32
+
+Firmware ESP32-WROOM-32, protokół Serial v2 z ID urządzeń i instrukcja
+podłączenia 5×595 / DRV8833: [ESP32 orchestra bring-up](docs/esp32-orchestra.md).
+W UI wybierz odpowiedni target firmware oraz preset **ESP32 bring-up**.
+Uno pozostaje oddzielnym targetem i rollbackiem; ESP32 wymaga fizycznej kalibracji.

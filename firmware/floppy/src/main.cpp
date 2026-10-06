@@ -74,10 +74,10 @@ constexpr uint8_t PIN_HDD_NPN_R = 10; // HDD VCM mostek H: NPN prawy
 // Sekwencja uderzenia HDD (ustalona empirycznie w testach strojenia):
 //   PARK 40 ms (D7 LOW + D10 HIGH) - odwozi ramie do parku,
 //   SETTLE 40 ms                   - ramie osiada w parku,
-//   STRIKE 4 ms (D8 LOW + D9 HIGH)- UDERZENIE.
+//   STRIKE 2 ms (D8 LOW + D9 HIGH)- UDERZENIE.
 constexpr uint16_t HDD_PARK_MS   = 40;
 constexpr uint16_t HDD_SETTLE_MS = 40;
-constexpr uint16_t HDD_STRIKE_MS = 4;
+constexpr uint16_t HDD_STRIKE_MS = 2;
 
 // Ustalone eksperymentalnie dla tej stacji:
 constexpr uint8_t DIR_TOWARD_TRACK0 = HIGH;  // DIR HIGH = w strone TRACK0
@@ -466,8 +466,8 @@ private:
 //
 // Ramię NIE wraca samo po uderzeniu (sprawdzone empirycznie), dlatego
 // kazdy hit zaczyna sie od aktywnego odwiezienia do parku. Cykl:
-//   PARK 40 ms -> SETTLE 40 ms -> STRIKE 4 ms -> off
-// Calkowity cykl ~84 ms => maks ~11,9 uderzenia/s.
+//   PARK 40 ms -> SETTLE 40 ms -> STRIKE 2 ms -> off
+// Calkowity cykl ~82 ms => maks ~12,2 uderzenia/s.
 // ============================================================
 
 class HddPercussion

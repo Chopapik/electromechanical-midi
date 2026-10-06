@@ -2,6 +2,7 @@ import { CircleNotch, UploadSimple } from '@phosphor-icons/react'
 import { useState } from 'react'
 
 export function FirmwarePanel() {
+  const [target, setTarget] = useState('uno')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [log, setLog] = useState('')
@@ -10,7 +11,7 @@ export function FirmwarePanel() {
     setBusy(true); setFailed(false); setLog('')
     setMessage('Kompilacja, wgrywanie i ponowne łączenie Arduino…')
     try {
-      const response = await fetch('/api/firmware/upload', { method: 'POST' })
+      const response = await fetch(target === 'uno' ? '/api/firmware/upload' : '/api/firmware/upload?target=esp32', { method: 'POST' })
       const result = await response.json()
       if (!response.ok) throw new Error(result.detail || 'Nie udało się wgrać firmware.')
       setLog(result.log)
@@ -25,7 +26,8 @@ export function FirmwarePanel() {
   }
   return <section className="firmware-panel" aria-label="Arduino firmware">
     <h3>Arduino firmware</h3>
-    <p>Wgrywa aktualny firmware orkiestry dla Uno. Zatrzymuje odtwarzanie; po uploadzie ponownie łączy Arduino. Zamknij Serial Monitor.</p>
+    <p>Wgrywa aktualny firmware dla wybranego kontrolera. Wybierz zgodnie z podłączoną płytką. Zatrzymuje odtwarzanie; po uploadzie ponownie łączy Arduino. Zamknij Serial Monitor.</p>
+    <label>Kontroler <select aria-label="Firmware target" value={target} disabled={busy} onChange={e => setTarget(e.target.value)}><option value="uno">Arduino Uno (rollback)</option><option value="esp32">ESP32-WROOM-32</option></select></label>
     <button type="button" disabled={busy} onClick={upload}>
       {busy ? <CircleNotch size={18} className="playback-spinner" aria-hidden="true" /> : <UploadSimple size={18} aria-hidden="true" />}
       {busy ? 'Wgrywanie firmware…' : 'Wgraj ponownie firmware'}

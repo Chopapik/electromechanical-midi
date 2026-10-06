@@ -6,8 +6,18 @@ import { LegacyControls } from './LegacyControls'
 import { MidiFileSelector } from './MidiFileSelector'
 import { ArrangementImport } from './ArrangementImport'
 import { FirmwarePanel } from './FirmwarePanel'
+import { HardwareStatus } from './HardwareStatus'
 
 export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose: () => void }) {
+  const hardwareMode = player.state?.virtual?.runtimeMode
+    ? player.state.virtual.runtimeMode === 'hardware'
+    : !player.state?.virtual?.enabled
+  useEffect(() => {
+    if (!hardwareMode) return
+    player.refreshPorts()
+    const timer = window.setInterval(player.refreshPorts, 5000)
+    return () => window.clearInterval(timer)
+  }, [hardwareMode, player.refreshPorts])
   const panel = useRef<HTMLElement>(null)
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
@@ -19,6 +29,11 @@ export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose
   }}>
     <header><h2>Settings</h2><button type="button" aria-label="Close Settings" onClick={onClose}><X size={18} weight="fill" aria-hidden="true" /></button></header>
     <div className="settings-body">
+      {hardwareMode && <section aria-label="Połączenie Arduino">
+        <h3>Połączenie Arduino / Serial</h3>
+        <HardwareStatus hardware={player.state?.hardware ?? null} ports={player.ports}
+          onReconnect={player.reconnect} onHome={player.home} onRefreshPorts={player.refreshPorts} />
+      </section>}
       <FirmwarePanel />
       <VirtualOrchestra virtual={player.state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={player.state?.arrangementActive} hardware={player.state?.arrangementHardware} />
       <details className="manual-disclosure"><summary>ADVANCED / MANUAL HARDWARE</summary><MidiFileSelector files={player.files} selected={player.state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} /><LegacyControls player={player} /><ArrangementImport /></details>

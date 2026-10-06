@@ -40,7 +40,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
     apply([...config.devices, {
       id, type, name: `${LABEL[type]} #${count}`, track: type === 'DVD_TRAY' ? null : metadata?.tracks.find(t => t.noteCount > 0)?.index ?? null,
       role: '', volume: type === 'DVD_SLED' ? .2 : type === 'DVD_TRAY' ? .35 : .6, pan: 0, mute: false, solo: false, transpose: 0, gate: 1,
-      profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: enabled || type === 'DVD_TRAY' ? 'virtual' : 'real', enabled: true, overrides: {},
+      profile: virtual?.profiles.find(p => p.kind === type)?.id ?? '', mode: enabled ? 'virtual' : 'real', enabled: true, overrides: {},
     }], enabled)  }
   const update = (id: string, patch: Partial<VirtualDevice>) => {
     const devices = config.devices.map(d => d.id === id ? { ...d, ...patch } : d)

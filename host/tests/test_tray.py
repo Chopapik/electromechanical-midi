@@ -79,8 +79,8 @@ class TrayTest(unittest.TestCase):
         b = [tray_sound(i / 8000, .3, 100, profile, 'DVD_TRAY_2', 1) for i in range(2400)]
         self.assertNotEqual(a, b)
         self.assertGreater(max(abs(v) for v in a), .1)
-        with self.assertRaisesRegex(ValueError, 'virtual mode only'):
-            VirtualDeviceInstance.parse({**next(d for d in plan.devices if d['type'] == 'DVD_TRAY'), 'mode': 'real'})
+        hardware_tray = VirtualDeviceInstance.parse({**next(d for d in plan.devices if d['type'] == 'DVD_TRAY'), 'mode': 'real'})
+        self.assertTrue(hardware_tray.drives_hardware)
         preview = WavePreview()
         try:
             preview.render(renderer, plan.duration)

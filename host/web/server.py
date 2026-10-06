@@ -24,6 +24,7 @@ import asyncio
 import contextlib
 import io
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -414,15 +415,22 @@ def create_app(
         return engine.snapshot()
 
     @app.post('/api/firmware/upload')
-    async def api_firmware_upload() -> dict:
+    async def api_firmware_upload(target: str = 'uno') -> dict:
         nonlocal firmware_busy
         if firmware_busy or connect_lock.locked():
             raise HTTPException(409, 'Arduino jest zajęte: trwa połączenie lub upload.')
+        if target not in ('uno', 'esp32'):
+            raise HTTPException(400, 'Nieznany target firmware')
         from floppy_link import resolve_port
         try:
             tool = platformio()
-            port = resolve_port(engine.snapshot()['hardware'].get('port') or serial_port,
-                                interactive=False).device
+            candidate = resolve_port(engine.snapshot()['hardware'].get('port') or serial_port,
+                                     interactive=False)
+            port = candidate.device
+            if target == 'esp32' and getattr(candidate, 'vid', None) in (0x2341, 0x2A03):
+                raise RuntimeError('Wybrano ESP32, ale podłączone jest Arduino Uno.')
+            if target == 'uno' and getattr(candidate, 'vid', None) == 0x10C4:
+                raise RuntimeError('Port CP2102: wybierz target ESP32 po sprawdzeniu płytki.')
         except (RuntimeError, SerialLinkError) as exc:
             raise HTTPException(400, str(exc)) from exc
         firmware_busy = True
@@ -430,7 +438,7 @@ def create_app(
             async with connect_lock:
                 # Shield the flash from client disconnects; always release the port
                 # and finish reconnecting before allowing another operation.
-                task = asyncio.create_task(asyncio.to_thread(flash_engine, engine, tool, port))
+                task = asyncio.create_task(asyncio.to_thread(flash_engine, engine, tool, port, **({'target': target} if target != 'uno' else {})))
                 try:
                     return await asyncio.shield(task)
                 except asyncio.CancelledError:
@@ -503,7 +511,8 @@ def create_app(
 
     @app.get('/api/virtual/presets')
     def api_virtual_presets() -> dict:
-        return {'presets': read_presets()}
+        from playback.orchestra import esp32_startup_config
+        return {'presets': {'ESP32 bring-up': esp32_startup_config(), **read_presets()}}
 
     @app.put('/api/virtual/presets/{name}')
     def api_save_virtual_preset(name: str, config: dict) -> dict:
@@ -692,7 +701,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=REPO_ROOT / "midi",
         help="katalog z plikami .mid",
     )
-    parser.add_argument("--serial-port", default=None, help="port Arduino (domyslnie autodetekcja)")
+    parser.add_argument("--serial-port", default=os.environ.get('ORCHESTRA_SERIAL_PORT') or None,
+                        help="port Arduino (domyslnie autodetekcja)")
+    parser.add_argument('--runtime-mode', choices=('hardware', 'virtual', 'fake'),
+                        default=os.environ.get('ORCHESTRA_MODE', 'hardware'),
+                        help='tryb wyjścia; w Dockerze ustawiany przez ORCHESTRA_MODE')
     parser.add_argument(
         "--no-hardware",
         action="store_true",
@@ -732,6 +745,8 @@ def main(argv: list[str] | None = None) -> int:
 
     connect_fn = None
 
+    args.no_hardware = args.no_hardware or args.runtime_mode == 'virtual'
+    args.fake_hardware = args.fake_hardware or args.runtime_mode == 'fake'
     if args.fake_hardware:
         from floppy_link import DryRunLink
 

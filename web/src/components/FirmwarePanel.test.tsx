@@ -21,3 +21,12 @@ test('upload failure is visible and permits retry', async () => {
   await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('port busy'))
   expect(screen.getByRole('button', { name: 'Wgraj ponownie firmware' }).hasAttribute('disabled')).toBe(false)
 })
+
+test('explicit ESP32 target uses ESP32 upload endpoint', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ ready: true, port: '/dev/cp2102', log: 'ESP32 built' }) })))
+  render(<FirmwarePanel />)
+  fireEvent.change(screen.getByRole('combobox', { name: 'Firmware target' }), { target: { value: 'esp32' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Wgraj ponownie firmware' }))
+  await screen.findByText(/Firmware wgrany/)
+  expect(fetch).toHaveBeenCalledWith('/api/firmware/upload?target=esp32', { method: 'POST' })
+})

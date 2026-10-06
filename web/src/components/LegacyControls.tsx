@@ -1,7 +1,6 @@
 import type { PlayerApi } from '../usePlayer'
 import { TrackSelector } from './TrackSelector'
 import { TransposeSelector } from './TransposeSelector'
-import { HardwareStatus } from './HardwareStatus'
 import { DrumPanel } from './DrumPanel'
 
 export function LegacyControls({ player }: { player: PlayerApi }) {
@@ -115,12 +114,7 @@ export function LegacyControls({ player }: { player: PlayerApi }) {
             </p>
           </>
         )}
-      </section><HardwareStatus
-        hardware={state?.hardware ?? null}
-        ports={player.ports}
-        onReconnect={player.reconnect}
-        onHome={player.home}
-      />
+      </section>
 
       <DrumPanel
         drum={state?.drum ?? null}

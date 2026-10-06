@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from floppy_link import resolve_port, SerialLinkError
+from floppy_link import resolve_port, scan_ports, SerialLinkError
 
 
 def port(device, vid=None, description='n/a', manufacturer=None):
@@ -15,6 +15,24 @@ def port(device, vid=None, description='n/a', manufacturer=None):
 
 
 class PortDetectionTest(unittest.TestCase):
+    def test_forwarded_orbstack_serial_is_detected_without_fixed_port_name(self):
+        with patch.dict('os.environ', {'ORCHESTRA_SERIAL_DIR': '/host-dev'}), \
+             patch('floppy_link.list_ports.comports', return_value=[]), \
+             patch('floppy_link.Path.glob', side_effect=[[
+                 Path('/host-dev/cu.Bluetooth-Incoming-Port'),
+                 Path('/host-dev/cu.usbmodem987')], [], []]), \
+             patch('floppy_link.Path.is_char_device', return_value=True):
+            ports = scan_ports()
+            self.assertEqual(ports[0].device, '/host-dev/cu.usbmodem987')
+            self.assertGreater(ports[0].score, ports[1].score)
+
+    def test_forwarded_regular_files_are_not_serial_devices(self):
+        with patch.dict('os.environ', {'ORCHESTRA_SERIAL_DIR': '/host-dev'}), \
+             patch('floppy_link.list_ports.comports', return_value=[]), \
+             patch('floppy_link.Path.glob', return_value=[Path('/host-dev/cu.fake')]), \
+             patch('floppy_link.Path.is_char_device', return_value=False):
+            self.assertEqual(scan_ports(), [])
+
     def test_uno_is_selected_without_prompt_among_macos_system_ports(self):
         ports = [port('/dev/cu.debug-console'), port('/dev/cu.Bluetooth-Incoming-Port'),
                  port('/dev/cu.usbmodem14101', 0x2341, 'IOUSBHostDevice', 'Arduino (www.arduino.cc)')]

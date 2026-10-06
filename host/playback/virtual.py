@@ -122,7 +122,7 @@ PROFILES = {
         'polyphony': _p(1, 'RESEARCHED', 'single current VCM'),
         'parkMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
         'settleMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
-        'strikeMs': _p(4, 'RESEARCHED', 'firmware/floppy/src/main.cpp; shorter impulse for quieter hardware hits'),
+        'strikeMs': _p(2, 'RESEARCHED', 'firmware/floppy/src/main.cpp; shorter impulse for quieter hardware hits'),
         'cooldownMs': _p(0, 'ESTIMATED', 'preview; calibrate separately'),
     }),
     'SOLENOID_REFERENCE': DeviceProfile('SOLENOID_REFERENCE', 'SOLENOID_RESONATOR', {
@@ -132,6 +132,14 @@ PROFILES = {
     }),
 }
 DEFAULT_PROFILE = {p.kind: p.id for p in PROFILES.values()}
+# Separate controller profile: Uno calibration must not silently migrate to DRV8833.
+PROFILES['DRV8833_HDD_START'] = DeviceProfile('DRV8833_HDD_START', 'HDD_VCM', {
+    'polyphony': _p(1, 'ESTIMATED', 'one VCM per DRV8833 bridge'),
+    'parkMs': _p(40, 'ESTIMATED', 'ESP32 bring-up; requires physical calibration'),
+    'settleMs': _p(40, 'ESTIMATED', 'ESP32 bring-up; requires physical calibration'),
+    'strikeMs': _p(4, 'ESTIMATED', 'ESP32 bring-up; requires physical calibration'),
+    'cooldownMs': _p(0, 'ESTIMATED', 'requires physical calibration'),
+})
 
 @dataclasses.dataclass
 class VirtualDeviceInstance:
@@ -189,8 +197,6 @@ class VirtualDeviceInstance:
         mode = MODE_ALIASES.get(mode, mode)
         if mode not in MODES:
             raise ValueError(f'invalid mode: {mode} (expected one of {", ".join(MODES)})')
-        if kind == 'DVD_TRAY' and mode != 'virtual':
-            raise ValueError('DVD_TRAY supports virtual mode only')
         overrides = {}
         for key, item in (data.get('overrides') or {}).items():
             if key not in PROFILES[profile].parameters or key == 'polyphony':

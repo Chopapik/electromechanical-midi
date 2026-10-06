@@ -503,12 +503,26 @@ describe('App', () => {
     expect(document.querySelector('input[accept*=".mid"]')).not.toBeNull()
   })
 
-  it('reconnect wysyla akcje bez portu', async () => {
+  it('hardware settings expose port selection without opening Advanced', async () => {
+    await renderApp({ hardware: { ...STATE.hardware, connected: false, port: null, error: 'wykrylem kilka rownorzędnych portow' } }, false)
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(await screen.findByRole('combobox', { name: 'Port szeregowy' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Odśwież porty' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Połącz' })).toBeTruthy()
+  })
+
+  it('virtual settings omit serial port controls', async () => {
+    await renderApp({ virtual: { enabled: true, runtimeMode: 'virtual', config: { name: 'Test', devices: [] }, report: {}, activity: {}, profiles: [] } }, false)
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(screen.queryByRole('combobox', { name: 'Port szeregowy' })).toBeNull()
+  })
+
+  it('reconnect wysyla wybrany aktualny port', async () => {
     const socket = await renderApp()
 
     fireEvent.click(screen.getByText('Reconnect'))
 
-    expect(socket.actions()).toContainEqual({ action: 'reconnect' })
+    expect(socket.actions()).toContainEqual({ action: 'reconnect', port: '/dev/cu.usbmodem14101' })
   })
 
   it('Start i Stop bebna wysylaja akcje', async () => {

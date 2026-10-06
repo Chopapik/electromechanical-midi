@@ -1,4 +1,4 @@
-"""Build and flash only the repository's Uno orchestra firmware."""
+"""Build and flash the repository's Uno or ESP32 orchestra firmware."""
 import shutil
 import subprocess
 import time
@@ -17,8 +17,10 @@ def platformio() -> str:
     raise RuntimeError('Brak PlatformIO. Zainstaluj PlatformIO, aby wgrywać firmware Uno.')
 
 
-def run_firmware(tool: str, port: str | None = None) -> str:
-    command = [tool, 'run', '-d', str(PROJECT), '-e', 'uno']
+def run_firmware(tool: str, port: str | None = None, target: str = 'uno') -> str:
+    if target not in ('uno', 'esp32'):
+        raise ValueError('unknown firmware target')
+    command = [tool, 'run', '-d', str(PROJECT), '-e', target]
     if port is not None:
         command += ['--target', 'upload', '--upload-port', port]
     try:
@@ -49,13 +51,14 @@ def wait_upload_port(port: str, timeout: float = 10.0) -> str:
     raise RuntimeError('Arduino nie pojawiło się po uploadzie. Sprawdź USB.')
 
 
-def flash_engine(engine, tool: str, port: str) -> dict:
+def flash_engine(engine, tool: str, port: str, target: str = 'uno') -> dict:
     # Build failures leave the existing serial connection untouched.
-    log = run_firmware(tool)
+    kwargs = {'target': target} if target != 'uno' else {}
+    log = run_firmware(tool, **kwargs)
     engine.stop()
     engine.disconnect()
     try:
-        log += '\n' + run_firmware(tool, port)
+        log += '\n' + run_firmware(tool, port, **kwargs)
     finally:
         port = wait_upload_port(port)
         ready = engine.connect(port)

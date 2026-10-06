@@ -38,7 +38,9 @@ DEFAULT_GATE = 1.0
 LANE_FDD = "fdd"
 LANE_DRUM = "drum"
 LANE_HDD = "hdd"
-LANES = (LANE_FDD, LANE_DRUM, LANE_HDD)
+LANES = (LANE_FDD, LANE_DRUM, LANE_HDD) + tuple(
+    f'{kind}:{i}' for kind, count in (('fdd', 4), ('sled', 4), ('hdd', 4), ('tray', 2), ('drum', 1))
+    for i in range(1, count + 1))
 
 # HDD to instrument UDERZENIOWY (one-shot): ramie po kazdym uderzeniu trzeba
 # odwiezc do parku, wiec pelny cykl trwa ~105 ms. Nuty blizsze niz to

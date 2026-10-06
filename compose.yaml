@@ -1,0 +1,52 @@
+name: electromechanical-midi
+
+services:
+  orchestra:
+    build:
+      context: .
+      target: app
+    init: true
+    restart: "no"
+    stop_grace_period: 10s
+    ports:
+      - "127.0.0.1:${APP_PORT:-5173}:8000"
+    environment:
+      ORCHESTRA_MODE: ${ORCHESTRA_MODE:-hardware}
+      ORCHESTRA_SERIAL_PORT: ${ORCHESTRA_SERIAL_PORT:-}
+      ORCHESTRA_SERIAL_DIR: /host-dev
+    volumes:
+      - ./midi:/app/midi
+      - platformio:/root/.platformio
+      # OrbStack forwards macOS serial ports here, including newly plugged devices.
+      - /dev:/host-dev:ro
+    devices:
+      - /dev/snd:/dev/snd
+    # Forwarded serial major numbers can change on USB reconnect. Device nodes
+    # remain confined to the VM's mounted /dev; no privileged container is used.
+    device_cgroup_rules:
+      - "c *:* rmw"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/state', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+  backend-tests:
+    profiles: [test]
+    build:
+      context: .
+      target: backend-test
+    init: true
+    volumes:
+      - ./midi:/app/midi:ro
+
+  frontend-tests:
+    profiles: [test]
+    build:
+      context: .
+      target: frontend-test
+    init: true
+
+volumes:
+  platformio:
