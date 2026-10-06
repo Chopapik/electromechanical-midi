@@ -94,8 +94,8 @@ PROFILES = {
     }),
     'FDD_CURRENT': DeviceProfile('FDD_CURRENT', 'FDD', {
         'polyphony': _p(1, 'RESEARCHED', 'single FDD head and firmware PLAY state'),
-        'minPosition': _p(4, 'RESEARCHED', 'firmware/floppy/src/main.cpp MIN_TRACK'),
-        'maxPosition': _p(72, 'RESEARCHED', 'firmware/floppy/src/main.cpp MAX_TRACK'),
+        'minPosition': _p(4, 'RESEARCHED', 'firmware/controller/src/main.cpp MIN_TRACK'),
+        'maxPosition': _p(72, 'RESEARCHED', 'firmware/controller/src/main.cpp MAX_TRACK'),
         'minHz': _p(40, 'RESEARCHED', 'firmware MIN_PLAY_HZ'),
         'maxHz': _p(500, 'RESEARCHED', 'firmware MAX_PLAY_HZ'),
         'preferredMinHz': _p(COMFORT_MIN_HZ, 'RESEARCHED', 'host/pitch.py'),
@@ -120,9 +120,9 @@ PROFILES = {
     }),
     'WD_CAVIAR_CURRENT': DeviceProfile('WD_CAVIAR_CURRENT', 'HDD_VCM', {
         'polyphony': _p(1, 'RESEARCHED', 'single current VCM'),
-        'parkMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
-        'settleMs': _p(40, 'RESEARCHED', 'firmware/floppy/src/main.cpp'),
-        'strikeMs': _p(2, 'RESEARCHED', 'firmware/floppy/src/main.cpp; shorter impulse for quieter hardware hits'),
+        'parkMs': _p(40, 'RESEARCHED', 'firmware/controller/src/main.cpp'),
+        'settleMs': _p(40, 'RESEARCHED', 'firmware/controller/src/main.cpp'),
+        'strikeMs': _p(2, 'RESEARCHED', 'firmware/controller/src/main.cpp; shorter impulse for quieter hardware hits'),
         'cooldownMs': _p(0, 'ESTIMATED', 'preview; calibrate separately'),
     }),
     'SOLENOID_REFERENCE': DeviceProfile('SOLENOID_REFERENCE', 'SOLENOID_RESONATOR', {

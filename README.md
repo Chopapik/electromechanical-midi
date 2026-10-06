@@ -54,7 +54,7 @@ Podział odpowiedzialności:
 | `host/web/` | backend web playera (FastAPI: REST + WebSocket) |
 | `host/player.py` | CLI (używa tego samego silnika) |
 | `web/` | frontend (React + Vite + TypeScript) |
-| `firmware/floppy` | odbiór komend, homing, licznik komend AWAY, generowanie kroków, STOP |
+| `firmware/controller` | odbiór komend, homing, licznik komend AWAY, generowanie kroków, STOP |
 
 Firmware **nie ma pojęcia o długości nuty** - to host wysyła `PLAY` i `STOP`
 w odpowiednich momentach.
@@ -66,9 +66,12 @@ w odpowiednich momentach.
 ```
 electromechanical-midi/
 ├── firmware/
-│   └── floppy/                 # projekt PlatformIO (Arduino Uno)
+│   └── controller/             # projekt PlatformIO (Arduino Uno + ESP32)
 │       ├── platformio.ini
-│       └── src/main.cpp
+│       ├── include/orchestra_core.h
+│       └── src/
+│           ├── main.cpp         # Arduino Uno
+│           └── esp32/main.cpp   # ESP32 + 74HC595
 ├── host/
 │   ├── player.py               # CLI (cienka warstwa nad silnikiem)
 │   ├── midi_source.py          # MIDI: tracki, mapa tempa, nuty, monofonia
@@ -125,9 +128,9 @@ zawraca; powrót kończy wyłącznie fizyczny `/TRACK0`, bez budżetu kroków.
 
 ### Podłączenie 1× FDD + 1× HDD VCM do jednego Uno
 
-Źródło pinów: `firmware/floppy/src/main.cpp`, definicje `PIN_*`,
+Źródło pinów: `firmware/controller/src/main.cpp`, definicje `PIN_*`,
 `FloppyDrive::begin()` i `HddPercussion`. To **jeden wspólny firmware**
-dla FDD i HDD, budowany dla Uno przez `firmware/floppy/platformio.ini`.
+dla FDD i HDD, budowany dla Uno przez `firmware/controller/platformio.ini`.
 Osobne szkice `firmware/hdd_*` służą do testów, nie są drugim programem
 wgrywanym równolegle. Host wysyła do wspólnego firmware `PLAY`/`STOP`
 dla FDD oraz `HIT`/`HDD 0` dla HDD.
@@ -245,8 +248,8 @@ Panel **Wgraj ponownie firmware** korzysta z PlatformIO w kontenerze.
 Możesz też skompilować firmware bez lokalnej instalacji:
 
 ```bash
-docker compose exec orchestra pio run -d firmware/floppy -e uno
-docker compose exec orchestra pio run -d firmware/floppy -e esp32
+docker compose exec orchestra pio run -d firmware/controller -e uno
+docker compose exec orchestra pio run -d firmware/controller -e esp32
 ```
 
 Wgrywaj przez panel, który zatrzymuje playback, zwalnia Serial i po uploadzie
@@ -1013,7 +1016,7 @@ trafia na ekran (nuta, Hz, status sprzętu).
 **Firmware**:
 
 ```bash
-pio run -d firmware/floppy
+pio run -d firmware/controller
 ```
 
 ---
@@ -1456,7 +1459,7 @@ Zwykłe przypisania i dropy są identyczne dla każdego pliku. Te wyniki dotycz�
 # Ponowne wgrywanie firmware Uno
 
 W aplikacji otwórz **Settings → Arduino firmware → Wgraj ponownie firmware**.
-Przycisk kompiluje aktualny projekt `firmware/floppy` dla Uno, zatrzymuje odtwarzanie,
+Przycisk kompiluje aktualny projekt `firmware/controller` dla Uno, zatrzymuje odtwarzanie,
 zwalnia port szeregowy, wgrywa firmware i ponownie łączy Arduino. Sukces połączenia
 jest potwierdzany odpowiedzią `READY` po homingu FDD; sam upload nie oznacza gotowości.
 Zamknij Serial Monitor przed wgrywaniem. Wymagane jest zainstalowane PlatformIO

@@ -1,8 +1,8 @@
 # ESP32 orchestra bring-up
 
 Target: ESP32-WROOM-32, 38-pin Micro-USB/CP2102. Firmware lives in
-`firmware/floppy/src/esp32/main.cpp`; device logic and the **single source of
-truth for GPIO/Q mapping** live in `firmware/floppy/include/orchestra_core.h`
+`firmware/controller/src/esp32/main.cpp`; device logic and the **single source of
+truth for GPIO/Q mapping** live in `firmware/controller/include/orchestra_core.h`
 (`orchestra::map`). Uno remains separately compiled from `src/main.cpp`.
 
 ## Software and physical verification
@@ -204,8 +204,8 @@ ESP32 module identity, so verify the board physically.
 ## Build and offline checks
 
 ```sh
-~/.platformio/penv/bin/pio run -d firmware/floppy -e esp32
-~/.platformio/penv/bin/pio run -d firmware/floppy -e uno
+~/.platformio/penv/bin/pio run -d firmware/controller -e esp32
+~/.platformio/penv/bin/pio run -d firmware/controller -e uno
 .venv/bin/python -m unittest discover -s host/tests
 npm --prefix web test -- --run
 npm --prefix web run build
@@ -216,7 +216,7 @@ from core 3.x. Do not change core major version without porting LEDC calls.
 To upload, select target explicitly, or:
 
 ```sh
-~/.platformio/penv/bin/pio run -d firmware/floppy -e esp32 -t upload --upload-port /dev/cu.YOUR_CP2102
+~/.platformio/penv/bin/pio run -d firmware/controller -e esp32 -t upload --upload-port /dev/cu.YOUR_CP2102
 ```
 
 ## Tomorrow: connect and test

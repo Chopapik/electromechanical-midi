@@ -1,5 +1,5 @@
 // ============================================================
-// electromechanical-midi / firmware / floppy
+// electromechanical-midi / firmware / controller
 //
 // Arduino Uno jako PROSTY KONTROLER WYKONAWCZY stacji dyskietek.
 //

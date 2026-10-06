@@ -1,6 +1,6 @@
 """Warstwa Serial: wykrywanie Arduino, wysylanie komend, handshake.
 
-Protokol (patrz firmware/floppy/src/main.cpp):
+Protokol (patrz firmware/controller/src/main.cpp):
 
     PING      -> PONG
     PLAY <hz> -> cisza (celowo, zeby nie zapchac bufora TX Arduino)

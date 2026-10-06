@@ -4,7 +4,7 @@ import subprocess
 import time
 from pathlib import Path
 
-PROJECT = Path(__file__).resolve().parents[1] / 'firmware' / 'floppy'
+PROJECT = Path(__file__).resolve().parents[1] / 'firmware' / 'controller'
 
 
 def platformio() -> str:

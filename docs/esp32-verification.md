@@ -25,10 +25,10 @@ No ESP32 upload, commit or push performed.
 ## Changed files
 
 Firmware:
-- `firmware/floppy/platformio.ini`
-- `firmware/floppy/include/orchestra_core.h` (new production device core and central GPIO/Q map)
-- `firmware/floppy/src/esp32/main.cpp` (new ESP32 SPI/LEDC/Serial adapter)
-- `firmware/floppy/src/main.cpp` (previously requested Uno HDD 2 ms change only)
+- `firmware/controller/platformio.ini`
+- `firmware/controller/include/orchestra_core.h` (new production device core and central GPIO/Q map)
+- `firmware/controller/src/esp32/main.cpp` (new ESP32 SPI/LEDC/Serial adapter)
+- `firmware/controller/src/main.cpp` (previously requested Uno HDD 2 ms change only)
 
 Host:
 - `host/orchestra_link.py` (new)

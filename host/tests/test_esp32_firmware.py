@@ -96,7 +96,7 @@ class Esp32CoreTests(unittest.TestCase):
         source = Path(cls.directory.name)/'core.cpp'
         source.write_text(SOURCE)
         cls.binary = source.with_suffix('')
-        subprocess.run([compiler, '-std=c++11', '-Wall', '-Wextra', '-I', str(ROOT/'firmware/floppy/include'), str(source), '-o', str(cls.binary)], check=True, capture_output=True)
+        subprocess.run([compiler, '-std=c++11', '-Wall', '-Wextra', '-I', str(ROOT/'firmware/controller/include'), str(source), '-o', str(cls.binary)], check=True, capture_output=True)
 
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()

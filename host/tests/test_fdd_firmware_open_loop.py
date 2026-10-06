@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parents[2]/'firmware/floppy/src/main.cpp'
+SOURCE = Path(__file__).resolve().parents[2]/'firmware/controller/src/main.cpp'
 STUB = r'''
 #include <cstdint>
 #include <sstream>
