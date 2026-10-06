@@ -30,3 +30,10 @@ test('explicit ESP32 target uses ESP32 upload endpoint', async () => {
   await screen.findByText(/Firmware wgrany/)
   expect(fetch).toHaveBeenCalledWith('/api/firmware/upload?target=esp32', { method: 'POST' })
 })
+test('controller selection updates normal runtime without flashing', () => {
+ const change=vi.fn();const fetch=vi.fn();vi.stubGlobal('fetch',fetch)
+ render(<FirmwarePanel selectedTarget="uno" onTargetChange={change} />)
+ fireEvent.change(screen.getByRole('combobox',{name:'Firmware target'}),{target:{value:'esp32'}})
+ expect(change).toHaveBeenCalledWith('esp32')
+ expect(fetch).not.toHaveBeenCalled()
+})

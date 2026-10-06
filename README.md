@@ -69,6 +69,7 @@ electromechanical-midi/
 │   └── controller/             # projekt PlatformIO (Arduino Uno + ESP32)
 │       ├── platformio.ini
 │       ├── include/orchestra_core.h
+│       ├── include/orchestra_protocol.h # wspólny parser USB/BLE ESP32
 │       └── src/
 │           ├── main.cpp         # Arduino Uno
 │           └── esp32/main.cpp   # ESP32 + 74HC595
@@ -175,6 +176,10 @@ stan OFF na ten czas musi zapewniać sam obwód mostka.
 ---
 
 ## 4. Uruchamianie w Dockerze
+
+ESP32 obsługuje też BLE UART `Electromechanical-MIDI` w głównym firmware,
+równolegle z USB. Opis UUID i test z telefonu (PING oraz LED GPIO27):
+[ESP32 BLE bring-up](docs/esp32-orchestra.md#ble-uart-bring-up-same-controller-second-command-transport).
 
 Wymagany Docker Compose. Na tym Macu używamy **OrbStack 2.2.3**, który
 przekazuje porty Serial oraz kartę dźwiękową ALSA do kontenerów.
@@ -1489,3 +1494,12 @@ Firmware ESP32-WROOM-32, protokół Serial v2 z ID urządzeń i instrukcja
 podłączenia 5×595 / DRV8833: [ESP32 orchestra bring-up](docs/esp32-orchestra.md).
 W UI wybierz odpowiedni target firmware oraz preset **ESP32 bring-up**.
 Uno pozostaje oddzielnym targetem i rollbackiem; ESP32 wymaga fizycznej kalibracji.
+
+
+### ESP32 BLE runtime
+
+W Settings wybierz **ESP32-WROOM-32 · BLE**: normalny runtime używa BLE NUS,
+wyszukuje `Electromechanical-MIDI` i ponawia połączenie po utracie linku.
+Uno pozostaje na Serial, bez automatycznego fallbacku. Dla Dockera na macOS
+wymagany jest natywny most Bluetooth; instrukcja uruchomienia i instalacji
+usługi: [BLE runtime](docs/esp32-orchestra.md#normal-runtime-over-ble).

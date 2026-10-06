@@ -20,8 +20,9 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome, onRefresh
   const preferred = chosenPort ?? current ?? ''
   const selectedPort = ports.some(port => port.device === preferred) ? preferred : ''
   const warning = hardware?.warning ?? null
+  const ble = hardware?.transport === 'ble'
 
-  const title = connected
+  const title = ble ? `ESP32 BLE ${hardware?.connectionStatus ?? (connected ? 'connected' : connecting ? 'connecting' : 'disconnected')}` : connected
     ? 'Arduino connected'
     : connecting
       ? 'Arduino: homing…'
@@ -33,13 +34,13 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome, onRefresh
         <span className="dot" />
         <span className="hardware-text">
           <strong>{title}</strong>
-          <small>{current ?? (connecting ? 'czekam na READY…' : 'brak portu')}</small>
+          <small>{ble ? 'Electromechanical-MIDI' : current ?? (connecting ? 'czekam na READY…' : 'brak portu')}</small>
         </span>
       </div>
 
       {connected && <p role="status">FDD: {hardware?.fddStatus === 'homing' ? 'Homing…' : hardware?.fddStatus === 'error' ? 'Error — Retry Home' : hardware?.homed ? 'Ready' : 'Not homed'}</p>}
 
-      {connecting && (
+      {connecting && (!ble || connected) && (
         <p className="hardware-notice" role="status">
           Stacja dojeżdża do track 0. {pendingPlay
             ? 'Play jest w kolejce — utwór ruszy sam po READY.'
@@ -53,6 +54,7 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome, onRefresh
       {hardware?.error && <p className="hardware-error">⚠ {hardware.error}</p>}
 
       <div className="hardware-actions">
+        {!ble && <>
         <label className="field">
           <span className="field-label">Urządzenie / port szeregowy</span>
           <select
@@ -73,6 +75,7 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome, onRefresh
         {onRefreshPorts && <button type="button" className="button" onClick={onRefreshPorts}>
           Odśwież porty
         </button>}
+        </>}
 
         <button
           type="button"
@@ -84,7 +87,7 @@ export function HardwareStatus({ hardware, ports, onReconnect, onHome, onRefresh
           {hardware?.fddStatus === 'error' ? 'Retry Home' : 'Home'}
         </button>
 
-        <button type="button" className="button" onClick={() => onReconnect(selectedPort || undefined)} disabled={connecting || (!connected && ports.length > 1 && !selectedPort)}>
+        <button type="button" className="button" onClick={() => onReconnect(ble ? undefined : selectedPort || undefined)} disabled={connecting || (!ble && !connected && ports.length > 1 && !selectedPort)}>
           {connected ? 'Reconnect' : 'Połącz'}
         </button>
       </div>

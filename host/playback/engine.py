@@ -217,6 +217,7 @@ class PlaybackEngine:
         self._thread: threading.Thread | None = None
 
         self._connect_fn = connect_fn or default_connect
+        self._controller_target = 'uno'
         self._min_hz = min_hz
         self._max_hz = max_hz
         self._transpose = transpose
@@ -367,7 +368,11 @@ class PlaybackEngine:
         with self._lock:
             self._handshake = True
         try:
-            transport = self._connect_fn(port)
+            if self._controller_target == 'esp32':
+                from ble_link import BleOrchestraLink
+                transport = BleOrchestraLink()
+            else:
+                transport = self._connect_fn(port)
         except Exception as exc:
             with self._lock:
                 self._hardware = HardwareStatus(error=str(exc), port=port)
@@ -396,8 +401,17 @@ class PlaybackEngine:
         except Exception as exc:
             with self._lock:
                 self._handshake = False
-                self._fail_locked(f'blad Serial: {exc}')
+                self._fail_locked(f'blad transportu: {exc}')
             return False
+
+    def set_controller_target(self, target: str) -> None:
+        if target not in ('uno', 'esp32'):
+            raise EngineError('Nieznany kontroler')
+        if target != self._controller_target:
+            self.disconnect()
+            with self._lock:
+                self._controller_target = target
+                self._hardware = HardwareStatus()
 
     def _record_handshake(self, line: str) -> None:
         with self._lock:
@@ -468,7 +482,7 @@ class PlaybackEngine:
         except Exception as exc:
             with self._lock:
                 if self._transport is transport:
-                    self._fail_locked(f'blad Serial podczas HOME: {exc}')
+                    self._fail_locked(f'blad transportu podczas HOME: {exc}')
             return False
         finally:
             with self._lock:
@@ -1576,6 +1590,9 @@ class PlaybackEngine:
                     **self._hardware.as_dict(),
                     # connecting: trwa homing/reconnect (Play poczeka w kolejce).
                     "connecting": self._handshake,
+                    "controllerTarget": self._controller_target,
+                    "transport": 'ble' if self._controller_target == 'esp32' else 'serial',
+                    "connectionStatus": 'connected' if self._hardware.connected else 'connecting' if self._handshake else 'disconnected',
                     "pendingPlay": self._pending_play,
                     "ready": self._hardware.connected and self._hardware.homed and not self._handshake,
                     "board": getattr(self._transport, "board", "uno"),
@@ -1795,7 +1812,7 @@ class PlaybackEngine:
             else:
                 transport.stop()
         except Exception as exc:
-            self._fail_locked(f"blad Serial: {exc}")
+            self._fail_locked(f"blad transportu: {exc}")
             return False
 
         self._last_io = time.monotonic()
@@ -1815,7 +1832,7 @@ class PlaybackEngine:
         try:
             self._transport.stop()
         except Exception as exc:
-            self._fail_locked(f"blad Serial: {exc}")
+            self._fail_locked(f"blad transportu: {exc}")
             return False
 
         self._last_io = time.monotonic()
@@ -1837,7 +1854,7 @@ class PlaybackEngine:
         try:
             send(text)
         except Exception as exc:
-            self._fail_locked(f"blad Serial: {exc}")
+            self._fail_locked(f"blad transportu: {exc}")
             return False
 
         self._last_io = time.monotonic()
@@ -1927,7 +1944,7 @@ class PlaybackEngine:
         try:
             lines = transport.poll_lines()
         except Exception as exc:
-            self._fail_locked(f"blad odczytu Serial: {exc}")
+            self._fail_locked(f"blad odczytu transportu: {exc}")
             return
 
         for line in lines:
@@ -1982,7 +1999,7 @@ class PlaybackEngine:
         try:
             ping()
         except Exception as exc:
-            self._fail_locked(f"blad Serial: {exc}")
+            self._fail_locked(f"blad transportu: {exc}")
             return
 
         self._last_io = now

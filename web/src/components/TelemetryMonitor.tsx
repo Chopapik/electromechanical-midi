@@ -6,6 +6,7 @@ import { usePlaybackPosition } from '../usePlaybackPosition'
 import { eventAt, eventTime, frequencyAt, indexTelemetry, noteName, streamAt } from '../telemetry'
 
 export function arduinoStatus(state: PlayerState | null) {
+  if (state?.hardware.transport === 'ble') return `ESP32 BLE ${state.hardware.connectionStatus ?? (state.hardware.connected ? 'connected' : 'disconnected')}`
   if (!state?.hardware.connected) return 'Arduino disconnected'
   const fdd = state.hardware.fddStatus
   return `Arduino connected${fdd ? ` · FDD: ${fdd === 'ready' ? 'Ready' : fdd === 'homing' ? 'Homing…' : fdd === 'error' ? 'Error — Retry Home' : 'Not homed'}` : ''}`

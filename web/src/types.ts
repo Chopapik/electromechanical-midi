@@ -3,6 +3,9 @@
 export type PlaybackStateValue = 'stopped' | 'playing' | 'paused'
 
 export interface HardwareState {
+  controllerTarget?: 'uno' | 'esp32'
+  transport?: 'serial' | 'ble'
+  connectionStatus?: 'connecting' | 'connected' | 'disconnected'
   connected: boolean
   homed?: boolean
   ready?: boolean

@@ -34,6 +34,7 @@ an implementation guard, **not** a measured safe motor Hz limit.
 | 22 | RCLK/LATCH | All five 595 pin 12 | Frame latch |
 | 21 | /OE | All five 595 pin 13 | Active LOW; **10 kΩ pull-up to 3.3 V** |
 | 25 | VHS ICTL | Existing VHS driver/control input | LEDC PWM / tone; common GND |
+| 27 | TEST LED | 330 Ω → external LED anode; cathode → GND | Output, LOW at startup; independent of 595 Q27 |
 
 GPIO34/35/36/39 have no internal pull-ups. GPIO1/3 remain UART0/CP2102.
 The firmware does not allocate strapping pins.
@@ -201,6 +202,83 @@ Uno selected by default. Known Uno USB IDs are rejected for ESP32 upload.
 The CP2102 VID is rejected for Uno upload; it does not prove any particular
 ESP32 module identity, so verify the board physically.
 
+## BLE UART bring-up (same controller, second command transport)
+
+BLE starts automatically in the **existing ESP32 firmware**, alongside USB
+Serial. There is no separate Bluetooth controller or test firmware. Both
+transports feed the same `CommandProtocol` dispatcher and existing
+`Controller::command`. Motor logic, GPIO23/18/22/21, GPIO25 and
+TRACK0 GPIO34/35/36/39 are unchanged. In desktop Settings, selecting
+ESP32-WROOM-32 uses BLE for normal runtime commands; Arduino Uno uses Serial.
+There is no automatic Serial/BLE fallback. Firmware flashing still uses USB.
+
+Device name: **Electromechanical-MIDI**. Nordic UART Service-compatible GATT:
+
+| Endpoint | UUID | Properties / direction |
+| --- | --- | --- |
+| Service | `6E400001-B5A3-F393-E0A9-E50E24DCCA9E` | Nordic UART Service |
+| RX | `6E400002-B5A3-F393-E0A9-E50E24DCCA9E` | Write / Write Without Response, phone → ESP32 |
+| TX | `6E400003-B5A3-F393-E0A9-E50E24DCCA9E` | Notify, ESP32 → phone |
+
+Commands and responses are ASCII text, each terminated by LF (`0A`). CRLF is
+also accepted. A command may span BLE writes; one write may contain multiple
+commands. USB and BLE have independent 95-byte line buffers. An overlong line
+returns `ERR LINE_TOO_LONG` and is discarded until LF. Invalid/NUL text is
+rejected instead of executing a truncated command.
+
+### Phone: connection → PING → TEST ON → TEST OFF
+
+1. Upload this main firmware to the **ESP32**, using the application's ESP32
+   target or the upload command below. This change has **not** been flashed
+   or physically tested over Bluetooth by the coding agent.
+2. Connect **GPIO27 → 330 Ω → LED anode → LED cathode → GND**. The LED is
+   external; no onboard LED is assumed. Firmware loads LOW before enabling
+   the output, before SPI or BLE initialization. For a guaranteed LOW also
+   during ROM boot/reset (before firmware executes), add a 10 kΩ pull-down
+   from GPIO27 to GND. Keep motors disconnected for this first LED test.
+3. Open a BLE GATT client such as **nRF Connect for Mobile**, scan, select
+   `Electromechanical-MIDI` and **Connect**. Enable notifications on **TX**
+   (`…0003…`, CCCD `0x2902` = `01 00`) **before writing any commands**.
+   Name may appear in scan-response data. There is no required bonding/PIN
+   in this bring-up interface. Only one BLE client is supported at a time.
+4. Write `PING` plus an actual newline to **RX** (`…0002…`). If the phone's
+   text input cannot append LF, use the hexadecimal values in the table.
+   Typing the literal characters `\n` is **not** an actual newline.
+
+| RX write, HEX bytes including LF | Command | Expected TX text / effect |
+| --- | --- | --- |
+| `50 49 4E 47 0A` | `PING` | `PONG` |
+| `54 45 53 54 20 4F 4E 0A` | `TEST ON` | `TEST ON`; external LED lights |
+| `54 45 53 54 20 4F 46 46 0A` | `TEST OFF` | `TEST OFF`; LED goes dark |
+| `54 45 53 54 20 54 4F 47 47 4C 45 0A` | `TEST TOGGLE` | `TEST ON` or `TEST OFF`; flips LED |
+| `54 45 53 54 20 53 54 41 54 55 53 0A` | `TEST STATUS` | `TEST ON` or `TEST OFF`; no GPIO change |
+| `53 54 41 54 55 53 0A` | `STATUS` | Existing `STATUS BEGIN` … `STATUS END` transaction |
+
+Responses may span multiple notifications (20 bytes each, also valid at MTU
+23); concatenate payloads and split on LF. STATUS takes longer than PING
+because notifications are paced. Successful motor commands remain silent,
+as with USB. Errors, PONG, TEST replies and STATUS return **only through the
+originating transport**; delayed HOME failures also remember the original
+transport/session. USB boot READY remains on USB. Connecting/disconnecting
+BLE does not issue STOP, HOME or any actuator commands. Advertising resumes
+after disconnect, and partial input/old replies never carry into a new session.
+
+BLE callbacks only copy received writes into a bounded FreeRTOS queue and
+update transport flags. `loop()` consumes at most 16 USB bytes and 16 BLE
+bytes per iteration, through the shared dispatcher. BLE notifications run in
+a separate core-0 task, not the core-1 motor loop. RX overflow reports
+`ERR RX_OVERFLOW`, discards pending BLE input and seeks the next LF boundary;
+TX overflow reports `ERR TX_OVERFLOW` after the output queue drains. Neither
+queue waits in the motor loop. The existing motor watchdog still stops
+actuators after 3 seconds without controller commands: send PING at least
+once per second while testing motor playback. TEST only controls the LED.
+
+**SOFTWARE VERIFIED ONLY:** native tests exercise the actual dispatcher and
+ESP32 callbacks/queue adapter with fake Arduino/NimBLE/FreeRTOS. Real radio
+connectivity, notification delivery, LED wiring and STEP jitter under radio
+load still require the phone/hardware test. USB and BLE address the same
+actuators; the latest executed command from either transport wins.
+
 ## Build and offline checks
 
 ```sh
@@ -211,13 +289,50 @@ npm --prefix web test -- --run
 npm --prefix web run build
 ```
 
-Platform `espressif32@6.9.0` pins Arduino-ESP32 2.0.17, whose LEDC API differs
+Platform `espressif32@7.1.3` pins Arduino-ESP32 2.0.17, whose LEDC API differs
 from core 3.x. Do not change core major version without porting LEDC calls.
+This is the stable [PlatformIO release v7.1.3](https://github.com/platformio/platform-espressif32/releases/tag/v7.1.3),
+compatible with the classic ESP32-WROOM-32 (`board = esp32dev`).
+The controller does not use SPIFFS/LittleFS or build/upload a filesystem image.
+In this platform version, filesystem tools are optional for a normal build.
+However, PlatformIO Core enables all packages classified as `uploader` for
+upload targets, including `tool-mkspiffs`, `tool-mklittlefs` and `tool-mkfatfs`.
+They may therefore be installed by `-t upload` even though firmware flashing
+uses only `tool-esptoolpy` and this project does not use a filesystem.
+No filesystem dependency or macOS
+quarantine/security bypass is needed or configured by this project.
+If an existing native PlatformIO environment reports
+`ModuleNotFoundError: No module named 'intelhex'`, install the esptool Python
+dependency in that same environment (not a filesystem tool):
+
+```sh
+~/.platformio/penv/bin/python -m pip install intelhex==2.3.0
+```
+
+That command repairs only the `~/.platformio/penv/bin/pio` installation.
+For Homebrew `pio`, use the **Python Executable** reported by `pio system info`
+with `-m pip install intelhex==2.3.0`; these are separate Python environments.
+
+The ESP32 environment alone pins `h2zero/NimBLE-Arduino@1.4.3`; one BLE
+connection, with the NimBLE host task on core 0. Uno does not link Bluetooth.
 To upload, select target explicitly, or:
 
 ```sh
 ~/.platformio/penv/bin/pio run -d firmware/controller -e esp32 -t upload --upload-port /dev/cu.YOUR_CP2102
 ```
+
+For Serial monitoring, the ESP32 environment sets `monitor_dtr = 0` and
+`monitor_rts = 0` so the monitor does not assert the USB-UART auto-reset lines.
+From `firmware/controller`, use:
+
+```sh
+pio device monitor -e esp32 -p /dev/cu.YOUR_CP2102 -b 115200 --dtr 0 --rts 0
+```
+
+`READY protocol=2 board=esp32` is emitted once per firmware boot, not per
+PING, STATUS, HOME or BLE connection. Opening a monitor on an already running
+board may show no READY; PING still returns PONG. Repeated READY must not be
+filtered out: capture the raw boot/reset log to diagnose it.
 
 ## Tomorrow: connect and test
 
@@ -242,3 +357,65 @@ To upload, select target explicitly, or:
 Primary references for electrical pin naming/API versions:
 [TI SN74HC595 datasheet](https://www.ti.com/lit/ds/symlink/sn74hc595.pdf),
 [Espressif Arduino core migration guide](https://docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html).
+
+
+## Normal runtime over BLE
+
+In **Settings → Kontroler**, select **ESP32-WROOM-32 · BLE**. The selection is
+saved in `midi/.controller.json` and restored when the app restarts. It controls
+normal playback transport as well as the firmware upload target. Uno keeps
+its existing Serial transport. ESP32 discovers `Electromechanical-MIDI` by
+name and NUS service, subscribes to TX before sending commands to RX, and
+validates the session with PING/PONG (BLE does not receive USB boot READY).
+The existing OrchestraLink parser and hardware preflight/HOME remain in use.
+A complete STATUS transaction is awaited before issuing another BLE STATUS,
+so fragmented notifications do not flood the firmware response queue.
+
+The UI shows **ESP32 BLE connecting / connected / disconnected**, separately
+from FDD readiness. Failed discovery/connection and actual disconnections
+are retried indefinitely, with a two-second pause between attempts. Loss of
+the transport uses the existing playback pause behavior; reconnection does
+not replay old commands or automatically resume a paused song. Device errors
+such as HOME_FAILED leave BLE connected and do not trigger a reconnect.
+
+### macOS + Docker
+
+The Linux Docker VM cannot use macOS CoreBluetooth directly. The native
+`host/ble_gateway.py` bridges command bytes from the container to BLE using
+Bleak; it never opens Serial and never parses motor commands. Its TCP endpoint
+is loopback-only (`127.0.0.1:8766`), accessible to OrbStack containers through
+`host.docker.internal`. It opens BLE only while a runtime client is connected.
+
+Install dependencies into the native environment and run it in a terminal:
+
+```sh
+.venv/bin/python -m pip install -r host/requirements.txt
+.venv/bin/python host/ble_gateway.py
+```
+
+For automatic startup after login, explicitly install the per-user service:
+
+```sh
+.venv/bin/python host/ble_gateway.py --install-macos-service
+```
+
+This registers `~/Library/LaunchAgents/com.chopapik.electromechanical-midi.ble.plist`.
+Logs are in `.runtime/ble-gateway.log`; launchd restarts the helper if it exits.
+To remove the service:
+
+```sh
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.chopapik.electromechanical-midi.ble.plist
+rm ~/Library/LaunchAgents/com.chopapik.electromechanical-midi.ble.plist
+```
+
+Allow Bluetooth access in macOS if prompted. A denial or unavailable adapter
+is surfaced as a connection error; the runtime keeps retrying without switching
+to Serial. Disconnect other BLE clients (including a phone test app): firmware
+supports one client. Compose supplies `ORCHESTRA_BLE_GATEWAY=host.docker.internal:8766`.
+A backend running natively with that variable unset uses Bleak directly.
+
+Bring-up verification covers real discovery and Docker → gateway → ESP32
+PING/STATUS. Offline tests cover packet fragmentation, command order, common
+STATUS parsing, transport loss, retry, Uno isolation and UI selection/status.
+BLE playback timing and all physically wired devices require separate hardware
+validation; the gateway does not alter MIDI routing or firmware.

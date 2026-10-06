@@ -14,6 +14,8 @@ services:
       ORCHESTRA_MODE: ${ORCHESTRA_MODE:-hardware}
       ORCHESTRA_SERIAL_PORT: ${ORCHESTRA_SERIAL_PORT:-}
       ORCHESTRA_SERIAL_DIR: /host-dev
+      # Native macOS BLE gateway; never substitutes Serial if unavailable.
+      ORCHESTRA_BLE_GATEWAY: ${ORCHESTRA_BLE_GATEWAY:-host.docker.internal:8766}
     volumes:
       - ./midi:/app/midi
       - platformio:/root/.platformio

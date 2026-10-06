@@ -42,3 +42,17 @@ test('single device is selectable; absent ports show empty state', () => {
  expect(screen.getByText('Brak wykrytych portów')).toBeTruthy()
  expect(screen.getByRole('combobox',{name:'Port szeregowy'}).hasAttribute('disabled')).toBe(true)
 })
+test('BLE uses connection states and never asks for a Serial port', () => {
+ const connect=vi.fn()
+ const state={...hardware,transport:'ble' as const,controllerTarget:'esp32' as const,connected:false,connecting:true,connectionStatus:'connecting' as const}
+ const {rerender}=render(<HardwareStatus hardware={state} ports={ports} onHome={vi.fn()} onReconnect={connect} />)
+ expect(screen.getByText('ESP32 BLE connecting')).toBeTruthy()
+ expect(screen.queryByRole('combobox',{name:'Port szeregowy'})).toBeNull()
+ expect(screen.queryByText(/Stacja dojeżdża/)).toBeNull()
+ rerender(<HardwareStatus hardware={{...state,connecting:false,connectionStatus:'disconnected'}} ports={ports} onHome={vi.fn()} onReconnect={connect} />)
+ fireEvent.click(screen.getByRole('button',{name:'Połącz'}))
+ expect(connect).toHaveBeenCalledWith(undefined)
+ rerender(<HardwareStatus hardware={{...state,connected:true,connecting:false,connectionStatus:'connected'}} ports={ports} onHome={vi.fn()} onReconnect={connect} />)
+ expect(screen.getByText('ESP32 BLE connected')).toBeTruthy()
+ expect(arduinoStatus({hardware:state} as PlayerState)).toBe('ESP32 BLE connecting')
+})

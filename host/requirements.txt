@@ -1,6 +1,7 @@
 # Host: odtwarzacz CLI + lokalny web player
 mido>=1.2,<2
 pyserial>=3.5
+bleak==3.0.2
 
 # Web backend (FastAPI + WebSocket)
 fastapi>=0.110

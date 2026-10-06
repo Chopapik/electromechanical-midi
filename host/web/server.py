@@ -237,6 +237,11 @@ def create_app(
     connect_lock = asyncio.Lock()
     file_load_lock = asyncio.Lock()
     firmware_busy = False
+    controller_file = Path(midi_dir) / '.controller.json'
+    try:
+        engine.set_controller_target(json.loads(controller_file.read_text())['target'])
+    except (OSError, ValueError, KeyError, EngineError):
+        pass
 
     # --------------------------------------------------------
     # WebSocket: wysylka stanu
@@ -294,7 +299,14 @@ def create_app(
             return
 
         async with connect_lock:
-            await asyncio.to_thread(engine.connect, port)
+            attempt = asyncio.create_task(asyncio.to_thread(engine.connect, port))
+            try:
+                await asyncio.shield(attempt)
+            except asyncio.CancelledError:
+                # A thread cannot be cancelled; release the session it opens.
+                await attempt
+                await asyncio.to_thread(engine.disconnect)
+                raise
 
     # --------------------------------------------------------
     # Sterowanie
@@ -335,8 +347,21 @@ def create_app(
             await asyncio.to_thread(engine.set_transpose, str(message.get("mode")))
         elif action == "set_strategy":
             await asyncio.to_thread(engine.set_strategy, str(message.get("strategy")))
+        elif action == "set_controller":
+            target = str(message.get('target'))
+            async with connect_lock:
+                if firmware_busy:
+                    raise EngineError('Trwa upload firmware')
+                await asyncio.to_thread(engine.set_controller_target, target)
+                controller_file.parent.mkdir(parents=True, exist_ok=True)
+                controller_file.write_text(json.dumps({'target': target}))
+            if target == 'uno':
+                asyncio.create_task(connect_hardware(serial_port))
         elif action == "reconnect":
-            asyncio.create_task(connect_hardware(message.get("port")))
+            if engine.snapshot()['hardware'].get('controllerTarget') == 'esp32':
+                await asyncio.to_thread(engine.disconnect)
+            else:
+                asyncio.create_task(connect_hardware(message.get("port")))
         elif action == "home":
             await asyncio.to_thread(engine.home)
         elif action == "disconnect":
@@ -386,17 +411,22 @@ def create_app(
     async def lifespan(_app: FastAPI):
         engine.start()
         task = asyncio.create_task(broadcast_loop())
+        from ble_link import maintain_ble_connection
+        ble_task = asyncio.create_task(maintain_ble_connection(engine, connect_hardware, lambda: not firmware_busy))
 
-        if connect_on_start:
+        if connect_on_start and engine.snapshot()['hardware'].get('controllerTarget') != 'esp32':
             asyncio.create_task(connect_hardware(serial_port))
 
         try:
             yield
         finally:
             task.cancel()
+            ble_task.cancel()
 
             with contextlib.suppress(asyncio.CancelledError):
                 await task
+            with contextlib.suppress(asyncio.CancelledError):
+                await ble_task
 
             engine.shutdown()
 
@@ -424,7 +454,8 @@ def create_app(
         from floppy_link import resolve_port
         try:
             tool = platformio()
-            candidate = resolve_port(engine.snapshot()['hardware'].get('port') or serial_port,
+            hardware = engine.snapshot()['hardware']
+            candidate = resolve_port((hardware.get('port') if hardware.get('transport') != 'ble' else None) or serial_port,
                                      interactive=False)
             port = candidate.device
             if target == 'esp32' and getattr(candidate, 'vid', None) in (0x2341, 0x2A03):

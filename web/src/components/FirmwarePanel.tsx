@@ -1,8 +1,10 @@
 import { CircleNotch, UploadSimple } from '@phosphor-icons/react'
 import { useState } from 'react'
 
-export function FirmwarePanel() {
-  const [target, setTarget] = useState('uno')
+export function FirmwarePanel({ selectedTarget, onTargetChange }: { selectedTarget?: string; onTargetChange?: (target: string) => void } = {}) {
+  const [localTarget, setLocalTarget] = useState('uno')
+  const target = selectedTarget ?? localTarget
+  function setTarget(value: string) { setLocalTarget(value); onTargetChange?.(value) }
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [log, setLog] = useState('')
@@ -27,7 +29,7 @@ export function FirmwarePanel() {
   return <section className="firmware-panel" aria-label="Arduino firmware">
     <h3>Arduino firmware</h3>
     <p>Wgrywa aktualny firmware dla wybranego kontrolera. Wybierz zgodnie z podłączoną płytką. Zatrzymuje odtwarzanie; po uploadzie ponownie łączy Arduino. Zamknij Serial Monitor.</p>
-    <label>Kontroler <select aria-label="Firmware target" value={target} disabled={busy} onChange={e => setTarget(e.target.value)}><option value="uno">Arduino Uno (rollback)</option><option value="esp32">ESP32-WROOM-32</option></select></label>
+    <label>Kontroler <select aria-label="Firmware target" value={target} disabled={busy} onChange={e => setTarget(e.target.value)}><option value="uno">Arduino Uno · Serial</option><option value="esp32">ESP32-WROOM-32 · BLE</option></select></label>
     <button type="button" disabled={busy} onClick={upload}>
       {busy ? <CircleNotch size={18} className="playback-spinner" aria-hidden="true" /> : <UploadSimple size={18} aria-hidden="true" />}
       {busy ? 'Wgrywanie firmware…' : 'Wgraj ponownie firmware'}

@@ -17,3 +17,5 @@ __pycache__/
 # Local MIDI imports and benchmark songs. Existing tracked fixtures stay tracked.
 *.mid
 *.midi
+.controller.json
+.runtime/

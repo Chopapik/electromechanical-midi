@@ -36,6 +36,7 @@ export interface PlayerApi {
   selectTranspose: (mode: string) => void
   reconnect: (port?: string) => void
   home: () => void
+  setController: (target: string) => void
   refreshPorts: () => void
   refreshFiles: () => void
   startDrum: () => void
@@ -221,6 +222,7 @@ export function usePlayer(): PlayerApi {
   const selectTranspose = useCallback((mode: string) => send('set_transpose', { mode }), [send])
 
   const home = useCallback(() => send('home'), [send])
+  const setController = useCallback((target: string) => send('set_controller', { target }), [send])
 
   const reconnect = useCallback(
     (port?: string) => {
@@ -302,6 +304,7 @@ export function usePlayer(): PlayerApi {
     selectTranspose,
     reconnect,
     home,
+    setController,
     refreshPorts,
     refreshFiles,
     startDrum,
