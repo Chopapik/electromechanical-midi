@@ -452,3 +452,27 @@ SOURCE CONTINUITY / sustain in free gaps still applies to the shared
 PerformancePlan and the physical PLAY/STOP durations. No current/amplitude
 control exists in the current FDD wiring, so the PCM envelope cannot be
 reproduced physically by dropping STEP pulses.
+
+
+## DVD SLED relative software travel limit
+
+SLED uses a relative phase-step counter `position` with `SOFT_MIN=0` and
+`SOFT_MAX=140`. Boot assumes position 0: manually place the mechanism at the
+starting end before testing. There is no TRACK0/endstop or absolute position
+measurement. Missed physical steps are not detectable by this counter.
+
+Each generated phase step increments the counter in FWD or decrements it in
+REV. On reaching 140 the direction becomes REV; on reaching 0 it becomes FWD.
+Playback continues without stopping: `0 -> 140 -> 0 -> ...`. Manual DIR works
+inside the range; at an endpoint the next step always points inward. STOP
+and subsequent PLAY preserve the counter. The Q8–Q23 mapping and phase
+sequence are unchanged.
+
+Commands remain `SLED 1 ENABLE 1`, `SLED 1 DIR FWD/REV`,
+`SLED 1 PLAY 250`, and `SLED 1 STOP`. Tested physical range: 250–300 Hz;
+the software limit is not evidence of absolute physical travel safety.
+STATUS adds `position`, `dir`, `soft_min`, and `soft_max`, for example:
+
+```text
+STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=73 dir=fwd soft_min=0 soft_max=140
+```

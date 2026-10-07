@@ -37,6 +37,10 @@ int main(int argc,char** argv){
   p.execute(Transport::Ble,"STATUS");assert(sink.replies.size()==2*n);
   for(size_t i=0;i<n;++i){assert(sink.replies[i].origin==Transport::Usb&&sink.replies[i+n].origin==Transport::Ble);assert(sink.replies[i].text==sink.replies[i+n].text);}
   assert(sink.replies[n].text=="STATUS BEGIN"&&sink.replies.back().text=="STATUS END");
+  assert(sink.replies[10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=0 dir=fwd soft_min=0 soft_max=140");
+  ctrl.sled[0].position=73;ctrl.sled[0].forward=false;
+  p.execute(Transport::Ble,"STATUS");
+  assert(sink.replies[2*n+10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=73 dir=rev soft_min=0 soft_max=140");
  }else if(c=="fragment"){
   feed(p,Transport::Ble,"TE");feed(p,Transport::Ble,"ST O");assert(!led.on&&sink.replies.empty());
   feed(p,Transport::Ble,"N\r");assert(!led.on);feed(p,Transport::Ble,"\nPING\nTEST OFF\n");

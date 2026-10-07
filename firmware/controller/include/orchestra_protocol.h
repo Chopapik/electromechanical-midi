@@ -126,7 +126,7 @@ struct CommandProtocol {
    snprintf(line,sizeof(line),"STATUS FDD %d enabled=%d homed=%d playing=%d homing=%d dir=%s away_steps=%u track0=%d raw=%d hz=%.2f",i+1,d.enabled,d.homed,d.playing,d.homing,d.directionAway?"away":"toward",d.awaySteps,active,!active,d.hz); reply(origin,line);
   }
   for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle);reply(origin,line);}
-  for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS SLED %d enabled=%d playing=%d hz=%.2f",i+1,ctrl.sled[i].enabled,ctrl.sled[i].playing,ctrl.sled[i].hz);reply(origin,line);}
+  for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS SLED %d enabled=%d playing=%d hz=%.2f position=%d dir=%s soft_min=%d soft_max=%d",i+1,ctrl.sled[i].enabled,ctrl.sled[i].playing,ctrl.sled[i].hz,ctrl.sled[i].position,ctrl.sled[i].forward?"fwd":"rev",Sled::SOFT_MIN,Sled::SOFT_MAX);reply(origin,line);}
   for(int i=0;i<2;++i){snprintf(line,sizeof(line),"STATUS TRAY %d enabled=%d busy=%d",i+1,ctrl.tray[i].enabled,ctrl.tray[i].busy);reply(origin,line);}
   snprintf(line,sizeof(line),"STATUS VHS enabled=%d amp=%d hz=%.2f",ctrl.vhsEnabled,ctrl.amp,ctrl.frequency);reply(origin,line);reply(origin,"STATUS END");
  }

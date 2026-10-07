@@ -73,11 +73,27 @@ struct Hdd:Bridge {
  void tick(ShiftRegisterBus& bus){if(state==Idle||!due(bus.io.us(),deadline))return;if(state==Park){state=Settle;drive(bus,0);deadline=bus.io.us()+40000;}else if(state==Settle){state=Strike;drive(bus,1);deadline=bus.io.us()+4000;}else stop(bus);}
 };
 struct Sled {
+ static constexpr int16_t SOFT_MIN=0, SOFT_MAX=140;
+ // Relative command counter, NOT an absolute physical position. With no
+ // endstop, boot position=0 assumes manual placement at the starting end.
+ int16_t position=SOFT_MIN;
  uint8_t id,phase=0;bool enabled=false,playing=false,forward=true;uint32_t period=0,last=0;float hz=0;
  Sled(uint8_t i):id(i){}
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){if(!enabled||!isfinite(value)||value<=0)return false;double interval=1000000.0/value;if(interval<100||interval>2147483647)return false;period=uint32_t(interval);hz=value;playing=true;return true;}
- void tick(ShiftRegisterBus& bus){if(!playing||uint32_t(bus.io.us()-last)<period)return;last=bus.io.us();phase=(phase+(forward?1:3))%4;constexpr uint8_t seq[4]={5,6,10,9};for(int i=0;i<4;++i)bus.setBit(map::sled[id][i],seq[phase]&(1u<<i));}
+ void tick(ShiftRegisterBus& bus){
+  if(!playing||uint32_t(bus.io.us()-last)<period)return;
+  last=bus.io.us();
+  // A manual DIR pointing out of the software range must also bounce.
+  if(position>=SOFT_MAX)forward=false;
+  else if(position<=SOFT_MIN)forward=true;
+  phase=(phase+(forward?1:3))%4;
+  constexpr uint8_t seq[4]={5,6,10,9};
+  for(int i=0;i<4;++i)bus.setBit(map::sled[id][i],seq[phase]&(1u<<i));
+  position+=forward?1:-1;
+  if(position>=SOFT_MAX)forward=false;
+  else if(position<=SOFT_MIN)forward=true;
+ }
 };
 struct Tray:Bridge {
  bool busy=false;uint32_t deadline=0; Tray(uint8_t i):Bridge(map::tray[i][0],map::tray[i][1],false){}
