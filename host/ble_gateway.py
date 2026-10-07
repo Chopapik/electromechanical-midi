@@ -7,6 +7,7 @@ import os
 import plistlib
 import subprocess
 import sys
+from collections import deque
 from pathlib import Path
 from ble_link import BleBytes
 
@@ -20,11 +21,30 @@ async def serve_client(reader, writer):
         link = await asyncio.to_thread(BleBytes)
         log.info('BLE connected')
         writer.write(b'BLE CONNECTED\n'); await writer.drain()
+        pending = deque()
+        command_ready = asyncio.Event()
         async def receive():
+            # Read independently of slow GATT writes, so STOP can overtake
+            # queued notes. Finish one in-flight line, then STOP, never replay it.
             while True:
                 data = await reader.readuntil(b'\n')
                 if len(data) > 96:
                     raise ValueError('BLE command too long')
+                command = data.strip()
+                if command == b'ALL STOP' or command.startswith(b'ALL STOP '):
+                    discarded = len(pending)
+                    pending.clear()
+                    log.info('STOP priority: discarded %d queued commands', discarded)
+                if len(pending) >= 4096:
+                    raise ValueError('BLE command queue overflow')
+                pending.append(data)
+                command_ready.set()
+        async def send():
+            while True:
+                await command_ready.wait()
+                data = pending.popleft()
+                if not pending:
+                    command_ready.clear()
                 await asyncio.to_thread(link.write, data)
         async def transmit():
             while True:
@@ -32,7 +52,7 @@ async def serve_client(reader, writer):
                 if count:
                     writer.write(link.read(count)); await writer.drain()
                 await asyncio.sleep(.005)
-        tasks = [asyncio.create_task(receive()), asyncio.create_task(transmit())]
+        tasks = [asyncio.create_task(receive()), asyncio.create_task(send()), asyncio.create_task(transmit())]
         done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for task in done: task.result()
     except Exception as exc:
