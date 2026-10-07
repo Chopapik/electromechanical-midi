@@ -64,6 +64,16 @@ int main(int argc,char** argv){
   auto& f=d.fdd[0];f.homed=true;f.play(410,io);f.awaySteps=70;
   for(int i=0;i<300;++i){io.now+=100;d.tick();if(i==70){f.stop();f.play(410,io);}if(i==110)io.active[0]=true;if(i==160)io.active[0]=false;}
   uint32_t last=0;bool high=true;int count=0;for(auto e:io.edges){bool next=e.second&1;if(high&&!next){if(last)assert(e.first-last>=2439);last=e.first;++count;}high=next;}assert(count>3);
+ }else if(c=="continuous_pitch"){
+  auto& f=d.fdd[0];f.homed=true;d.command("FDD 1 PLAY 220");
+  uint32_t start=io.now;
+  while(io.now-start<180000){io.now+=100;d.tick();}
+  bool high=true;uint32_t last=0;int count=0;
+  for(auto e:io.edges){bool next=e.second&1;if(high&&!next){
+   if(last){assert(e.first-last>=4545);assert(e.first-last<5000);}
+   last=e.first;++count;
+  }high=next;}
+  assert(count>=35&&count<=40);assert(f.playing&&f.awaySteps==count);
  }else if(c=="hdd"){
   assert(!strcmp(d.command("HDD 4 HIT"),"OK"));assert(d.hdd[3].state==Hdd::Park&&d.hdd[0].state==Hdd::Idle);
   io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Settle);io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Strike);io.now+=4000;d.tick();assert(d.hdd[3].state==Hdd::Idle);
@@ -101,7 +111,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

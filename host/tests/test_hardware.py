@@ -158,3 +158,20 @@ class HardwareCommandTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class PhysicalTonalModeRegressionTests(unittest.TestCase):
+    def test_all_tonal_modes_keep_identical_continuous_fdd_commands(self):
+        from playback.virtual import AcousticEvent
+        from playback.tonal_articulation import TonalArticulation
+        from types import SimpleNamespace
+        art = TonalArticulation('PLUCKED', 'FDD', .03, .07, .15, .1, 2., .8, .4, .9)
+        events = [AcousticEvent(0., 'tone', 'fdd-1', 220., 2., tonal_articulation=art)]
+        bound = {'fdd:1': VirtualDeviceInstance.parse({'id':'fdd-1','type':'FDD','mode':'real'})}
+        expected = None
+        for mode in ('raw','articulated','extreme','extreme_v15','extreme_v2'):
+            commands = build_commands(SimpleNamespace(events=events, tonal_mode=mode), bound)
+            if expected is None: expected = commands
+            self.assertEqual(commands, expected, mode)
+            self.assertEqual([(c.time,c.kind,c.hz) for c in commands],
+                             [(0.,'play',220.), (2.,'stop',None)])

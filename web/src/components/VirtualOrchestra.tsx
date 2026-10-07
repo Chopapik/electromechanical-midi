@@ -83,6 +83,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
       onChange={e => configure({ ...config, tonalMode: e.target.value as 'raw' | 'articulated' | 'extreme' | 'extreme_v15' | 'extreme_v2' }, enabled)}>
       <option value="raw">TONAL RAW</option><option value="articulated">TONAL ARTICULATED</option><option value="extreme">TONAL EXTREME v1 · diagnostic</option><option value="extreme_v15">TONAL EXTREME 1.5</option><option value="extreme_v2">TONAL EXTREME v2 · diagnostic</option>
     </select></label>
+    <p className="muted">Tonal sound zmienia odsłuch wirtualny. Fizyczne FDD gra ciągłym STEP; sustain in free gaps działa również na hardware.</p>
     <label>Note length <select aria-label="Note length" value={(config.sourceContinuity ?? true) ? ((config.sourceContinuityAmount ?? 1) === .5 ? 'source_v15' : 'source') : 'balanced'}
       onChange={e => configure({ ...config, sourceContinuity: e.target.value !== 'balanced', sourceContinuityAmount: e.target.value === 'source_v15' ? .5 : 1 }, enabled)}>
       <option value="balanced">BALANCED · short gates</option>

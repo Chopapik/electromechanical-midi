@@ -438,3 +438,17 @@ a successful explicit Stop. Missing acknowledgement produces an explicit error
 and leaves playback paused, without declaring USB/BLE disconnected solely
 because of that missing acknowledgement. A broken connection still relies on
 the existing 3-second firmware watchdog.
+
+
+## Tonal modes on physical FDD
+
+TONAL EXTREME 1.5 shapes the virtual audio envelope only. Physical STEP/DIR
+FDD keeps a continuous STEP train at the requested pitch in every tonal mode.
+An experiment using 20 ms burst gating was removed: skipping impulses
+creates lower-frequency components and destroys the perceived note, even
+when the minimum interval between the remaining STEP impulses is correct.
+
+SOURCE CONTINUITY / sustain in free gaps still applies to the shared
+PerformancePlan and the physical PLAY/STOP durations. No current/amplitude
+control exists in the current FDD wiring, so the PCM envelope cannot be
+reproduced physically by dropping STEP pulses.
