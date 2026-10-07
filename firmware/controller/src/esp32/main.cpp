@@ -18,7 +18,7 @@ public:
   ledcSetup(0,20000,8);ledcAttachPin(map::vhs,0);ledcWrite(0,0);
  }
  uint32_t frame(const uint8_t* bytes,size_t size)override{
-  SPI.beginTransaction(SPISettings(1000000,MSBFIRST,SPI_MODE0));
+  SPI.beginTransaction(SPISettings(orchestra::physical::spiClockHz,MSBFIRST,SPI_MODE0));
   digitalWrite(map::latch,LOW);for(size_t i=0;i<size;++i)SPI.transfer(bytes[i]);
   digitalWrite(map::latch,HIGH);uint32_t edge=micros();SPI.endTransaction();return edge;
  }

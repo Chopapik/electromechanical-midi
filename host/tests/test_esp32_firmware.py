@@ -31,6 +31,8 @@ struct Fake: IO {
 };
 int main(int argc,char** argv){
  std::string c=argv[1];Fake io;Controller d(io);d.begin();
+ auto runFor=[&](uint32_t time){uint32_t start=io.now;while(uint32_t(io.now-start)<time){io.now+=100;d.lastCommand=io.now;d.tick();}};
+ auto nextPhase=[&](int id){auto& s=d.sled[id];int phase=s.phase;for(int n=0;n<10000&&s.phase==phase;++n){io.now+=100;d.lastCommand=io.now;d.tick();}assert(s.phase!=phase);};
  if(c=="map"){
   std::vector<int> used;for(auto b:map::step)used.push_back(b);for(auto b:map::dir)used.push_back(b);
   for(auto& group:map::sled)for(auto b:group)used.push_back(b);
@@ -78,52 +80,75 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("HDD 4 HIT"),"OK"));assert(d.hdd[3].state==Hdd::Park&&d.hdd[0].state==Hdd::Idle);
   io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Settle);io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Strike);io.now+=4000;d.tick();assert(d.hdd[3].state==Hdd::Idle);
  }else if(c=="sled"){
-  assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR DISABLED"));d.command("SLED 2 ENABLE 1");d.command("SLED 2 PLAY 220");
-  int expected[4]={6,10,9,5};for(int p:expected){io.now+=5000;d.tick();assert(((io.previous>>12)&15)==p);}
+  assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR DISABLED"));d.command("SLED 2 ENABLE 1");
+  assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR TRAVEL_UNKNOWN"));
+  assert(!strcmp(d.command("SLED 2 PROFILE 140 5000 1"),"OK"));d.command("SLED 2 PLAY 220");
+  int expected[4]={6,10,9,5};for(int p:expected){nextPhase(1);assert(((io.previous>>12)&15)==p);}
   d.command("SLED 2 STOP");assert(((io.previous>>12)&15)==0);
-  d.command("SLED 2 DIR REV");d.command("SLED 2 PLAY 220");io.now+=5000;d.tick();assert(((io.previous>>12)&15)==9);
+  d.command("SLED 2 DIR REV");d.command("SLED 2 PLAY 220");nextPhase(1);assert(((io.previous>>12)&15)==9);
  }else if(c=="sled_forward"){
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR FWD");d.command("SLED 1 PLAY 250");
-  auto& s=d.sled[0];assert(s.position==0);
-  io.now+=4000;d.tick();assert(s.position==1&&s.forward);
-  d.tick();assert(s.position==1); // No due phase change, no increment.
-  io.now+=4000;d.tick();assert(s.position==2);
+  auto& s=d.sled[0];assert(s.position==0);nextPhase(0);assert(s.position==1&&s.forward);
+  nextPhase(0);assert(s.position==2);
  }else if(c=="sled_reverse"){
-  auto& s=d.sled[0];s.position=73;
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
-  io.now+=4000;d.tick();assert(s.position==72&&!s.forward);
+  auto& s=d.sled[0];s.position=73;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
+  nextPhase(0);assert(s.position==72&&!s.forward);
  }else if(c=="sled_bounce_max"){
-  auto& s=d.sled[0];s.position=139;
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");
-  io.now+=4000;d.tick();assert(s.position==140&&!s.forward&&s.playing);
-  d.command("SLED 1 DIR FWD");assert(s.forward);
-  io.now+=4000;d.tick();assert(s.position==139&&!s.forward&&s.playing);
+  auto& s=d.sled[0];s.position=139;d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");
+  nextPhase(0);assert(s.position==138&&!s.forward&&s.playing);
+  d.command("SLED 1 DIR FWD");assert(s.forward);runFor(100000);assert(s.position<=140&&s.playing);
  }else if(c=="sled_bounce_min"){
-  auto& s=d.sled[0];s.position=1;
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
-  io.now+=4000;d.tick();assert(s.position==0&&s.forward&&s.playing);
-  d.command("SLED 1 DIR REV");assert(!s.forward);
-  io.now+=4000;d.tick();assert(s.position==1&&s.forward&&s.playing);
+  auto& s=d.sled[0];s.position=1;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
+  nextPhase(0);assert(s.position==2&&s.forward&&s.playing);
+  d.command("SLED 1 DIR REV");runFor(100000);assert(s.position>=0&&s.playing);
  }else if(c=="sled_bounds"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 250");auto& s=d.sled[0];
-  for(int n=1;n<=1400;++n){io.now+=4000;d.lastCommand=io.now;d.tick();
-   int offset=n%280;int expected=offset<=140?offset:280-offset;
-   assert(s.position==expected&&s.position>=Sled::SOFT_MIN&&s.position<=Sled::SOFT_MAX&&s.playing);
-  }
-  assert(s.position==0&&s.forward);
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 600");auto& s=d.sled[0];bool forward=false,reverse=false;
+  for(int n=0;n<30000;++n){io.now+=100;d.lastCommand=io.now;d.tick();
+   assert(s.position>=0&&s.position<=s.softMax&&s.playing);forward|=s.currentStepRate>0;reverse|=s.currentStepRate<0;
+  }assert(forward&&reverse);
  }else if(c=="sled_stop_position"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 250");io.now+=4000;d.tick();
-  auto& s=d.sled[0];int position=s.position;
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 250");nextPhase(0);auto& s=d.sled[0];int position=s.position;
   d.command("SLED 1 STOP");assert(!s.playing&&s.position==position&&((io.previous>>8)&15)==0);
-  io.now+=10000;d.tick();assert(s.position==position);
-  d.command("SLED 1 PLAY 250");io.now+=4000;d.tick();assert(s.position==position+1);
+  runFor(10000);assert(s.position==position);d.command("SLED 1 PLAY 250");nextPhase(0);assert(s.position==position+1);
   d.command("ALL STOP");assert(s.position==position+1&&!s.playing);
  }else if(c=="sled_dir"){
   d.command("SLED 1 ENABLE 1");auto& s=d.sled[0];s.position=70;
-  d.command("SLED 1 DIR REV");assert(!s.forward&&s.position==70);
-  d.command("SLED 1 PLAY 250");io.now+=4000;d.tick();assert(s.position==69&&s.phase==3&&((io.previous>>8)&15)==9);
-  d.command("SLED 1 DIR FWD");assert(s.forward&&s.position==69);
-  io.now+=4000;d.tick();assert(s.position==70&&s.phase==0&&((io.previous>>8)&15)==5);
+  d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");nextPhase(0);assert(s.position==69&&s.phase==3&&((io.previous>>8)&15)==9);
+  d.command("SLED 1 DIR FWD");runFor(100000);assert(s.currentStepRate>0&&s.position>69);
+ }else if(c=="sled_ramp"){
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");auto& s=d.sled[0];s.position=70;d.tick();float previous=0;
+  for(int n=0;n<250;++n){uint32_t before=io.now;io.now+=100;d.tick();float dt=(io.now-before)/1000000.f;
+   assert(s.currentStepRate-previous<=s.accelerationLimit*dt+.01f);assert(s.currentStepRate<=300);previous=s.currentStepRate;
+  }assert(previous>0&&previous<300);
+  d.command("SLED 1 DIR REV");runFor(150000);assert(s.currentStepRate<0&&s.playing);
+ }else if(c=="hdd_profile"){
+  assert(!strcmp(d.command("HDD 1 PROFILE 40 40 2"),"OK"));assert(d.hdd[0].strikeUs==2000&&d.hdd[1].strikeUs==4000);
+  d.command("HDD 1 HIT");assert(!strcmp(d.command("HDD 1 PROFILE 40 40 4"),"ERR BUSY"));
+  io.now+=40000;d.tick();io.now+=40000;d.tick();assert(d.hdd[0].state==Hdd::Strike);
+  io.now+=2000;d.tick();assert(d.hdd[0].state==Hdd::Idle);
+  assert(!strcmp(d.command("HDD 1 PROFILE 40 40 nan"),"ERR PROFILE"));
+  assert(!strcmp(d.command("HDD 1 PROFILE 40 40 0.00001"),"ERR PROFILE"));
+ }else if(c=="sled_brake"){
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 600");auto& s=d.sled[0];s.position=110;
+  s.currentStepRate=600;s.clockStarted=true;s.last=io.now;
+  io.now+=100;d.tick();assert(!s.forward&&s.targetStepRate<0&&s.position<140&&s.currentStepRate>0);
+  runFor(200000);assert(s.currentStepRate<0&&s.position<140);
+ }else if(c=="fdd_profile_timing"){
+  auto& f=d.fdd[1];assert(!strcmp(d.command("FDD 2 PROFILE 60 18000 3000"),"OK"));
+  f.homed=true;f.awaySteps=60;f.hasStep=true;f.lastStepUs=io.now;uint32_t previous=io.now;
+  d.command("FDD 2 PLAY 220");d.tick();assert(!f.directionAway);
+  io.now=previous+17999;assert(!f.wantsStep(d.bus));io.now=previous+18000;assert(f.wantsStep(d.bus));
+  assert(d.bus.getBit(f.dirBit)); // toward is HIGH
+  io.active[1]=true;f.wantsStep(d.bus);assert(f.awaySteps==0&&f.directionAway&&!d.bus.getBit(f.dirBit));
+ }else if(c=="profiles"){
+  assert(d.sled[0].softMax==140);for(int i=1;i<4;++i)assert(d.sled[i].softMax==-1);
+  assert(d.fdd[0].safeAwaySteps==72&&d.fdd[0].minStepUs==2439);
+  assert(!strcmp(d.command("SLED 2 PROFILE -1 5000 1"),"OK"));
+  assert(!strcmp(d.command("SLED 2 PROFILE 0 5000 1"),"ERR PROFILE"));
+  assert(!strcmp(d.command("SLED 1 PROFILE 140 nan 1"),"ERR PROFILE"));
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 0.5");d.command("SLED 1 PLAY 150");runFor(100000);
+  assert(d.sled[0].hz==150&&fabsf(d.sled[0].targetStepRate)==300);
+  assert(!strcmp(d.command("SLED 1 PROFILE 140 5000 1"),"ERR BUSY"));
  }else if(c=="tray"){
   assert(!strcmp(d.command("TRAY 1 PULSE FWD 80"),"ERR DISABLED"));d.command("TRAY 1 ENABLE 1");d.command("TRAY 1 PULSE REV 80");assert((io.previous>>32&3)==2);io.now+=80000;d.tick();assert(!d.tray[0].busy&&(io.previous>>32&3)==0);
  }else if(c=="watchdog"){
@@ -153,7 +178,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

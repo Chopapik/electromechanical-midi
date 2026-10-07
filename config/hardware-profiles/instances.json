@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "instances": {
+    "FDD:1": {
+      "present": true,
+      "profile": "FDD",
+      "quantities": {
+        "stableHz": {
+          "value": [
+            130,
+            410
+          ],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "measured upper endpoint 410 Hz (38/40); retained lower 130 Hz, NOT a measured musical minimum",
+          "evidenceType": "DERIVED",
+          "confidence": "HIGH"
+        },
+        "musicalHz": {
+          "value": [
+            130,
+            410
+          ],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "measured upper endpoint 410 Hz (38/40); retained lower 130 Hz, NOT a measured musical minimum",
+          "evidenceType": "DERIVED",
+          "confidence": "HIGH"
+        },
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "existing tested firmware soft limit; not a measured physical position",
+          "evidenceType": "FACT",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "existing working STEP/DIR setup timing; not a datasheet identification",
+          "evidenceType": "FACT",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "round(1e6/410), measured upper comfort bound",
+          "evidenceType": "DERIVED",
+          "confidence": "HIGH"
+        }
+      }
+    },
+    "SLED:1": {
+      "present": true,
+      "profile": "DVD_SLED",
+      "quantities": {
+        "travelSteps": {
+          "value": 140,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "user DVD1 calibrated working SOFTWARE TRAVEL LIMIT, bf75d47; manual start required",
+          "evidenceType": "MEASURED",
+          "confidence": "MEDIUM"
+        },
+        "stableStepRate": {
+          "value": [
+            250,
+            300
+          ],
+          "unit": "steps/s",
+          "uncertainty": null,
+          "source": "user DVD1 FWD/REV bring-up: 250–300 Hz works",
+          "evidenceType": "MEASURED",
+          "confidence": "MEDIUM"
+        }
+      }
+    },
+    "HDD:1": {
+      "present": true,
+      "profile": "HDD_PERCUSSION",
+      "quantities": {}
+    }
+  }
+}

@@ -204,3 +204,30 @@ def build_commands(orchestra: VirtualOrchestra,
             commands.extend(_tone_commands(events, lane))
 
     return commands
+
+
+def build_plan_commands(plan, bound):
+    """Physical schedule directly from evaluated PerformancePlan (no PCM model)."""
+    from .virtual import AcousticEvent
+    grouped = {lane:[] for lane in bound}
+    device_lane = {device.id:lane for lane,device in bound.items()}
+    for e in plan.events:
+        lane = device_lane.get(e.device_id)
+        if e.played and lane and e.hardware.get('authorized'):
+            grouped[lane].append(AcousticEvent(e.actual_start, 'tone', e.device_id,
+                                               e.played_hz or 0., e.actual_duration, e.velocity))
+    for e in plan.reinforcements:
+        lane = device_lane.get(e.device_id)
+        if lane: grouped[lane].append(AcousticEvent(e.start, 'tone', e.device_id, e.hz, e.duration, e.velocity))
+    commands=[]
+    for lane, events in grouped.items():
+        if lane.startswith('hdd:'): commands.extend(_hit_commands(events,lane))
+        else:
+            # Hardware note starts/ends are authoritative. No hidden repeated-note
+            # gap or minimum-length discard from the historical acoustic renderer.
+            ordered=sorted(events,key=lambda x:x.time)
+            for index,e in enumerate(ordered):
+                commands.append(Command(e.time,'drum_on' if lane.startswith('drum:') else 'play',hz=e.hz,lane=lane))
+                if index+1==len(ordered) or ordered[index+1].time>e.time+e.duration+1e-9:
+                    commands.append(Command(e.time+e.duration,'drum_off' if lane.startswith('drum:') else 'stop',lane=lane))
+    return sorted(commands,key=lambda c:(c.time, 0 if c.kind in ('stop','drum_off') else 1,c.lane))

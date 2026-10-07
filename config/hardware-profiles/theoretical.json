@@ -1,0 +1,733 @@
+{
+  "schemaVersion": 1,
+  "purpose": "theoretical planning priors; NOT safety ratings",
+  "source": "docs/research/orkiestra-model-teoretyczny.md",
+  "profiles": {
+    "FDD": {
+      "preferredHz": {
+        "value": [
+          100,
+          300
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "stableHz": {
+        "value": [
+          65,
+          330
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "musicalHz": {
+        "value": [
+          65,
+          500
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "aggressiveHz": {
+        "value": [
+          400,
+          800
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "pitchRatio": {
+        "value": 1.0,
+        "unit": "",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "datasheetMinStepMs": {
+        "value": 3,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md S1/S2 (reference models only)",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "reversalIntervalMs": {
+        "value": 18,
+        "unit": "ms",
+        "uncertainty": [
+          4,
+          18
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "reversalByModelMs": {
+        "value": {
+          "TEAC_C891": 4,
+          "SAMSUNG_SFD321B": 18,
+          "PANASONIC_JU257A6P": 18
+        },
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "travelSteps": {
+        "value": 60,
+        "unit": "steps",
+        "uncertainty": [
+          40,
+          75
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "minNoteFloorMs": {
+        "value": 20,
+        "unit": "ms",
+        "uncertainty": [
+          10,
+          40
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "minCycles": {
+        "value": 4,
+        "unit": "cycles",
+        "uncertainty": [
+          3,
+          8
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "preferredNoteMs": {
+        "value": 80,
+        "unit": "ms",
+        "uncertainty": [
+          50,
+          150
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "maxNoteChangeRatePerSec": {
+        "value": 15,
+        "unit": "1/s",
+        "uncertainty": [
+          8,
+          25
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "safePeakCurrentA": {
+        "value": null,
+        "unit": "A",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      }
+    },
+    "DVD_SLED": {
+      "driveMode": {
+        "value": "two_phase_full_step",
+        "unit": "",
+        "uncertainty": null,
+        "source": "firmware/controller/include/orchestra_core.h phase sequence",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "referenceMotor": {
+        "value": "Minebea PL15S-020 (reference only)",
+        "unit": "",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "referencePhaseResistanceOhm": {
+        "value": 10,
+        "unit": "ohm",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "referenceVoltageV": {
+        "value": 5,
+        "unit": "V",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "referenceStepsPerRev": {
+        "value": 20,
+        "unit": "steps/rev",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
+      "referenceHoldingTorqueMNm": {
+        "value": 3,
+        "unit": "mNm",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "MEDIUM"
+      },
+      "referencePullOut": {
+        "value": [
+          [
+            400,
+            2.5
+          ],
+          [
+            1400,
+            1.3
+          ]
+        ],
+        "unit": "PPS,mNm",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "MEDIUM"
+      },
+      "referencePullInPPS": {
+        "value": 1450,
+        "unit": "PPS",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+        "evidenceType": "FACT",
+        "confidence": "MEDIUM"
+      },
+      "preferredStepRate": {
+        "value": [
+          150,
+          600
+        ],
+        "unit": "steps/s",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "stableStepRate": {
+        "value": [
+          100,
+          600
+        ],
+        "unit": "steps/s",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "musicalStepRate": {
+        "value": [
+          80,
+          1000
+        ],
+        "unit": "steps/s",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "pitchRatio": {
+        "value": 1.0,
+        "unit": "",
+        "uncertainty": [
+          1,
+          0.5,
+          0.25,
+          2
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "accelerationLimit": {
+        "value": 5000,
+        "unit": "steps/s²",
+        "uncertainty": [
+          1000,
+          20000
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "travelSteps": {
+        "value": null,
+        "unit": "steps",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "minNoteFloorMs": {
+        "value": 30,
+        "unit": "ms",
+        "uncertainty": [
+          15,
+          60
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "minCycles": {
+        "value": 4,
+        "unit": "cycles",
+        "uncertainty": [
+          3,
+          8
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "preferredNoteMs": {
+        "value": 100,
+        "unit": "ms",
+        "uncertainty": [
+          60,
+          200
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "maxNoteChangeRatePerSec": {
+        "value": 10,
+        "unit": "1/s",
+        "uncertainty": [
+          5,
+          20
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "safePeakCurrentA": {
+        "value": null,
+        "unit": "A",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      }
+    },
+    "HDD_PERCUSSION": {
+      "pulseMs": {
+        "value": [
+          0.2,
+          5
+        ],
+        "unit": "ms",
+        "uncertainty": [
+          0.1,
+          10
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "pulseTypicalMs": {
+        "value": 1,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "maxContinuousHitsPerSec": {
+        "value": 5,
+        "unit": "1/s",
+        "uncertainty": [
+          2,
+          10
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "maxBurstHitsPerSec": {
+        "value": 10,
+        "unit": "1/s",
+        "uncertainty": [
+          5,
+          20
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "burstWindowMs": {
+        "value": 500,
+        "unit": "ms",
+        "uncertainty": [
+          100,
+          1000
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "preferredHitRate": {
+        "value": [
+          1,
+          5
+        ],
+        "unit": "1/s",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "nominalStartToStartMs": {
+        "value": 200,
+        "unit": "ms",
+        "uncertainty": [
+          100,
+          500
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "safePulseMaxMs": {
+        "value": null,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "safePeakCurrentA": {
+        "value": null,
+        "unit": "A",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "safeImpactEnergyJ": {
+        "value": null,
+        "unit": "J",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "thermalRth": {
+        "value": null,
+        "unit": "K/W",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "thermalCth": {
+        "value": null,
+        "unit": "J/K",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "parkMs": {
+        "value": 40,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "existing ESP32 percussion baseline",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      },
+      "settleMs": {
+        "value": 40,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "existing ESP32 percussion baseline",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      },
+      "strikeMs": {
+        "value": 4,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "existing ESP32 percussion baseline",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      },
+      "baselineStrikeMs": {
+        "value": 4,
+        "unit": "ms",
+        "uncertainty": null,
+        "source": "existing ESP32 DRV8833 bridge baseline; not a safe pulse rating",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      }
+    },
+    "HDD_TONAL": {
+      "musicalHz": {
+        "value": [
+          100,
+          1500
+        ],
+        "unit": "Hz",
+        "uncertainty": {
+          "lower": [
+            50,
+            200
+          ],
+          "upper": [
+            800,
+            3000
+          ]
+        },
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "preferredHz": {
+        "value": [
+          200,
+          800
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "stableHz": {
+        "value": null,
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "candidateResonances": {
+        "value": [
+          [
+            3000,
+            5000
+          ]
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "FACT",
+        "confidence": "MEDIUM"
+      },
+      "referenceResonancesHz": {
+        "value": [
+          4500,
+          5400,
+          5550,
+          5670,
+          7300,
+          7450,
+          8000,
+          9650
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "FACT",
+        "confidence": "MEDIUM"
+      },
+      "avoidBands": {
+        "value": null,
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "allowedExcursionRad": {
+        "value": null,
+        "unit": "rad",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "safePeakCurrentA": {
+        "value": null,
+        "unit": "A",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "thermalRth": {
+        "value": null,
+        "unit": "K/W",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "thermalCth": {
+        "value": null,
+        "unit": "J/K",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "minNoteFloorMs": {
+        "value": 20,
+        "unit": "ms",
+        "uncertainty": [
+          10,
+          50
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "minCycles": {
+        "value": 4,
+        "unit": "cycles",
+        "uncertainty": [
+          3,
+          8
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "preferredNoteMs": {
+        "value": 80,
+        "unit": "ms",
+        "uncertainty": [
+          50,
+          200
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "maxNoteChangeRatePerSec": {
+        "value": 15,
+        "unit": "1/s",
+        "uncertainty": [
+          5,
+          30
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "transitionCycles": {
+        "value": 3,
+        "unit": "cycles",
+        "uncertainty": [
+          2,
+          6
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      },
+      "modalTransientMs": {
+        "value": 10,
+        "unit": "ms",
+        "uncertainty": [
+          5,
+          120
+        ],
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "LOW"
+      }
+    },
+    "VHS": {
+      "musicalHz": {
+        "value": [
+          20,
+          2000
+        ],
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "existing VHS protocol range",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      },
+      "preferredHz": {
+        "value": null,
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "stableHz": {
+        "value": null,
+        "unit": "Hz",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "safePeakCurrentA": {
+        "value": null,
+        "unit": "A",
+        "uncertainty": null,
+        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "evidenceType": "HYPOTHESIS",
+        "confidence": "UNKNOWN"
+      },
+      "baselineDrive": {
+        "value": 38,
+        "unit": "",
+        "uncertainty": null,
+        "source": "host/playback/timeline.py",
+        "evidenceType": "FACT",
+        "confidence": "LOW"
+      }
+    }
+  },
+  "protocolConstants": {
+    "fddStepLowUs": 30,
+    "fddHomePeriodUs": 5000,
+    "fddHomeTimeoutUs": 2000000,
+    "hostWatchdogUs": 3000000,
+    "spiClockHz": 1000000,
+    "sledMinPeriodUs": 100,
+    "fddProtocolMinHz": 40,
+    "fddProtocolMaxHz": 500,
+    "fddDirSetupUs": 5000,
+    "sledRampMaxTickUs": 5000,
+    "sledBrakingGuardSteps": 2
+  }
+}

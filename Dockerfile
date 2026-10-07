@@ -18,6 +18,7 @@ COPY host/requirements.txt /app/host/requirements.txt
 RUN pip install --no-cache-dir -r host/requirements.txt platformio
 COPY host/ /app/host/
 COPY firmware/ /app/firmware/
+COPY config/ /app/config/
 COPY scripts/ /app/scripts/
 COPY --from=frontend /app/web/dist /app/web/dist
 RUN mkdir -p /app/midi

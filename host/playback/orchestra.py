@@ -90,12 +90,14 @@ class OrchestraConfig:
     tray_enabled: bool = True
     idle_reinforcement: dict = dataclasses.field(default_factory=parse_idle)
 
+    hardware: dict = dataclasses.field(default_factory=dict)
+
     def instances(self) -> list[VirtualDeviceInstance]:
         return [VirtualDeviceInstance.parse(device) for device in self.devices]
 
     def as_dict(self) -> dict:
         return {'name': self.name, 'devices': self.devices, 'policy': self.policy,
-                'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement}
+                'hardware': self.hardware, 'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement}
 
     def allocation_devices(self) -> tuple[list[VirtualDeviceInstance], dict[str, list[dict]]]:
         """Reinforcement never changes the configured normal voice inventory."""
@@ -110,7 +112,7 @@ def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual
             'volume': 0.2 if kind == 'DVD_SLED' else (0.35 if kind == 'DVD_TRAY' else 0.6),
             'pan': 0.0, 'mute': False, 'solo': False,
             'transpose': 0, 'gate': 1.0, 'profile': profile, 'mode': mode,
-            'overrides': {}, 'enabled': True}
+            'overrides': {}, 'enabled': True, 'hardware_role': '', 'hardware_overrides': {}}
 
 
 def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',
@@ -180,6 +182,12 @@ def parse_policy(payload: dict | None) -> dict:
 def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     """Buduje konfiguracje z JSON-a; brak pola devices = domyslna orkiestra."""
     payload = payload or {}
+    hardware = payload.get('hardware', {})
+    if not isinstance(hardware, dict) or set(hardware)-{'inventory'}:
+        raise ValueError('invalid hardware configuration')
+    inventory = hardware.get('inventory')
+    if inventory is not None and (not isinstance(inventory, dict) or any(not isinstance(v, bool) or k.split(':')[0] not in ('fdd','sled','hdd','tray','drum') or len(k.split(':'))!=2 or not k.split(':')[1].isdigit() for k,v in inventory.items())):
+        raise ValueError('hardware inventory requires physical lane booleans')
     dvd_mode = str(payload.get('dvdMode') or 'independent')
     if dvd_mode not in ('independent', 'reinforcement'):
         raise ValueError(f'unknown DVD mode: {dvd_mode}')
@@ -191,6 +199,7 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         config.dvd_mode = dvd_mode
         config.tray_enabled = bool(payload.get('trayEnabled', True))
         config.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
+        config.hardware = hardware
         config.allocation_devices()
 
         return config
@@ -207,6 +216,7 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         dvd_mode=dvd_mode,
         tray_enabled=bool(payload.get('trayEnabled', True)),
         idle_reinforcement=parse_idle(payload.get('idleReinforcement')),
+        hardware=hardware,
     )
     config.allocation_devices()
     return config

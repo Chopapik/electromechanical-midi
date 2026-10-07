@@ -37,10 +37,18 @@ int main(int argc,char** argv){
   p.execute(Transport::Ble,"STATUS");assert(sink.replies.size()==2*n);
   for(size_t i=0;i<n;++i){assert(sink.replies[i].origin==Transport::Usb&&sink.replies[i+n].origin==Transport::Ble);assert(sink.replies[i].text==sink.replies[i+n].text);}
   assert(sink.replies[n].text=="STATUS BEGIN"&&sink.replies.back().text=="STATUS END");
-  assert(sink.replies[10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=0 dir=fwd soft_min=0 soft_max=140");
+  assert(sink.replies[10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=0 dir=fwd soft_min=0 soft_max=140 rate=0 target=0 pos_conf=LOW ramp=0");
   ctrl.sled[0].position=73;ctrl.sled[0].forward=false;
   p.execute(Transport::Ble,"STATUS");
-  assert(sink.replies[2*n+10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=73 dir=rev soft_min=0 soft_max=140");
+  assert(sink.replies[2*n+10].text=="STATUS SLED 1 enabled=0 playing=0 hz=0.00 position=73 dir=rev soft_min=0 soft_max=140 rate=0 target=0 pos_conf=LOW ramp=0");
+ }else if(c=="status_bounds"){
+  io.now=4294960000u;
+  for(auto& f:ctrl.fdd){f.hz=500;f.awaySteps=255;f.directionAway=false;}
+  for(auto& s:ctrl.sled){s.hz=10000;s.softMax=32767;s.position=32767;s.currentStepRate=-10000;s.targetStepRate=10000;}
+  for(auto& h:ctrl.hdd){h.state=Hdd::Park;h.deadline=4294960000u;}
+  p.execute(Transport::Usb,"STATUS");size_t bytes=0;
+  for(auto r:sink.replies){assert(r.text.size()<159);bytes+=r.text.size()+1;}
+  assert(bytes<2048);assert(sink.replies.back().text=="STATUS END");
  }else if(c=="fragment"){
   feed(p,Transport::Ble,"TE");feed(p,Transport::Ble,"ST O");assert(!led.on&&sink.replies.empty());
   feed(p,Transport::Ble,"N\r");assert(!led.on);feed(p,Transport::Ble,"\nPING\nTEST OFF\n");
@@ -110,7 +118,7 @@ class Esp32ProtocolTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('led', 'led_status', 'ping', 'status', 'fragment', 'separate_lines',
+for case in ('led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
              'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

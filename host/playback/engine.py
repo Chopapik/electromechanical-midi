@@ -58,7 +58,8 @@ from .timeline import (
 )
 from .virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
 from .arrangement import Arrangement, ArrangementError, midi_identity
-from .hardware import bind_devices, build_commands
+from .hardware import bind_devices, build_commands, build_plan_commands
+from .hardware_profiles import HardwareContext, HardwareRegistry, execution_command
 from .allocator import allocate, manual_pins
 from .duplicates import normalize
 from .orchestra import OrchestraConfig, default_orchestra, parse_orchestra
@@ -471,6 +472,8 @@ class PlaybackEngine:
                 self._drum_tone_sent = -1
                 self._apply_drum_locked(tone_hz=self._drum_tone_hz, force=True)
                 self._request_status_locked(force=True)
+                if ok and getattr(transport, 'protocol_version', 1)==2:
+                    self._sync_v2_devices_locked()
                 ok = ok and self._hardware.connected
                 self._handshake = False
                 pending = self._pending_play
@@ -518,6 +521,7 @@ class PlaybackEngine:
     def _close_transport_locked(self) -> None:
         transport = self._transport
         self._transport = None
+        self._execution_profiles = {}
 
         if transport is not None:
             try:
@@ -769,7 +773,7 @@ class PlaybackEngine:
         self._preview_generation += 1
         self._preview_request = None
 
-        if self._auto_arrange:
+        if self._auto_arrange or self._physical_context_locked() is not None:
             self._rebuild_plan_locked(position)
             return
 
@@ -828,6 +832,16 @@ class PlaybackEngine:
         self._next_index = self._timeline.index_after(position)
         self._current = None
 
+    def _physical_context_locked(self):
+        # The preview stays legacy. Explicit real/hybrid instances opt into the
+        # physical planner even while disconnected (which yields NO_DEVICE).
+        if self._controller_target != 'esp32' or not any(d.drives_hardware for d in self._orchestra.instances()):
+            return None
+        if not hasattr(self, '_physical_registry'):
+            self._physical_registry = HardwareRegistry()
+        return HardwareContext(self._hardware.connected, self._physical_registry,
+                               self._orchestra.hardware.get('inventory'))
+
     def _build_plan_locked(self) -> None:
         """MIDI + orkiestra -> plan wykonania. Bez tego nie ma czego grac."""
         if self._source is None:
@@ -844,7 +858,8 @@ class PlaybackEngine:
         self._plan = allocate(
             self._normalized, self._orchestra, pins=pins,
             name=self._source.path.stem,
-            origin='manual' if self._arrangement is not None else 'auto')
+            origin='manual' if self._arrangement is not None else 'auto',
+            hardware_context=self._physical_context_locked())
 
     def _plan_notes_locked(self) -> list[dict]:
         """Widok nut dla UI: zrodlo + decyzja arrangera + faktyczny czas."""
@@ -877,6 +892,7 @@ class PlaybackEngine:
                 'folded': event.folded,
                 'preferredDevice': event.preferred_device,
                 'reason': event.reason,
+                'hardware': event.hardware,
                 'sourceTracks': list(event.source_tracks),
                 'duplicateGroupId': event.duplicate_group_id,
                 'routes': [] if event.device_id is None else [{
@@ -923,12 +939,16 @@ class PlaybackEngine:
         # wszystkich zdarzeniach planu.
         self._plan_report = self._plan.report()
 
-        bound, unmapped = bind_devices(self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
+        bound, unmapped = bind_devices(self._orchestra.instances() if self._plan.hardware else self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
+        if self._plan.hardware:
+            allowed = set(self._plan.hardware['physicalLanes'].values())
+            bound = {lane:d for lane,d in bound.items() if lane in allowed}
         self._hardware_bound = bound
         self._hardware_unmapped = unmapped
         if getattr(self._transport, 'protocol_version', 1) == 2:
             self._sync_v2_devices_locked()
-        hardware_commands = build_commands(self._virtual, bound)
+        hardware_commands = (build_plan_commands(self._plan, bound) if self._plan.hardware
+                             else build_commands(self._virtual, bound))
         self._hardware_active = bool(hardware_commands)
 
         merged = list(timeline.commands) + hardware_commands
@@ -1044,6 +1064,7 @@ class PlaybackEngine:
             # Bez synchronizacji Auto Arranger nadal alokowalby stara pule.
             self._orchestra = parse_orchestra({
                 'name': candidate.name,
+                'hardware': payload.get('hardware', self._orchestra.hardware),
                 'devices': candidate.config()['devices'],
                 'policy': {**self._orchestra.policy, 'sourceContinuity': candidate.source_continuity, 'sourceContinuityAmount': candidate.source_continuity_amount},
                 'dvdMode': candidate.dvd_mode, 'trayEnabled': candidate.tray_enabled, 'idleReinforcement': candidate.idle_reinforcement,
@@ -1071,6 +1092,7 @@ class PlaybackEngine:
         orchestra = parse_orchestra({
             'name': str(payload.get('name') or arrangement.data.get('name') or 'Arrangement'),
             'devices': arrangement.data['devices'],
+            'hardware': payload.get('hardware', {}),
             'policy': payload.get('policy'),
             'dvdMode': payload.get('dvdMode'), 'trayEnabled': payload.get('trayEnabled', True), 'idleReinforcement': payload.get('idleReinforcement'),
         })
@@ -1357,6 +1379,8 @@ class PlaybackEngine:
             if self._hardware.connected and self._hardware.homed:
                 self._hardware.error = None
 
+        if self._plan and self._plan.hardware and self._transport is not None:
+            self._sync_v2_devices_locked()
         if self._virtual_mode:
             if self._preview.path is None:
                 self._preview.render(self._virtual, timeline.duration)
@@ -1619,6 +1643,7 @@ class PlaybackEngine:
                 "arrangementRevision": self._arrangement_revision,
                 "arrangementActive": self._plan is not None,
                 "arrangementOrigin": self._plan.origin if self._plan is not None else None,
+                "hardwarePlanning": self._plan.hardware if self._plan else {},
                 "arrangementTotals": self._plan_report['totals'] if self._plan_report else None,
                 "arrangementHardware": {
                     # active = aranzacja kieruje cokolwiek na fizyczne linie,
@@ -1634,7 +1659,7 @@ class PlaybackEngine:
                             "audioClockRunning": self._preview.clock_running,
                             "enabled": self._virtual_mode,
                             "runtimeMode": "virtual" if self._virtual_mode else "hardware",
-                            "config": {**self._virtual.config(), "devices": self._orchestra.devices},
+                            "config": {**self._virtual.config(), "devices": self._orchestra.devices, "hardware":self._orchestra.hardware},
                             "report": self._virtual.report,
                             "trayStatus": self._virtual.tray_state_at(position) if playing else {},
                             "tonalDebug": {e['deviceId']: e for e in getattr(self._preview, 'tonal_stats', {}).get('events', [])
@@ -1778,13 +1803,37 @@ class PlaybackEngine:
     # ==========================================================
 
     def _sync_v2_devices_locked(self, force: bool = False) -> None:
-        bound, _ = bind_devices(self._virtual.devices, 2)
+        bound, _ = bind_devices(self._orchestra.instances(), 2)
+        context = self._physical_context_locked()
+        if context is not None:
+            filtered={}
+            for lane,d in bound.items():
+                profile=context.profile_for(d,lane)
+                if not context.present(lane) or profile is None:continue
+                if profile.name in ('FDD','DVD_SLED','HDD_PERCUSSION') and execution_command(profile,lane) is None:continue
+                if profile.name=='FDD' and profile.get('travelSteps') is None:continue
+                filtered[lane]=d
+            bound=filtered
         for family, count in (('fdd', 4), ('sled', 4), ('hdd', 4), ('tray', 2), ('drum', 1)):
             for ident in range(1, count+1):
                 on = f'{family}:{ident}' in bound
                 prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
                 status_key = 'VHS' if family == 'drum' else f'{family.upper()}:{ident}'
                 known = self._transport.device_status.get(status_key, {}).get('enabled')
+                profile_status = getattr(self._transport, 'controller_status', {}).get('hardware_profiles')
+                if on and context is not None and profile_status == '1':
+                    profile = context.profile_for(bound[f'{family}:{ident}'], f'{family}:{ident}')
+                    command = execution_command(profile, f'{family}:{ident}')
+                    cache = getattr(self, '_execution_profiles', {})
+                    if command and (force or cache.get(prefix) != command):
+                        active=self._transport.device_status.get(status_key,{})
+                        if active.get('playing')=='1' or active.get('homing')=='1':
+                            self._pause_fdd_locked('Zmiana profilu hardware wymaga zatrzymania urządzenia')
+                            return
+                        if not self._send_raw_locked(command):
+                            raise EngineError('blad transportu podczas konfiguracji profilu')
+                        cache[prefix] = command
+                        self._execution_profiles = cache
                 if force or known != str(int(on)):
                     if not self._send_raw_locked(f'{prefix} ENABLE {int(on)}'):
                         raise EngineError('blad Serial podczas konfiguracji urządzeń')
@@ -1796,6 +1845,15 @@ class PlaybackEngine:
     def _v2_command_locked(self, command: Command) -> None:
         family, ident = command.lane.split(':')
         prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
+        if self._plan and self._plan.hardware and command.kind in ('play','hit'):
+            context=self._physical_context_locked()
+            device=self._hardware_bound.get(command.lane)
+            profile=context.profile_for(device,command.lane) if context and device else None
+            expected=execution_command(profile,command.lane) if profile else None
+            if (getattr(self._transport, 'controller_status', {}).get('hardware_profiles')!='1'
+                    or not expected or getattr(self,'_execution_profiles',{}).get(prefix)!=expected):
+                self._pause_fdd_locked('Hardware: brak potwierdzonej wersji/konfiguracji profili; wymagane nowe firmware i konfiguracja')
+                return False
         if command.kind == 'play': text = f'{prefix} PLAY {command.hz:.2f}'
         elif command.kind == 'hit': text = f'{prefix} HIT'
         elif command.kind == 'tray_pulse': text = f'{prefix} PULSE FWD {int(command.hz)}'
@@ -1821,7 +1879,8 @@ class PlaybackEngine:
 
         try:
             if ':' in command.lane and getattr(transport, 'protocol_version', 1) == 2:
-                self._v2_command_locked(command)
+                if self._v2_command_locked(command) is False:
+                    return False
             elif command.kind == "play":
                 transport.play(command.hz)
             else:
@@ -2006,6 +2065,10 @@ class PlaybackEngine:
                 self._hardware.homed = False
                 self._start_home_locked()
                 break
+            if line.startswith(('ERR TRAVEL_UNKNOWN','ERR PROFILE','ERR BUSY')):
+                self._execution_profiles={}
+                self._pause_fdd_locked(f'Hardware planner: {line}; sprawdź profil urządzenia')
+                continue
             if line.startswith(DEVICE_ERRORS):
                 self._pause_fdd_locked(f"Arduino: {line}")
                 if line.startswith('ERR HOST_TIMEOUT'):

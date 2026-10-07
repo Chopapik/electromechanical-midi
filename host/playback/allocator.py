@@ -702,8 +702,12 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
              midi_analysis: MidiAnalysis | None = None,
              pins: dict[str, ManualPin] | None = None,
              name: str | None = None,
-             origin: str = 'auto') -> PerformancePlan:
+             origin: str = 'auto', hardware_context=None) -> PerformancePlan:
     """Buduje plan wykonania. To samo wejscie zawsze daje ten sam plan."""
+    if hardware_context is not None:
+        from .hardware_arranger import allocate_hardware
+        return allocate_hardware(source, config, hardware_context, midi_analysis=midi_analysis,
+                                 pins=pins, name=name, origin=origin)
     policy = parse_policy(config.policy)
     devices, _ = config.allocation_devices()
     midi_analysis = midi_analysis or analysis_module.analyze(source)

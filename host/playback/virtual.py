@@ -159,6 +159,8 @@ class VirtualDeviceInstance:
     overrides: dict[str, Parameter] = dataclasses.field(default_factory=dict)
 
     enabled: bool = True
+    hardware_role: str = ''
+    hardware_overrides: dict = dataclasses.field(default_factory=dict)
 
     @property
     def drives_hardware(self) -> bool:
@@ -209,10 +211,19 @@ class VirtualDeviceInstance:
             if value is not None and (not math.isfinite(value) or value < 0):
                 raise ValueError(f'invalid value for {key}')
             overrides[key] = Parameter(value, provenance, str(item.get('source') or '')[:200])
+        hardware_role = data.get('hardwareRole', data.get('hardware_role', ''))
+        if hardware_role and (kind != 'HDD_VCM' or hardware_role not in ('HDD_PERCUSSION', 'HDD_TONAL')):
+            raise ValueError('invalid hardwareRole')
+        hardware_overrides = data.get('hardwareOverrides', data.get('hardware_overrides', {}))
+        if hardware_overrides or hardware_role:
+            from .hardware_profiles import HardwareRegistry
+            profile_name = hardware_role or {'FDD':'FDD','DVD_SLED':'DVD_SLED','HDD_VCM':'HDD_PERCUSSION','VHS':'VHS'}.get(kind)
+            if not profile_name: raise ValueError('no physical profile for device')
+            HardwareRegistry().effective(profile_name, overrides=hardware_overrides)
         return cls(ident, kind, str(data.get('name') or kind)[:80], track,
                    str(data.get('role') or '')[:80], volume, pan,
                    bool(data.get('mute', False)), bool(data.get('solo', False)),
-                   transpose, gate, profile, mode, overrides, data.get('enabled', True))
+                   transpose, gate, profile, mode, overrides, data.get('enabled', True), hardware_role, hardware_overrides)
 
 def effective_profile(device: VirtualDeviceInstance) -> DeviceProfile:
     base = PROFILES[device.profile or DEFAULT_PROFILE[device.type]]

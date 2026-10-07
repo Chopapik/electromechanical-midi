@@ -74,6 +74,7 @@ class PerformanceEvent:
     duplicate_group_id: str | None = None
     duplicate_confidence: float | None = None
     # Ile sekund dodala mechaniczna artykulacja (0 = nuta grala tyle, ile w MIDI).
+    hardware: dict = dataclasses.field(default_factory=dict)
     sustain_added: float = 0.0
 
     @property
@@ -102,6 +103,7 @@ class PerformanceEvent:
 
     def as_dict(self) -> dict:
         return {
+            'hardware': self.hardware,
             'id': self.id, 'track': self.track, 'trackName': self.track_name,
             'note': self.note, 'name': self.name, 'velocity': self.velocity,
             'channel': self.channel, 'start': round(self.start, 6),
@@ -215,6 +217,7 @@ class PerformancePlan:
     idle_report: dict = dataclasses.field(default_factory=dict)
     # Audio expression sidecar; never changes allocator events/reservations.
     expression: dict = dataclasses.field(default_factory=dict)
+    hardware: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -231,7 +234,9 @@ class PerformancePlan:
         return result
 
     def report(self) -> dict:
-        return build_report(self)
+        report = build_report(self)
+        if self.hardware: report['hardware'] = self.hardware
+        return report
 
     def as_dict(self) -> dict:
         return {
@@ -240,6 +245,7 @@ class PerformancePlan:
             'policy': self.policy,
             'analysis': self.analysis,
             'expression': self.expression,
+            'hardware': self.hardware,
             'midi': self.source_ref,
             'devices': self.devices,
             'idleReinforcement': self.idle_reinforcement,

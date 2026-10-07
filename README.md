@@ -1503,3 +1503,7 @@ wyszukuje `Electromechanical-MIDI` i ponawia połączenie po utracie linku.
 Uno pozostaje na Serial, bez automatycznego fallbacku. Dla Dockera na macOS
 wymagany jest natywny most Bluetooth; instrukcja uruchomienia i instalacji
 usługi: [BLE runtime](docs/esp32-orchestra.md#normal-runtime-over-ble).
+
+## Hardware-first profiles (ESP32)
+
+Physical planning, calibration metadata and UNKNOWN handling: [hardware-first guide](docs/hardware-first.md). Virtual preview remains a legacy/demo model.
