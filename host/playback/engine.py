@@ -1262,13 +1262,15 @@ class PlaybackEngine:
 
     def pause(self) -> None:
         with self._lock:
+            self._pending_play = False
             if self._state is not PlaybackState.PLAYING:
+                self._preview.stop()
+                self._reset_instruments_locked(force_hardware=True)
                 return
 
             position = self._position_locked()
-            if self._virtual_mode:
-                self._preview.stop()
-            self._reset_instruments_locked()
+            self._preview.stop()
+            self._reset_instruments_locked(force_hardware=True)
             self._position_base = position
             self._state = PlaybackState.PAUSED
             self._current = None
@@ -1286,11 +1288,11 @@ class PlaybackEngine:
             self._begin_locked(self._position_locked())
 
     def stop(self) -> None:
-        """STOP + DRUM 0, playhead = 0, stan STOPPED."""
+        """Stop all connected hardware and preview; reset playhead to zero."""
         with self._lock:
             self._pending_play = False
             self._preview.stop()
-            self._reset_instruments_locked()
+            self._reset_instruments_locked(force_hardware=True)
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._next_index = 0
@@ -1405,20 +1407,28 @@ class PlaybackEngine:
         self._next_index = timeline.index_after(position)
         self._wake.set()
 
-    def _reset_instruments_locked(self) -> bool:
+    def _reset_instruments_locked(self, *, force_hardware: bool = False) -> bool:
         """STOP + DRUM 0 + HDD 0 (wspolny punkt startu po seek/pauza/stop).
 
         Nic nie wysyla, gdy zaden plan nie uzywa fizycznych linii: czysty
         podglad wirtualny nie moze szarpac podlaczonym sprzetem.
+        Jawny Stop wymusza zatrzymanie sprzetu niezaleznie od planu.
         """
         if self._transport is None:
             return True
 
-        if self._virtual_mode and not self._hardware_active and not self._handshake:
+        if not force_hardware and self._virtual_mode and not self._hardware_active and not self._handshake:
             return True
 
         if getattr(self._transport, 'protocol_version', 1) == 2:
-            return self._send_raw_locked('ALL STOP')
+            stop_ok = self._safe_send_stop_locked()
+            if stop_ok:
+                self._drum_value = 0
+                self._drum_drive_sent = 0
+                self._drum_current = None
+                self._hdd_current = None
+                self._hdd_busy = False
+            return stop_ok
         stop_ok = self._safe_send_stop_locked()
         drum_ok = self._apply_drum_locked(drive=0, force=True)
         hdd_ok = self._send_raw_locked("HDD 0")
@@ -1830,7 +1840,10 @@ class PlaybackEngine:
             return False
 
         try:
-            self._transport.stop()
+            if getattr(self._transport, 'protocol_version', 1) == 2:
+                self._transport.send('ALL STOP')
+            else:
+                self._transport.stop()
         except Exception as exc:
             self._fail_locked(f"blad transportu: {exc}")
             return False
@@ -1905,6 +1918,21 @@ class PlaybackEngine:
 
     def _fail_locked(self, message: str) -> None:
         """Awaria lacza: nie udajemy, ze utwor gra dalej."""
+        # A read failure can leave writes usable. One best-effort global STOP;
+        # no recursive failure handler and no claim of delivery on a broken link.
+        transport = self._transport
+        if transport is not None:
+            try:
+                if getattr(transport, 'protocol_version', 1) == 2:
+                    transport.send('ALL STOP')
+                else:
+                    transport.stop()
+                    transport.send('DRUM 0')
+                    transport.send('HDD 0')
+            except Exception:
+                pass
+        self._pending_play = False
+        self._preview.stop()
         self._hardware.connected = False
         self._hardware.homed = False
         self._hardware.fdd_status = "not_homed"
@@ -1932,7 +1960,8 @@ class PlaybackEngine:
         self._preview.stop()
         self._hardware.error = message
         self._current = None
-        self._reset_instruments_locked()
+        self._pending_play = False
+        self._reset_instruments_locked(force_hardware=True)
         self._wake.set()
 
     def _poll_lines_locked(self) -> None:
@@ -2102,10 +2131,15 @@ class PlaybackEngine:
 
         audio_finished = not audio_clock or self._preview.process is None or self._preview.process.poll() is not None
         if self._next_index >= len(commands) and position >= timeline.duration and audio_finished:
-            # Koniec utworu: playhead zostaje na koncu (STOP jawnie zeruje).
+            # End of playback must silence hardware even if a final note-off is absent.
             self._state = PlaybackState.STOPPED
+            self._pending_play = False
+            self._preview.stop()
+            self._reset_instruments_locked(force_hardware=True)
             self._position_base = timeline.duration
             self._current = None
+            self._drum_current = None
+            self._hdd_current = None
             return None
 
         if self._next_index < len(commands):

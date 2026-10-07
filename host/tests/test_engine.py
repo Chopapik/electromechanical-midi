@@ -1681,7 +1681,7 @@ class TestArrangementOutput(EngineTestCase):
         return {"id": ident, "source": {"track": track}, "destination": {"deviceId": target},
                 "transform": {}}
 
-    def test_all_virtual_document_never_touches_the_serial_port(self):
+    def test_all_virtual_document_sends_only_safety_stop_at_finish(self):
         self.load([(0, .4, 60), (.5, .9, 64)])
         self.engine.set_arrangement(self.document(
             [self.device("fdd", "FDD"), self.device("hdd", "HDD_VCM")],
@@ -1696,7 +1696,8 @@ class TestArrangementOutput(EngineTestCase):
         self.engine.play()
         self.assertTrue(self.wait_for_state(PlaybackState.STOPPED))
 
-        self.assertEqual(self.transport.since(before), [])
+        self.assertEqual([text for _, text in self.transport.since(before)],
+                         ['STOP', 'DRUM 0', 'HDD 0'])
 
     def test_real_device_import_keeps_the_users_output_choice(self):
         self.load([(0, .4, 60), (.5, .9, 64)])
@@ -1905,3 +1906,120 @@ class TestHomingQueue(unittest.TestCase):
             self.assertTrue(self.wait_until(lambda: any(t.startswith("PLAY") for t in transport.texts())))
         finally:
             engine.shutdown()
+
+
+class TestGlobalHardwareStop(EngineTestCase):
+    def test_explicit_stop_in_virtual_mode_still_stops_esp32(self):
+        self.transport.protocol_version = 2
+        with self.engine._lock:
+            self.engine._virtual_mode = True
+            self.engine._hardware_active = False
+            self.engine._drum_value = 100
+            self.engine._hdd_busy = True
+            self.engine._pending_play = True
+        before = len(self.transport.events)
+        self.engine.stop()
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+        self.assertFalse(self.engine._pending_play)
+        self.assertEqual(self.engine._drum_value, 0)
+        self.assertFalse(self.engine._hdd_busy)
+        self.assertIs(self.engine.state, PlaybackState.STOPPED)
+
+    def test_internal_virtual_reset_still_does_not_move_hardware(self):
+        self.transport.protocol_version = 2
+        with self.engine._lock:
+            self.engine._virtual_mode = True
+            self.engine._hardware_active = False
+            before = len(self.transport.events)
+            self.assertTrue(self.engine._reset_instruments_locked())
+        self.assertEqual(self.transport.since(before), [])
+
+    def test_hardware_stop_v2_uses_global_command(self):
+        self.transport.protocol_version = 2
+        before = len(self.transport.events)
+        self.engine.stop()
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+
+    def test_safe_stop_v2_stops_every_lane(self):
+        self.transport.protocol_version = 2
+        before = len(self.transport.events)
+        with self.engine._lock:
+            self.assertTrue(self.engine._safe_send_stop_locked())
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+
+    def test_explicit_stop_virtual_uno_retains_legacy_stop_commands(self):
+        with self.engine._lock:
+            self.engine._virtual_mode = True
+            self.engine._hardware_active = False
+        before = len(self.transport.events)
+        self.engine.stop()
+        texts = [text for _, text in self.transport.since(before)]
+        self.assertIn('STOP', texts)
+        self.assertIn('DRUM 0', texts)
+        self.assertIn('HDD 0', texts)
+        self.assertNotIn('ALL STOP', texts)
+
+
+class TestPlaybackSilenceStopsHardware(EngineTestCase):
+    def configure_v2_virtual(self):
+        self.transport.protocol_version = 2
+        with self.engine._lock:
+            self.engine._virtual_mode = True
+            self.engine._hardware_active = False
+
+    def test_pause_virtual_sends_global_stop(self):
+        self.configure_v2_virtual()
+        with self.engine._lock:
+            self.engine._state = PlaybackState.PLAYING
+            self.engine._origin = time.monotonic()
+        before = len(self.transport.events)
+        self.engine.pause()
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+        self.assertIs(self.engine.state, PlaybackState.PAUSED)
+
+    def test_pause_while_already_stopped_silences_hardware(self):
+        self.configure_v2_virtual()
+        before = len(self.transport.events)
+        self.engine.pause()
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+
+    def test_track_end_without_final_note_off_sends_global_stop(self):
+        from playback.timeline import Timeline, Command
+        self.configure_v2_virtual()
+        with self.engine._lock:
+            self.engine._timeline = Timeline.from_commands([Command(1, 'play', 220, lane='fdd:1')])
+            self.engine._next_index = 1
+            self.engine._origin = time.monotonic() - 2
+            self.engine._state = PlaybackState.PLAYING
+            before = len(self.transport.events)
+            self.engine._plan_locked()
+            self.assertIs(self.engine.state, PlaybackState.STOPPED)
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+        self.assertEqual(self.engine.position, 1)
+
+    def test_device_error_pause_sends_global_stop_without_disconnect(self):
+        self.configure_v2_virtual()
+        with self.engine._lock:
+            self.engine._state = PlaybackState.PLAYING
+            self.engine._origin = time.monotonic()
+            before = len(self.transport.events)
+            self.engine._pause_fdd_locked('ERR HOME_FAILED')
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+        self.assertTrue(self.engine.snapshot()['hardware']['connected'])
+        self.assertIs(self.engine.state, PlaybackState.PAUSED)
+
+    def test_note_expiry_stops_only_its_lane(self):
+        from playback.timeline import Command
+        self.configure_v2_virtual()
+        before = len(self.transport.events)
+        with self.engine._lock:
+            self.assertTrue(self.engine._send_locked(Command(1, 'stop', lane='fdd:2')))
+        self.assertEqual([text for _, text in self.transport.since(before)], ['FDD 2 STOP'])
+
+    def test_read_failure_attempts_stop_and_does_not_recurse(self):
+        self.configure_v2_virtual()
+        before = len(self.transport.events)
+        with self.engine._lock:
+            self.engine._fail_locked('read failed')
+        self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
+        self.assertFalse(self.engine.snapshot()['hardware']['connected'])
