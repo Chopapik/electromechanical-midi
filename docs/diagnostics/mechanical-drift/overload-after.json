@@ -1,0 +1,9 @@
+{
+  "timelineSeconds": 60,
+  "costMs": 20,
+  "commands": 3751,
+  "actualEngineSimulatedEndSeconds": 60.0210000000028,
+  "writes": 3001,
+  "lateCommands": 744,
+  "discardedAtEnd": 7
+}

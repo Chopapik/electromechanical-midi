@@ -72,7 +72,7 @@
           ],
           "unit": "steps/s",
           "uncertainty": null,
-          "source": "user DVD1 FWD/REV bring-up: 250–300 Hz works",
+          "source": "user DVD1 FWD/REV bring-up: 250\u2013300 Hz works",
           "evidenceType": "MEASURED",
           "confidence": "MEDIUM"
         }
@@ -82,6 +82,158 @@
       "present": true,
       "profile": "HDD_PERCUSSION",
       "quantities": {}
+    },
+    "FDD:2": {
+      "present": true,
+      "profile": "FDD",
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        }
+      }
+    },
+    "HDD:2": {
+      "present": true,
+      "profile": "HDD_PERCUSSION",
+      "quantities": {}
+    },
+    "FDD:3": {
+      "present": true,
+      "profile": "FDD",
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        }
+      }
+    },
+    "HDD:3": {
+      "present": true,
+      "profile": "HDD_PERCUSSION",
+      "quantities": {}
+    },
+    "FDD:4": {
+      "present": true,
+      "profile": "FDD",
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        }
+      }
+    },
+    "HDD:4": {
+      "present": true,
+      "profile": "HDD_PERCUSSION",
+      "quantities": {}
+    },
+    "DRUM:1": {
+      "present": true,
+      "profile": "VHS",
+      "quantities": {}
+    },
+    "SLED:2": {
+      "present": true,
+      "profile": "DVD_SLED",
+      "quantities": {
+        "travelSteps": {
+          "value": 140,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+          "evidenceType": "FACT",
+          "confidence": "MEDIUM"
+        }
+      }
+    },
+    "SLED:3": {
+      "present": true,
+      "profile": "DVD_SLED",
+      "quantities": {
+        "travelSteps": {
+          "value": 140,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+          "evidenceType": "FACT",
+          "confidence": "MEDIUM"
+        }
+      }
+    },
+    "SLED:4": {
+      "present": true,
+      "profile": "DVD_SLED",
+      "quantities": {
+        "travelSteps": {
+          "value": 140,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+          "evidenceType": "FACT",
+          "confidence": "MEDIUM"
+        }
+      }
     }
   }
 }

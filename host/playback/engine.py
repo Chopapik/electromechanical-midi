@@ -274,6 +274,17 @@ class PlaybackEngine:
         self._origin = time.monotonic()
         self._position_base = 0.0
         self._next_index = 0
+        self._late_commands = 0
+        self._end_discarded_commands = 0
+        self._max_dispatch_lag = 0.0
+        self._scheduler_lag = 0.0
+        self._late_events = 0
+        self._collapsed_events = 0
+        self._late_reasons = {}
+        self._ble_batches = self._ble_commands = self._max_batch_commands = 0
+        self._last_batch_duration = self._batch_total_duration = 0.0
+        self._timing_timeline = None
+        self._next_lane_command = []
         self._current: Command | None = None
 
         self._transport: Transport | None = None
@@ -1637,6 +1648,23 @@ class PlaybackEngine:
                     "board": getattr(self._transport, "board", "uno"),
                     "protocol": getattr(self._transport, "protocol_version", 1),
                     "devices": getattr(self._transport, "device_status", {}),
+                    "timingDiagnostics": {
+                        "lateCommands": self._late_commands,
+                        "discardedAtEnd": self._end_discarded_commands,
+                        "maxObservedLagMs": round(self._max_dispatch_lag * 1000, 3),
+                        "scope": "engine lifetime",
+                        "schedulerLagMs": round(self._scheduler_lag * 1000, 3),
+                        "maxSchedulerLagMs": round(self._max_dispatch_lag * 1000, 3),
+                        "lateEvents": self._late_events,
+                        "droppedLateEvents": self._late_commands,
+                        "backlogCollapsedEvents": self._collapsed_events,
+                        "dropReasons": dict(self._late_reasons),
+                        "bleBatches": self._ble_batches,
+                        "bleCommands": self._ble_commands,
+                        "maxCommandsPerBatch": self._max_batch_commands,
+                        "lastBatchDurationMs": round(self._last_batch_duration * 1000, 3),
+                        "meanBatchDurationMs": round(self._batch_total_duration * 1000 / self._ble_batches, 3) if self._ble_batches else 0.0,
+                    },
                 },
                 "drum": self._drum_snapshot_locked(),
                 "hdd": self._hdd_snapshot_locked(),
@@ -1842,7 +1870,7 @@ class PlaybackEngine:
                         self._hardware.fdd_status = 'not_homed'
                     self._transport.device_status.setdefault(status_key, {})['enabled'] = str(int(on))
 
-    def _v2_command_locked(self, command: Command) -> None:
+    def _v2_lines_locked(self, command: Command):
         family, ident = command.lane.split(':')
         prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
         if self._plan and self._plan.hardware and command.kind in ('play','hit'):
@@ -1858,10 +1886,101 @@ class PlaybackEngine:
         elif command.kind == 'hit': text = f'{prefix} HIT'
         elif command.kind == 'tray_pulse': text = f'{prefix} PULSE FWD {int(command.hz)}'
         elif command.kind == 'drum_on':
-            self._transport.send(f'VHS AMP {DRUM_DRIVE_DEFAULT}')
-            text = f'VHS FREQ {command.hz:.2f}'
+            return [f'VHS AMP {DRUM_DRIVE_DEFAULT}', f'VHS FREQ {command.hz:.2f}']
         else: text = f'{prefix} STOP'
-        self._transport.send(text)
+        return [text]
+
+    def _v2_command_locked(self, command: Command):
+        lines = self._v2_lines_locked(command)
+        if lines is False:
+            return False
+        for text in lines:
+            self._transport.send(text)
+
+    def _late_reason_locked(self, index, position):
+        """Classify stale commands against immutable per-lane timeline state."""
+        command = self._timeline.commands[index]
+        if command.lane == 'virtual':
+            return None
+        lag = max(0.0, position - command.time)
+        self._scheduler_lag = lag
+        self._max_dispatch_lag = max(self._max_dispatch_lag, lag)
+        if lag <= 1e-9:
+            return None
+        self._late_events += 1
+        if command.kind in ('hit', 'tray_pulse'):
+            return 'LATE_EXPIRED' if lag > .100 else None
+        if command.kind not in ('play', 'drum_on'):
+            return None  # Never remove a device STOP.
+        if self._timing_timeline is not self._timeline:
+            self._timing_timeline = self._timeline
+            self._next_lane_command = [None] * len(self._timeline.commands)
+            next_lane = {}
+            for i in range(len(self._timeline.commands) - 1, -1, -1):
+                c = self._timeline.commands[i]
+                self._next_lane_command[i] = next_lane.get(c.lane)
+                next_lane[c.lane] = i
+        next_index = self._next_lane_command[index]
+        if next_index is not None:
+            following = self._timeline.commands[next_index]
+            if following.time <= position + 1e-9:
+                return 'LATE_SUPERSEDED' if following.kind in ('play', 'drum_on') else 'LATE_EXPIRED'
+        return None  # Late, but still the required sounding state.
+
+    def _record_late_drop_locked(self, reason):
+        self._late_commands += 1
+        self._late_reasons[reason] = self._late_reasons.get(reason, 0) + 1
+        if reason == 'LATE_SUPERSEDED':
+            self._collapsed_events += 1
+            self._late_reasons['BACKLOG_COLLAPSED'] = self._late_reasons.get('BACKLOG_COLLAPSED', 0) + 1
+
+    def _send_due_batch_locked(self, position):
+        """Only identical, already-due timestamps. No lookahead/quantization."""
+        commands = self._timeline.commands
+        timestamp = commands[self._next_index].time
+        index = self._next_index
+        accepted, lines = [], []
+        while index < len(commands) and commands[index].time == timestamp:
+            command = commands[index]
+            if command.lane != 'virtual' and ':' not in command.lane:
+                break
+            if command.lane != 'virtual':
+                reason = self._late_reason_locked(index, position)
+                if reason:
+                    self._record_late_drop_locked(reason)
+                else:
+                    if command.kind == 'play' and (not self._hardware.homed or self._handshake):
+                        self._pause_fdd_locked('FDD: oczekiwanie na poprawny homing')
+                        if self._hardware.fdd_status != 'error': self._start_home_locked()
+                        return False
+                    try:
+                        wire = self._v2_lines_locked(command)
+                    except Exception as exc:
+                        self._fail_locked(f'blad transportu: {exc}')
+                        return False
+                    if wire is False: return False
+                    lines.extend(wire)
+                    accepted.append(command)
+            index += 1
+        if lines:
+            started = time.monotonic()
+            try:
+                self._transport.send_batch(lines)
+            except Exception as exc:
+                self._fail_locked(f'blad transportu: {exc}')
+                return False
+            self._last_io = time.monotonic()
+            self._last_batch_duration = self._last_io - started
+            self._batch_total_duration += self._last_batch_duration
+            self._ble_batches += 1
+            self._ble_commands += len(lines)
+            self._max_batch_commands = max(self._max_batch_commands, len(lines))
+            if self._on_command:
+                for command in accepted:
+                    try: self._on_command(command)
+                    except Exception: pass
+        self._next_index = index
+        return True
 
     def _send_locked(self, command: Command) -> bool:
         """Wysyla komende. False = lacze padlo (stan -> PAUSED + blad)."""
@@ -2168,12 +2287,40 @@ class PlaybackEngine:
         audio_clock = self._realtime and self._virtual_mode and not (self._hardware_active and self._transport is not None) and self._preview.clock_position() is not None
         position = self._position_locked() if audio_clock else now - self._origin if self._realtime else float("inf")
         commands = timeline.commands
+        physical_realtime = (self._realtime and self._transport is not None
+                             and (not self._virtual_mode or self._hardware_active) and not audio_clock)
 
         while self._next_index < len(commands):
+            # The MIDI deadline wins over draining history on a slow link.
+            if physical_realtime and position >= timeline.duration:
+                self._end_discarded_commands += len(commands) - self._next_index
+                for expired in commands[self._next_index:]:
+                    if expired.lane != 'virtual' and expired.kind in ('play', 'drum_on', 'hit', 'tray_pulse'):
+                        self._record_late_drop_locked('LATE_EXPIRED')
+                self._next_index = len(commands)
+                break
             command = commands[self._next_index]
 
             if command.time > position + 1e-9:
                 break
+
+            if (physical_realtime and ':' in command.lane
+                    and getattr(self._transport, 'protocol_version', 1) == 2
+                    and getattr(self._transport, 'is_ble', False)
+                    and callable(getattr(self._transport, 'send_batch', None))):
+                if not self._send_due_batch_locked(position):
+                    return None
+                position = time.monotonic() - self._origin
+                if time.monotonic() - now >= .050:
+                    break
+                continue
+
+            if physical_realtime:
+                reason = self._late_reason_locked(self._next_index, position)
+                if reason:
+                    self._record_late_drop_locked(reason)
+                    self._next_index += 1
+                    continue
 
             if command.lane in LANES and self._transport is None:
                 # Podglad wirtualny bez podlaczonego sprzetu: linie sprzetowe
@@ -2204,6 +2351,10 @@ class PlaybackEngine:
 
             if self._realtime:
                 position = self._position_locked() if audio_clock else time.monotonic() - self._origin
+            # Release the engine lock regularly so pause/STOP and error polling
+            # can interrupt catch-up. The next pass keeps the same MIDI origin.
+            if physical_realtime and time.monotonic() - now >= .050:
+                break
 
         audio_finished = not audio_clock or self._preview.process is None or self._preview.process.poll() is not None
         if self._next_index >= len(commands) and position >= timeline.duration and audio_finished:

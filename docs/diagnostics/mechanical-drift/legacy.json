@@ -1,0 +1,9 @@
+{
+  "commit": "bf75d47",
+  "sourceDuration": 237.37702108333332,
+  "planDuration": 233.66757599999997,
+  "virtualTimelineDuration": 233.71257599999996,
+  "hardwareCommands": 6192,
+  "physicalWrites": 6434,
+  "maxLocalDelay": 0.07450000000000045
+}

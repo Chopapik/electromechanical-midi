@@ -1,0 +1,15 @@
+{
+  "midi": "0002-02-radiohead_1993-creep-[k] (2).mid",
+  "timelineDuration": 233.7200264052701,
+  "realEngineElapsedSeconds": 233.77648970892187,
+  "writeCostSeconds": 0.02,
+  "transport": "in-memory, no hardware",
+  "writes": 5509,
+  "dispatchLag": {
+    "mean": 5.350548810721369,
+    "min": 1.7041933610073556e-05,
+    "max": 19.045922874965157,
+    "p95": 17.781921499976278,
+    "p99": 18.933611083961353
+  }
+}

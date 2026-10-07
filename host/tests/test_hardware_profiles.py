@@ -83,7 +83,7 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(e.physical_load,Verdict.UNKNOWN)
     def test_measured_per_lane(self):
         self.assertEqual(self.r.effective('DVD_SLED','sled:1').get('travelSteps'),140)
-        for i in range(2,5):self.assertIsNone(self.r.effective('DVD_SLED',f'sled:{i}').get('travelSteps'))
+        for i in range(2,5):self.assertEqual(self.r.effective('DVD_SLED',f'sled:{i}').get('travelSteps'),140)
     def test_override_metadata(self):
         p=self.r.effective('DVD_SLED','sled:2',{'travelSteps':quantity(110)})
         self.assertEqual(p.get('travelSteps'),110);self.assertEqual(p.quantities['travelSteps'].evidence_type,'MEASURED')
@@ -179,10 +179,19 @@ class ProfileTests(unittest.TestCase):
         e=evaluate(self.r.effective('FDD'),HardwareNote(2000,.2,0));self.assertEqual(e.quality,Verdict.BLOCKED)
     def test_generated_defaults_match(self):
         subprocess.run([sys.executable,str(ROOT/'scripts/generate_hardware_profiles.py'),'--check'],check=True)
+    def test_full_declared_orchestra_inventory_and_confirmed_limits(self):
+        context=HardwareContext(True)
+        for family in ('fdd','sled','hdd'):
+            for ident in range(1,5):self.assertTrue(context.present(f'{family}:{ident}'))
+        self.assertTrue(context.present('drum:1'))
+        for ident in range(1,5):
+            self.assertEqual(context.registry.effective('FDD',f'fdd:{ident}').get('travelSteps'),72)
+            self.assertEqual(context.registry.effective('DVD_SLED',f'sled:{ident}').get('travelSteps'),140)
+
     def test_context_connection_and_inventory(self):
         self.assertFalse(HardwareContext(False).present('fdd:1'))
         self.assertTrue(HardwareContext(True).present('fdd:1'))
-        self.assertFalse(HardwareContext(True).present('fdd:2'))
+        self.assertTrue(HardwareContext(True).present('fdd:2'))
         self.assertFalse(HardwareContext(True,inventory={'fdd:1':False}).present('fdd:1'))
 
 class PhysicalArrangerTests(unittest.TestCase):
@@ -200,14 +209,16 @@ class PhysicalArrangerTests(unittest.TestCase):
         p=self.plan(context=HardwareContext(False));self.assertTrue(all(not e.played for e in p.events))
         self.assertEqual({e.reason for e in p.events},{'NO_DEVICE'})
     def test_only_declared_lanes(self):
-        p=self.plan();self.assertEqual(set(p.hardware['physicalLanes'].values()),{'fdd:1','sled:1'})
+        p=self.plan();self.assertEqual(set(p.hardware['physicalLanes'].values()),{'fdd:1','fdd:2','sled:1','sled:2','drum:1'})
     def test_disabled_ordinal_preserved(self):
         c=self.config();c.devices[0]['enabled']=False
         p=self.plan(c,HardwareContext(True,inventory={'fdd:2':True}))
         self.assertEqual(set(p.hardware['physicalLanes'].values()),{'fdd:2'})
     def test_unmeasured_dvd_blocks(self):
         c=self.config()
-        for d in c.devices:d['enabled']=d['type']=='DVD_SLED'
+        for d in c.devices:
+            d['enabled']=d['type']=='DVD_SLED'
+            if d['type']=='DVD_SLED':d['hardware_overrides']={'travelSteps':quantity(None)}
         p=self.plan(c,HardwareContext(True,inventory={'sled:2':True}))
         self.assertTrue(all(not e.played for e in p.events));self.assertEqual(p.events[0].reason,'TRAVEL_LIMIT_UNKNOWN')
     def test_best_quality_device(self):
@@ -294,11 +305,11 @@ class PhysicalEngineTests(unittest.TestCase):
     def test_runtime_direct_schedule_and_profiles(self):
         self.engine._rebuild_locked(keep_position=False)
         self.assertTrue(self.engine._plan.hardware)
-        self.assertEqual(set(self.engine._hardware_bound),{'fdd:1','sled:1','hdd:1'})
+        self.assertEqual(set(self.engine._hardware_bound),{'fdd:1','fdd:2','sled:1','sled:2','hdd:1','drum:1'})
         self.assertIn('FDD 1 PROFILE 72 5000 2439',[text for _,text in self.transport.commands()])
         self.assertIn('SLED 1 PROFILE 140 5000 1.0',[text for _,text in self.transport.commands()])
-        self.assertFalse(any('FDD 2 ENABLE 1'==c for c in [text for _,text in self.transport.commands()]))
-        self.assertTrue(all(c.lane in ('virtual','fdd:1','sled:1','hdd:1') for c in self.engine._timeline.commands))
+        self.assertTrue(any('FDD 2 ENABLE 1'==c for c in [text for _,text in self.transport.commands()]))
+        self.assertTrue(all(c.lane in ('virtual','fdd:1','fdd:2','sled:1','sled:2','hdd:1','drum:1') for c in self.engine._timeline.commands))
     def test_snapshot_exposes_planned_vs_status(self):
         self.engine._rebuild_locked(keep_position=False)
         snapshot=self.engine.snapshot()

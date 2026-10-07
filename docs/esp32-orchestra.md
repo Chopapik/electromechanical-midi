@@ -476,3 +476,16 @@ STATUS adds `position`, `dir`, `soft_min`, and `soft_max`, for example:
 ```text
 STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=73 dir=fwd soft_min=0 soft_max=140
 ```
+
+
+### Restored full physical inventory
+
+`config/hardware-profiles/instances.json` declares 4 FDD, 4 DVD sled,
+4 HDD VCM and VHS present. All four FDD retain the shared controller execution
+settings: 72 away steps, 5 ms direction setup and 2439 us minimum step interval.
+This is a shared software configuration, not an individual calibration claim.
+DVD2–4 now have the user-confirmed 140-step software travel limit, matching DVD1;
+the mechanism still requires manual starting position because no endstop exists.
+Only DVD1 retains its measured 250–300 steps/s evidence. Other per-unit quantities
+are not labelled measured. Runtime PROFILE commands apply these settings on the
+existing firmware; flashing is unnecessary. Tray configuration is unchanged.

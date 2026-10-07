@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch, AsyncMock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ble_link import BleBytes, BleOrchestraLink, RX, TX, NAME, maintain_ble_connection
+from ble_link import BleBytes, BleOrchestraLink, GatewayBytes, RX, TX, NAME, maintain_ble_connection
 from floppy_link import SerialLinkError
 from playback.engine import PlaybackEngine
 
@@ -37,6 +37,53 @@ class Client:
 
 
 class BleTests(unittest.TestCase):
+    def test_negotiated_mtu_uses_one_acknowledged_packet(self):
+        class WideClient(Client):
+            mtu_size = 185
+            async def write_gatt_char(self, uuid, data, response):
+                self.assert_packet = uuid == RX and len(data) <= 182 and response
+                assert self.assert_packet
+                self.sent.append(data)
+        raw = BleBytes(scanner=Scanner(), client_factory=WideClient)
+        self.addCleanup(raw.close)
+        command = b'FDD 1 PLAY 220.123456789\nSLED 1 PLAY 250\n'
+        raw.write(command)
+        self.assertEqual(raw.write_size, 182)
+        self.assertEqual(raw._client.sent, [command])
+
+    def test_gateway_error_split_across_packets_is_transport_error(self):
+        raw = GatewayBytes.__new__(GatewayBytes)
+        raw._error_probe = b''
+        raw._write_lock = __import__('threading').Lock()
+        raw._socket = Mock()
+        raw._socket.recv.side_effect = [b'PONG\nBLE ER', b'ROR realtime overrun: playback stopped\n']
+        raw.read(100)
+        with self.assertRaisesRegex(SerialLinkError, 'realtime overrun'):
+            raw.read(100)
+
+    def test_gateway_overrun_pauses_ui_and_stops_hardware(self):
+        from playback.engine import PlaybackState
+        engine = PlaybackEngine()
+        engine._transport = Mock()
+        engine._transport.protocol_version = 2
+        engine._transport.poll_lines.side_effect = SerialLinkError('BLE realtime overrun: playback stopped')
+        engine._hardware.connected = True
+        engine._state = PlaybackState.PLAYING
+        engine._origin = time.monotonic()
+        with engine._lock:
+            engine._poll_lines_locked()
+        self.assertEqual(engine._state, PlaybackState.PAUSED)
+        self.assertIn('realtime overrun', engine._hardware.error)
+        engine._transport.send.assert_called_once_with('ALL STOP')
+
+    def test_gateway_broken_pipe_is_transport_error(self):
+        raw = GatewayBytes.__new__(GatewayBytes)
+        raw._write_lock = __import__('threading').Lock()
+        raw._socket = Mock()
+        raw._socket.sendall.side_effect = BrokenPipeError('broken pipe')
+        with self.assertRaisesRegex(SerialLinkError, 'BLE bridge write'):
+            raw.write(b'PING\n')
+
     def create(self):
         raw=BleBytes(scanner=Scanner(),client_factory=Client)
         self.addCleanup(raw.close)
@@ -131,3 +178,29 @@ class SelectionPersistenceTests(unittest.TestCase):
             restored=PlaybackEngine()
             create_app(midi_dir=Path(directory),engine=restored,connect_on_start=False)
             self.assertEqual(restored.snapshot()['hardware']['controllerTarget'],'esp32')
+
+class BleBatchAtomicTests(unittest.IsolatedAsyncioTestCase):
+    async def test_fragmented_batches_do_not_interleave(self):
+        import asyncio
+        class Sink:
+            def __init__(self): self.packets = []
+            async def write_gatt_char(self, uuid, data, response):
+                self.packets.append(data)
+                assert response
+                await asyncio.sleep(0)
+        raw = BleBytes.__new__(BleBytes)
+        raw._write_lock = asyncio.Lock()
+        raw._client = Sink()
+        raw.write_size = 20
+        a = b'FDD 1 PLAY 220\nFDD 2 PLAY 330\n'
+        b = b'SLED 1 PLAY 250\nVHS FREQ 440\n'
+        await asyncio.gather(raw._write(a), raw._write(b))
+        self.assertEqual(raw._client.packets, [a[:20], a[20:], b[:20], b[20:]])
+        self.assertEqual(b''.join(raw._client.packets), a+b)
+
+    async def test_batch_api_one_newline_framed_write(self):
+        link = BleOrchestraLink.__new__(BleOrchestraLink)
+        link._serial = Mock()
+        link.send_batch(['FDD 1 PLAY 220', 'VHS AMP 38', 'VHS FREQ 440'])
+        link._serial.write.assert_called_once_with(b'FDD 1 PLAY 220\nVHS AMP 38\nVHS FREQ 440\n')
+        with self.assertRaises(ValueError): link.send_batch(['PING\nALL STOP'])

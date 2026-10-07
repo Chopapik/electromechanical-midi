@@ -81,7 +81,7 @@ int main(int argc,char** argv){
   io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Settle);io.now+=40000;d.tick();assert(d.hdd[3].state==Hdd::Strike);io.now+=4000;d.tick();assert(d.hdd[3].state==Hdd::Idle);
  }else if(c=="sled"){
   assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR DISABLED"));d.command("SLED 2 ENABLE 1");
-  assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR TRAVEL_UNKNOWN"));
+  d.command("SLED 2 PROFILE -1 5000 1");assert(!strcmp(d.command("SLED 2 PLAY 220"),"ERR TRAVEL_UNKNOWN"));
   assert(!strcmp(d.command("SLED 2 PROFILE 140 5000 1"),"OK"));d.command("SLED 2 PLAY 220");
   int expected[4]={6,10,9,5};for(int p:expected){nextPhase(1);assert(((io.previous>>12)&15)==p);}
   d.command("SLED 2 STOP");assert(((io.previous>>12)&15)==0);
@@ -141,7 +141,7 @@ int main(int argc,char** argv){
   assert(d.bus.getBit(f.dirBit)); // toward is HIGH
   io.active[1]=true;f.wantsStep(d.bus);assert(f.awaySteps==0&&f.directionAway&&!d.bus.getBit(f.dirBit));
  }else if(c=="profiles"){
-  assert(d.sled[0].softMax==140);for(int i=1;i<4;++i)assert(d.sled[i].softMax==-1);
+  for(int i=0;i<4;++i)assert(d.sled[i].softMax==140);
   assert(d.fdd[0].safeAwaySteps==72&&d.fdd[0].minStepUs==2439);
   assert(!strcmp(d.command("SLED 2 PROFILE -1 5000 1"),"OK"));
   assert(!strcmp(d.command("SLED 2 PROFILE 0 5000 1"),"ERR PROFILE"));

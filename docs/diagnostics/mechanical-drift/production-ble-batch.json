@@ -1,0 +1,21 @@
+{
+  "mode": "physical BLE through production send_batch API; PING only",
+  "commands": 10,
+  "logicalBatches": 1,
+  "payloadBytes": 252,
+  "sendBatchMs": 37.12312504649162,
+  "pongCount": 10,
+  "allRepliesMs": 238.00941603258252,
+  "replies": [
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG",
+    "PONG"
+  ]
+}

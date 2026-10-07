@@ -62,6 +62,9 @@ class BleBytes:
         async with self._factory(device, disconnected_callback=disconnected, timeout=10) as client:
             self._client = client
             self._write_lock = asyncio.Lock()
+            # One ordinary ATT write, never a long/prepared write. Keep the
+            # conservative 20-byte fallback for clients reporting MTU=23.
+            self.write_size = max(20, min(512, getattr(client, 'mtu_size', 23) - 3))
             await client.start_notify(TX, self._notification)
             self._ready.set()
             await self._end.wait()
@@ -94,9 +97,9 @@ class BleBytes:
 
     async def _write(self, data):
         async with self._write_lock:
-            # MTU=23 is supported; preserve newline framing across fragments.
-            for offset in range(0, len(data), 20):
-                await self._client.write_gatt_char(RX, data[offset:offset+20], response=True)
+            # Use negotiated capacity; retain acknowledged writes and framing.
+            for offset in range(0, len(data), self.write_size):
+                await self._client.write_gatt_char(RX, data[offset:offset+self.write_size], response=True)
 
     def write(self, data):
         self._check()
@@ -129,6 +132,8 @@ class BleBytes:
 class GatewayBytes:
     """Docker-to-native BLE bridge; plain command bytes after connection header."""
     def __init__(self, address):
+        self._error_probe = b''
+        self._write_lock = threading.Lock()
         host, port = address.rsplit(':', 1)
         self._socket = socket.create_connection((host, int(port)), timeout=2)
         try:
@@ -153,10 +158,20 @@ class GatewayBytes:
         data = self._socket.recv(count)
         if not data:
             raise SerialLinkError('BLE: disconnected')
+        # Gateway errors may span TCP packets. Surface them as transport errors
+        # so the engine pauses instead of ignoring them as firmware telemetry.
+        probe = self._error_probe + data
+        if b'BLE ERROR ' in probe:
+            raise SerialLinkError(probe.split(b'BLE ERROR ', 1)[1].decode(errors='replace').strip())
+        self._error_probe = probe[-10:]
         return data
 
     def write(self, data):
-        self._socket.sendall(data)
+        try:
+            with self._write_lock:
+                self._socket.sendall(data)
+        except OSError as exc:
+            raise SerialLinkError(f'BLE bridge write: {exc}') from exc
         return len(data)
 
     def close(self):
@@ -164,9 +179,17 @@ class GatewayBytes:
 
 
 class BleOrchestraLink(OrchestraLink):
+    is_ble = True
     protocol_version = 2
     board = 'esp32'
     transport_kind = 'ble'
+
+    def send_batch(self, commands):
+        """One ordered operation; BleBytes locks across all ATT fragments."""
+        if any('\n' in command or '\r' in command for command in commands):
+            raise ValueError('batch entries must be single protocol lines')
+        if commands:
+            self._serial.write(('\n'.join(commands) + '\n').encode('ascii'))
 
     def __init__(self, byte_transport=None):
         self.port = 'ble://' + NAME

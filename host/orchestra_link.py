@@ -33,6 +33,11 @@ class OrchestraLink(FloppyLink):
     protocol_version = 1
     board = 'uno'
 
+    def send_batch(self, commands):
+        """Serial keeps its existing per-line writes and ordering."""
+        for command in commands:
+            self.send(command)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.device_status = {}

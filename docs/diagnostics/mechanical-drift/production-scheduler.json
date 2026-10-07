@@ -1,0 +1,70 @@
+{
+  "model": "production engine, simulated monotonic, 20 ms per send or send_batch; no physical song",
+  "stress60": {
+    "timelineSeconds": 60,
+    "elapsedSeconds": 60.0210000000028,
+    "maxSchedulerLagMs": 16.998000002786284,
+    "droppedLateEvents": 750,
+    "backlogCollapsedEvents": 749,
+    "dropReasons": {
+      "LATE_SUPERSEDED": 749,
+      "BACKLOG_COLLAPSED": 749,
+      "LATE_EXPIRED": 1
+    },
+    "bleBatches": 3000,
+    "bleCommands": 3000,
+    "maxCommandsPerBatch": 1,
+    "discardedAtEnd": 2,
+    "wireCommands": 3001,
+    "noteTransactions": 3000,
+    "lastCommand": "ALL STOP"
+  },
+  "denseIndividual": {
+    "timelineSeconds": 10,
+    "elapsedSeconds": 10.02,
+    "maxSchedulerLagMs": 100.00100000000023,
+    "droppedLateEvents": 0,
+    "backlogCollapsedEvents": 0,
+    "dropReasons": {},
+    "bleBatches": 0,
+    "bleCommands": 0,
+    "maxCommandsPerBatch": 0,
+    "discardedAtEnd": 1,
+    "wireCommands": 61,
+    "noteTransactions": 60,
+    "lastCommand": "ALL STOP"
+  },
+  "denseBatch": {
+    "timelineSeconds": 10,
+    "elapsedSeconds": 10.02,
+    "maxSchedulerLagMs": 0.0,
+    "droppedLateEvents": 0,
+    "backlogCollapsedEvents": 0,
+    "dropReasons": {},
+    "bleBatches": 10,
+    "bleCommands": 60,
+    "maxCommandsPerBatch": 6,
+    "discardedAtEnd": 1,
+    "wireCommands": 61,
+    "noteTransactions": 10,
+    "lastCommand": "ALL STOP"
+  },
+  "backlogTwoSeconds": {
+    "timelineSeconds": 3,
+    "elapsedSeconds": 3.02,
+    "maxSchedulerLagMs": 2000,
+    "droppedLateEvents": 2,
+    "backlogCollapsedEvents": 2,
+    "dropReasons": {
+      "LATE_SUPERSEDED": 2,
+      "BACKLOG_COLLAPSED": 2
+    },
+    "bleBatches": 1,
+    "bleCommands": 1,
+    "maxCommandsPerBatch": 1,
+    "discardedAtEnd": 1,
+    "wireCommands": 2,
+    "noteTransactions": 1,
+    "lastCommand": "ALL STOP"
+  }
+}

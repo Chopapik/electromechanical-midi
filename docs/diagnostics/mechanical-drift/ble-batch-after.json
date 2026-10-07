@@ -1,0 +1,8 @@
+{
+  "transport": "physical BLE, PING only; no motors",
+  "payloadBytes": 252,
+  "tenCommandsOneWriteMs": 35.555583075620234,
+  "pongCount": 10,
+  "allRepliesMs": 233.00612508319318,
+  "responses": "PONG\nPONG\nPONG\nPONG\nPONG\nPONG\nPONG\nPONG\nPONG\nPONG\n"
+}
