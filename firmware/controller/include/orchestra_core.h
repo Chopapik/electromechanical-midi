@@ -45,7 +45,7 @@ struct FloppyDrive {
  bool hasStep=false; float hz=0; const char* error=nullptr;
  FloppyDrive(uint8_t id):track0Pin(map::track0[id]),stepBit(map::step[id]),dirBit(map::dir[id]){}
  void stop(){playing=false;homing=false;hz=0;}
- void direction(bool away,ShiftRegisterBus& bus){directionAway=away;bus.setBit(dirBit,away); uint32_t edge=bus.flush();directionReadyUs=edge+5000;}
+ void direction(bool away,ShiftRegisterBus& bus){directionAway=away;bus.setBit(dirBit,!away); uint32_t edge=bus.flush();directionReadyUs=edge+5000;}
  void home(ShiftRegisterBus& bus){stop();homed=false;error=nullptr;homing=true;direction(false,bus);homeStartedUs=bus.io.us();}
  bool play(float value,IO& io){if(!enabled||!homed||homing||!isfinite(value)||value<40||value>500)return false;hz=value;stepIntervalUs=uint32_t(lroundf(1000000/value));if(!playing)nextStepUs=io.us();else if(uint32_t(nextStepUs-io.us())>stepIntervalUs)nextStepUs=io.us()+stepIntervalUs;playing=true;return true;}
  bool wantsStep(ShiftRegisterBus& bus){
