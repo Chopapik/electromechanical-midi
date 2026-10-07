@@ -419,3 +419,22 @@ PING/STATUS. Offline tests cover packet fragmentation, command order, common
 STATUS parsing, transport loss, retry, Uno isolation and UI selection/status.
 BLE playback timing and all physically wired devices require separate hardware
 validation; the gateway does not alter MIDI routing or firmware.
+
+## Confirmed runtime STOP over BLE
+
+The native gateway reads incoming commands independently of GATT writes.
+`ALL STOP` takes priority: it discards previously queued commands, finishes
+one in-flight command line and sends STOP next. Old PLAY commands cannot
+restart an actuator after that STOP. No ordinary MIDI allocation is changed.
+
+Firmware advertises `stop_ack=1` in STATUS CTRL. The host sends
+`ALL STOP <numeric-token>`; the shared dispatcher first executes the existing
+ALL STOP and then replies `STOPPED <same-token>` on the originating transport.
+Its BLE acknowledgement takes priority over queued telemetry. A stale STOPPED
+reply with another token is not confirmation. Untagged ALL STOP stays compatible.
+
+The runtime waits up to 2 seconds for execution acknowledgement before reporting
+a successful explicit Stop. Missing acknowledgement produces an explicit error
+and leaves playback paused, without declaring USB/BLE disconnected solely
+because of that missing acknowledgement. A broken connection still relies on
+the existing 3-second firmware watchdog.

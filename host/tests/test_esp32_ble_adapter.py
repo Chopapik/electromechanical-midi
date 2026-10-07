@@ -160,6 +160,12 @@ int main(int argc,char** argv){
   writeBle("STATUS\n");drainInput();size_t n=writes.size();bleTx->failOnce=true;
   auto text=drainBle();assert(text.find("STATUS BEGIN\n")==0&&text.substr(text.size()-11)=="STATUS END\n");
   assert(writes.size()==n); // TX never drives GPIO, even on retry.
+ }else if(c=="stop_ack_priority"){
+  writeBle("STATUS\n");drainInput();assert(uxQueueMessagesWaiting(bleTxQueue)==18);
+  ctrl.fdd[0].homed=true;ctrl.fdd[0].play(220,io);
+  writeBle("ALL STOP 42\n");drainInput();
+  assert(!ctrl.fdd[0].playing&&uxQueueMessagesWaiting(bleTxQueue)==1);
+  assert(drainBle()=="STOPPED 42\n");
  }else if(c=="empty_write"){
   writeBle("");assert(uxQueueMessagesWaiting(bleRxQueue)==0);writeBle("PING\n");drainInput();assert(drainBle()=="PONG\n");
  }else assert(false);
@@ -189,7 +195,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('serial_boot_once', 'boot', 'callback_deferred', 'motor_deferred', 'routing', 'reconnect',
-             'stale_reply', 'overflow', 'notify', 'empty_write'):
+             'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32BleAdapterTests, 'test_'+case, run)

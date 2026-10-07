@@ -72,6 +72,8 @@ public:
  void send(Transport origin,const char* line,uint32_t epoch=0) override {
   if (origin==Transport::Usb) { queue(line); return; }
   if (!bleConnected.load() || !bleSubscribed.load() || epoch!=bleEpoch.load()) return;
+  // A correlated STOP acknowledgement must not sit behind obsolete telemetry.
+  if (!strncmp(line,"STOPPED ",8)) xQueueReset(bleTxQueue);
   BleReply packet{}; packet.session=epoch;
   size_t count=strlen(line);
   if (count>=sizeof(packet.bytes)) { bleTxOverflow.store(epoch); return; }

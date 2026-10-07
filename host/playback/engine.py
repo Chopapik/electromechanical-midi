@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Callable, Protocol
 
 from midi_source import MidiSource, MidiSourceError, drum_name
+from orchestra_link import StopConfirmationError
 from pitch import (
     COMFORT_MAX_HZ,
     COMFORT_MIN_HZ,
@@ -1292,7 +1293,11 @@ class PlaybackEngine:
         with self._lock:
             self._pending_play = False
             self._preview.stop()
-            self._reset_instruments_locked(force_hardware=True)
+            if not self._reset_instruments_locked(force_hardware=True) and self._hardware.connected:
+                self._position_base = self._position_locked()
+                self._state = PlaybackState.PAUSED
+                self._wake.set()
+                return
             self._state = PlaybackState.STOPPED
             self._position_base = 0.0
             self._next_index = 0
@@ -1841,9 +1846,17 @@ class PlaybackEngine:
 
         try:
             if getattr(self._transport, 'protocol_version', 1) == 2:
-                self._transport.send('ALL STOP')
+                confirmed = getattr(self._transport, 'controller_status', {}).get('stop_ack') == '1'
+                if confirmed and not self._handshake:
+                    self._transport.all_stop_confirmed()
+                else:
+                    self._transport.send('ALL STOP')
             else:
                 self._transport.stop()
+        except StopConfirmationError as exc:
+            self._hardware.error = str(exc)
+            self._hardware.warning = 'Sprzęt nie potwierdził zatrzymania.'
+            return False
         except Exception as exc:
             self._fail_locked(f"blad transportu: {exc}")
             return False
@@ -2135,7 +2148,11 @@ class PlaybackEngine:
             self._state = PlaybackState.STOPPED
             self._pending_play = False
             self._preview.stop()
-            self._reset_instruments_locked(force_hardware=True)
+            stop_ok = self._reset_instruments_locked(force_hardware=True)
+            if not stop_ok and self._hardware.connected:
+                self._state = PlaybackState.PAUSED
+                self._position_base = timeline.duration
+                return None
             self._position_base = timeline.duration
             self._current = None
             self._drum_current = None

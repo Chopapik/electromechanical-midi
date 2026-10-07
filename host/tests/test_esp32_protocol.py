@@ -72,6 +72,15 @@ int main(int argc,char** argv){
   assert(sink.replies[1].origin==Transport::Ble&&sink.replies[1].session==1&&sink.replies[1].text=="ERR HOME_FAILED FDD=1");
   assert(sink.replies[2].origin==Transport::Usb&&sink.replies[2].text=="ERR HOME_FAILED FDD=2");
   p.pollErrors();assert(sink.replies.size()==3);
+ }else if(c=="stop_ack"){
+  for(auto& f:ctrl.fdd){f.homed=true;f.play(220,io);}
+  ctrl.hdd[0].hit(ctrl.bus);ctrl.amp=100;
+  p.execute(Transport::Ble,"ALL STOP 42");
+  for(auto& f:ctrl.fdd)assert(!f.playing&&!f.homing);
+  assert(ctrl.hdd[0].state==Hdd::Idle&&ctrl.amp==0);
+  assert(sink.replies.back().text=="STOPPED 42"&&sink.replies.back().origin==Transport::Ble&&sink.replies.back().session==1);
+  p.execute(Transport::Usb,"ALL STOP 43");assert(sink.replies.back().text=="STOPPED 43"&&sink.replies.back().origin==Transport::Usb);
+  p.execute(Transport::Ble,"ALL STOP invalid");assert(sink.replies.back().text=="ERR VALUE");
  }else if(c=="diag"){
   p.execute(Transport::Ble,"DIAG BIT 39");assert(io.previous==(uint64_t(1)<<39)&&sink.replies.back().origin==Transport::Ble);
   p.execute(Transport::Usb,"ALL STOP");assert((io.previous&0x55)==0x55);
@@ -98,7 +107,7 @@ class Esp32ProtocolTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('led', 'led_status', 'ping', 'status', 'fragment', 'separate_lines',
-             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'diag'):
+             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32ProtocolTests, 'test_'+case, run)

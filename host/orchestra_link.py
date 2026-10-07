@@ -3,6 +3,10 @@ import time
 from floppy_link import FloppyLink
 
 
+class StopConfirmationError(Exception):
+    """Live transport did not confirm that the controller executed STOP."""
+
+
 def parse_status(lines):
     """Parse a complete, bounded multi-line status transaction atomically."""
     result = {'controller': {}, 'devices': {}}
@@ -87,6 +91,16 @@ class OrchestraLink(FloppyLink):
         else:
             for text in ('STOP', 'DRUM 0', 'HDD 0'):
                 self.send(text)
+
+    def all_stop_confirmed(self, timeout=2.0):
+        token = str(time.monotonic_ns() & 0xffffffff)
+        self.send('ALL STOP ' + token)
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if 'STOPPED ' + token in self.poll_lines():
+                return True
+            time.sleep(.005)
+        raise StopConfirmationError('STOP niepotwierdzony przez ESP32 — stan sprzętu jest nieznany')
 
     def wait_homed(self, timeout=10.0, echo=print):
         if self.protocol_version != 2:

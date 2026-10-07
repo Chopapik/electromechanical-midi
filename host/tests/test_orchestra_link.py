@@ -34,6 +34,19 @@ class ProtocolTests(unittest.TestCase):
             with self.assertRaises(ValueError): l.fdd_home(id)
         with self.assertRaises(ValueError): l.tray_pulse(1,'oops',10)
 
+    def test_stop_waits_for_matching_execution_ack(self):
+        l = self.link()
+        l.poll_lines = Mock(side_effect=[['STOPPED 99'], ['STOPPED 42']])
+        with patch('orchestra_link.time.monotonic_ns', return_value=42):
+            self.assertTrue(l.all_stop_confirmed(timeout=.1))
+        l.send.assert_called_once_with('ALL STOP 42')
+        self.assertEqual(l.poll_lines.call_count, 2)
+
+    def test_stop_ack_timeout_is_not_a_serial_disconnect(self):
+        from orchestra_link import StopConfirmationError
+        l = self.link(); l.poll_lines = Mock(return_value=[])
+        with self.assertRaises(StopConfirmationError): l.all_stop_confirmed(timeout=.01)
+
     def test_status_complete_only(self):
         lines = ['STATUS BEGIN','STATUS CTRL board=esp32 ready=1','STATUS FDD 4 enabled=1 homed=1 homing=0',
                  'STATUS HDD 3 enabled=0 busy=0','STATUS VHS enabled=1 amp=38 hz=196','STATUS END']

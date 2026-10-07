@@ -2023,3 +2023,35 @@ class TestPlaybackSilenceStopsHardware(EngineTestCase):
             self.engine._fail_locked('read failed')
         self.assertEqual([text for _, text in self.transport.since(before)], ['ALL STOP'])
         self.assertFalse(self.engine.snapshot()['hardware']['connected'])
+
+
+class TestConfirmedStop(EngineTestCase):
+    def test_ui_stop_waits_for_hardware_ack(self):
+        from unittest.mock import Mock
+        self.transport.protocol_version = 2
+        self.transport.controller_status = {'stop_ack': '1'}
+        def confirmed():
+            self.assertIs(self.engine._state, PlaybackState.PLAYING)
+            self.transport.send('ALL STOP 42')
+            return True
+        self.transport.all_stop_confirmed = Mock(side_effect=confirmed)
+        with self.engine._lock:
+            self.engine._state = PlaybackState.PLAYING
+            self.engine._origin = time.monotonic()
+        self.engine.stop()
+        self.transport.all_stop_confirmed.assert_called_once()
+        self.assertIs(self.engine.state, PlaybackState.STOPPED)
+
+    def test_missing_stop_ack_is_visible_without_claiming_disconnection(self):
+        from unittest.mock import Mock
+        from orchestra_link import StopConfirmationError
+        self.transport.protocol_version = 2
+        self.transport.controller_status = {'stop_ack': '1'}
+        self.transport.all_stop_confirmed = Mock(side_effect=StopConfirmationError('STOP niepotwierdzony'))
+        with self.engine._lock:
+            self.engine._state = PlaybackState.PLAYING
+            self.engine._origin = time.monotonic()
+        self.engine.stop()
+        self.assertIs(self.engine.state, PlaybackState.PAUSED)
+        self.assertTrue(self.engine.snapshot()['hardware']['connected'])
+        self.assertIn('niepotwierdzony', self.engine.snapshot()['hardware']['error'])

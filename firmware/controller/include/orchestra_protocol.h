@@ -82,6 +82,18 @@ struct CommandProtocol {
    reply(origin, testOn ? "TEST ON" : "TEST OFF");
    return;
   }
+  // Correlated acknowledgement is emitted only after hardware is stopped.
+  // Legacy ALL STOP remains silent and compatible with existing clients.
+  if (!strncmp(line,"ALL STOP ",9)) {
+   const char* token=line+9;
+   size_t length=strlen(token);
+   if (!length || length>10 || strspn(token,"0123456789")!=length) {
+    reply(origin,"ERR VALUE"); return;
+   }
+   ctrl.command("ALL STOP");
+   char ack[32];snprintf(ack,sizeof(ack),"STOPPED %s",token);reply(origin,ack);
+   return;
+  }
   // Retain the existing explicit bring-up diagnostic through either transport.
   if (!strncmp(line, "DIAG BIT ", 9)) {
    char* end; long bit = strtol(line+9, &end, 10);
@@ -108,7 +120,7 @@ struct CommandProtocol {
   }
  }
  void status(Transport origin) {
-  char line[160]; reply(origin, "STATUS BEGIN"); reply(origin, "STATUS CTRL board=esp32 protocol=2 ready=1");
+  char line[160]; reply(origin, "STATUS BEGIN"); reply(origin, "STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1");
   for (int i=0; i<4; ++i) {
    auto& d=ctrl.fdd[i]; bool active=ctrl.io.track0(d.track0Pin);
    snprintf(line,sizeof(line),"STATUS FDD %d enabled=%d homed=%d playing=%d homing=%d dir=%s away_steps=%u track0=%d raw=%d hz=%.2f",i+1,d.enabled,d.homed,d.playing,d.homing,d.directionAway?"away":"toward",d.awaySteps,active,!active,d.hz); reply(origin,line);
