@@ -41,6 +41,7 @@ class OrchestraLink(FloppyLink):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.device_status = {}
+        self.status_generation = 0
         self.controller_status = {}
         self._status_lines = None
 
@@ -61,6 +62,7 @@ class OrchestraLink(FloppyLink):
                     except ValueError:
                         status = None  # Malformed protocol data is not a Serial disconnect.
                     if status is not None:
+                        self.status_generation = getattr(self, "status_generation", 0) + 1
                         self.device_status = status['devices']
                         self.controller_status = status['controller']
                     self._status_lines = None

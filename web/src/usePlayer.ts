@@ -15,6 +15,7 @@ import type {
 const RECONNECT_MS = 1200
 
 export interface PlayerApi {
+  labCommand: (action: string, payload?: Record<string, unknown>) => void
   state: PlayerState | null
   files: MidiFileEntry[]
   metadata: FileMetadata | null
@@ -307,6 +308,7 @@ export function usePlayer(): PlayerApi {
   )
 
   return {
+    labCommand: send,
     state,
     files,
     metadata,

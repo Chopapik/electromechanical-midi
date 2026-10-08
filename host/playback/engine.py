@@ -44,6 +44,7 @@ from pitch import (
     note_name,
 )
 
+from .instrument_lab import InstrumentLab
 from .timeline import (
     DEFAULT_GATE,
     DRUM_DRIVE_DEFAULT,
@@ -319,6 +320,7 @@ class PlaybackEngine:
         self._drum_output: int | None = None  # co potwierdzil firmware (STATUS)
         self._drum_tone_hz = 0.0             # 0 = tryb DC
         self._drum_last_nonzero = DRUM_START_VALUE
+        self._lab = InstrumentLab(self)
         self._status_request_at = 0.0
 
         # Co juz poszlo do firmware (zeby nie wysylac tego samego i nie
@@ -347,6 +349,7 @@ class PlaybackEngine:
     def shutdown(self, timeout: float = 2.0) -> None:
         """Zatrzymuje granie i konczy watek roboczy."""
         with self._lock:
+            self._lab.stop()
             self._shutdown = True
             self._preview_generation += 1
             self._preview_request = None
@@ -507,6 +510,7 @@ class PlaybackEngine:
 
     def disconnect(self) -> None:
         with self._lock:
+            self._lab.stop()
             was_playing = self._state is PlaybackState.PLAYING
             self._pending_play = False
 
@@ -1367,6 +1371,7 @@ class PlaybackEngine:
 
     def pause(self) -> None:
         with self._lock:
+            self._lab.stop()
             self._pending_play = False
             if self._state is not PlaybackState.PLAYING:
                 self._preview.stop()
@@ -1395,6 +1400,7 @@ class PlaybackEngine:
     def stop(self) -> None:
         """Stop all connected hardware and preview; reset playhead to zero."""
         with self._lock:
+            self._lab.stop()
             self._pending_play = False
             self._preview.stop()
             if not self._reset_instruments_locked(force_hardware=True) and self._hardware.connected:
@@ -1429,6 +1435,8 @@ class PlaybackEngine:
 
     def _begin_locked(self, position: float) -> None:
         """Wspolna droga play/resume/seek/zmiana tracku w trakcie grania."""
+        if self._lab.owner is not None:
+            raise EngineError("Wyjdź z Instrument Lab przed odtwarzaniem MIDI")
         timeline = self._timeline
 
         if timeline is None:
@@ -1677,6 +1685,15 @@ class PlaybackEngine:
     # ODCZYT STANU
     # ==========================================================
 
+    def lab_command(self, action, owner, payload=None):
+        with self._lock:
+            if action == 'lab_enter': self._lab.enter(owner)
+            elif action == 'lab_start': self._lab.start(owner, payload or {})
+            elif action == 'lab_stop': self._lab.stop(force=True)
+            elif action == 'lab_leave': self._lab.leave(owner)
+            elif action == 'lab_heartbeat': self._lab.touch(owner)
+            else: raise EngineError('Nieznana akcja Lab')
+
     def snapshot(self) -> dict:
         with self._lock:
             timeline = self._timeline
@@ -1693,6 +1710,7 @@ class PlaybackEngine:
                 midi_note = int(round(hz_to_midi(frequency)))
 
             return {
+                "lab": self._lab.snapshot(),
                 "state": self._state.value,
                 "position": round(position, 3),
                 "duration": round(duration, 3),
@@ -2185,6 +2203,8 @@ class PlaybackEngine:
 
     def _fail_locked(self, message: str) -> None:
         """Awaria lacza: nie udajemy, ze utwor gra dalej."""
+        self._lab.state = "error" if self._lab.active else self._lab.state
+        if self._lab.state == "error": self._lab.error = message
         # A read failure can leave writes usable. One best-effort global STOP;
         # no recursive failure handler and no claim of delivery on a broken link.
         transport = self._transport
@@ -2239,6 +2259,7 @@ class PlaybackEngine:
 
         try:
             lines = transport.poll_lines()
+            self._lab.on_lines(lines)
         except Exception as exc:
             self._fail_locked(f"blad odczytu transportu: {exc}")
             return
@@ -2314,7 +2335,8 @@ class PlaybackEngine:
             with self._lock:
                 if self._shutdown:
                     return
-                if not self._handshake and self._transport is not None and (not self._virtual_mode or self._hardware_active):
+                self._lab.tick()
+                if not self._handshake and self._transport is not None and (not self._virtual_mode or self._hardware_active or self._lab.active):
                     self._poll_lines_locked()
 
                 if (
@@ -2335,7 +2357,7 @@ class PlaybackEngine:
                 # recznym sterowaniu bebna przychodza tu STATUS-y i bledy.
                 # Podczas handshake'u NIE dotykamy bufora (patrz _handshake).
                 with self._lock:
-                    if not self._handshake and (not self._virtual_mode or self._hardware_active):
+                    if not self._handshake and (not self._virtual_mode or self._hardware_active or self._lab.active):
                         self._poll_lines_locked()
 
                 self._wake.wait(timeout=WORKER_IDLE_POLL_S)

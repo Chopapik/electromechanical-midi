@@ -45,7 +45,7 @@ from fastapi import (  # noqa: E402
     WebSocket,
     WebSocketDisconnect,
 )
-from fastapi.responses import HTMLResponse  # noqa: E402
+from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from starlette.websockets import (  # noqa: E402
     WebSocketDisconnected,
@@ -263,6 +263,7 @@ def create_app(
             try:
                 await websocket.send_json(payload)
             except Exception:
+                await asyncio.to_thread(engine.lab_command, "lab_leave", str(id(websocket)))
                 clients.discard(websocket)
 
     async def broadcast_loop() -> None:
@@ -328,7 +329,11 @@ def create_app(
         if firmware_busy and action != 'snapshot':
             raise EngineError('Trwa wgrywanie firmware Arduino. Poczekaj na zakończenie.')
 
-        if action == "play":
+        if engine._lab.owner is not None and action not in ('snapshot', 'stop', 'pause', 'disconnect') and not action.startswith('lab_'):
+            raise EngineError('Wyjdź z Instrument Lab przed zmianą ustawień/playbacku')
+        if action.startswith('lab_'):
+            await asyncio.to_thread(engine.lab_command, action, str(id(websocket)), message)
+        elif action == "play":
             await asyncio.to_thread(engine.play)
         elif action == "set_virtual":
             await asyncio.to_thread(engine.configure_virtual, message.get('config') or {})
@@ -440,6 +445,12 @@ def create_app(
         version="1.0.0",
         lifespan=lifespan,
     )
+
+    @app.middleware('http')
+    async def protect_lab_session(request, call_next):
+        if request.method in ('POST','PUT','PATCH','DELETE') and engine._lab.owner is not None:
+            return JSONResponse({'detail':'Wyjdź z Instrument Lab przed zmianą konfiguracji'},status_code=409)
+        return await call_next(request)
 
     @app.get("/api/state")
     def api_state() -> dict:
@@ -696,6 +707,7 @@ def create_app(
             # application".
             pass
         finally:
+            await asyncio.to_thread(engine.lab_command, "lab_leave", str(id(websocket)))
             clients.discard(websocket)
 
     # Zbudowany frontend (npm run build) serwowany z tego samego portu.

@@ -68,6 +68,7 @@ export interface HddState {
 }
 
 export interface PlayerState {
+  lab?: import("./components/InstrumentLab").LabState
   virtual?: VirtualState
   arrangementRevision?: number
   arrangementActive?: boolean
