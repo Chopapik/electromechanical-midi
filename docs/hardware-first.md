@@ -281,3 +281,33 @@ before a following primary. Uncalibrated tray accents are removed on this path.
 No steps above were performed during implementation. No USB/BLE was opened,
 firmware was not flashed, motors were not commanded, and the running application
 was not restarted because that could auto-connect/home hardware.
+
+### Individual DVD1 resonance calibration
+
+`config/hardware-profiles/instances.json`, `SLED:1.quantities.allowedBandsHz`,
+records a physical sweep from 50 to 500 Hz in 10 Hz increments using the existing
+Sled ramps and automatic reversal, with the existing `pitchRatio=1`.
+Only these inclusive bands are qualified: **50–120, 180–190, 270–300,
+340–470 Hz**. All intervening gaps and frequencies outside those bands are
+unqualified and rejected. This measurement applies only to DVD1.
+
+The values describe the physical STEP rate in Hz (equal to PLAY Hz during the
+sweep). Host and ESP32 both compare `PLAY Hz / pitchRatio` with these bands;
+changing the acoustic pitch mapping therefore cannot bypass the resonance
+restriction. `musicalStepRate` and `stableStepRate` record the outer measured
+envelope, 50–470 steps/s; the holes remain forbidden by `allowedBandsHz`.
+The earlier 250–300 Hz bring-up observation is superseded for DVD1.
+
+The hardware arranger searches only octave equivalents of the original MIDI
+pitch. In automatic fold mode, A3/220 Hz can use A4/440 Hz. If no permitted
+octave exists within the remaining constraints, another instrument is tried
+before DROP. Manual routing without octave folding and final reinforcement
+validation enforce the same measured bands. Measured bands cannot be erased or
+widened by runtime profile overrides.
+
+`scripts/generate_hardware_profiles.py` emits the per-instance whitelist in
+`firmware/controller/include/hardware_profiles_generated.h`. Direct
+`SLED 1 PLAY` commands outside the whitelist return `ERR VALUE`; STOP first
+when testing successive values, because a rejected PLAY does not cancel an
+already running valid note. DVD2–4 have no new whitelist. Travel limit 140,
+phase sequence, acceleration, braking and reversal code are unchanged.

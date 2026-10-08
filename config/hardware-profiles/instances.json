@@ -67,13 +67,52 @@
         },
         "stableStepRate": {
           "value": [
-            250,
-            300
+            50,
+            470
           ],
           "unit": "steps/s",
           "uncertainty": null,
-          "source": "user DVD1 FWD/REV bring-up: 250\u2013300 Hz works",
+          "source": "envelope derived from newer individual DVD1 allowedBandsHz sweep; supersedes earlier 250\u2013300 Hz bring-up; gaps still blocked by measured bands",
+          "evidenceType": "DERIVED",
+          "confidence": "MEDIUM"
+        },
+        "allowedBandsHz": {
+          "value": [
+            [
+              50,
+              120
+            ],
+            [
+              180,
+              190
+            ],
+            [
+              270,
+              300
+            ],
+            [
+              340,
+              470
+            ]
+          ],
+          "unit": "Hz (step frequency; PLAY Hz at calibration pitchRatio=1)",
+          "uncertainty": {
+            "sweepStepHz": 10,
+            "betweenBands": "unqualified; reject conservatively"
+          },
+          "source": "user physical DVD1 sweep 50\u2013500 Hz every 10 Hz, existing Sled::tick ramps and auto reversal at pitchRatio=1; resonance bands excluded; individual SLED:1 only",
           "evidenceType": "MEASURED",
+          "confidence": "MEDIUM"
+        },
+        "musicalStepRate": {
+          "value": [
+            50,
+            470
+          ],
+          "unit": "steps/s",
+          "uncertainty": null,
+          "source": "outer envelope derived from individual DVD1 measured allowedBandsHz; gaps remain forbidden",
+          "evidenceType": "DERIVED",
           "confidence": "MEDIUM"
         }
       }

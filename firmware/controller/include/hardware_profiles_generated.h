@@ -19,6 +19,14 @@ constexpr int32_t fddMinStepUs[4] = {2439, 2439, 2439, 2439};
 constexpr int32_t sledTravel[4] = {140, 140, 140, 140};
 constexpr float sledAcceleration[4] = {5000.0f, 5000.0f, 5000.0f, 5000.0f};
 constexpr float sledPitchRatio[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+constexpr uint8_t sledAllowedBandCount[4] = {4, 0, 0, 0};
+constexpr float sledAllowedBandsHz[4][4][2] = {{{50.0f, 120.0f}, {180.0f, 190.0f}, {270.0f, 300.0f}, {340.0f, 470.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}};
+inline bool sledFrequencyAllowed(uint8_t id, float stepHz) {
+ if (!sledAllowedBandCount[id]) return true;
+ for (uint8_t i=0; i<sledAllowedBandCount[id]; ++i)
+  if (stepHz>=sledAllowedBandsHz[id][i][0] && stepHz<=sledAllowedBandsHz[id][i][1]) return true;
+ return false;
+}
 constexpr uint32_t hddParkUs[4] = {40000u, 40000u, 40000u, 40000u};
 constexpr uint32_t hddSettleUs[4] = {40000u, 40000u, 40000u, 40000u};
 constexpr uint32_t hddStrikeUs[4] = {4000u, 4000u, 4000u, 4000u};

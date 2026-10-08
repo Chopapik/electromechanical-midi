@@ -86,6 +86,7 @@ struct Sled {
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;currentStepRate=targetStepRate=fraction=0;clockStarted=false;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){
   if(!enabled||softMax<=0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;
+  if(!physical::sledFrequencyAllowed(id,value/pitchRatio))return false;
   double interval=1000000.0/(value/pitchRatio);
   if(interval<physical::sledMinPeriodUs||interval>2147483647)return false;
   period=uint32_t(interval);hz=value;targetStepRate=(forward?1.f:-1.f)*value/pitchRatio;playing=true;return true;

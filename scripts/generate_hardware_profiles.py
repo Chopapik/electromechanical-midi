@@ -32,6 +32,21 @@ def generate():
             # float literals must contain a decimal point in C++.
             if ctype=='float': values=', '.join(f'{float(value(p))}f' for p in ps)
             lines.append(f'constexpr {ctype} {variable}[4] = {{{values}}};')
+    ps = [registry.effective('DVD_SLED', f'sled:{i}') for i in range(1, 5)]
+    bands = [p.get('allowedBandsHz') or [] for p in ps]
+    width = max(1, max(map(len, bands)))
+    lines.append('constexpr uint8_t sledAllowedBandCount[4] = {' + ', '.join(str(len(b)) for b in bands) + '};')
+    entries = []
+    for group in bands:
+        entries.append('{' + ', '.join('{%sf, %sf}' % (float(a), float(b)) for a, b in group + [[0, 0]] * (width - len(group))) + '}')
+    lines.append(f'constexpr float sledAllowedBandsHz[4][{width}][2] = ' + '{' + ', '.join(entries) + '};')
+    lines.extend([
+        'inline bool sledFrequencyAllowed(uint8_t id, float stepHz) {',
+        ' if (!sledAllowedBandCount[id]) return true;',
+        ' for (uint8_t i=0; i<sledAllowedBandCount[id]; ++i)',
+        '  if (stepHz>=sledAllowedBandsHz[id][i][0] && stepHz<=sledAllowedBandsHz[id][i][1]) return true;',
+        ' return false;', '}',
+    ])
     ps=[registry.effective('HDD_PERCUSSION',f'hdd:{i}') for i in range(1,5)]
     for key in ('parkMs','settleMs','strikeMs'):
         values=', '.join(str(round(p.get(key)*1000))+'u' for p in ps)

@@ -87,33 +87,33 @@ int main(int argc,char** argv){
   d.command("SLED 2 STOP");assert(((io.previous>>12)&15)==0);
   d.command("SLED 2 DIR REV");d.command("SLED 2 PLAY 220");nextPhase(1);assert(((io.previous>>12)&15)==9);
  }else if(c=="sled_forward"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR FWD");d.command("SLED 1 PLAY 250");
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR FWD");d.command("SLED 1 PLAY 280");
   auto& s=d.sled[0];assert(s.position==0);nextPhase(0);assert(s.position==1&&s.forward);
   nextPhase(0);assert(s.position==2);
  }else if(c=="sled_reverse"){
-  auto& s=d.sled[0];s.position=73;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
+  auto& s=d.sled[0];s.position=73;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");
   nextPhase(0);assert(s.position==72&&!s.forward);
  }else if(c=="sled_bounce_max"){
   auto& s=d.sled[0];s.position=139;d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");
   nextPhase(0);assert(s.position==138&&!s.forward&&s.playing);
   d.command("SLED 1 DIR FWD");assert(s.forward);runFor(100000);assert(s.position<=140&&s.playing);
  }else if(c=="sled_bounce_min"){
-  auto& s=d.sled[0];s.position=1;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");
+  auto& s=d.sled[0];s.position=1;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");
   nextPhase(0);assert(s.position==2&&s.forward&&s.playing);
   d.command("SLED 1 DIR REV");runFor(100000);assert(s.position>=0&&s.playing);
  }else if(c=="sled_bounds"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 600");auto& s=d.sled[0];bool forward=false,reverse=false;
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 400");auto& s=d.sled[0];bool forward=false,reverse=false;
   for(int n=0;n<30000;++n){io.now+=100;d.lastCommand=io.now;d.tick();
    assert(s.position>=0&&s.position<=s.softMax&&s.playing);forward|=s.currentStepRate>0;reverse|=s.currentStepRate<0;
   }assert(forward&&reverse);
  }else if(c=="sled_stop_position"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 250");nextPhase(0);auto& s=d.sled[0];int position=s.position;
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 280");nextPhase(0);auto& s=d.sled[0];int position=s.position;
   d.command("SLED 1 STOP");assert(!s.playing&&s.position==position&&((io.previous>>8)&15)==0);
-  runFor(10000);assert(s.position==position);d.command("SLED 1 PLAY 250");nextPhase(0);assert(s.position==position+1);
+  runFor(10000);assert(s.position==position);d.command("SLED 1 PLAY 280");nextPhase(0);assert(s.position==position+1);
   d.command("ALL STOP");assert(s.position==position+1&&!s.playing);
  }else if(c=="sled_dir"){
   d.command("SLED 1 ENABLE 1");auto& s=d.sled[0];s.position=70;
-  d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 250");nextPhase(0);assert(s.position==69&&s.phase==3&&((io.previous>>8)&15)==9);
+  d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");nextPhase(0);assert(s.position==69&&s.phase==3&&((io.previous>>8)&15)==9);
   d.command("SLED 1 DIR FWD");runFor(100000);assert(s.currentStepRate>0&&s.position>69);
  }else if(c=="sled_ramp"){
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");auto& s=d.sled[0];s.position=70;d.tick();float previous=0;
@@ -129,8 +129,8 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("HDD 1 PROFILE 40 40 nan"),"ERR PROFILE"));
   assert(!strcmp(d.command("HDD 1 PROFILE 40 40 0.00001"),"ERR PROFILE"));
  }else if(c=="sled_brake"){
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 600");auto& s=d.sled[0];s.position=110;
-  s.currentStepRate=600;s.clockStarted=true;s.last=io.now;
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 400");auto& s=d.sled[0];s.position=125;
+  s.currentStepRate=400;s.clockStarted=true;s.last=io.now;
   io.now+=100;d.tick();assert(!s.forward&&s.targetStepRate<0&&s.position<140&&s.currentStepRate>0);
   runFor(200000);assert(s.currentStepRate<0&&s.position<140);
  }else if(c=="fdd_profile_timing"){
@@ -146,8 +146,8 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("SLED 2 PROFILE -1 5000 1"),"OK"));
   assert(!strcmp(d.command("SLED 2 PROFILE 0 5000 1"),"ERR PROFILE"));
   assert(!strcmp(d.command("SLED 1 PROFILE 140 nan 1"),"ERR PROFILE"));
-  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 0.5");d.command("SLED 1 PLAY 150");runFor(100000);
-  assert(d.sled[0].hz==150&&fabsf(d.sled[0].targetStepRate)==300);
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 0.5");d.command("SLED 1 PLAY 140");runFor(100000);
+  assert(d.sled[0].hz==140&&fabsf(d.sled[0].targetStepRate)==280);
   assert(!strcmp(d.command("SLED 1 PROFILE 140 5000 1"),"ERR BUSY"));
  }else if(c=="tray"){
   assert(!strcmp(d.command("TRAY 1 PULSE FWD 80"),"ERR DISABLED"));d.command("TRAY 1 ENABLE 1");d.command("TRAY 1 PULSE REV 80");assert((io.previous>>32&3)==2);io.now+=80000;d.tick();assert(!d.tray[0].busy&&(io.previous>>32&3)==0);
@@ -157,6 +157,25 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("PING"),"PONG"));assert(!strcmp(d.command("PLAY 220"),"ERR NOT_HOMED"));d.fdd[0].homed=true;d.command("PLAY 220");assert(d.fdd[0].playing);d.command("STOP");assert(!d.fdd[0].playing);
   d.command("DRUM 200");assert(d.amp==200);d.command("DRUMF 164.81");assert(d.frequency>164);d.command("ALL STOP");assert(d.amp==0&&d.frequency==0&&io.previous==0x55);
   assert(!strcmp(d.command("FDD 5 HOME"),"ERR ID"));assert(!strcmp(d.command("SLED 1 ENABLE 3"),"ERR DISABLED"));assert(!strcmp(d.command("FDD 1 PLAY nan"),"ERR VALUE"));
+ }else if(c=="sled_allowed_bands"){
+  d.command("SLED 1 ENABLE 1");
+  for(int hz: {150,160,220,250,320,490,49,125,175,195,265,305,335,475,501}){
+   char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);
+   assert(!strcmp(d.command(cmd),"ERR VALUE"));assert(!d.sled[0].playing);
+  }
+  for(int hz: {50,100,120,180,190,270,280,300,340,400,440,470}){
+   char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);
+   assert(!strcmp(d.command(cmd),"OK"));assert(d.sled[0].playing);
+   d.command("SLED 1 STOP");
+  }
+  d.command("SLED 2 ENABLE 1");assert(!strcmp(d.command("SLED 2 PLAY 250"),"OK"));
+ }else if(c=="sled_bands_ratio"){
+  d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 2");
+  assert(!strcmp(d.command("SLED 1 PLAY 440"),"ERR VALUE")); // physical 220 is forbidden
+  assert(!strcmp(d.command("SLED 1 PLAY 200"),"OK")); // physical 100 is allowed
+  assert(d.sled[0].targetStepRate==100);d.command("SLED 1 STOP");
+  d.command("SLED 1 PROFILE 140 5000 0.001");
+  assert(!strcmp(d.command("SLED 1 PLAY 100"),"ERR VALUE"));
  }else if(c=="disable"){
   d.fdd[0].homed=true;d.command("PLAY 220");d.command("FDD 1 ENABLE 0");assert(!d.fdd[0].playing&&!d.fdd[0].enabled);assert(!strcmp(d.command("PLAY 220"),"ERR DISABLED"));
  }else assert(false);
@@ -178,7 +197,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

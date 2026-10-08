@@ -59,9 +59,12 @@ class HardwareProfile:
     def overlay(self, overrides):
         result=dict(self.quantities)
         for key,value in overrides.items():
-            if key not in result and key!='executionMinStepUs': raise ValueError('unknown hardware quantity: '+key)
+            if key not in result and key not in ('executionMinStepUs', 'allowedBandsHz'): raise ValueError('unknown hardware quantity: '+key)
             quantity=HardwareQuantity.parse(value)
             previous=result.get(key)
+            if (key == 'allowedBandsHz' and previous and previous.evidence_type == 'MEASURED'
+                    and quantity.value != previous.value):
+                raise ValueError('measured allowedBandsHz cannot be overridden')
             if (previous and previous.evidence_type=='MEASURED' and quantity.value is not None
                     and quantity.evidence_type!='MEASURED'):
                 continue
@@ -87,6 +90,17 @@ class HardwareProfile:
         for key in ('musicalHz','stableHz','preferredHz','musicalStepRate','stableStepRate','preferredStepRate'):
             v=self.get(key)
             if v is not None and (len(v)!=2 or not 0<v[0]<=v[1]): raise ValueError('invalid hardware range: '+key)
+        bands = self.get('allowedBandsHz')
+        if bands is not None:
+            if not isinstance(bands, list) or not bands:
+                raise ValueError('allowedBandsHz must be a nonempty list')
+            previous_end = 0
+            for band in bands:
+                if (not isinstance(band, (list, tuple)) or len(band) != 2 or
+                        any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in band) or
+                        not 0 < band[0] <= band[1] or band[0] <= previous_end):
+                    raise ValueError('invalid or overlapping allowedBandsHz')
+                previous_end = band[1]
         return self
 
     def as_dict(self):
@@ -207,6 +221,13 @@ def harmonic_risk(profile,frequency,waveform='square'):
     return max(hits,default=0.)
 
 
+from functools import lru_cache
+
+@lru_cache(maxsize=1)
+def _sled_min_period_us():
+    return HardwareRegistry().protocol['sledMinPeriodUs']
+
+
 def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDeviceState | None=None):
     state=dataclasses.replace(state) if state is not None else HardwareDeviceState()
     if profile.name=='DVD_SLED' and note.start>state.ready_at+1e-9:
@@ -232,6 +253,11 @@ def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDevice
         if ratio is None: timing=Verdict.UNKNOWN;reasons.append('PITCH_RATIO_UNKNOWN');authorized=False
         else:step=f/ratio
     if name=='DVD_SLED':
+        bands = profile.get('allowedBandsHz')
+        if bands is not None and (step is None or not any(lo <= step <= hi for lo, hi in bands)):
+            quality=Verdict.BLOCKED;authorized=False;reasons.append('OUTSIDE_ALLOWED_BANDS')
+        if step is not None and step > 1000000. / _sled_min_period_us():
+            timing=Verdict.BLOCKED;authorized=False;reasons.append('STEP_INTERVAL_LIMIT')
         travel=profile.get('travelSteps');accel=profile.get('accelerationLimit')
         if travel is None: timing=Verdict.UNKNOWN;reasons.append('TRAVEL_LIMIT_UNKNOWN');authorized=False
         if accel is None:timing=Verdict.UNKNOWN;reasons.append('ACCELERATION_UNKNOWN');authorized=False

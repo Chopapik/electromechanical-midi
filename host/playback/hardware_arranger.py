@@ -13,6 +13,32 @@ from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evalu
 from .performance import PerformancePlan
 
 
+def fold_for_profile(note, minimum, maximum, mode, profile):
+    bands = profile.get('allowedBandsHz')
+    if bands is None:
+        return fold_note(note, minimum, maximum, mode)
+    ratio = profile.get('pitchRatio') if profile.name == 'DVD_SLED' else 1.
+    if ratio is None:
+        return fold_note(note, minimum, maximum, mode)
+    candidates = []
+    for low, high in bands:
+        low, high = max(minimum, low * ratio), min(maximum, high * ratio)
+        if low > high:
+            continue
+        candidate = fold_note(note, low, high, mode)
+        # Strict endpoints: sampled gaps are not qualified.
+        if low <= candidate.hz <= high and candidate.in_range:
+            candidates.append(candidate)
+    if not candidates:
+        # Evaluation rejects this candidate; other instruments are still tried.
+        return fold_note(note, minimum, maximum, mode)
+    if mode == 'low': return min(candidates, key=lambda f: f.octave_shift)
+    if mode == 'high': return max(candidates, key=lambda f: f.octave_shift)
+    import math
+    centre = (minimum + maximum) / 2.
+    return min(candidates, key=lambda f: (abs(f.octave_shift), abs(math.log2(f.hz / centre)), f.octave_shift))
+
+
 def selection_key(evaluation, profile, device_id):
     confidence = {'HIGH': 0, 'MEDIUM': 1, 'LOW': 2, 'UNKNOWN': 3}
     physical = max((confidence[q.confidence] for q in profile.quantities.values()
@@ -96,7 +122,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 transpose = device.transpose + (pin.transpose if pin else 0)
                 shifted = span.note + transpose
                 if pin is None or pin.octave_fold:
-                    fold = fold_note(shifted, slot.capability.min_hz, slot.capability.max_hz, policy['foldMode'])
+                    fold = fold_for_profile(shifted, slot.capability.min_hz, slot.capability.max_hz, policy['foldMode'], profile)
                     played = fold.midi_note + 12 * fold.octave_shift; hz = fold.hz; folded = bool(fold.octave_shift)
                 else: played = shifted; hz = midi_to_hz(shifted); folded = False
             note = HardwareNote(hz, duration, span.start)
