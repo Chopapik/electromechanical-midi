@@ -72,6 +72,8 @@ export function usePlayer(): PlayerApi {
 
   const socketRef = useRef<WebSocket | null>(null)
   const autoSelectedRef = useRef(false)
+  const gateSequence = useRef(0)
+  const pendingGates = useRef<{ requestId: number; devices: VirtualConfig['devices'] } | null>(null)
 
   const send = useCallback((action: string, payload: Record<string, unknown> = {}) => {
     const socket = socketRef.current
@@ -109,6 +111,7 @@ export function usePlayer(): PlayerApi {
       socket.onclose = () => {
         setSocketConnected(false)
         setStartRequested(false)
+        pendingGates.current = null
         if (!disposed) timer = window.setTimeout(connect, RECONNECT_MS)
       }
 
@@ -124,7 +127,15 @@ export function usePlayer(): PlayerApi {
         }
 
         if (message.type === 'state' && message.state) {
-          setState(message.state)
+          if (message.requestId === pendingGates.current?.requestId) pendingGates.current = null
+          const pending = pendingGates.current
+          setState(pending && message.state.virtual ? {
+            ...message.state, virtual: { ...message.state.virtual, config: {
+              ...message.state.virtual.config, devices: message.state.virtual.config.devices.map(device => ({
+                ...device, enabled: pending.devices.find(d => d.id === device.id)?.enabled ?? device.enabled,
+              })),
+            } },
+          } : message.state)
           if (message.state.state === 'playing' || ['play', 'resume', 'stop'].includes(message.completedAction ?? '')) setStartRequested(false)
         } else if (message.type === 'error') {
           setStartRequested(false)
@@ -192,7 +203,21 @@ export function usePlayer(): PlayerApi {
 
   // --- akcje ---
   const play = useCallback(() => send('play'), [send])
-  const configureVirtual = useCallback((config: VirtualConfig, enabled: boolean) => send('set_virtual', { config: { ...config, enabled } }), [send])
+  const configureVirtual = useCallback((config: VirtualConfig, enabled: boolean) => {
+    const withoutGates = (value: VirtualConfig) => JSON.stringify({ ...value,
+      devices: value.devices.map(({ enabled: _enabled, ...device }) => device),
+    })
+    const gatesOnly = state?.virtual && enabled === state.virtual.enabled &&
+      withoutGates(config) === withoutGates(state.virtual.config)
+    const requestId = ++gateSequence.current
+    if (gatesOnly && socketRef.current?.readyState === WebSocket.OPEN) {
+      pendingGates.current = { requestId, devices: config.devices }
+      setState(current => current?.virtual ? { ...current, virtual: {
+        ...current.virtual, config: { ...current.virtual.config, devices: config.devices },
+      } } : current)
+    }
+    send('set_virtual', { config: { ...config, enabled }, requestId })
+  }, [send, state])
   const pause = useCallback(() => send('pause'), [send])
   const resume = useCallback(() => send('resume'), [send])
   const stop = useCallback(() => send('stop'), [send])

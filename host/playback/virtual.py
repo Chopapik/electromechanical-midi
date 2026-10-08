@@ -711,7 +711,7 @@ class VirtualOrchestra:
         for device in self.devices:
             intervals = self.activity.get(device.id, [])
             index = bisect.bisect_right(intervals, (position, float('inf'))) - 1
-            result[device.id] = index >= 0 and position < intervals[index][1] + visual_hold
+            result[device.id] = device.enabled and index >= 0 and position < intervals[index][1] + visual_hold
         return result
 
 class WavePreview:
@@ -971,7 +971,7 @@ class WavePreview:
         n = int((duration + .25) * self.RATE)
         # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
         mix_count = max(1, len([d for d in orchestra.devices
-                                if d.in_preview and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
+                                if d.mode in ('virtual', 'hybrid') and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
         plan = self._plan(orchestra, n)
         # Exact audible intervals, including tails, chokes and suppressed extras.
         self.audio_events = [dataclasses.replace(row[2], duration=row[4] / self.RATE) for row in plan]

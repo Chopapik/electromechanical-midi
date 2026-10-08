@@ -223,8 +223,11 @@ APP_PORT=9000 docker compose up --build
 Tryb ustala uruchomienie backendu. Settings wybiera Enabled dla instrumentów;
 import i preset nie zmieniają trybu wyjścia. Na wspólnym Uno do pierwszego
 testu włącz tylko **FDD #1** i **HDD_VCM #1**. Pozostałe wyłącz.
-`enabled: false` usuwa urządzenie z allocatora, routingu, reinforcement,
-komend hardware i audio, zachowując jego konfigurację.
+`enabled: false` w runtime jest bramką wyjścia: zachowuje przydział nut i plan,
+a zatrzymuje tylko dane urządzenie. Pozostałe instrumenty nie przejmują jego nut.
+Przełącznik reaguje natychmiast w UI; ponowne włączenie wraca do bieżącej nuty.
+Zmiana składu do planowania wymaga usunięcia urządzenia z konfiguracji.
+
 
 Compose montuje `midi/` do kontenera: importy i presety pozostają na dysku
 po zatrzymaniu aplikacji. Plików MIDI nie kopiujemy do obrazu ani Gita.
@@ -1378,7 +1381,7 @@ przypisań nuta-po-nucie, bo plan jest deterministyczny.
 Uruchom aplikację przez `ORCHESTRA_MODE=virtual docker compose up --build`, a następnie wczytaj MIDI. W sekcji **Virtual Orchestra** wybierz **ADD DEVICE**, ustaw tracki i włącz **Virtual hardware output**. Odtwarzanie działa bez Arduino. Zapisane składy są trzymane w `midi/.virtual-orchestra-presets.json`; przywraca je lista **Load preset**. Edycja urządzeń podczas Play zachowuje pozycję i stan odtwarzania: dotychczasowy podgląd gra do chwili przygotowania nowego audio, które zostaje podmienione w bieżącej pozycji.
 Zielona dioda w prawym górnym rogu każdej karty pokazuje, że dana instancja jest aktywna w bieżącej pozycji odtwarzania. Długie nuty świecą przez czas trwania, a uderzenia dają krótki błysk obejmujący pracę mechanizmu. Pauza i stop gaszą wszystkie diody.
 
-Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Tryb wyjścia ustala start backendu: `--no-hardware` oznacza preview; bez tej flagi działa Serial. `enabled` wybiera skład orkiestry, a `mode` jest wewnętrznym detalem adaptera.
+Dane MIDI oraz czasy nut pochodzą z istniejących `MidiSource` i `TempoMap`; istniejący `PlaybackEngine` nadal steruje play, pause, seek i stop. Model mechaniczny w `host/playback/virtual.py` przyjmuje nuty i wydaje decyzje accept/fold/drop, aktualizuje pozycję oraz statystyki, a dopiero zaakceptowane zdarzenia trafiają do renderera. Tryb wyjścia ustala start backendu: `--no-hardware` oznacza preview; bez tej flagi działa Serial. `enabled` wycisza wyjście bez przebudowy planu, a `mode` jest wewnętrznym detalem adaptera.
 
 Profile są serializowane z pochodzeniem każdej wartości (`RESEARCHED`, `ESTIMATED`, `UNKNOWN`). `FDD_CURRENT`, `VHS_CURRENT` i `WD_CAVIAR_CURRENT` opisują **ten konkretny** kod firmware i hosta. `DVD_REFERENCE`, `STEPPER_REFERENCE` i `SOLENOID_REFERENCE` jawnie pozostawiają niezmierzone granice jako `UNKNOWN`; symulator nie odrzuca nut na podstawie nieznanych granic. Wartości 40/40/2 ms są tylko profilem bieżącego HDD. Te profile należy skalibrować dla prawdziwych urządzeń przed traktowaniem wyników jako przewidywań fizycznych.
 Każda instancja może mieć własne nadpisania parametrów wraz z provenance i notatką źródłową. W UI są pod rozwijanym **Device profile**.

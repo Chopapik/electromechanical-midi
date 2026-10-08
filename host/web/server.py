@@ -247,14 +247,15 @@ def create_app(
     # WebSocket: wysylka stanu
     # --------------------------------------------------------
 
-    async def send_state(websocket: WebSocket, completed_action: str | None = None) -> None:
+    async def send_state(websocket: WebSocket, completed_action: str | None = None, request_id=None) -> None:
         if websocket.client_state is not WebSocketState.CONNECTED:
             return
 
         with contextlib.suppress(Exception):
             await websocket.send_json(
                 {"type": "state", "state": await asyncio.to_thread(engine.snapshot),
-                 **({"completedAction": completed_action} if completed_action else {})}
+                 **({"completedAction": completed_action} if completed_action else {}),
+                 **({"requestId": request_id} if request_id is not None else {})}
             )
 
     async def broadcast(payload: dict) -> None:
@@ -687,7 +688,7 @@ def create_app(
                 except Exception as exc:  # pragma: no cover - bezpiecznik
                     await websocket.send_json({"type": "error", "message": str(exc)})
 
-                await send_state(websocket, completed_action=message.get("action"))
+                await send_state(websocket, completed_action=message.get("action"), request_id=message.get("requestId"))
         except (WebSocketDisconnect, WebSocketDisconnected):
             # Starlette potrafi rzucic oba warianty: WebSocketDisconnect (klient
             # przyslal disconnect) i WebSocketDisconnected (stan gniazda).

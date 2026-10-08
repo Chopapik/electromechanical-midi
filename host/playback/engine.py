@@ -846,12 +846,59 @@ class PlaybackEngine:
     def _physical_context_locked(self):
         # The preview stays legacy. Explicit real/hybrid instances opt into the
         # physical planner even while disconnected (which yields NO_DEVICE).
-        if self._controller_target != 'esp32' or not any(d.drives_hardware for d in self._orchestra.instances()):
+        if self._controller_target != 'esp32' or not any(d.mode in ('real', 'hybrid') for d in self._orchestra.instances()):
             return None
         if not hasattr(self, '_physical_registry'):
             self._physical_registry = HardwareRegistry()
         return HardwareContext(self._hardware.connected, self._physical_registry,
                                self._orchestra.hardware.get('inventory'))
+
+    def _planning_orchestra_locked(self):
+        # Enabled is an output gate, never an allocator inventory change.
+        config = copy.deepcopy(self._orchestra)
+        for device in config.devices:
+            device['enabled'] = True
+        return config
+
+    def _output_enabled_locked(self, command):
+        device = self._hardware_bound.get(command.lane)
+        return device is None or next((d.get('enabled', True) for d in self._orchestra.devices
+                                      if d['id'] == device.id), True)
+
+    def _gate_devices_locked(self, devices):
+        previous = {d.id: d.enabled for d in self._virtual.devices}
+        gates = {d['id']: d.get('enabled', True) for d in devices}
+        for device in self._virtual.devices:
+            device.enabled = gates[device.id]
+        for device in self._orchestra.devices:
+            device['enabled'] = gates[device['id']]
+        if self._arrangement is not None:
+            for device in self._arrangement.data['devices']:
+                device['enabled'] = gates[device['id']]
+        changed = {ident for ident in gates if gates[ident] != previous.get(ident, True)}
+        position = self._position_locked()
+        if self._transport is not None:
+            for lane, device in self._hardware_bound.items():
+                if device.id not in changed:
+                    continue
+                family, _, ident = lane.partition(':')
+                prefix = 'VHS' if family == 'drum' else f'{family.upper()} {ident}'
+                if not gates[device.id]:
+                    if ':' in lane:
+                        self._send_raw_locked(f'{prefix} STOP')
+                    else:
+                        self._send_locked(Command(position, 'stop', lane=lane))
+                elif self._state is PlaybackState.PLAYING and self._timeline:
+                    # Resume only the tone currently reserved for this lane.
+                    # Never replay one-shot percussion or change the playhead.
+                    current = next((c for c in reversed(self._timeline.commands)
+                                    if c.lane == lane and c.time <= position), None)
+                    if current and current.is_note_on:
+                        self._send_locked(current)
+        if changed and self._virtual_mode and self._timeline:
+            self._preview_generation += 1
+            self._request_preview_locked(copy.deepcopy(self._virtual), self._timeline.duration)
+        self._wake.set()
 
     def _build_plan_locked(self) -> None:
         """MIDI + orkiestra -> plan wykonania. Bez tego nie ma czego grac."""
@@ -867,7 +914,7 @@ class PlaybackEngine:
         pins = (manual_pins(self._arrangement, self._normalized)
                 if self._arrangement is not None else {})
         self._plan = allocate(
-            self._normalized, self._orchestra, pins=pins,
+            self._normalized, self._planning_orchestra_locked(), pins=pins,
             name=self._source.path.stem,
             origin='manual' if self._arrangement is not None else 'auto',
             hardware_context=self._physical_context_locked())
@@ -950,7 +997,7 @@ class PlaybackEngine:
         # wszystkich zdarzeniach planu.
         self._plan_report = self._plan.report()
 
-        bound, unmapped = bind_devices(self._orchestra.instances() if self._plan.hardware else self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
+        bound, unmapped = bind_devices(self._planning_orchestra_locked().instances() if self._plan.hardware else self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
         if self._plan.hardware:
             allowed = set(self._plan.hardware['physicalLanes'].values())
             bound = {lane:d for lane,d in bound.items() if lane in allowed}
@@ -961,6 +1008,9 @@ class PlaybackEngine:
         hardware_commands = (build_plan_commands(self._plan, bound) if self._plan.hardware
                              else build_commands(self._virtual, bound))
         self._hardware_active = bool(hardware_commands)
+        gates = {d['id']: d.get('enabled', True) for d in self._orchestra.devices}
+        for device in self._virtual.devices:
+            device.enabled = gates.get(device.id, True)
 
         merged = list(timeline.commands) + hardware_commands
         self._timeline = Timeline.from_commands(merged, timeline.stats)
@@ -1035,6 +1085,16 @@ class PlaybackEngine:
         candidate.set_config(payload)
         with self._lock:
             enabled = bool(payload.get('enabled', True))
+            previous = self._virtual.config()
+            proposed = candidate.config()
+            def without_gates(config):
+                config = copy.deepcopy(config)
+                for device in config['devices']:
+                    device.pop('enabled', None)
+                return config
+            if enabled == self._virtual_mode and without_gates(previous) == without_gates(proposed):
+                self._gate_devices_locked(proposed['devices'])
+                return
             # Output gain does not change the plan or require WAV regeneration.
             previous = self._virtual.config()
             proposed = candidate.config()
@@ -1141,7 +1201,18 @@ class PlaybackEngine:
     def set_orchestra(self, payload: dict) -> None:
         """Zmiana dostepnego sprzetu - plan powstaje od nowa."""
         with self._lock:
-            self._orchestra = parse_orchestra(self._runtime_config(payload))
+            proposed = parse_orchestra(self._runtime_config(payload))
+            previous = self._orchestra.as_dict()
+            candidate = proposed.as_dict()
+            def ungated(config):
+                config = copy.deepcopy(config)
+                for device in config['devices']:
+                    device.pop('enabled', None)
+                return config
+            if ungated(previous) == ungated(candidate):
+                self._gate_devices_locked(proposed.devices)
+                return
+            self._orchestra = proposed
             self._orchestra.devices = self._runtime_config({'devices': self._orchestra.devices})['devices']
             self._auto_arrange = True
             self._arrangement = None
@@ -1831,7 +1902,7 @@ class PlaybackEngine:
     # ==========================================================
 
     def _sync_v2_devices_locked(self, force: bool = False) -> None:
-        bound, _ = bind_devices(self._orchestra.instances(), 2)
+        bound, _ = bind_devices(self._planning_orchestra_locked().instances(), 2)
         context = self._physical_context_locked()
         if context is not None:
             filtered={}
@@ -1945,6 +2016,9 @@ class PlaybackEngine:
             if command.lane != 'virtual' and ':' not in command.lane:
                 break
             if command.lane != 'virtual':
+                if not self._output_enabled_locked(command):
+                    index += 1
+                    continue
                 reason = self._late_reason_locked(index, position)
                 if reason:
                     self._record_late_drop_locked(reason)
@@ -1984,6 +2058,8 @@ class PlaybackEngine:
 
     def _send_locked(self, command: Command) -> bool:
         """Wysyla komende. False = lacze padlo (stan -> PAUSED + blad)."""
+        if not self._output_enabled_locked(command) and command.kind in ('play', 'drum_on', 'hit', 'tray_pulse'):
+            return True
         transport = self._transport
 
         if transport is None:

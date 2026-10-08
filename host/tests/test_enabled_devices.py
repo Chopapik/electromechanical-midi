@@ -109,14 +109,63 @@ class EnabledDevicesTest(unittest.TestCase):
                         self.assertEqual(len(snapshot['config']['devices']), len(payload['devices']))
                         selected = [d for d in snapshot['config']['devices'] if d['enabled']]
                         self.assertEqual({d['mode'] for d in selected}, {'virtual' if preview else 'real'})
-                        self.assertEqual({e.device_id for e in engine._plan.events if e.played},
-                                         {'fdd-1', 'hdd_vcm-1'})
-                        engine.configure_virtual({**payload, 'devices': [
-                            {**d, 'enabled': False} for d in payload['devices']]})
-                        self.assertFalse(any(e.played for e in engine._plan.events))
+                        plan = engine._plan
+                        timeline = engine._timeline
+                        revision = engine._arrangement_revision
+                        self.assertTrue(any(e.played for e in plan.events))
+                        engine.configure_virtual({**snapshot['config'], 'devices': [
+                            {**d, 'enabled': False} for d in snapshot['config']['devices']]})
+                        self.assertIs(engine._plan, plan)
+                        self.assertIs(engine._timeline, timeline)
+                        self.assertEqual(engine._arrangement_revision, revision)
+                        self.assertFalse(any(d.enabled for d in engine._virtual.devices))
                         self.assertEqual(engine.snapshot()['virtual']['enabled'], preview)
                 finally:
                     engine.shutdown()
+
+    def test_gate_stops_only_target_and_resumes_reserved_tone(self):
+        from playback.timeline import Command, Timeline
+        from playback.engine import PlaybackState
+        from unittest.mock import Mock
+        engine = PlaybackEngine(auto_arrange=True, preview_mode=False, realtime=False)
+        self.addCleanup(engine.shutdown)
+        engine.configure_virtual(web_startup_config())
+        engine.load_file(self.path)
+        target = engine._virtual.devices[0]
+        other = engine._virtual.devices[1]
+        engine._hardware_bound = {'fdd:1': target, 'fdd:2': other}
+        engine._timeline = Timeline.from_commands([
+            Command(0, 'play', 250, lane='fdd:1'),
+            Command(0, 'play', 300, lane='fdd:2'),
+            Command(10, 'stop', lane='fdd:1')])
+        engine._state = PlaybackState.PLAYING
+        engine._position_base = 1
+        transport = Mock(protocol_version=2)
+        engine._transport = transport
+        engine._hardware.homed = True
+        plan, timeline, revision = engine._plan, engine._timeline, engine._arrangement_revision
+        payload = engine._virtual.config()
+        payload['devices'][0]['enabled'] = False
+        engine.configure_virtual(payload)
+        transport.send.assert_called_once_with('FDD 1 STOP')
+        self.assertIs(engine._plan, plan)
+        self.assertIs(engine._timeline, timeline)
+        self.assertEqual(engine._arrangement_revision, revision)
+        self.assertIs(engine._state, PlaybackState.PLAYING)
+        transport.reset_mock()
+        self.assertTrue(engine._send_locked(Command(2, 'play', 250, lane='fdd:1')))
+        transport.send.assert_not_called()
+        engine._next_index = 0
+        engine._send_due_batch_locked(0)
+        transport.send_batch.assert_called_once_with(['FDD 2 PLAY 300.00'])
+        transport.reset_mock()
+        engine._send_locked(Command(2, 'play', 300, lane='fdd:2'))
+        transport.send.assert_called_once_with('FDD 2 PLAY 300.00')
+        transport.reset_mock()
+        payload['devices'][0]['enabled'] = True
+        engine.configure_virtual(payload)
+        transport.send.assert_called_once_with('FDD 1 PLAY 250.00')
+        engine._transport = None
 
     def test_container_mode_preserves_existing_no_hardware_flag(self):
         from host.web.server import build_parser

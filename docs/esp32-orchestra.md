@@ -188,11 +188,16 @@ playback engine binds lanes `fdd:1`…`fdd:4`, `sled:1`…`sled:4`, etc.
 ID = device's order within its family in configuration (including disabled
 and virtual entries); disabling device 1 never renumbers device 2. Keep that
 order aligned with wiring. Extra unsupported instances appear as unmapped.
-Disabled devices have no allocation, accepted render events, Serial commands
-or active telemetry. Changing a disabled flag stops that actuator; newly enabled
-FDD needs confirmed HOME before Play. After reconnect/upload/reset, the host
-synchronizes configured enabled flags, executes FDD ALL HOME and polls complete
-status until every enabled FDD is homed. Device errors never disconnect USB.
+The UI Enabled switch is an output gate, not an allocator inventory change.
+All configured voices retain their original assignments, including muted voices;
+changing Enabled preserves the PerformancePlan, timeline, playhead and revision.
+Disabling sends only the target actuator STOP and suppresses subsequent commands.
+Re-enabling resumes its currently reserved sustained tone, without replaying hits.
+The switch updates optimistically; stale snapshots cannot undo a pending click.
+Firmware lanes remain enabled/homed independently of these output gates. After
+reconnect/upload/reset, the host configures the physical lanes and confirms HOME
+before playback. Device errors never disconnect USB. To actually change planning
+capacity, remove a device or change the declared hardware inventory.
 
 In **Orchestra → Load preset → ESP32 bring-up**, load the target inventory:
 4 FDD, 4 HDD, 1 VHS enabled in real mode; 4 sled and 2 tray disabled.

@@ -15,7 +15,7 @@ Virtual-only configurations keep the existing allocator and PCM renderer. Uno's
 original controller and protocol remain unchanged. No new physics audio renderer
 was implemented. The preview is a historical/demo approximation.
 
-The ESP32 runtime selects physical planning when any enabled instance is `real`
+The ESP32 runtime selects physical planning when any configured instance is `real`
 or `hybrid`. A disconnected controller yields `NO_DEVICE`, not fictitious voices.
 On connection the plan is rebuilt. Even the old single-track ESP32 runtime cannot
 bypass physical profiles. Only actual command-capable v2 lanes are eligible.

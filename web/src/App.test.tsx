@@ -811,6 +811,10 @@ describe('App', () => {
     expect(socket.actions().at(-1)).toMatchObject({
       action: 'set_virtual', config: { devices: [{ id: 'a', enabled: false }] },
     })
+    expect(toggle.getAttribute('aria-checked')).toBe('false')
+    await act(async () => socket.emit({ type: 'state', state: { ...STATE, virtual: {
+      enabled: true, config: { name: 'Test', devices: [device] }, report: {}, activity: {}, profiles: [] } } }))
+    expect(toggle.getAttribute('aria-checked')).toBe('false')
     await act(async () => socket.emit({ type: 'state', state: { ...STATE, virtual: {
       enabled: true, config: { name: 'Test', devices: [{ ...device, enabled: false }] },
       report: {}, activity: {}, profiles: [] } } }))
