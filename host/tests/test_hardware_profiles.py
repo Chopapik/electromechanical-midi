@@ -94,7 +94,8 @@ class ProfileTests(unittest.TestCase):
         e=evaluate(self.r.effective('DVD_SLED'),HardwareNote(250,.2,0));self.assertFalse(e.authorized)
         self.assertIn('TRAVEL_LIMIT_UNKNOWN',e.reasons)
     def test_fdd_calibration_retained(self):
-        p=self.r.effective('FDD','fdd:1');self.assertEqual(p.get('musicalHz'),[130,410]);self.assertEqual(p.get('travelSteps'),72)
+        p=self.r.effective('FDD','fdd:1');self.assertEqual(p.get('stableHz'),[130,410]);self.assertEqual(p.get('travelSteps'),72)
+        for i in range(1,5):self.assertEqual(self.r.effective('FDD',f'fdd:{i}').get('musicalHz'),[200,410])
     def test_bad_metadata_rejected(self):
         with self.assertRaises(ValueError):HardwareQuantity.parse(quantity(None,confidence='HIGH')|{'confidence':'HIGH'})
     def test_nonfinite_rejected(self):

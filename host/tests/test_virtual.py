@@ -22,7 +22,7 @@ def span(start, end, note=69):
 class VirtualMechanicsTest(unittest.TestCase):
     def test_fdd_calibrated_comfort_does_not_replace_firmware_limits(self):
         profile = PROFILES['FDD_CURRENT']
-        self.assertEqual(profile.get('preferredMinHz'), 130)
+        self.assertEqual(profile.get('preferredMinHz'), 200)
         self.assertEqual(profile.get('preferredMaxHz'), 410)
         self.assertEqual(profile.parameters['preferredMaxHz'].provenance, 'MEASURED')
         self.assertEqual(profile.get('minHz'), 40)

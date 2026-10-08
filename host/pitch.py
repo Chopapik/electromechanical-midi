@@ -1,18 +1,18 @@
 """Konwersja wysokosci dzwieku MIDI <-> Hz oraz skladanie oktawowe.
 
-Domyslny zakres FDD to 130-410 Hz. Gorna granica jest skalibrowana
+Domyslny zakres FDD to 200-410 Hz. Gorna granica jest skalibrowana
 dla konkretnej stacji w docelowej orientacji; muzyczny dol pozostaje
-dotychczasowym ustawieniem, nie nowym wynikiem pomiaru.
+roboczym ustawieniem 200 Hz, nie wynikiem pomiaru.
 Ten modul sprowadza dowolna nuta MIDI do tego zakresu wylacznie przez
 przesuniecie o cale oktawy - klasa wysokosci dzwieku nigdy sie nie zmienia.
 
-Przyklady (zakres 130-410 Hz):
+Przyklady (zakres 200-410 Hz):
 
     C5 = 523.25 Hz  ->  C4 = 261.63 Hz   (shift -1)
-    C2 =  65.41 Hz  ->  C3 = 130.81 Hz   (shift +1)
+    C2 =  65.41 Hz  ->  C4 = 261.63 Hz   (shift +2)
     A4 = 440.00 Hz  ->  A3 = 220.00 Hz   (shift -1)
 
-Jesli zakres bylby wezszy niz oktawa (czego przy 130-410 Hz nie ma),
+Jesli zakres bylby wezszy niz oktawa (czego przy 200-410 Hz nie ma),
 dla czesci nut nie istnieje oktawa mieszczaca sie w zakresie. Wtedy
 zwracamy najblizsza czestotliwosc i ustawiamy ``in_range=False``.
 
@@ -44,15 +44,15 @@ NOTE_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
 # Stress-test na roznych pozycjach, delta krokow po powrocie do TRACK0:
 # 410 Hz: 38/40; 411-423 Hz: graniczne/niestabilne; 424 i 425 Hz: 0/40 kazde.
 # Mechanical minimum <= 5 Hz (5/5 bez utraty krokow), NIE muzyczny comfort min.
-# Muzyczny dol nie zostal jeszcze ustalony; zachowujemy dotychczasowe 130 Hz.
+# Roboczy muzyczny dol 200 Hz wybrany do testu mikroruchow; nie mechaniczne minimum.
 # Metodologia i wyniki: README.md, "Fizyczna kalibracja FDD".
-COMFORT_MIN_HZ = 130.0
+COMFORT_MIN_HZ = 200.0
 COMFORT_MAX_HZ = 410.0
 
 # Tryby skladania oktawowego:
 #   auto - jak najmniejsza ingerencja: nuta zostaje, jesli sie miesci
 #          (domyslne; C5 = 523 Hz -> C4 = 261.6 Hz)
-#   low  - zawsze najnizsza oktawa z zakresu (130-260 Hz): bez skokow
+#   low  - zawsze najnizsza oktawa z zakresu (200-400 Hz): bez skokow
 #   high - zawsze najwyzsza oktawa z zakresu (205-410 Hz): bez skokow
 FOLD_MODES = ("auto", "low", "high")
 

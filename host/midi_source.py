@@ -348,6 +348,41 @@ def monophonic(notes: list[NoteSpan], strategy: str = "highest") -> list[NoteSpa
 # ============================================================
 
 
+def _channel_tracks(tracks: list[mido.MidiTrack]) -> list[mido.MidiTrack]:
+    """Expose mixed tracks as channel tracks without changing absolute ticks.
+
+    Applies to Type 0 and mixed Type 1 tracks. Single-channel tracks stay
+    intact. Shared text/meta events occur once, on the first channel track;
+    tempo is always read from the original file. Each view retains the
+    original end tick, including for dangling notes.
+    """
+    result = []
+    for track in tracks:
+        note_channels = {m.channel for m in track
+                         if m.type == 'note_on' and m.velocity > 0}
+        if len(note_channels) <= 1:
+            result.append(track)
+            continue
+        channels = sorted({m.channel for m in track if hasattr(m, 'channel')})
+        for index, channel in enumerate(channels):
+            view = mido.MidiTrack()
+            name = track.name.strip() or 'MIDI'
+            view.append(mido.MetaMessage('track_name', name=f'{name} · ch {channel + 1}'))
+            tick = previous_tick = 0
+            for message in track:
+                tick += message.time
+                if message.type in ('track_name', 'end_of_track'):
+                    continue
+                keep = (message.channel == channel if hasattr(message, 'channel')
+                        else index == 0)
+                if keep:
+                    view.append(message.copy(time=tick - previous_tick))
+                    previous_tick = tick
+            view.append(mido.MetaMessage('end_of_track', time=tick - previous_tick))
+            result.append(view)
+    return result
+
+
 class MidiSource:
     """Plik MIDI + wygodny dostep do trackow i nut."""
 
@@ -369,11 +404,12 @@ class MidiSource:
             )
 
         self.tempo = TempoMap(self._midi)
+        self._tracks = _channel_tracks(self._midi.tracks)
 
         self._notes_cache: dict[int, list[NoteSpan]] = {}
         self._text_cache: tuple[TimedText, ...] | None = None
         self.tracks: list[TrackInfo] = [
-            self._describe(index) for index in range(len(self._midi.tracks))
+            self._describe(index) for index in range(len(self._tracks))
         ]
 
         if not any(track.note_count for track in self.tracks):
@@ -395,7 +431,7 @@ class MidiSource:
         return float(self._midi.length)
 
     def _describe(self, index: int) -> TrackInfo:
-        track = self._midi.tracks[index]
+        track = self._tracks[index]
 
         note_count = 0
         channels: list[int] = []
@@ -423,13 +459,13 @@ class MidiSource:
     def programs(self, track_index: int) -> tuple[int, ...]:
         """GM program changes on the track's note channels (zero based)."""
         channels = set(self.tracks[track_index].channels)
-        return tuple(message.program for message in self._midi.tracks[track_index]
+        return tuple(message.program for message in self._tracks[track_index]
                      if message.type == 'program_change' and message.channel in channels)
 
     def expression_events(self) -> tuple[dict, ...]:
         """Timed expression in seconds; channel scope crosses track boundaries."""
         events = []
-        for track, messages in enumerate(self._midi.tracks):
+        for track, messages in enumerate(self._tracks):
             tick = 0
             for order, message in enumerate(messages):
                 tick += message.time
@@ -451,7 +487,7 @@ class MidiSource:
         """Timed text and karaoke events, including text-only tracks."""
         if self._text_cache is None:
             events = []
-            for index, track in enumerate(self._midi.tracks):
+            for index, track in enumerate(self._tracks):
                 tick = 0
                 for message in track:
                     tick += message.time
@@ -471,14 +507,14 @@ class MidiSource:
         return self._notes_cache[track_index]
 
     def _extract(self, track_index: int) -> list[NoteSpan]:
-        if not 0 <= track_index < len(self._midi.tracks):
+        if not 0 <= track_index < len(self._tracks):
             raise MidiSourceError(
                 f"track {track_index} nie istnieje "
-                f"(plik ma {len(self._midi.tracks)} trackow)"
+                f"(plik ma {len(self._tracks)} trackow)"
             )
 
         tempo = self.tempo
-        track = self._midi.tracks[track_index]
+        track = self._tracks[track_index]
 
         notes: list[NoteSpan] = []
         active: dict[tuple[int, int], tuple[float, int, int]] = {}

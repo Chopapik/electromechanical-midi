@@ -18,14 +18,14 @@
         },
         "musicalHz": {
           "value": [
-            130,
+            200,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "measured upper endpoint 410 Hz (38/40); retained lower 130 Hz, NOT a measured musical minimum",
-          "evidenceType": "DERIVED",
-          "confidence": "HIGH"
+          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "evidenceType": "FACT",
+          "confidence": "LOW"
         },
         "travelSteps": {
           "value": 72,
@@ -110,6 +110,17 @@
           "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
           "evidenceType": "DERIVED",
           "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [
+            200,
+            410
+          ],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "evidenceType": "FACT",
+          "confidence": "LOW"
         }
       }
     },
@@ -145,6 +156,17 @@
           "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
           "evidenceType": "DERIVED",
           "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [
+            200,
+            410
+          ],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "evidenceType": "FACT",
+          "confidence": "LOW"
         }
       }
     },
@@ -179,6 +201,17 @@
           "uncertainty": null,
           "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
           "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [
+            200,
+            410
+          ],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "evidenceType": "FACT",
           "confidence": "LOW"
         }
       }

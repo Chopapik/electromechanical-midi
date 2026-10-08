@@ -309,9 +309,9 @@ class TestSeek(EngineTestCase):
 
         plays = self.transport.plays()
 
-        # Dokladnie jedna nuta od razu po seeku (E3 = 164.81 Hz).
+        # Dokladnie jedna nuta od razu po seeku (E3 zlozone do E4 = 329.63 Hz).
         self.assertEqual(len(plays), 1)
-        self.assertEqual(plays[0], "PLAY 164.81")
+        self.assertEqual(plays[0], "PLAY 329.63")
 
         # ...i nadal gra 1.8 s pozniej, bez ponownego PLAY.
         time.sleep(1.3)
@@ -549,8 +549,8 @@ class TestZmianaTracku(EngineTestCase):
 
         self.assertEqual(self.engine.snapshot()["transpose"], "low")
         self.assertIs(self.engine.state, PlaybackState.PLAYING)
-        # W trybie low C5 gra jako C3 = 130.81 Hz.
-        self.assertEqual(self.transport.fdd_since(before), ["STOP", "PLAY 130.81"])
+        # W trybie low C5 gra jako C4 = 261.63 Hz.
+        self.assertEqual(self.transport.fdd_since(before), ["STOP", "PLAY 261.63"])
 
 
 # ============================================================

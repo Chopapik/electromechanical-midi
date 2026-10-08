@@ -291,7 +291,7 @@ uruchamiania całego zestawu jest opisany wyżej `docker compose up --build`.
 │  1:17 ━━━━━━━━●━━━━━━━━━━━━━━━ 4:03          │
 │ MIDI     [ Sail to the Moon.mid        ▾ ]   │
 │ Track    [ Thom Vox                    ▾ ]   │
-│ Transpose[ LOW 130–260 Hz              ▾ ]   │
+│ Transpose[ LOW 200–400 Hz              ▾ ]   │
 │ ● Arduino connected                          │
 │   /dev/cu.usbmodem14101            Reconnect │
 └──────────────────────────────────────────────┘
@@ -307,7 +307,7 @@ uruchamiania całego zestawu jest opisany wyżej `docker compose up --build`.
 * **Aktualna nuta** (`E3`) i **częstotliwość** (`164.81 Hz`), a w ciszy `REST`.
   Jeśli nuta została złożona oktawowo, UI pokazuje też nutę źródłową.
 * **Progress bar** z czasem `1:17 / 4:03`.
-* **Transpose** - `AUTO` / `LOW 130–260 Hz` / `HIGH 205–410 Hz`
+* **Transpose** - `AUTO` / `LOW 200–400 Hz` / `HIGH 205–410 Hz`
   (patrz sekcja 9).
 * **Status sprzętu** - zielona/czerwona kropka, port, komunikat błędu i
   przycisk **Reconnect** (plus wybór portu, gdy jest ich kilka).
@@ -428,7 +428,7 @@ Zasady działania:
 * przerwa → `DRUM 0`,
 * nuty stykające się nie dostają `DRUM 0` — dźwięk przechodzi płynnie,
 * osobny mapper wysokości: zakres **110–880 Hz** i składanie oktawowe,
-  niezależne od zakresu FDD (130–410 Hz),
+  niezależne od zakresu FDD (200–410 Hz),
 * monofonizacja: ta sama strategia co dla FDD (`highest`/`lowest`/`last`),
 * **seek** wznawia stan **obu** linii (jeśli w danej chwili trwa nuta bębna,
   od razu leci `DRUMF` + `DRUM 74`),
@@ -589,7 +589,7 @@ Po połączeniu serwer od razu wysyła stan, a potem publikuje go cyklicznie
     "frequency": 164.81,
     "transpose": "low",
     "strategy": "highest",
-    "range": { "minHz": 130, "maxHz": 410 },
+    "range": { "minHz": 200, "maxHz": 410 },
     "stats": { "notes": 84, "folded": 80, "skipped": 0, "playCommands": 84 },
     "hardware": { "connected": true, "port": "/dev/cu.usbmodem14101",
                   "label": "Arduino", "error": null, "log": [] },
@@ -679,7 +679,7 @@ Transpose mode:
 AUTO
 
 Range:
-130-410 Hz
+200-410 Hz
 
 Utwor: 16.87 s (1 zmian tempa z pliku MIDI)
 Nut: 30 (zlozone oktawowo: 0, pominiete: 0)
@@ -700,7 +700,7 @@ host czeka na to, zanim zacznie grać.
 | `--list-ports` | wypisz porty szeregowe i zakończ |
 | `--port PORT` | wskaż port ręcznie (domyślnie autodetekcja) |
 | `--baud N` | prędkość Serial (domyślnie 115200) |
-| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 130-410) |
+| `--min-hz`, `--max-hz` | zakres stacji (domyślnie 200-410) |
 | `--transpose auto\|low\|high` | tryb składania oktawowego |
 | `--strategy highest\|lowest\|last` | co zrobić z akordem |
 | `--gate (0, 1]` | jaka część nuty ma zabrzmieć (staccato) |
@@ -775,7 +775,7 @@ o całe oktawy** - klasa wysokości dźwięku (C, C#, D…) nigdy się nie zmien
 
 ```
 523.25 Hz (C5)  →  261.63 Hz (C4)     -1 oktawa
- 65.41 Hz (C2)  →  130.81 Hz (C3)     +1 oktawa
+ 65.41 Hz (C2)  →  261.63 Hz (C4)     +2 oktawy
 440.00 Hz (A4)  →  220.00 Hz (A3)     -1 oktawa
 ```
 
@@ -784,10 +784,10 @@ o całe oktawy** - klasa wysokości dźwięku (C, C#, D…) nigdy się nie zmien
 | Tryb | Zasada | Efekt |
 | --- | --- | --- |
 | `auto` *(domyślny)* | nuta zostaje, jeśli mieści się w zakresie; inaczej najbliższa oktawa | zgodny z przykładem `523 → 261.5`; **melodia przechodząca przez granicę 410 Hz może mieć skok o oktawę** |
-| `low` | zawsze najniższa oktawa z zakresu (**130-260 Hz**) | melodia bez skoków, wszystko niżej |
+| `low` | zawsze najniższa oktawa z zakresu (**200-400 Hz**) | melodia bez skoków, wszystko niżej |
 | `high` | zawsze najwyższa oktawa z zakresu (**205-410 Hz**) | melodia bez skoków, wszystko wyżej |
 
-Dlaczego to ma znaczenie: przy zakresie szerszym niż oktawa (410/130 ≈ 3.15)
+Dlaczego to ma znaczenie: przy zakresie szerszym niż oktawa (410/200 = 2.05)
 granica "zostaje / spada o oktawę" wypada na 410 Hz. W trybie `auto`
 `G4 = 392.0 Hz` zostaje, a `G#4 = 415.3 Hz` spada do `207.7 Hz` - słychać skok.
 
@@ -806,7 +806,7 @@ python host/player.py midi/range-test.mid --track 0 --transpose low
 
 ### Gdy nuta nie mieści się w zakresie
 
-Przy 130-410 Hz (ponad oktawa) **każda** nuta MIDI ma swoją oktawę w zakresie,
+Przy 200-410 Hz (ponad oktawa) **każda** nuta MIDI ma swoją oktawę w zakresie,
 więc `in_range` jest zawsze prawdziwe. Gdyby jednak zakres był węższy niż
 oktawa (np. `--min-hz 100 --max-hz 130`), dla części nut nie istnieje dobra
 oktawa. Wtedy program:
@@ -929,8 +929,10 @@ podsumowaniu.
 | 425 Hz | 0/40 | praktycznie no-go |
 | 5 Hz | 5/5, bez utraty kroków | mechaniczne minimum **≤ 5 Hz**, nie muzyczny dolny limit |
 
-Domyślny zakres hosta wynosi teraz **130–410 Hz**. Muzyczny dolny limit nie
-został jeszcze ustalony: `COMFORT_MIN_HZ` pozostaje **130.0**, a nie 5 Hz.
+Domyślny zakres hosta wynosi teraz **200–410 Hz**. Roboczy muzyczny dolny limit
+`COMFORT_MIN_HZ = 200.0` wybrano do testu mikroruchów przy niskich nutach;
+nie jest to pomiar mechanicznego minimum. Profile fizycznych FDD1–4 mają
+identyczne `musicalHz = [200, 410]`; historyczne wyniki kalibracji pozostają bez zmian.
 Profil `FDD_CURRENT` pobiera obie granice comfort z `host/pitch.py`.
 Allocator orkiestry i symulacja FDD używają tego samego zakresu muzycznego;
 tryby virtual, real i hybrid nie zmieniają zakresu. Audio i komendy hardware
@@ -947,7 +949,7 @@ nie potwierdzonym zakresem comfort; ten pomiar ich nie zmienia.
 * **Jedna stacja = jedna nuta naraz.** Akordy są redukowane do pojedynczej
   linii (patrz sekcja 10).
 * Jedna stacja obsługiwana jednocześnie (`FloppyDrive drive` w firmware).
-* Zakres 130-410 Hz; poza nim trzeba zmienić `--min-hz` / `--max-hz`
+* Zakres 200-410 Hz; poza nim trzeba zmienić `--min-hz` / `--max-hz`
   (świadomie) albo liczyć się z gubieniem kroków.
 * Głowica cały czas jeździ - długie nuty to kilka przejazdów po ścieżkach,
   co słychać jako zmianę barwy.
@@ -1208,6 +1210,20 @@ Kontrola `2+2=5`: liczba zdarzeń, NOTE_ON (bit w bit), decyzje allokatora
 (urządzenie/wynik/rola) i `sourceDuration` **identyczne**; zmieniają się
 wyłącznie długości na FDD. Ten utwór też zyskuje: continuity 0,843 → 0,942,
 cisza 14,0 s → 6,9 s.
+
+### MIDI Type 0 i mieszane kanały
+
+Przy imporcie ścieżki zawierające nuty na wielu kanałach są rozdzielane
+na logiczne ścieżki kanałowe. Dotyczy to MIDI Type 0 oraz mieszanych
+ścieżek Type 1. Dzięki temu kanał 10 jest perkusją, a gitary, bas i melodia
+na pozostałych kanałach przechodzą zwykłą analizę i alokację orkiestry.
+
+Podział zachowuje absolutne czasy nut, mapę tempa, długość pliku,
+program changes i kontrolery kanałów. Tekst i lyrics nie są powielane.
+Oryginalny plik pozostaje bez zmian; ścieżki jednokanałowe zachowują nazwy
+i indeksy, jeśli plik nie wymaga podziału. W mieszanych plikach lista
+ścieżek ma nowe indeksy i nazwy z numerem kanału (`ch 1`–`ch 16`).
+Stare ręczne przypisania dla takich plików wymagają sprawdzenia mapowania.
 
 ### Normalizacja źródeł: double-tracking
 
