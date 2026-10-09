@@ -30,7 +30,15 @@ export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose
   }}>
     <header><h2>Settings</h2><button type="button" aria-label="Close Settings" onClick={onClose}><X size={18} weight="fill" aria-hidden="true" /></button></header>
     <div className="settings-body">
-      {(hardwareMode || player.state?.hardware.controllerTarget === 'esp32') && <section aria-label="Połączenie Arduino">
+      <section aria-label="Wyjście odtwarzania">
+        <h3>Wyjście odtwarzania</h3>
+        <label><input type="checkbox" aria-label="Graj na instrumentach wirtualnych"
+          checked={!!player.state?.virtual?.enabled}
+          disabled={player.state?.state !== 'stopped'}
+          onChange={event => player.setOutputMode(event.target.checked)} /> Graj na instrumentach wirtualnych (bez wysyłania nut do ESP32)</label>
+        <p>Zmiana wymaga STOP. Powrót do sprzętu ponownie łączy kontroler i wykonuje HOME.</p>
+      </section>
+      {hardwareMode && <section aria-label="Połączenie Arduino">
         <h3>Połączenie kontrolera</h3>
         <HardwareStatus hardware={player.state?.hardware ?? null} ports={player.ports}
           onReconnect={player.reconnect} onHome={player.home} onRefreshPorts={player.refreshPorts} />

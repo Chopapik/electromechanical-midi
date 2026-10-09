@@ -205,6 +205,11 @@ docker compose down
 ### 4.1. Hardware / virtual
 
 Domyślny tryb to **hardware**, z automatycznym wykrywaniem Arduino.
+Po uruchomieniu można przełączyć wyjście bez restartu kontenera: naciśnij
+**STOP**, otwórz **Settings → Wyjście odtwarzania** i zaznacz **Graj na
+instrumentach wirtualnych**. Aplikacja zatrzymuje i rozłącza ESP32; kolejne
+Play korzysta wyłącznie z audio hosta. Odznaczenie pola wraca do hardware,
+ponownie łączy kontroler i wykonuje HOME przed odtwarzaniem.
 Przy kilku równorzędnych portach wybierz urządzenie w Settings → Arduino.
 Lista obejmuje aktualne porty przekazane przez OrbStack, również po
 podłączeniu/resetowaniu USB. Zamknij Serial Monitor przed połączeniem.
@@ -239,6 +244,8 @@ Ctrl+C i `docker compose up --build`, aby załadować nową wersję.
 Odsłuch zachowuje istniejący renderer WAV, master gain i zegar `ffplay`.
 Kontener ma FFmpeg i kartę `/dev/snd`; dźwięk trafia na domyślne wyjście
 Maca dzięki OrbStack. Porty są dostępne pod `/host-dev/cu.*`.
+Przed odtwarzaniem `ffplay` konwertuje WAV do 48 kHz, obsługiwanych przez
+wirtualną kartę OrbStack. Błąd otwarcia audio zatrzymuje odsłuch i jest zgłaszany w aplikacji.
 Nie zapisujemy na sztywno numeru Arduino. Kontener nie używa `privileged`;
 reguła urządzeń dopuszcza dynamiczne numery urządzeń znakowych w montowanym
 katalogu VM `/dev`, aby podłączenie USB nie wymagało przebudowy Compose.

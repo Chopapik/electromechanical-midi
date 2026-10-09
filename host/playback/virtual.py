@@ -723,6 +723,7 @@ class WavePreview:
         self._audio_anchor = None
         self._audio_start = None
         self._audio_end = 0.0
+        self._audio_diagnostic = ''
         self.audio_events = []
         self.master_volume = 1.0
         self.process: subprocess.Popen | None = None
@@ -997,13 +998,14 @@ class WavePreview:
         if not self.path:
             return
         self.stop()
+        self._audio_diagnostic = ''
         player = shutil.which('ffplay') if self.clocked else None
         if player:
             with wave.open(str(self.path), 'rb') as source:
                 self._audio_end = source.getnframes() / source.getframerate()
             self._audio_start = position
             process = subprocess.Popen([player, '-nodisp', '-autoexit', '-hide_banner', '-stats',
-                '-ss', str(position), '-af', f'volume={self.master_volume}', str(self.path)],
+                '-ss', str(position), '-af', f'volume={self.master_volume},aresample=48000', str(self.path)],
                 stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
             self.process = process
             threading.Thread(target=self._read_audio_clock, args=(process,), daemon=True,
@@ -1036,6 +1038,9 @@ class WavePreview:
                     match = re.match(rb'\s*(\d+\.\d+)\s+M-A:', line)
                     if match and self.process is process and self._audio_start is not None:
                         self._audio_anchor = (float(match[1]), time.monotonic())
+                    elif self.process is process and any(marker in line for marker in
+                            (b'SDL_OpenAudio', b'audio open failed', b'Failed to open')):
+                        self._audio_diagnostic = line.decode(errors='replace')[:500]
                     line.clear()
                 elif len(line) < 4096:
                     line.extend(byte)
@@ -1048,11 +1053,19 @@ class WavePreview:
         if self._audio_start is None:
             return None
         anchor = self._audio_anchor
-        if self.process and self.process.poll() == 0:
+        if self.process and self.process.poll() == 0 and anchor is not None:
             return self._audio_end
         if anchor is None:
             return self._audio_start
         return max(self._audio_start, min(self._audio_end, anchor[0] + min(.12, max(0., time.monotonic() - anchor[1]))))
+
+    @property
+    def playback_error(self):
+        if (self._audio_start is not None and self.process is not None
+                and self.process.poll() is not None
+                and (self._audio_anchor is None or self.process.poll() != 0)):
+            return 'Nie można odtworzyć audio: ' + (self._audio_diagnostic or 'odtwarzacz zakończył pracę bez poprawnego wyjścia audio')
+        return None
 
     @property
     def clock_running(self):

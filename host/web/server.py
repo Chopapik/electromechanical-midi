@@ -298,6 +298,8 @@ def create_app(
 
     async def connect_hardware(port: str | None = None) -> None:
         """Podlaczenie jest blokujace (czeka na READY), wiec idzie w watek."""
+        if engine.snapshot()['virtual']['enabled']:
+            return
         if connect_lock.locked():
             return
 
@@ -338,6 +340,14 @@ def create_app(
             await asyncio.to_thread(engine.play)
         elif action == "set_virtual":
             await asyncio.to_thread(engine.configure_virtual, message.get('config') or {})
+        elif action == 'set_output_mode':
+            virtual = message.get('virtual')
+            if not isinstance(virtual, bool):
+                raise ValueError('virtual must be a boolean')
+            async with connect_lock:
+                await asyncio.to_thread(engine.set_output_mode, virtual)
+            if not virtual:
+                asyncio.create_task(connect_hardware(serial_port))
         elif action == "set_track_routing":
             await asyncio.to_thread(engine.set_track_routing, message.get('mode', 'AUTO'),
                                     message.get('fourFddOnly', False), message.get('tracks', [None] * 4))
@@ -365,9 +375,11 @@ def create_app(
                 await asyncio.to_thread(engine.set_controller_target, target)
                 controller_file.parent.mkdir(parents=True, exist_ok=True)
                 controller_file.write_text(json.dumps({'target': target}))
-            if target == 'uno':
+            if target == 'uno' and not engine.snapshot()['virtual']['enabled']:
                 asyncio.create_task(connect_hardware(serial_port))
         elif action == "reconnect":
+            if engine.snapshot()['virtual']['enabled']:
+                raise EngineError('Disable virtual instruments before reconnecting hardware')
             if engine.snapshot()['hardware'].get('controllerTarget') == 'esp32':
                 await asyncio.to_thread(engine.disconnect)
             else:
@@ -422,9 +434,12 @@ def create_app(
         engine.start()
         task = asyncio.create_task(broadcast_loop())
         from ble_link import maintain_ble_connection
-        ble_task = asyncio.create_task(maintain_ble_connection(engine, connect_hardware, lambda: not firmware_busy))
+        ble_task = asyncio.create_task(maintain_ble_connection(
+            engine, connect_hardware,
+            lambda: not firmware_busy and not engine.snapshot()['virtual']['enabled']))
 
-        if connect_on_start and engine.snapshot()['hardware'].get('controllerTarget') != 'esp32':
+        if (connect_on_start and not engine.snapshot()['virtual']['enabled']
+                and engine.snapshot()['hardware'].get('controllerTarget') != 'esp32'):
             asyncio.create_task(connect_hardware(serial_port))
 
         try:

@@ -10,6 +10,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import mido
 
@@ -138,6 +139,51 @@ class WebTestCase(unittest.TestCase):
 
 
 class TestRest(WebTestCase):
+    def test_output_mode_switch_disarms_hardware_and_preserves_midi(self):
+        self.engine.load_file(self.midi_dir / 'song.mid')
+        source = self.engine._source
+        self.engine.set_track_routing('STRICT_TRACKS', True, [1, None, None, None])
+        self.engine.set_output_mode(True)
+        virtual = self.engine.snapshot()
+        self.assertTrue(virtual['virtual']['enabled'])
+        self.assertIsNone(self.engine._transport)
+        self.assertFalse(virtual['arrangementHardware']['active'])
+        self.assertTrue(all(d['mode'] == 'virtual' for d in virtual['virtual']['config']['devices']))
+        self.assertIs(self.engine._source, source)
+        self.assertEqual(virtual['trackRouting']['tracks'], [1, None, None, None])
+        self.assertIn('STOP', self.transport.events)
+        sent = list(self.transport.events)
+        with patch.object(self.engine._preview, 'render'), patch.object(self.engine._preview, 'play'):
+            self.engine.play()
+        self.assertEqual(self.engine.state, PlaybackState.PLAYING)
+        self.assertEqual(self.transport.events, sent)
+        self.engine.stop()
+        self.engine.set_output_mode(False)
+        hardware = self.engine.snapshot()
+        self.assertFalse(hardware['virtual']['enabled'])
+        self.assertTrue(all(d['mode'] == 'real' for d in hardware['virtual']['config']['devices']))
+        self.assertIs(self.engine._source, source)
+        self.assertEqual(hardware['trackRouting']['mode'], 'STRICT_TRACKS')
+
+    def test_output_mode_websocket_action(self):
+        with self.client.websocket_connect('/ws') as websocket:
+            websocket.receive_json()
+            websocket.send_json({'action': 'set_output_mode', 'virtual': True, 'requestId': 'virtual-test'})
+            for _ in range(10):
+                message = websocket.receive_json()
+                if message.get('requestId') == 'virtual-test':
+                    self.assertEqual(message.get('completedAction'), 'set_output_mode')
+                    self.assertTrue(message['state']['virtual']['enabled'])
+                    break
+            else:
+                self.fail('missing output mode acknowledgement')
+
+    def test_output_mode_switch_requires_stop(self):
+        self.engine._state = PlaybackState.PLAYING
+        with self.assertRaisesRegex(Exception, 'Stop playback'):
+            self.engine.set_output_mode(True)
+        self.engine._state = PlaybackState.STOPPED
+
     def test_raw_monitor_is_read_only_and_cursor_based(self):
         self.transport.protocol_version = 2
         before = list(self.transport.events)

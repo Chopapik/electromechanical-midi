@@ -12,6 +12,33 @@ from playback.engine import PlaybackEngine, PlaybackState
 from playback.timeline import Command, Timeline
 
 class AudioClockTest(unittest.TestCase):
+    def test_audio_open_failure_does_not_jump_to_end(self):
+        player = WavePreview(clocked=True)
+        player._audio_start = 2
+        player._audio_end = 200
+        process = Mock(stderr=io.BytesIO(b'SDL_OpenAudio: Operation not permitted\n'))
+        process.poll.return_value = 0  # ffplay also returns zero on audio-open failure.
+        player.process = process
+        player._read_audio_clock(process)
+        self.assertEqual(player.clock_position(), 2)
+        self.assertIn('Operation not permitted', player.playback_error)
+        self.assertFalse(player.clock_running)
+
+    def test_engine_pauses_and_reports_audio_failure(self):
+        engine = PlaybackEngine()
+        try:
+            engine._timeline = Timeline.from_commands([Command(20, 'virtual', lane='virtual')])
+            engine._virtual_mode = True
+            engine._state = PlaybackState.PLAYING
+            engine._preview._audio_start = 0
+            engine._preview.process = Mock()
+            engine._preview.process.poll.return_value = 0
+            engine._plan_locked()
+            self.assertEqual(engine.snapshot()['state'], 'paused')
+            self.assertIn('audio', engine.snapshot()['hardware']['error'])
+        finally:
+            engine.shutdown()
+
     def test_start_waits_for_actual_audio_clock(self):
         player = WavePreview(clocked=True)
         player._audio_start = 3

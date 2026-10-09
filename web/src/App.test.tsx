@@ -517,6 +517,17 @@ describe('App', () => {
     expect(screen.queryByRole('combobox', { name: 'Port szeregowy' })).toBeNull()
   })
 
+  it('switches output to virtual instruments only while stopped', async () => {
+    const virtual = { enabled: false, runtimeMode: 'hardware' as const,
+      config: { name: 'Test', devices: [] }, report: {}, activity: {}, profiles: [] }
+    const socket = await renderApp({ state: 'stopped', virtual }, false)
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }))
+    const checkbox = screen.getByRole('checkbox', { name: 'Graj na instrumentach wirtualnych' }) as HTMLInputElement
+    expect(checkbox.checked).toBe(false)
+    fireEvent.click(checkbox)
+    expect(socket.actions().at(-1)).toEqual({ action: 'set_output_mode', virtual: true })
+  })
+
   it('reconnect wysyla wybrany aktualny port', async () => {
     const socket = await renderApp()
 

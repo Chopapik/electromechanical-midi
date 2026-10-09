@@ -69,7 +69,7 @@ export function VirtualOrchestra({ virtual, metadata, configure, arrangementActi
 
   return <section className="virtual-orchestra">
     <h3>ORCHESTRA</h3>
-    <p className="muted">{enabled ? 'Developer preview · --no-hardware' : 'Physical hardware'}</p>
+    <p className="muted">{enabled ? 'Instrumenty wirtualne · bez wyjścia sprzętowego' : 'Physical hardware'}</p>
     <p className="muted">Host audio preview. Profiles marked UNKNOWN need calibration before predicting a physical build.</p>
     <h3>PLAYBACK</h3>
     <label className="virtual-master">Master Volume <input aria-label="Master Volume" type="range" min="0" max="20" step="0.25"

@@ -1693,8 +1693,11 @@ class TestArrangementOutput(EngineTestCase):
         self.assertEqual(snapshot["arrangementHardware"]["lanes"], {})
 
         before = len(self.transport.events)
-        self.engine.play()
-        self.assertTrue(self.wait_for_state(PlaybackState.STOPPED))
+        # This test verifies transport STOP, independently of a host audio device.
+        from unittest.mock import patch
+        with patch.object(self.engine._preview, 'play'):
+            self.engine.play()
+            self.assertTrue(self.wait_for_state(PlaybackState.STOPPED))
 
         self.assertEqual([text for _, text in self.transport.since(before)],
                          ['STOP', 'DRUM 0', 'HDD 0'])

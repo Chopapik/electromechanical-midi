@@ -1114,7 +1114,7 @@ class PlaybackEngine:
                 old_preview.close()
 
     def _runtime_config(self, payload: dict) -> dict:
-        """Startup owns output mode; old per-device mode is only an internal detail."""
+        """Explicit runtime output mode owns device modes across configuration edits."""
         if self._runtime_preview is None:
             return payload
         payload = copy.deepcopy(payload)
@@ -1178,8 +1178,8 @@ class PlaybackEngine:
                         doc['rules'].append({'id': f'route-{device.id}', 'source': {'track': device.track},
                                              'destination': {'deviceId': device.id}})
                 self._arrangement = Arrangement.parse(doc, self._source)
-            if not self._virtual_mode:
-                self._reset_instruments_locked()
+            if not self._virtual_mode and not self._reset_instruments_locked():
+                raise EngineError('Cannot stop hardware before changing output mode')
             self._virtual = candidate
             # UI Virtual Orchestra jest edytorem rzeczywistego OrchestraConfig.
             # Bez synchronizacji Auto Arranger nadal alokowalby stara pule.
@@ -1197,9 +1197,34 @@ class PlaybackEngine:
             if not enabled:
                 self._preview.close()
             self._rebuild_locked(keep_position=True)
-            if getattr(self._transport, 'protocol_version', 1) == 2:
+            if getattr(self._transport, 'protocol_version', 1) == 2 and not self._virtual_mode:
                 self._sync_v2_devices_locked()
             self._wake.set()
+
+    def set_output_mode(self, virtual: bool) -> None:
+        """Select virtual audio or physical output without changing MIDI/routing."""
+        if not isinstance(virtual, bool):
+            raise ValueError('virtual must be a boolean')
+        with self._lock:
+            if self._state is not PlaybackState.STOPPED:
+                raise EngineError('Stop playback before changing output mode')
+            if self._lab.owner is not None:
+                raise EngineError('Leave Instrument Lab before changing output mode')
+            if self._virtual_mode == virtual and self._runtime_preview == virtual:
+                return
+            if virtual and self._transport is not None:
+                if not self._safe_send_stop_locked():
+                    raise EngineError('Cannot confirm hardware STOP before virtual playback')
+                self._close_transport_locked()
+            previous = self._runtime_preview
+            self._runtime_preview = virtual
+            try:
+                self.configure_virtual({**self._virtual.config(),
+                                        'devices': copy.deepcopy(self._orchestra.devices),
+                                        'enabled': virtual})
+            except Exception:
+                self._runtime_preview = previous
+                raise
 
     def _configure_arrangement_locked(self, payload: dict, *, allow_mismatch: bool = False) -> None:
         """Ustawia orkiestre i override z dokumentu. Nie przebudowuje planu.
@@ -1885,6 +1910,7 @@ class PlaybackEngine:
                              'controllerStatus': 'last cached STATUS transaction; may be stale',
                              'plan': 'scheduled allocation; not measured execution'},
                 'playback': {'state': self._state.value, 'file': self._file_name,
+                             'outputMode': 'virtual' if self._virtual_mode else 'hardware',
                              'positionSec': round(self._position_locked(), 3),
                              'durationSec': round(self._timeline.duration, 3) if self._timeline else 0.,
                              'planRevision': self._arrangement_revision,
@@ -2630,6 +2656,10 @@ class PlaybackEngine:
         timeline = self._timeline
 
         if timeline is None:
+            return None
+
+        if self._virtual_mode and self._preview.playback_error:
+            self._pause_fdd_locked(self._preview.playback_error)
             return None
 
         now = time.monotonic()

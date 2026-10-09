@@ -52,6 +52,7 @@ export interface PlayerApi {
   selectHddRate: (rate: number | null) => void
   uploadFile: (file: File) => void
   configureVirtual: (config: VirtualConfig, enabled: boolean) => void
+  setOutputMode: (virtual: boolean) => void
   setTrackRouting: (mode: 'AUTO' | 'STRICT_TRACKS', fourFddOnly: boolean, tracks: Array<number | null>) => void
 }
 
@@ -222,6 +223,7 @@ export function usePlayer(): PlayerApi {
   }, [send, state])
   const setTrackRouting = useCallback((mode: 'AUTO' | 'STRICT_TRACKS', fourFddOnly: boolean,
     tracks: Array<number | null>) => send('set_track_routing', { mode, fourFddOnly, tracks }), [send])
+  const setOutputMode = useCallback((virtual: boolean) => send('set_output_mode', { virtual }), [send])
   const pause = useCallback(() => send('pause'), [send])
   const resume = useCallback(() => send('resume'), [send])
   const stop = useCallback(() => send('stop'), [send])
@@ -349,6 +351,7 @@ export function usePlayer(): PlayerApi {
     selectHddRate,
     uploadFile,
     configureVirtual,
+    setOutputMode,
     setTrackRouting,
   }
 }
