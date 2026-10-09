@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "name": "Balanced 4FDD + 4DVD + VHS + 4HDD + 2Tray",
+  "devices": [
+    {
+      "id": "fdd-1",
+      "name": "FDD #1",
+      "type": "FDD",
+      "lane": "fdd:1",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-2",
+      "name": "FDD #2",
+      "type": "FDD",
+      "lane": "fdd:2",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-3",
+      "name": "FDD #3",
+      "type": "FDD",
+      "lane": "fdd:3",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-4",
+      "name": "FDD #4",
+      "type": "FDD",
+      "lane": "fdd:4",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_1",
+      "name": "DVD Stepper 1",
+      "type": "DVD_SLED",
+      "lane": "sled:1",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_2",
+      "name": "DVD Stepper 2",
+      "type": "DVD_SLED",
+      "lane": "sled:2",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_3",
+      "name": "DVD Stepper 3",
+      "type": "DVD_SLED",
+      "lane": "sled:3",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_4",
+      "name": "DVD Stepper 4",
+      "type": "DVD_SLED",
+      "lane": "sled:4",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "vhs-1",
+      "name": "VHS #1",
+      "type": "VHS",
+      "lane": "drum:1",
+      "profile": "VHS_CURRENT",
+      "hardwareProfile": "VHS",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-1",
+      "name": "HDD_VCM #1",
+      "type": "HDD_VCM",
+      "lane": "hdd:1",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-2",
+      "name": "HDD_VCM #2",
+      "type": "HDD_VCM",
+      "lane": "hdd:2",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-3",
+      "name": "HDD_VCM #3",
+      "type": "HDD_VCM",
+      "lane": "hdd:3",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-4",
+      "name": "HDD_VCM #4",
+      "type": "HDD_VCM",
+      "lane": "hdd:4",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_TRAY_1",
+      "name": "DVD Tray 1",
+      "type": "DVD_TRAY",
+      "lane": "tray:1",
+      "profile": "DVD_TRAY_REFERENCE",
+      "hardwareProfile": null,
+      "enabled": false,
+      "volume": 0.35,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_TRAY_2",
+      "name": "DVD Tray 2",
+      "type": "DVD_TRAY",
+      "lane": "tray:2",
+      "profile": "DVD_TRAY_REFERENCE",
+      "hardwareProfile": null,
+      "enabled": false,
+      "volume": 0.35,
+      "pan": 0.0
+    }
+  ],
+  "parameters": {
+    "sourceContinuity": true,
+    "sourceContinuityAmount": 1.0
+  },
+  "dvdMode": "reinforcement",
+  "idleReinforcement": {
+    "enabled": false,
+    "maxCopiesPerEvent": 1,
+    "lookAheadMs": 80.0,
+    "deviceTypes": [
+      "FDD",
+      "DVD_SLED",
+      "HDD_VCM",
+      "DVD_TRAY"
+    ],
+    "minScore": 75.0,
+    "minDurationMs": 40.0,
+    "percussionCooldownMs": 250.0,
+    "vhsEnabled": false
+  },
+  "routing": {
+    "mode": "AUTO",
+    "tracks": [
+      null,
+      null,
+      null,
+      null
+    ]
+  }
+}

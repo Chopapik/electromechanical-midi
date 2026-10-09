@@ -218,6 +218,7 @@ class PerformancePlan:
     # Audio expression sidecar; never changes allocator events/reservations.
     expression: dict = dataclasses.field(default_factory=dict)
     hardware: dict = dataclasses.field(default_factory=dict)
+    execution_articulation: dict = dataclasses.field(default_factory=dict)
     strict_report: dict = dataclasses.field(default_factory=dict)
 
     @property
@@ -247,6 +248,7 @@ class PerformancePlan:
             'policy': self.policy,
             'analysis': self.analysis,
             'expression': self.expression,
+            'executionArticulation': self.execution_articulation,
             'hardware': self.hardware,
             'midi': self.source_ref,
             'devices': self.devices,
