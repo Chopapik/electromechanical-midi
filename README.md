@@ -24,6 +24,13 @@ Start nadal jest REAL; wyłączenie zmiennej przy następnym uruchomieniu przywr
 Virtual można włączyć ręcznie w Settings. Przeglądarka wykonuje te same komendy
 przez Web Audio; nie ma WAV, ffplay ani wyjścia audio kontenera. Play wymaga
 interakcji w przeglądarce. Zamknięcie karty lub utrata synchronizacji wycisza audio.
+FDD/DVD używają proceduralnych impulsów kroków i krótkich rezonansów obudowy;
+HDD używa transjentów kontaktu, ruchu ramienia i impulsów wybranej artykulacji.
+Egzemplarze jednej rodziny mają identyczny model i poziom wyjścia. FDD/DVD nie
+mają sztucznego sterowania głośnością przez MIDI velocity lub CC, ponieważ
+wykonanie STEP nie przekazuje sterowania amplitudą do silnika.
+Parametry akustyczne są przybliżeniem syntetycznym, nie pomiarem tych egzemplarzy.
+Dokładne dopasowanie barwy wymaga nagrań referencyjnych z fizycznych urządzeń.
 
 ## Rdzeń
 

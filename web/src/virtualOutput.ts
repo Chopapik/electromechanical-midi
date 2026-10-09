@@ -1,10 +1,11 @@
+import {mechanicalSamples,type MechanicalArticulation} from './mechanicalAudio'
 /** Web Audio executes Player timestamps. It owns audio nodes, never song time. */
 export interface Command {
   time:number; device_id:string; kind:'tone'|'hit'|'pulse'|'stop'; duration:number;
-  hz:number; velocity:number; articulation?:{attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
+  hz:number; velocity:number; articulation?:MechanicalArticulation & {attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
     gain?:{times:number[];values:number[]}; frequency?:{times:number[];values:number[]}}
 }
-type Voice={source:OscillatorNode; gain:GainNode; start:number; end:number; device:string}
+type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string}
 export class VirtualOutput {
   context:AudioContext|null=null
   private voices:Voice[]=[]
@@ -69,32 +70,41 @@ export class VirtualOutput {
         v.gain.gain.cancelScheduledValues(start);v.gain.gain.setValueAtTime(0,start)
         try{v.source.stop(start)}catch{/* ended */}
       }
-      const source=ctx.createOscillator(),gain=ctx.createGain()
-      const device=devices[c.device_id]
-      source.type=c.kind==='tone'?(device?.type==='VHS'?'sine':'triangle'):'sine'
-      source.frequency.setValueAtTime(c.kind==='tone'?c.hz:(c.articulation?.resonance??230),start)
-      const a=c.articulation
-      const volume=.12*(device?.volume??.5)*(a?.intensity??(c.velocity/127)**.65)
-      const attack=Math.min(a?.attack??.003,(end-start)/4)
+      const gain=ctx.createGain(),device=devices[c.device_id],a=c.articulation
+      const mechanical=device?.type!=='VHS'
+      let source:OscillatorNode|AudioBufferSourceNode
+      if(mechanical){
+        const samples=mechanicalSamples(device?.type??'FDD',c.device_id,c.hz,c.duration,ctx.sampleRate,a)
+        const buffer=ctx.createBuffer(1,samples.length,ctx.sampleRate);buffer.copyToChannel(samples,0)
+        source=ctx.createBufferSource();source.buffer=buffer
+      } else {
+        source=ctx.createOscillator();source.type='sine';source.frequency.setValueAtTime(c.hz,start)
+      }
+      // Hardware STEP has no per-note amplitude control. Equal units share the same level.
+      const stepper=device?.type==='FDD'||device?.type==='DVD_SLED'
+      const volume=(mechanical ? .22*.6 : .12*(device?.volume??.5))*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
+      const attack=Math.min(mechanical ? .001 : (a?.attack??.003),(end-start)/4)
       gain.gain.setValueAtTime(0,start)
       gain.gain.linearRampToValueAtTime(volume,start+attack)
-      gain.gain.linearRampToValueAtTime(volume*(a?.sustain??.15),Math.min(end,start+attack+(a?.decay??.08)))
-      if(a?.frequency)for(let i=0;i<a.frequency.times.length;i++){
+      gain.gain.linearRampToValueAtTime(volume*(mechanical?1:(a?.sustain??.15)),Math.min(end,start+attack+(a?.decay??.08)))
+      if('frequency' in source && a?.frequency)for(let i=0;i<a.frequency.times.length;i++){
         const at=when+a.frequency.times[i]
         if(at>=start&&at<end)source.frequency.linearRampToValueAtTime(a.frequency.values[i],at)
       }
       // MIDI channel gain/expression curves retain their planned timestamps.
-      const expression=ctx.createGain();expression.gain.setValueAtTime(a?.gain?.values[0]??1,start)
-      if(a?.gain)for(let i=0;i<a.gain.times.length;i++){
+      const expression=ctx.createGain();expression.gain.setValueAtTime(stepper?1:(a?.gain?.values[0]??1),start)
+      if(!stepper&&a?.gain)for(let i=0;i<a.gain.times.length;i++){
         const at=when+a.gain.times[i]
         if(at>=start&&at<end)expression.gain.linearRampToValueAtTime(a.gain.values[i],at)
       }
-      if(c.kind!=='tone')gain.gain.linearRampToValueAtTime(0,Math.min(end,start+(a?.duration??.1)))
+      if(!mechanical&&c.kind!=='tone')gain.gain.linearRampToValueAtTime(0,Math.min(end,start+(a?.duration??.1)))
       gain.gain.setValueAtTime(0,end)
       source.connect(gain);gain.connect(expression);expression.connect(this.bus??ctx.destination)
       const voice={source,gain,start,end,device:c.device_id};this.voices.push(voice)
       source.onended=()=>{source.disconnect();gain.disconnect();expression.disconnect();this.voices=this.voices.filter(v=>v!==voice)}
-      source.start(start);source.stop(end)
+      if('buffer' in source)source.start(start,Math.max(0,start-when))
+      else source.start(start)
+      source.stop(end)
     }
   }
   close(){this.stop();if(this.watchdog)clearInterval(this.watchdog);this.watchdog=null;void this.context?.close();this.context=null;this.bus=null}

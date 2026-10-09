@@ -1,6 +1,10 @@
-import {describe,it,expect,vi,beforeEach} from 'vitest'
+import {describe,it,expect,vi,beforeEach,beforeAll} from 'vitest'
 import {render,screen,fireEvent,cleanup} from '@testing-library/react'
 import App from './App'
+import {Element} from 'vexflow/bravura'
+beforeAll(() => Element.setTextMeasurementCanvas({getContext: () => ({
+ measureText: (text: string) => ({width:text.length*8,actualBoundingBoxAscent:16,actualBoundingBoxDescent:4}),
+})} as unknown as HTMLCanvasElement))
 const send=vi.fn()
 const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orchestra',epoch:0,revision:0,error:null,audioOwner:null,
   devices:[{id:'fdd-1',name:'FDD #1',type:'FDD',enabled:true,volume:.6,bands:[[200,410]],reason:null}],
