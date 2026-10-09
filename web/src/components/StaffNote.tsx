@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
 import { Accidental, Barline, Formatter, Renderer, Stave, StaveNote, Voice } from 'vexflow/bravura'
-import { noteName } from '../telemetry'
+import { noteName } from '../noteName'
 
 const SHARPS = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b']
 const FLATS = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b']

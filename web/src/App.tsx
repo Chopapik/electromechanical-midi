@@ -1,34 +1,46 @@
-import { useState } from 'react'
-import { InstrumentLab } from './components/InstrumentLab'
-import { MidiFileSelector } from './components/MidiFileSelector'
-import { PlayerControls } from './components/PlayerControls'
-import { ProgressBar } from './components/ProgressBar'
-import { SettingsDrawer } from './components/SettingsDrawer'
-import { TelemetryMonitor } from './components/TelemetryMonitor'
-import { usePlayer } from './usePlayer'
-import { useTelemetry } from './useTelemetry'
+import {useState} from 'react'
+import {useRuntime} from './runtime'
+import {MidiFileSelector} from './components/MidiFileSelector'
+import {PlayerControls} from './components/PlayerControls'
+import {InstrumentGrid} from './components/InstrumentGrid'
+import {ProgressBar} from './components/ProgressBar'
 
-export default function App() {
-  const player = usePlayer()
-  const [lab, setLab] = useState(false)
-  const [settings, setSettings] = useState(false)
-  const { state } = player
-  const telemetry = useTelemetry(state?.file ?? null, state?.arrangementRevision ?? 0, state?.virtual?.config.tonalMode, state?.virtual?.config.hddMode, state?.virtual?.audioRevision)
-  return <div className="workstation">
-    <header className="top-bar">
-      <div className="top-bar-content">
-        <nav className="lab-actions"><button onClick={() => setLab(false)} aria-pressed={!lab}>ORKIESTRA</button><button onClick={() => { setSettings(false); setLab(true) }} aria-pressed={lab}>INSTRUMENT LAB</button></nav>
-        {!lab && <>
-        <MidiFileSelector compact files={player.files} selected={state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} />
-        <PlayerControls loadingFrom={player.startingFrom} loading={player.starting} state={state?.state ?? 'stopped'} disabled={!state?.file} onRestart={() => player.seek(0)} onToggle={player.toggle} onStop={player.stop} />
-        <ProgressBar position={state?.position ?? 0} duration={state?.duration ?? 0} playing={state?.state === 'playing' && state?.virtual?.audioClockRunning !== false} onSeek={player.seek} />
-        </>}
-      </div>
-    </header>
-    {player.error && <div className="banner error" role="alert">{player.error}<button onClick={player.dismissError}>Zamknij</button></div>}
-    {!player.socketConnected && <div className="banner warning" role="alert">Brak połączenia z backendem — próbuję ponownie…</div>}
-    {state?.hardware.error && <div className="banner warning" role="alert">{state.hardware.error}</div>}
-    {lab ? <InstrumentLab player={player} /> : <TelemetryMonitor state={state} view={telemetry.view} error={telemetry.error} metadata={player.metadata} onSettings={() => setSettings(v => !v)} settingsOpen={settings} />}
-    {settings && <SettingsDrawer player={player} onClose={() => setSettings(false)} />}
-  </div>
+export default function App(){
+  const app=useRuntime(),s=app.state
+  const [settings,setSettings]=useState(false),[device,setDevice]=useState(''),[hz,setHz]=useState(200),[duration,setDuration]=useState(1)
+  const virtual=s?.output.mode==='VIRTUAL',lab=s?.owner==='lab'
+  const disabled=!s||!app.connected||s.service.busy
+  const canPlay=!disabled&&!!s?.file&&(virtual||!!s?.output.connected)&&!s?.output.unknown
+  return <main className="workstation">
+    <header className="top-bar"><div className="top-bar-content">
+      <h1>{lab?'Laboratory · debug':'ORKIESTRA'}</h1>
+      {lab?<button onClick={()=>void app.send('lab_leave')}>Wróć do Orkiestry</button>:<>
+        <MidiFileSelector compact files={app.files} selected={s?.file??null} onSelect={file=>void app.send('set_file',{file})} onUpload={file=>void app.upload(file)}/>
+        <PlayerControls state={s?.state??'stopped'} disabled={!canPlay} loading={s?.service.busy} onRestart={()=>void app.send('seek',{position:0})} onToggle={()=>void app.send(s?.state==='playing'?'pause':'play')} onStop={()=>void app.send('stop')}/>
+        <ProgressBar position={s?.position??0} duration={s?.duration??0} playing={s?.state==='playing'} onSeek={position=>void app.send('seek',{position})}/>
+      </>}
+      <button onClick={()=>setSettings(!settings)}>Settings</button>
+    </div></header>
+    <p role="status">{!app.connected?'Brak połączenia z backendem':s?.output.message}</p>
+    {(app.error||s?.error)&&<p className="banner error" role="alert">{app.error||s?.error}</p>}
+    {lab&&<section className="runtime-lab">
+      <label>Urządzenie <select aria-label="Urządzenie" value={device} onChange={e=>{setDevice(e.target.value);const d=s?.devices.find(d=>d.id===e.target.value);setHz(d?.bands[0]?.[0]??200)}}>
+        <option value="">Wybierz</option>{s?.devices.map(d=><option key={d.id} value={d.id}>{d.name}{d.reason?` · ${d.reason}`:''}</option>)}
+      </select></label>
+      <label>Częstotliwość Hz <input type="number" value={hz} onChange={e=>setHz(Number(e.target.value))}/></label>
+      <label>Czas (s) <input type="number" min="0.1" max="10" step="0.1" value={duration} onChange={e=>setDuration(Number(e.target.value))}/></label>
+      <button disabled={disabled||!device||(!virtual&&!s?.output.connected)||!s?.devices.find(d=>d.id===device)?.enabled} onClick={()=>void app.send('lab_test',{deviceId:device,hz,duration})}>Uruchom test</button>
+      <button onClick={()=>void app.send('stop')}>Stop</button>
+      <p>{s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
+    </section>}
+    <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
+    {settings&&<aside className="settings-drawer" role="dialog" aria-label="Settings"><header><h2>Settings</h2><button onClick={()=>setSettings(false)}>Zamknij</button></header><div className="settings-body">
+      <label><input type="checkbox" checked={virtual} disabled={disabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
+      <button disabled={disabled} onClick={()=>{void app.send('lab_enter');setSettings(false)}}>Laboratory · debug</button>
+      <button disabled={disabled||!s?.service.firmware.available} onClick={()=>void app.send('service',{operation:'firmware'})}>Wgraj firmware ESP32</button><small>{s?.service.firmware.reason}</small>
+      <button disabled title={s?.service.reset.reason}>Reset ESP32 — niedostępny</button><small>{s?.service.reset.reason}</small>
+      <button disabled={disabled||!s?.service.home.available} onClick={()=>void app.send('service',{operation:'home'})}>Homing TRACK0</button>
+      {s?.devices.map(d=><label key={d.id}><input type="checkbox" checked={s.output.muted.includes(d.id)} disabled={disabled} onChange={e=>void app.send('mute',{deviceId:d.id,muted:e.target.checked})}/> Mute {d.name}</label>)}
+    </div></aside>}
+  </main>
 }

@@ -59,7 +59,7 @@ export function MidiFileSelector({
         onChange={(event) => onSelect(event.target.value)}
         disabled={files.length === 0}
       >
-        {files.length === 0 && <option value="">(brak plików w midi/)</option>}
+        <option value="">{files.length===0?'(brak plików w midi/)':'Wybierz MIDI'}</option>
 
         {files.map((file) => (
           <option key={file.name} value={file.name}>

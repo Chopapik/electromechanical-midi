@@ -1,7 +1,7 @@
 /** Przyciski: od poczatku, play/pause, stop. */
 
 import { Rewind, Play, Pause, Stop, CircleNotch } from '@phosphor-icons/react'
-import type { PlaybackStateValue } from '../types'
+type PlaybackStateValue = 'playing' | 'paused' | 'stopped'
 
 interface Props {
   state: PlaybackStateValue
@@ -39,7 +39,7 @@ export function PlayerControls({ state, disabled, loading = false, loadingFrom =
         onClick={onToggle}
         disabled={disabled || loading}
       >
-        {loading ? <CircleNotch className="playback-spinner" size={18} weight="bold" aria-hidden="true" /> : state === 'paused' ? <Pause size={18} weight="fill" aria-hidden="true" /> : <Play size={18} weight="fill" aria-hidden="true" />}
+        {loading ? <CircleNotch className="playback-spinner" size={18} weight="bold" aria-hidden="true" /> : playing ? <Pause size={18} weight="fill" aria-hidden="true" /> : <Play size={18} weight="fill" aria-hidden="true" />}
       </button>
 
       <button
@@ -48,7 +48,6 @@ export function PlayerControls({ state, disabled, loading = false, loadingFrom =
         title="Stop"
         aria-label="Stop"
         onClick={onStop}
-        disabled={disabled}
       >
         <Stop size={18} weight="fill" aria-hidden="true" />
       </button>
