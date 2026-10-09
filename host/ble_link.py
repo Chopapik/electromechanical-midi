@@ -227,11 +227,3 @@ class BleOrchestraLink(OrchestraLink):
                     break
                 time.sleep(.005)
         return False
-
-async def maintain_ble_connection(engine, connect, can_connect=lambda: True, interval=2):
-    """Retry BLE indefinitely; device errors with a live link do not reconnect."""
-    while True:
-        status = (await asyncio.to_thread(engine.snapshot))['hardware']
-        if status.get('controllerTarget') == 'esp32' and not status['connected'] and not status['connecting'] and can_connect():
-            await connect()
-        await asyncio.sleep(interval)
