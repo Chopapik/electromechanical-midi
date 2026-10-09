@@ -9,11 +9,8 @@ FROM frontend AS frontend-test
 CMD ["npm", "test"]
 
 FROM python:3.12-slim-bookworm AS runtime
-ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 \
-    SDL_AUDIODRIVER=alsa SDL_ALSA_AUDIO_DEVICE=hw:0,0
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg alsa-utils \
-    && rm -rf /var/lib/apt/lists/*
 COPY host/requirements.txt /app/host/requirements.txt
 RUN pip install --no-cache-dir -r host/requirements.txt platformio
 COPY host/ /app/host/

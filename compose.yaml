@@ -11,8 +11,7 @@ services:
     ports:
       - "127.0.0.1:${APP_PORT:-5173}:8000"
     environment:
-      ORCHESTRA_MODE: ${ORCHESTRA_MODE:-hardware}
-      ORCHESTRA_SERIAL_PORT: ${ORCHESTRA_SERIAL_PORT:-}
+      ORCHESTRA_OFFLINE: ${ORCHESTRA_OFFLINE:-0}
       ORCHESTRA_SERIAL_DIR: /host-dev
       # Native macOS BLE gateway; never substitutes Serial if unavailable.
       ORCHESTRA_BLE_GATEWAY: ${ORCHESTRA_BLE_GATEWAY:-host.docker.internal:8766}
@@ -21,8 +20,6 @@ services:
       - platformio:/root/.platformio
       # OrbStack forwards macOS serial ports here, including newly plugged devices.
       - /dev:/host-dev:ro
-    devices:
-      - /dev/snd:/dev/snd
     # Forwarded serial major numbers can change on USB reconnect. Device nodes
     # remain confined to the VM's mounted /dev; no privileged container is used.
     device_cgroup_rules:
