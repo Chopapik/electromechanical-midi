@@ -8,9 +8,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from midi_source import MidiSource
 from playback.allocator import allocate, ManualPin
 from playback.orchestra import default_orchestra
-from playback.virtual import VirtualOrchestra, VirtualDeviceInstance, effective_profile, WavePreview
+from playback.virtual import VirtualOrchestra, VirtualDeviceInstance, effective_profile
+from reference_audio import WavePreview
 from playback.tray import motion_duration, tray_sound
-from playback.engine import PlaybackEngine
 from test_allocator import write_drums, write_tracks
 
 
@@ -107,23 +107,6 @@ class TrayTest(unittest.TestCase):
         self.assertEqual(len({e.device_id for e in plan.events if e.played}), 5)
         self.assertEqual(plan.report()['tonal']['dropped'], 0)
 
-    def test_engine_keeps_tray_notes_separate_and_persists_toggle(self):
-        write_drums(self.path, [(0, .05, 49), (.12, .17, 55)])
-        engine = PlaybackEngine(auto_arrange=True)
-        try:
-            engine.load_file(self.path)
-            view = engine.arrangement_view()
-            self.assertEqual(len(view['notes']), 2)
-            self.assertEqual(len(view['trayNotes']), 2)
-            self.assertTrue(all(n['reinforcement'] and n['routes'][0]['deviceId'].startswith('DVD_TRAY_')
-                                for n in view['trayNotes']))
-            engine.configure_virtual({**default_orchestra(tray_enabled=False).as_dict(), 'enabled': True})
-            off = engine.arrangement_view()
-            self.assertFalse(off['trayNotes'])
-            self.assertEqual(view['notes'], off['notes'])
-            self.assertFalse(off['arrangement']['trayEnabled'])
-        finally:
-            engine.shutdown()
 
 
 if __name__ == '__main__':

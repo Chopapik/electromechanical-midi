@@ -9,7 +9,6 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from midi_source import MidiSource
 from playback.allocator import allocate, ManualPin
-from playback.engine import PlaybackEngine
 from playback.hardware import bind_devices, build_commands
 from playback.orchestra import default_orchestra, parse_orchestra, web_startup_config
 from playback.virtual import VirtualDeviceInstance, VirtualOrchestra
@@ -93,86 +92,3 @@ class EnabledDevicesTest(unittest.TestCase):
         orchestra.render_plan(allocate(self.source, config))
         bound, _ = bind_devices(config.instances())
         self.assertEqual(build_commands(orchestra, bound), [])
-
-    def test_startup_runtime_is_preserved_on_config_and_midi_changes(self):
-        for preview in (False, True):
-            with self.subTest(preview=preview):
-                engine = PlaybackEngine(auto_arrange=True, preview_mode=preview, realtime=False)
-                try:
-                    with patch.object(engine, '_request_preview_locked'):
-                        payload = {**web_startup_config(), 'devices': self.config().devices,
-                                   'enabled': not preview}
-                        engine.configure_virtual(payload)
-                        engine.load_file(self.path)
-                        snapshot = engine.snapshot()['virtual']
-                        self.assertEqual(snapshot['enabled'], preview)
-                        self.assertEqual(len(snapshot['config']['devices']), len(payload['devices']))
-                        selected = [d for d in snapshot['config']['devices'] if d['enabled']]
-                        self.assertEqual({d['mode'] for d in selected}, {'virtual' if preview else 'real'})
-                        plan = engine._plan
-                        timeline = engine._timeline
-                        revision = engine._arrangement_revision
-                        self.assertTrue(any(e.played for e in plan.events))
-                        engine.configure_virtual({**snapshot['config'], 'devices': [
-                            {**d, 'enabled': False} for d in snapshot['config']['devices']]})
-                        self.assertIs(engine._plan, plan)
-                        self.assertIs(engine._timeline, timeline)
-                        self.assertEqual(engine._arrangement_revision, revision)
-                        self.assertFalse(any(d.enabled for d in engine._virtual.devices))
-                        self.assertEqual(engine.snapshot()['virtual']['enabled'], preview)
-                finally:
-                    engine.shutdown()
-
-    def test_gate_stops_only_target_and_resumes_reserved_tone(self):
-        from playback.timeline import Command, Timeline
-        from playback.engine import PlaybackState
-        from unittest.mock import Mock
-        engine = PlaybackEngine(auto_arrange=True, preview_mode=False, realtime=False)
-        self.addCleanup(engine.shutdown)
-        engine.configure_virtual(web_startup_config())
-        engine.load_file(self.path)
-        target = engine._virtual.devices[0]
-        other = engine._virtual.devices[1]
-        engine._hardware_bound = {'fdd:1': target, 'fdd:2': other}
-        engine._timeline = Timeline.from_commands([
-            Command(0, 'play', 250, lane='fdd:1'),
-            Command(0, 'play', 300, lane='fdd:2'),
-            Command(10, 'stop', lane='fdd:1')])
-        engine._state = PlaybackState.PLAYING
-        engine._position_base = 1
-        transport = Mock(protocol_version=2)
-        engine._transport = transport
-        engine._hardware.homed = True
-        plan, timeline, revision = engine._plan, engine._timeline, engine._arrangement_revision
-        payload = engine._virtual.config()
-        payload['devices'][0]['enabled'] = False
-        engine.configure_virtual(payload)
-        transport.send.assert_called_once_with('FDD 1 STOP')
-        self.assertIs(engine._plan, plan)
-        self.assertIs(engine._timeline, timeline)
-        self.assertEqual(engine._arrangement_revision, revision)
-        self.assertIs(engine._state, PlaybackState.PLAYING)
-        transport.reset_mock()
-        self.assertTrue(engine._send_locked(Command(2, 'play', 250, lane='fdd:1')))
-        transport.send.assert_not_called()
-        engine._next_index = 0
-        engine._send_due_batch_locked(0)
-        transport.send_batch.assert_called_once_with(['FDD 2 PLAY 300.00'])
-        transport.reset_mock()
-        engine._send_locked(Command(2, 'play', 300, lane='fdd:2'))
-        transport.send.assert_called_once_with('FDD 2 PLAY 300.00')
-        transport.reset_mock()
-        payload['devices'][0]['enabled'] = True
-        engine.configure_virtual(payload)
-        transport.send.assert_called_once_with('FDD 1 PLAY 250.00')
-        engine._transport = None
-
-    def test_container_mode_preserves_existing_no_hardware_flag(self):
-        from host.web.server import build_parser
-        self.assertTrue(build_parser().parse_args(['--no-hardware']).no_hardware)
-        self.assertFalse(build_parser().parse_args([]).no_hardware)
-        with patch.dict('os.environ', {'ORCHESTRA_MODE': 'virtual',
-                                      'ORCHESTRA_SERIAL_PORT': '/host-dev/cu.usbmodem123'}):
-            args = build_parser().parse_args([])
-            self.assertEqual(args.runtime_mode, 'virtual')
-            self.assertEqual(args.serial_port, '/host-dev/cu.usbmodem123')

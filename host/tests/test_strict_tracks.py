@@ -6,7 +6,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from midi_source import MidiSource
-from playback.engine import PlaybackEngine
 from playback.hardware import bind_devices, build_plan_commands
 from playback.hardware_profiles import HardwareContext
 from playback.orchestra import default_orchestra
@@ -59,28 +58,6 @@ class StrictTracksTest(unittest.TestCase):
             self.assertEqual({e.track for e in plan.events if e.device_id == device['id']},
                              {ROUTES[index]})
 
-    def test_engine_switches_auto_four_fdd_strict_and_restores(self):
-        engine = PlaybackEngine(auto_arrange=True, preview_mode=False)
-        self.addCleanup(engine.shutdown)
-        engine.load_file(SONG)
-        original_source = engine._source
-        original_orchestra = engine._orchestra.as_dict()
-        engine.set_track_routing('AUTO', True, ROUTES)
-        baseline = engine.snapshot()['trackRouting']
-        self.assertEqual(baseline['mode'], 'AUTO')
-        self.assertEqual(baseline['output']['plannedPlayed'], baseline['output']['enabledPlayed'])
-        self.assertEqual({d['type'] for d in engine._plan.devices}, {'FDD'})
-        self.assertFalse(engine._plan.reinforcements)
-        self.assertFalse(engine._plan.tray_events)
-        self.assertIs(engine._source, original_source)
-        engine.set_track_routing('STRICT_TRACKS', True, ROUTES)
-        strict = engine.snapshot()['trackRouting']
-        self.assertEqual(strict['output']['enabledPlayed'], sum(r['played'] for r in strict['report'].values()))
-        self.assertEqual(strict['output']['disabledReservations'], 0)
-        self.assertEqual(strict['report']['fdd-1']['track'], 3)
-        engine.set_track_routing('AUTO', False, ROUTES)
-        self.assertFalse(engine.snapshot()['trackRouting']['fourFddOnly'])
-        self.assertEqual(engine._orchestra.as_dict(), original_orchestra)
 
     def test_one_fdd_can_be_disabled_without_cross_routing(self):
         plan = allocate_strict(self.source, self.config(), [3, 1, None, 8])
@@ -88,28 +65,7 @@ class StrictTracksTest(unittest.TestCase):
         self.assertFalse(any(e.device_id == 'fdd-3' for e in plan.events))
         self.assertEqual({e.track for e in plan.events if e.device_id == 'fdd-1'}, {3})
 
-    def test_disabled_output_is_not_reported_as_played(self):
-        engine = PlaybackEngine(auto_arrange=True, preview_mode=False)
-        self.addCleanup(engine.shutdown)
-        engine.load_file(SONG)
-        config = default_orchestra()
-        config.devices[0]['enabled'] = False
-        engine.set_orchestra(config.as_dict())
-        engine.set_track_routing('STRICT_TRACKS', True, ROUTES)
-        report = engine.snapshot()['trackRouting']
-        self.assertEqual(report['report']['fdd-1']['played'], 0)
-        self.assertEqual(report['report']['fdd-1']['dropped'], 219)
-        self.assertEqual(report['output']['byDevice'].get('fdd-1'), None)
-        self.assertEqual(report['output']['plannedPlayed'], report['output']['enabledPlayed'])
 
-    def test_esp32_packet_carries_track_provenance(self):
-        engine = PlaybackEngine(auto_arrange=True, preview_mode=False)
-        self.addCleanup(engine.shutdown)
-        engine.load_file(SONG)
-        engine.set_track_routing('STRICT_TRACKS', True, ROUTES)
-        self.assertEqual(engine._v2_lines_locked(Command(1, 'play', hz=220, lane='fdd:1', track=3)),
-                         ['FDD 1 PLAY 220.00 TRACK 3'])
-        self.assertFalse(engine._v2_lines_locked(Command(1, 'play', hz=220, lane='fdd:1', track=1)))
 
 
 if __name__ == '__main__':

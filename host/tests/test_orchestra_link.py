@@ -94,50 +94,13 @@ class ProtocolTests(unittest.TestCase):
         with patch('floppy_link.FloppyLink.poll_lines',return_value=lines):
             self.assertFalse(l.wait_homed(timeout=.02,echo=lambda _:None))
 
-    def test_dispatch_and_global_stop(self):
-        from playback.engine import PlaybackEngine
-        from playback.timeline import Command
-        e=PlaybackEngine(wait_ready=False);l=self.link();e._transport=l
-        e._hardware.connected=True;e._hardware.homed=True
-        self.assertTrue(e._send_locked(Command(0,'play',hz=220,lane='fdd:4')))
-        self.assertTrue(e._send_locked(Command(0,'hit',lane='hdd:3')))
-        self.assertTrue(e._send_locked(Command(0,'tray_pulse',hz=80,lane='tray:2')))
-        self.assertEqual([c.args[0] for c in l.send.call_args_list],['FDD 4 PLAY 220.00','HDD 3 HIT','TRAY 2 PULSE FWD 80'])
-        e._virtual_mode=False;e._reset_instruments_locked()
-        self.assertEqual(l.send.call_args.args[0],'ALL STOP')
-        e._hardware.homed=False
-        with patch.object(e,'_start_home_locked'):
-            self.assertFalse(e._send_locked(Command(0,'play',hz=220,lane='fdd:2')))
-        self.assertTrue(e._hardware.connected)
 
-    def test_connect_v2_syncs_then_homes_and_preserves_transport(self):
-        from playback.engine import PlaybackEngine
-        l=self.link();l.wait_ready=Mock(return_value=True);l.wait_boot=Mock(return_value=True)
-        l.wait_homed=Mock(return_value=True);l.close=Mock();l.port='fake-cp2102'
-        e=PlaybackEngine(connect_fn=lambda _:l,wait_ready=True)
-        self.assertTrue(e.connect('fake-cp2102'))
-        sent=[c.args[0] for c in l.send.call_args_list]
-        self.assertIn('FDD ALL HOME',sent)
-        self.assertLess(sent.index('FDD 1 ENABLE 0'),sent.index('FDD ALL HOME'))
-        self.assertTrue(e.snapshot()['hardware']['connected'])
-        self.assertTrue(e.snapshot()['hardware']['ready'])
-        l.wait_homed.return_value=False
-        self.assertFalse(e.home())
-        self.assertTrue(e.snapshot()['hardware']['connected'])
-        self.assertFalse(e.snapshot()['hardware']['ready'])
 
     def test_incomplete_status_cannot_confirm_homing(self):
         l=self.link()
         with patch('floppy_link.FloppyLink.poll_lines',return_value=['STATUS BEGIN','STATUS CTRL ready=1','STATUS END']):
             self.assertFalse(l.wait_homed(timeout=.02,echo=lambda _:None))
 
-    def test_upload_v2_keeps_target_and_reconnect_handshake(self):
-        from firmware import flash_engine
-        e=Mock()
-        with patch('firmware.run_firmware',return_value='ok') as run, patch('firmware.wait_upload_port',return_value='/dev/cp2102'):
-            self.assertTrue(flash_engine(e,'pio','/dev/cp2102',target='esp32')['ready'])
-        self.assertEqual([c.kwargs for c in run.call_args_list],[{'target':'esp32'},{'target':'esp32'}])
-        e.connect.assert_called_once_with('/dev/cp2102')
 
     def test_hardware_event_ids_and_disabled_filter(self):
         from types import SimpleNamespace

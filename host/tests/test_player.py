@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from midi_source import NoteSpan  # noqa: E402
 from pitch import midi_to_hz  # noqa: E402
-from player import ARTICULATION_S, MIN_NOTE_S, build_schedule, main  # noqa: E402
+from playback.timeline import ARTICULATION_S, MIN_NOTE_S, build_schedule  # noqa: E402
 
 
 def span(start: float, end: float, note: int) -> NoteSpan:
@@ -120,30 +120,6 @@ class TestHarmonogram(unittest.TestCase):
             if command.kind == "play":
                 self.assertGreaterEqual(command.hz, 130.0 - 1e-6)
                 self.assertLessEqual(command.hz, 410.0 + 1e-6)
-
-
-class TestCLI(unittest.TestCase):
-    """CLI nie moze pozwolic na wyslanie calego utworu bez czekania."""
-
-    MIDI = Path(__file__).resolve().parents[2] / "midi" / "test.mid"
-
-    def test_no_wait_bez_dry_run_jest_odrzucane(self):
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            code = main([str(self.MIDI), "--track", "1", "--no-wait"])
-
-        self.assertEqual(code, 2)
-
-    def test_no_wait_z_dry_run_jest_ok(self):
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            code = main([str(self.MIDI), "--track", "1", "--dry-run", "--no-wait"])
-
-        self.assertEqual(code, 0)
-
-    def test_zly_zakres_jest_odrzucany(self):
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            code = main([str(self.MIDI), "--track", "1", "--min-hz", "300", "--max-hz", "200"])
-
-        self.assertEqual(code, 2)
 
 
 if __name__ == "__main__":

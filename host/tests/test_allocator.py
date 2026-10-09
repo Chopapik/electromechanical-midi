@@ -18,7 +18,7 @@ from playback.allocator import ManualPin  # noqa: E402
 from playback.orchestra import BALANCED, OrchestraConfig, default_orchestra  # noqa: E402
 from playback.analysis import MidiAnalysis  # noqa: E402
 from playback.performance import PerformancePlan  # noqa: E402
-from test_web import TICKS_PER_SECOND, write_midi  # noqa: E402
+from midi_fixtures import TICKS_PER_SECOND, write_midi  # noqa: E402
 
 import mido  # noqa: E402
 

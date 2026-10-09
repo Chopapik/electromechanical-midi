@@ -6,9 +6,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch, AsyncMock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from ble_link import BleBytes, BleOrchestraLink, GatewayBytes, RX, TX, NAME, maintain_ble_connection
+from ble_link import BleBytes, BleOrchestraLink, GatewayBytes, RX, TX, NAME
 from floppy_link import SerialLinkError
-from playback.engine import PlaybackEngine
 
 
 class Scanner:
@@ -61,20 +60,6 @@ class BleTests(unittest.TestCase):
         with self.assertRaisesRegex(SerialLinkError, 'realtime overrun'):
             raw.read(100)
 
-    def test_gateway_overrun_pauses_ui_and_stops_hardware(self):
-        from playback.engine import PlaybackState
-        engine = PlaybackEngine()
-        engine._transport = Mock()
-        engine._transport.protocol_version = 2
-        engine._transport.poll_lines.side_effect = SerialLinkError('BLE realtime overrun: playback stopped')
-        engine._hardware.connected = True
-        engine._state = PlaybackState.PLAYING
-        engine._origin = time.monotonic()
-        with engine._lock:
-            engine._poll_lines_locked()
-        self.assertEqual(engine._state, PlaybackState.PAUSED)
-        self.assertIn('realtime overrun', engine._hardware.error)
-        engine._transport.send.assert_called_once_with('ALL STOP')
 
     def test_gateway_broken_pipe_is_transport_error(self):
         raw = GatewayBytes.__new__(GatewayBytes)
@@ -117,67 +102,9 @@ class BleTests(unittest.TestCase):
         scanner=SimpleNamespace(find_device_by_filter=AsyncMock(return_value=None))
         with self.assertRaisesRegex(SerialLinkError,'Nie znaleziono'):
             BleBytes(scanner=scanner,client_factory=Client)
-    def test_esp32_selects_ble_only_and_reports_connecting(self):
-        serial=Mock();engine=PlaybackEngine(connect_fn=serial)
-        engine._hardware.error='Previous Serial error'
-        engine.set_controller_target('esp32')
-        self.assertIsNone(engine.snapshot()['hardware']['error'])
-        def fail():
-            self.assertEqual(engine.snapshot()['hardware']['connectionStatus'],'connecting')
-            raise SerialLinkError('not found')
-        with patch('ble_link.BleOrchestraLink',side_effect=fail):
-            self.assertFalse(engine.connect('/dev/should-not-open'))
-        serial.assert_not_called()
-        status=engine.snapshot()['hardware']
-        self.assertEqual(status['controllerTarget'],'esp32')
-        self.assertEqual(status['transport'],'ble')
-        self.assertEqual(status['connectionStatus'],'disconnected')
-    def test_switch_to_uno_keeps_existing_serial_factory(self):
-        serial=Mock(side_effect=SerialLinkError('unplugged'))
-        engine=PlaybackEngine(connect_fn=serial)
-        engine.set_controller_target('esp32');engine.set_controller_target('uno')
-        engine.connect('/dev/uno');serial.assert_called_once_with('/dev/uno')
 
 
-class ReconnectTests(unittest.IsolatedAsyncioTestCase):
-    async def test_retry_until_connected_and_again_after_disconnect(self):
-        states=[(False,False),(False,False),(True,False),(False,False)]
-        def snapshot():
-            if not states:raise asyncio.CancelledError()
-            connected,connecting=states.pop(0)
-            return {'hardware':{'controllerTarget':'esp32','connected':connected,'connecting':connecting}}
-        engine=SimpleNamespace(snapshot=snapshot);connect=AsyncMock()
-        with self.assertRaises(asyncio.CancelledError):
-            await maintain_ble_connection(engine,connect,interval=0)
-        self.assertEqual(connect.await_count,3)
-    async def test_no_retry_for_uno_homing_or_upload(self):
-        for target,connected,connecting,allowed in [('uno',False,False,True),('esp32',True,True,True),('esp32',False,True,True),('esp32',False,False,False)]:
-            engine=SimpleNamespace(snapshot=Mock(side_effect=[{'hardware':{'controllerTarget':target,'connected':connected,'connecting':connecting}},asyncio.CancelledError()]))
-            connect=AsyncMock()
-            with self.assertRaises(asyncio.CancelledError):
-                await maintain_ble_connection(engine,connect,lambda:allowed,interval=0)
-            connect.assert_not_awaited()
 
-class SelectionPersistenceTests(unittest.TestCase):
-    def test_settings_select_transport_and_restore_after_restart(self):
-        import tempfile,json
-        from fastapi.testclient import TestClient
-        from web.server import create_app
-        with tempfile.TemporaryDirectory() as directory:
-            engine=PlaybackEngine()
-            with patch.object(engine,'connect',return_value=False) as connect:
-                with TestClient(create_app(midi_dir=Path(directory),engine=engine,connect_on_start=False)) as client:
-                    with client.websocket_connect('/ws') as ws:
-                        ws.receive_json()
-                        ws.send_json({'action':'set_controller','target':'esp32'})
-                        for _ in range(15):
-                            packet=ws.receive_json()
-                            if packet.get('state',{}).get('hardware',{}).get('controllerTarget')=='esp32':break
-                        self.assertEqual(client.get('/api/state').json()['hardware']['transport'],'ble')
-                    self.assertEqual(json.loads((Path(directory)/'.controller.json').read_text())['target'],'esp32')
-            restored=PlaybackEngine()
-            create_app(midi_dir=Path(directory),engine=restored,connect_on_start=False)
-            self.assertEqual(restored.snapshot()['hardware']['controllerTarget'],'esp32')
 
 class BleBatchAtomicTests(unittest.IsolatedAsyncioTestCase):
     async def test_fragmented_batches_do_not_interleave(self):

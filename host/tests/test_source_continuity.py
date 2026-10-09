@@ -8,7 +8,6 @@ from playback.articulation import apply_source_continuity
 from playback.capabilities import capabilities_for
 from playback.virtual import VirtualDeviceInstance,VirtualOrchestra
 from playback.performance import PerformanceEvent,PerformancePlan
-from playback.engine import PlaybackEngine
 from unittest.mock import patch
 
 
@@ -63,19 +62,5 @@ class SourceContinuityTest(unittest.TestCase):
         p,c=build([e]);apply_source_continuity(p,c)
         self.assertAlmostEqual((p.events[0].actual_start+p.events[0].actual_duration),1.)
 
-    def test_config_and_live_switch_preserve_position(self):
-        o=VirtualOrchestra();o.set_config({'sourceContinuity':True,'sourceContinuityAmount':.5,'devices':[]})
-        self.assertTrue(o.config()['sourceContinuity'])
-        engine=PlaybackEngine()
-        try:
-            engine._position_base=12.
-            with patch.object(engine,'_rebuild_locked') as rebuild:
-                engine.configure_virtual({'enabled':True,'sourceContinuity':True,'sourceContinuityAmount':.5,'devices':[]})
-                rebuild.assert_called_once_with(keep_position=True)
-            self.assertTrue(engine._orchestra.policy['sourceContinuity'])
-            self.assertEqual(engine._orchestra.policy['sourceContinuityAmount'],.5)
-            self.assertTrue(engine._auto_arrange)
-            self.assertEqual(engine._position_base,12.)
-        finally:engine.shutdown()
 
 if __name__=='__main__':unittest.main()

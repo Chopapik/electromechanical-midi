@@ -12,9 +12,9 @@ from midi_source import MidiSource  # noqa: E402
 from playback import allocator  # noqa: E402
 from playback.allocator import ManualPin  # noqa: E402
 from playback.analysis import MidiAnalysis  # noqa: E402
-from playback.engine import PlaybackEngine  # noqa: E402
 from playback.orchestra import default_orchestra as current_orchestra, parse_orchestra  # noqa: E402
-from playback.virtual import VirtualOrchestra, WavePreview  # noqa: E402
+from playback.virtual import VirtualOrchestra  # noqa: E402
+from reference_audio import WavePreview
 from test_allocator import write_drums, write_tracks  # noqa: E402
 
 
@@ -110,27 +110,6 @@ class DvdExperimentTest(unittest.TestCase):
         finally:
             preview.close()
 
-    def test_ui_configuration_add_and_remove_rebuilds_allocator(self):
-        source = self.harmony_source([(0, .5, 60), (0, .5, 64),
-                                      (0, .5, 67), (0, .5, 72)])
-        engine = PlaybackEngine(auto_arrange=True)
-        try:
-            engine.load_file(source.path)
-            seven = default_orchestra(dvd_count=0).as_dict()
-            engine.configure_virtual({**seven, 'enabled': True})
-            self.assertEqual(len(engine.arrangement_view()['orchestra']['devices']), 7)
-            engine.configure_virtual({'name': 'Empty', 'devices': [], 'enabled': True})
-            self.assertEqual(engine.arrangement_view()['orchestra']['devices'], [])
-            eleven = default_orchestra().as_dict()
-            engine.configure_virtual({**eleven, 'enabled': True})
-            view = engine.arrangement_view()
-            self.assertEqual(len(view['orchestra']['devices']), 11)
-            self.assertEqual(len([item for item in view['report']['devices']
-                                  if item['type'] == 'DVD_SLED']), 4)
-            engine.configure_virtual({**seven, 'enabled': True})
-            self.assertEqual(len(engine.arrangement_view()['orchestra']['devices']), 7)
-        finally:
-            engine.shutdown()
 
     def test_reinforcement_preserves_four_normal_voices_and_decisions(self):
         source = self.harmony_source([(0, .5, note) for note in (60, 62, 64, 65, 67, 69, 71)])
@@ -176,20 +155,3 @@ class DvdExperimentTest(unittest.TestCase):
         self.assertEqual(parse_orchestra(config.as_dict()).dvd_mode, 'reinforcement')
         config.devices = [device for device in config.devices if device['id'] != 'DVD_STEPPER_4']
         self.assertEqual(parse_orchestra(config.as_dict()).dvd_mode, 'reinforcement')
-
-    def test_engine_switches_mode_without_changing_four_physical_dvds(self):
-        source = self.harmony_source([(0, .5, note) for note in (60, 62, 64, 65, 67, 69, 71)])
-        engine = PlaybackEngine(auto_arrange=False)
-        try:
-            engine.load_file(source.path)
-            engine.configure_virtual({**default_orchestra(dvd_mode='reinforcement').as_dict(),
-                                      'enabled': True})
-            reinforced = engine.arrangement_view()
-            self.assertEqual(reinforced['report']['dvdMode'], 'reinforcement')
-            self.assertEqual(engine._virtual.config()['dvdMode'], 'reinforcement')
-            self.assertEqual(len([d for d in engine._virtual.devices
-                                  if d.type == 'DVD_SLED']), 4)
-            engine.configure_virtual({**default_orchestra().as_dict(), 'enabled': True})
-            self.assertEqual(engine.arrangement_view()['report']['dvdMode'], 'independent')
-        finally:
-            engine.shutdown()

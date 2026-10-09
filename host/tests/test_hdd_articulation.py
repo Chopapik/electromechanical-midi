@@ -9,13 +9,13 @@ from unittest.mock import patch
 import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from playback.hdd_articulation import classify, adapt, sample, GM, KINDS
-from playback.virtual import AcousticEvent, VirtualOrchestra, WavePreview
+from playback.virtual import AcousticEvent, VirtualOrchestra
+from reference_audio import WavePreview
 from playback.performance import ReinforcementEvent
 from playback.allocator import allocate
 from playback.orchestra import default_orchestra, parse_idle
 from midi_source import MidiSource
 from test_allocator import write_drums
-from playback.engine import PlaybackEngine
 
 
 def orchestra(hits, mode='articulated'):
@@ -134,19 +134,3 @@ class HDDTest(unittest.TestCase):
             self.assertEqual(len({e.device_id for e in hits[:4]}), 4)
             self.assertEqual({classify(e.note, e.channel, e.velocity).kind for e in hits}, {'HARD_HIT'})
             self.assertTrue(any(e.outcome == 'REASSIGNED' for e in hits))
-
-    def test_mode_switch_does_not_reallocate_or_stop(self):
-        engine = PlaybackEngine()
-        try:
-            engine.load_file(Path(__file__).resolve().parents[2]/'midi/test.mid')
-            engine.configure_virtual({'enabled': True, 'devices':[{'id':'hdd','type':'HDD_VCM','track':engine.snapshot()['track']}]})
-            with patch.object(engine._preview, 'render'), patch.object(engine._preview, 'play'), patch.object(engine, '_request_preview_locked') as request:
-                engine.play(); origin, plan = engine._origin, engine._plan
-                with patch.object(engine, '_rebuild_locked') as rebuild:
-                    engine.configure_virtual({**engine._virtual.config(), 'enabled':True,'hddMode':'raw'})
-                    rebuild.assert_not_called()
-                request.assert_called_once()
-                self.assertEqual(engine.snapshot()['state'], 'playing')
-                self.assertEqual(engine._origin, origin)
-                self.assertIs(engine._plan, plan)
-        finally: engine.shutdown()

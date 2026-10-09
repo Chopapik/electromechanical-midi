@@ -13,8 +13,8 @@ from playback.analysis import MidiAnalysis
 from playback.orchestra import default_orchestra, parse_idle, parse_orchestra
 from playback.reinforcement import apply_reinforcement, legacy_dvd
 from playback.tray import add_reinforcement
-from playback.virtual import VirtualOrchestra, WavePreview
-from playback.engine import PlaybackEngine
+from playback.virtual import VirtualOrchestra
+from reference_audio import WavePreview
 from test_allocator import write_tracks, write_drums
 
 
@@ -146,22 +146,6 @@ class IdleTest(unittest.TestCase):
         self.assertEqual(plan.reinforcements, expected)
         self.assertEqual(plan.tray_events, trays)
 
-    def test_m_roundtrip_ui_and_primary_counts(self):
-        config = default_orchestra()
-        config.idle_reinforcement = parse_idle({'enabled': True, 'deviceTypes': ['FDD']})
-        self.assertEqual(parse_orchestra(config.as_dict()).as_dict(), config.as_dict())
-        write_tracks(self.path, [('Guitar', 0, [(0, 1, 60), (0, 1, 64)])])
-        engine = PlaybackEngine(auto_arrange=True)
-        try:
-            engine.load_file(self.path)
-            before = engine.arrangement_view()['notes']
-            engine.configure_virtual({**config.as_dict(), 'enabled': True})
-            view = engine.arrangement_view()
-            self.assertEqual(before, view['notes'])
-            self.assertTrue(view['reinforcementNotes'])
-            self.assertTrue(all(e['eventKind'] == 'reinforcement' and e['reason'] for e in view['reinforcementNotes']))
-        finally:
-            engine.shutdown()
 
     def test_global_threshold_applies_to_trays_and_hdd(self):
         plan = self.percussion([(0, .05, 49)], {'minScore': 1000})
@@ -183,19 +167,6 @@ class IdleTest(unittest.TestCase):
                                    ('KEYS', 'Piano', 0), (999, 'GUITAR', 'Guitar', 24))
         self.assertEqual(reject, 'incompatibleRole')
 
-    def test_global_toggle_builds_plan_when_auto_arranger_was_disabled(self):
-        write_tracks(self.path, [('Guitar', 0, [(0, 1, 60), (0, 1, 64)])])
-        engine = PlaybackEngine(auto_arrange=False)
-        try:
-            engine.load_file(self.path)
-            config = default_orchestra()
-            config.idle_reinforcement = parse_idle({'enabled': True})
-            engine.configure_virtual({**config.as_dict(), 'enabled': True})
-            view = engine.arrangement_view()
-            self.assertTrue(view['report']['idleReinforcement']['enabled'])
-            self.assertTrue(view['reinforcementNotes'])
-        finally:
-            engine.shutdown()
 
     def test_configuration_validation_and_no_compatible_material(self):
         for settings in ({'maxCopiesPerEvent': 3}, {'deviceTypes': ['HDD_RANDOM']}, {'lookAheadMs': -1}, {'minScore': float('nan')}):

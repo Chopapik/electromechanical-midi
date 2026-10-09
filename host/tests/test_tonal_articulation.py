@@ -11,11 +11,11 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from midi_source import MidiSource
 from playback.performance import PerformancePlan, PerformanceEvent, ReinforcementEvent
 from playback.tonal_articulation import resolve, render, capture, chord_context, Curve, apply_mode
-from playback.virtual import VirtualOrchestra, WavePreview
+from playback.virtual import VirtualOrchestra
+from reference_audio import WavePreview
 from playback.allocator import allocate
 from playback.duplicates import normalize
 from playback.orchestra import default_orchestra
-from playback.engine import PlaybackEngine
 
 
 def event(ident='a',start=0.,duration=.4,device='dvd',kind='DVD_SLED',velocity=90,note=60):
@@ -273,22 +273,5 @@ class TonalTest(unittest.TestCase):
         self.assertLessEqual(rows[0][3]+rows[0][4],rows[1][3])
         self.assertEqual(snapshot,dataclasses.asdict(p))
 
-    def test_live_mode_change_keeps_clock_and_plan(self):
-        engine=PlaybackEngine()
-        try:
-            engine.configure_virtual({'enabled':True,'devices':[{'id':'dvd','type':'DVD_SLED'}]})
-            engine._plan=plan();engine._position_base=12.
-            original=engine._plan
-            with patch.object(engine,'_rebuild_locked') as rebuild:
-                engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='raw'))
-                self.assertIs(engine._plan,original);self.assertEqual(engine._position_base,12.)
-                rebuild.assert_not_called()
-                engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='extreme'))
-                self.assertEqual(engine._virtual.tonal_mode,'extreme')
-                engine.configure_virtual(dict(engine._virtual.config(),enabled=True,tonalMode='extreme_v2'))
-                self.assertEqual(engine._virtual.tonal_mode,'extreme_v2')
-                self.assertIs(engine._plan,original);self.assertEqual(engine._position_base,12.)
-                rebuild.assert_not_called()
-        finally: engine.shutdown()
 
 if __name__=='__main__':unittest.main()

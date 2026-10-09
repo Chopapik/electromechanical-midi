@@ -5,7 +5,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from midi_source import NoteSpan
-from playback.virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra, WavePreview
+from playback.virtual import PROFILES, VirtualDeviceInstance, VirtualOrchestra
+from reference_audio import WavePreview
 
 class Source:
     tracks = [object()]
@@ -154,7 +155,7 @@ class VirtualMechanicsTest(unittest.TestCase):
 
     def test_accepted_steps_render_to_audio_without_output_device(self):
         import wave
-        from playback.virtual import WavePreview
+        from reference_audio import WavePreview
         orchestra = VirtualOrchestra([device()])
         timeline = orchestra.simulate(Source([span(0, .1, 69)]))
         preview = WavePreview()
@@ -168,96 +169,3 @@ class VirtualMechanicsTest(unittest.TestCase):
             preview.close()
 
 if __name__ == '__main__': unittest.main()
-
-class VirtualEngineTest(unittest.TestCase):
-    def test_playback_without_arduino_uses_existing_engine(self):
-        from unittest.mock import patch
-        from playback.engine import PlaybackEngine
-        engine = PlaybackEngine()
-        path = Path(__file__).resolve().parents[2] / 'midi' / 'test.mid'
-        engine.load_file(path)
-        track = engine.snapshot()['track']
-        engine.configure_virtual({'enabled': True, 'devices': [{'id': 'fdd', 'type': 'FDD', 'track': track}]})
-        self.assertFalse(engine.snapshot()['hardware']['connected'])
-        with patch.object(engine._preview, 'render'), patch.object(engine._preview, 'play'):
-            engine.play()
-            self.assertEqual(engine.snapshot()['state'], 'playing')
-            with patch.object(engine, '_position_locked', return_value=.2):
-                self.assertTrue(engine.snapshot()['virtual']['activity']['fdd'])
-            engine.pause()
-            self.assertEqual(engine.snapshot()['state'], 'paused')
-            self.assertFalse(engine.snapshot()['virtual']['activity']['fdd'])
-            engine.seek(0)
-            engine.resume()
-            engine.stop()
-            self.assertEqual(engine.snapshot()['state'], 'stopped')
-        engine.shutdown()
-
-    def test_device_and_arrangement_edits_keep_playback_running(self):
-        from unittest.mock import patch
-        from playback.arrangement import Arrangement
-        from playback.engine import PlaybackEngine
-        engine = PlaybackEngine()
-        engine.load_file(Path(__file__).resolve().parents[2] / 'midi' / 'test.mid')
-        track = engine.snapshot()['track']
-        config = {'enabled': True, 'devices': [{'id': 'fdd', 'type': 'FDD', 'track': track}]}
-        engine.configure_virtual(config)
-        old_preview = engine._preview
-        try:
-            with patch.object(old_preview, 'render'), patch.object(old_preview, 'play'), \
-                 patch.object(engine, '_request_preview_locked') as refresh:
-                engine.play()
-                origin = engine._origin
-                config['devices'][0]['volume'] = .4
-                engine.configure_virtual(config)
-                self.assertEqual(engine.snapshot()['state'], 'playing')
-                self.assertEqual(engine._origin, origin)
-                self.assertIs(engine._preview, old_preview)
-                arrangement = Arrangement.default(engine._source, engine._virtual.devices)
-                engine.set_arrangement(arrangement.as_dict())
-                self.assertEqual(engine.snapshot()['state'], 'playing')
-                self.assertEqual(engine._origin, origin)
-                self.assertGreaterEqual(refresh.call_count, 2)
-        finally:
-            engine.stop()
-            engine.shutdown()
-
-    def test_preview_swap_waits_for_render_without_stopping_playhead(self):
-        import threading
-        import time
-        from unittest.mock import patch
-        from playback.engine import PlaybackEngine
-        from playback.virtual import WavePreview
-        engine = PlaybackEngine()
-        engine.load_file(Path(__file__).resolve().parents[2] / 'midi' / 'test.mid')
-        track = engine.snapshot()['track']
-        config = {'enabled': True, 'devices': [{'id': 'fdd', 'type': 'FDD', 'track': track}]}
-        engine.configure_virtual(config)
-        old_preview = engine._preview
-        started, release = threading.Event(), threading.Event()
-
-        def slow_render(_preview, _orchestra, _duration):
-            started.set()
-            release.wait(2)
-
-        try:
-            with patch.object(old_preview, 'render'), patch.object(old_preview, 'play'), \
-                 patch.object(WavePreview, 'render', slow_render), patch.object(WavePreview, 'play'):
-                engine.play()
-                origin = engine._origin
-                config['devices'][0]['volume'] = .4
-                engine.configure_virtual(config)
-                self.assertTrue(started.wait(1))
-                self.assertIs(engine._preview, old_preview)
-                self.assertEqual(engine.snapshot()['state'], 'playing')
-                release.set()
-                deadline = time.monotonic() + 1
-                while engine._preview is old_preview and time.monotonic() < deadline:
-                    time.sleep(.005)
-                self.assertIsNot(engine._preview, old_preview)
-                self.assertEqual(engine.snapshot()['state'], 'playing')
-                self.assertEqual(engine._origin, origin)
-        finally:
-            release.set()
-            engine.stop()
-            engine.shutdown()
