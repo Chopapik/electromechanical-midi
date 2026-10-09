@@ -786,6 +786,10 @@ select:disabled {
 .settings-drawer .virtual-device-controls input,.settings-drawer .virtual-device-controls select { max-width:100%; width:100%; }
 .settings-drawer .virtual-device-controls input[type=checkbox] { width:auto; }
 .settings-drawer .virtual-device-controls .muted { grid-column:1/-1; font-size:10px; }
+.strict-tracks-panel { display:grid; gap:9px; padding:14px 0; border-bottom:1px solid var(--line); }
+.strict-track-row { display:grid; grid-template-columns: minmax(140px,1fr) minmax(180px,2fr); align-items:center; gap:8px; }
+.strict-track-report { width:100%; border-collapse:collapse; font-size:11px; }
+.strict-track-report th,.strict-track-report td { padding:4px; text-align:left; border-bottom:1px solid var(--line); }
 .settings-drawer .virtual-parameter { display:flex; flex-wrap:wrap; padding:8px 0; }
 .settings-drawer .virtual-parameters,.simulation-report { margin-top:12px; }
 .settings-drawer pre { overflow:auto; max-width:100%; font-size:10px; }

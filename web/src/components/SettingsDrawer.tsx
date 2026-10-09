@@ -7,6 +7,7 @@ import { MidiFileSelector } from './MidiFileSelector'
 import { ArrangementImport } from './ArrangementImport'
 import { FirmwarePanel } from './FirmwarePanel'
 import { HardwareStatus } from './HardwareStatus'
+import { StrictTracksPanel } from './StrictTracksPanel'
 
 export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose: () => void }) {
   const hardwareMode = player.state?.virtual?.runtimeMode
@@ -35,6 +36,7 @@ export function SettingsDrawer({ player, onClose }: { player: PlayerApi; onClose
           onReconnect={player.reconnect} onHome={player.home} onRefreshPorts={player.refreshPorts} />
       </section>}
       <FirmwarePanel selectedTarget={player.state?.hardware.controllerTarget ?? 'uno'} onTargetChange={player.setController} />
+      <StrictTracksPanel player={player} />
       <VirtualOrchestra virtual={player.state?.virtual} metadata={player.metadata} configure={player.configureVirtual} arrangementActive={player.state?.arrangementActive} hardware={player.state?.arrangementHardware} />
       <details className="manual-disclosure"><summary>ADVANCED / MANUAL HARDWARE</summary><MidiFileSelector files={player.files} selected={player.state?.file ?? null} onSelect={player.selectFile} onUpload={player.uploadFile} uploading={player.uploading} /><LegacyControls player={player} /><ArrangementImport /></details>
     </div>

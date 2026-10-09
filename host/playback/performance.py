@@ -218,6 +218,7 @@ class PerformancePlan:
     # Audio expression sidecar; never changes allocator events/reservations.
     expression: dict = dataclasses.field(default_factory=dict)
     hardware: dict = dataclasses.field(default_factory=dict)
+    strict_report: dict = dataclasses.field(default_factory=dict)
 
     @property
     def duration(self) -> float:
@@ -236,6 +237,7 @@ class PerformancePlan:
     def report(self) -> dict:
         report = build_report(self)
         if self.hardware: report['hardware'] = self.hardware
+        if self.strict_report: report['strictTracks'] = self.strict_report
         return report
 
     def as_dict(self) -> dict:

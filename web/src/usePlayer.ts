@@ -52,6 +52,7 @@ export interface PlayerApi {
   selectHddRate: (rate: number | null) => void
   uploadFile: (file: File) => void
   configureVirtual: (config: VirtualConfig, enabled: boolean) => void
+  setTrackRouting: (mode: 'AUTO' | 'STRICT_TRACKS', fourFddOnly: boolean, tracks: Array<number | null>) => void
 }
 
 function websocketUrl(): string {
@@ -219,6 +220,8 @@ export function usePlayer(): PlayerApi {
     }
     send('set_virtual', { config: { ...config, enabled }, requestId })
   }, [send, state])
+  const setTrackRouting = useCallback((mode: 'AUTO' | 'STRICT_TRACKS', fourFddOnly: boolean,
+    tracks: Array<number | null>) => send('set_track_routing', { mode, fourFddOnly, tracks }), [send])
   const pause = useCallback(() => send('pause'), [send])
   const resume = useCallback(() => send('resume'), [send])
   const stop = useCallback(() => send('stop'), [send])
@@ -346,5 +349,6 @@ export function usePlayer(): PlayerApi {
     selectHddRate,
     uploadFile,
     configureVirtual,
+    setTrackRouting,
   }
 }

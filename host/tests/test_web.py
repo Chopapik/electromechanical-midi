@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fastapi.testclient import TestClient  # noqa: E402
 
 from playback.engine import PlaybackEngine, PlaybackState  # noqa: E402
+from playback.timeline import Command  # noqa: E402
 from web.server import create_app  # noqa: E402
 
 TPB = 480
@@ -137,6 +138,30 @@ class WebTestCase(unittest.TestCase):
 
 
 class TestRest(WebTestCase):
+    def test_raw_monitor_is_read_only_and_cursor_based(self):
+        self.transport.protocol_version = 2
+        before = list(self.transport.events)
+        empty = self.client.get('/api/monitor/raw').json()
+        self.assertEqual(self.transport.events, before)
+        self.assertIn('controllerStatusAgeSec', empty['hardware'])
+        cursor = empty['journal']['latestSeq']
+        with self.engine._lock:
+            self.engine._hardware.homed = True
+            self.assertTrue(self.engine._send_locked(Command(0, 'play', hz=220, lane='fdd:1', track=3)))
+            self.assertTrue(self.engine._send_raw_locked('FDD 1 STOP'))
+        sent = len(self.transport.events)
+        view = self.client.get(f'/api/monitor/raw?since={cursor}&limit=1').json()
+        self.assertEqual(len(view['journal']['events']), 1)
+        first = view['journal']['events'][0]
+        self.assertEqual(first['wireLines'], ['FDD 1 PLAY 220.00'])
+        self.assertEqual(first['trackIndex'], 3)
+        self.assertEqual(first['evidence'], 'sent_to_transport')
+        self.assertTrue(view['journal']['hasMore'])
+        next_view = self.client.get(f'/api/monitor/raw?since={first["seq"]}').json()
+        self.assertEqual(next_view['journal']['events'][0]['wireLines'], ['FDD 1 STOP'])
+        self.assertEqual(len(self.transport.events), sent)
+        self.assertEqual(self.client.get('/api/monitor/raw?limit=201').status_code, 422)
+
     def test_telemetry_is_read_only_and_empty_before_loading(self):
         before = self.engine.snapshot()
         response = self.client.get('/api/telemetry')

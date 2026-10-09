@@ -31,6 +31,7 @@ import json
 import enum
 import threading
 import time
+from collections import deque
 from pathlib import Path
 from typing import Callable, Protocol
 
@@ -64,6 +65,7 @@ from .hardware_profiles import HardwareContext, HardwareRegistry, execution_comm
 from .allocator import allocate, manual_pins
 from .duplicates import normalize
 from .orchestra import OrchestraConfig, default_orchestra, parse_orchestra
+from .strict_tracks import allocate_strict
 
 # Ostatnie 1.5 ms czekania to aktywne krecenie - dzieki temu komendy
 # wychodza wtedy, kiedy maja, a nie "mniej wiecej".
@@ -230,6 +232,9 @@ class PlaybackEngine:
         self._spin_margin = spin_margin
         self._ready_timeout = ready_timeout
         self._on_command = on_command
+        self._monitor_sequence = 0
+        self._monitor_commands = deque(maxlen=512)
+        self._monitor_last_by_lane: dict[str, dict] = {}
         self._on_handshake = on_handshake
         # Trwa blokujacy handshake (connect/home) - wtedy linie z Seriala
         # naleza WYLACZNIE do wait_ready(). Bez tego watek roboczy podkradal
@@ -241,6 +246,9 @@ class PlaybackEngine:
         # Auto Arranger jako domyslne wyjscie: MIDI -> plan -> orkiestra.
         # Domyslnie OFF, bo CLI i testy silnika uzywaja recznego trybu PLAYER.
         self._auto_arrange = auto_arrange
+        self._track_routing_mode = 'AUTO'
+        self._four_fdd_only = False
+        self._strict_tracks: list[int | None] = [None, None, None, None]
         # realtime=False: wysylaj wszystko od razu (tylko --dry-run / testy)
         self._realtime = realtime
 
@@ -591,6 +599,9 @@ class PlaybackEngine:
         with self._lock:
             self._preview.close()
             self._arrangement = None
+            self._track_routing_mode = 'AUTO'
+            self._four_fdd_only = False
+            self._strict_tracks = [None, None, None, None]
             self._plan = None
             self._plan_report = None
             self._normalized = None
@@ -858,16 +869,32 @@ class PlaybackEngine:
                                self._orchestra.hardware.get('inventory'))
 
     def _planning_orchestra_locked(self):
-        # Enabled is an output gate, never an allocator inventory change.
         config = copy.deepcopy(self._orchestra)
+        if self._four_fdd_only or self._track_routing_mode == 'STRICT_TRACKS':
+            config.devices = [d for d in config.devices if d['type'] == 'FDD'][:4]
+            config.dvd_mode = 'independent'
+            config.tray_enabled = False
+            config.idle_reinforcement['enabled'] = False
+            return config
+        # Legacy AUTO keeps its historical output-gate allocation behavior.
         for device in config.devices:
             device['enabled'] = True
         return config
 
     def _output_enabled_locked(self, command):
         device = self._hardware_bound.get(command.lane)
-        return device is None or next((d.get('enabled', True) for d in self._orchestra.devices
-                                      if d['id'] == device.id), True)
+        if device is None:
+            return True
+        enabled = next((d.get('enabled', True) for d in self._orchestra.devices
+                        if d['id'] == device.id), True)
+        config = next((d for d in self._orchestra.devices if d['id'] == device.id), {})
+        solo = any(d.get('enabled', True) and d.get('solo') and not d.get('mute')
+                   for d in self._orchestra.devices)
+        enabled = enabled and not config.get('mute') and (not solo or config.get('solo', False))
+        if self._track_routing_mode == 'STRICT_TRACKS':
+            fdds = [d['id'] for d in self._orchestra.devices if d['type'] == 'FDD'][:4]
+            enabled = enabled and device.id in fdds and self._strict_tracks[fdds.index(device.id)] is not None
+        return enabled
 
     def _gate_devices_locked(self, devices):
         previous = {d.id: d.enabled for d in self._virtual.devices}
@@ -876,6 +903,8 @@ class PlaybackEngine:
             device.enabled = gates[device.id]
         for device in self._orchestra.devices:
             device['enabled'] = gates[device['id']]
+        if self._plan_report is not None and self._plan is not None:
+            self._plan_report['output'] = self._output_report_locked()
         if self._arrangement is not None:
             for device in self._arrangement.data['devices']:
                 device['enabled'] = gates[device['id']]
@@ -911,6 +940,10 @@ class PlaybackEngine:
 
             return
 
+        if self._track_routing_mode == 'STRICT_TRACKS':
+            self._plan = allocate_strict(self._source, self._planning_orchestra_locked(),
+                                         self._strict_tracks, self._physical_context_locked())
+            return
         if self._normalized is None:
             # Double-tracking -> partie logiczne. Liczone raz na plik.
             self._normalized = normalize(self._source)
@@ -1000,6 +1033,7 @@ class PlaybackEngine:
         # przy kazdej zmianie stanu i nie moze za kazdym razem chodzic po
         # wszystkich zdarzeniach planu.
         self._plan_report = self._plan.report()
+        self._plan_report['output'] = self._output_report_locked()
 
         bound, unmapped = bind_devices(self._planning_orchestra_locked().instances() if self._plan.hardware else self._virtual.devices, getattr(self._transport, 'protocol_version', 1))
         if self._plan.hardware:
@@ -1010,9 +1044,17 @@ class PlaybackEngine:
         if getattr(self._transport, 'protocol_version', 1) == 2:
             self._sync_v2_devices_locked()
         hardware_commands = (build_plan_commands(self._plan, bound) if self._plan.hardware
-                             else build_commands(self._virtual, bound))
+                             else build_commands(self._virtual, bound,
+                                                 {e.id: e.track for e in self._plan.events}))
         self._hardware_active = bool(hardware_commands)
-        gates = {d['id']: d.get('enabled', True) for d in self._orchestra.devices}
+        solo = any(d.get('enabled', True) and d.get('solo') and not d.get('mute')
+                   for d in self._orchestra.devices)
+        gates = {d['id']: d.get('enabled', True) and not d.get('mute') and
+                 (not solo or d.get('solo', False)) for d in self._orchestra.devices}
+        if self._track_routing_mode == 'STRICT_TRACKS':
+            fdds = [d['id'] for d in self._orchestra.devices if d['type'] == 'FDD'][:4]
+            gates = {d: gates.get(d, False) and self._strict_tracks[i] is not None
+                     for i, d in enumerate(fdds)}
         for device in self._virtual.devices:
             device.enabled = gates.get(device.id, True)
 
@@ -1096,9 +1138,13 @@ class PlaybackEngine:
                 for device in config['devices']:
                     device.pop('enabled', None)
                 return config
-            if enabled == self._virtual_mode and without_gates(previous) == without_gates(proposed):
+            if enabled == self._virtual_mode and without_gates(previous) == without_gates(proposed) and not self._four_fdd_only:
                 self._gate_devices_locked(proposed['devices'])
                 return
+            if self._four_fdd_only and self._state is not PlaybackState.STOPPED and any(
+                    a.get('enabled', True) != b.get('enabled', True)
+                    for a, b in zip(previous['devices'], proposed['devices'])):
+                raise EngineError('Stop playback before changing FDD availability')
             # Output gain does not change the plan or require WAV regeneration.
             previous = self._virtual.config()
             proposed = candidate.config()
@@ -1213,7 +1259,7 @@ class PlaybackEngine:
                 for device in config['devices']:
                     device.pop('enabled', None)
                 return config
-            if ungated(previous) == ungated(candidate):
+            if ungated(previous) == ungated(candidate) and not self._four_fdd_only:
                 self._gate_devices_locked(proposed.devices)
                 return
             self._orchestra = proposed
@@ -1222,6 +1268,62 @@ class PlaybackEngine:
             self._arrangement = None
             self._rebuild_locked(keep_position=True)
             self._wake.set()
+
+    def set_track_routing(self, mode: str, four_fdd_only: bool,
+                          tracks: list[int | None]) -> None:
+        """Switch the listening experiment only while stopped; physical setup is untouched."""
+        with self._lock:
+            if self._state is not PlaybackState.STOPPED:
+                raise EngineError('Stop playback before changing track routing')
+            if self._source is None:
+                raise EngineError('Load MIDI before changing track routing')
+            if mode not in ('AUTO', 'STRICT_TRACKS') or not isinstance(four_fdd_only, bool):
+                raise ValueError('invalid routing mode')
+            fdds = [d for d in self._orchestra.devices if d['type'] == 'FDD'][:4]
+            if (four_fdd_only or mode == 'STRICT_TRACKS') and len(fdds) != 4:
+                raise ValueError('four FDD devices are required')
+            if not isinstance(tracks, list) or len(tracks) != 4:
+                raise ValueError('four track selections are required')
+            if mode == 'STRICT_TRACKS':
+                selected = [t for t in tracks if t is not None]
+                if (len(selected) != len(set(selected)) or any(
+                    not isinstance(t, int) or isinstance(t, bool) or t < 0 or
+                    t >= len(self._source.tracks) or self._source.tracks[t].is_drums
+                    for t in selected)):
+                    raise ValueError('invalid or duplicate strict track selection')
+            if mode == 'AUTO' and self._transport is not None and getattr(
+                    self._transport, 'controller_status', {}).get('strict_tracks') == '1':
+                if not self._send_raw_locked('TRACKS OFF'):
+                    raise EngineError('Could not disable ESP32 strict routing')
+            self._track_routing_mode = mode
+            self._four_fdd_only = four_fdd_only or mode == 'STRICT_TRACKS'
+            self._strict_tracks = tracks.copy()
+            self._auto_arrange = True
+            self._rebuild_locked(keep_position=False)
+            self._wake.set()
+
+    def _output_report_locked(self) -> dict:
+        solo = any(d.get('enabled', True) and d.get('solo') and not d.get('mute')
+                   for d in self._orchestra.devices)
+        gates = {d['id']: d.get('enabled', True) and not d.get('mute') and
+                 (not solo or d.get('solo', False)) for d in self._orchestra.devices}
+        if self._four_fdd_only:
+            fdds = [d['id'] for d in self._orchestra.devices if d['type'] == 'FDD'][:4]
+            gates = {d: gates.get(d, False) and (self._track_routing_mode != 'STRICT_TRACKS'
+                     or self._strict_tracks[i] is not None) for i, d in enumerate(fdds)}
+        played = [e for e in self._plan.events if e.played]
+        actual = [e for e in played if gates.get(e.device_id, False)]
+        if self._plan_report and self._plan_report.get('strictTracks'):
+            for ident, row in self._plan_report['strictTracks'].items():
+                notes = [e for e in actual if e.device_id == ident]
+                row['played'] = len(notes)
+                row['dropped'] = row['requested'] - len(notes)
+                row['retention'] = round(len(notes) / row['requested'], 4) if row['requested'] else 0.
+                row['pitchChanges'] = sum(a.played_note != b.played_note for a, b in zip(notes, notes[1:]))
+                row['folded'] = sum(e.folded for e in notes)
+        return {'plannedPlayed': len(played), 'enabledPlayed': len(actual),
+                'disabledReservations': len(played) - len(actual),
+                'byDevice': {d: sum(e.device_id == d for e in actual) for d in gates if gates[d]}}
 
     def initialize_arrangement(self) -> None:
         with self._lock:
@@ -1336,7 +1438,7 @@ class PlaybackEngine:
                             'duplicateConfidence': getattr(t, 'duplicate_confidence', None)}
                            for t in self._source_tracks()],
                 'revision': self._arrangement_revision,
-                'report': self._plan.report() if self._plan is not None else None,
+                'report': self._plan_report,
                 'orchestra': {
                     'name': self._orchestra.name,
                     'policy': self._orchestra.policy,
@@ -1353,6 +1455,14 @@ class PlaybackEngine:
     def play(self) -> None:
         """Start od biezacej pozycji (0 po STOP, albo tam, gdzie wskazal seek)."""
         with self._lock:
+            if self._four_fdd_only and not self._virtual_mode and (
+                    self._controller_target != 'esp32' or
+                    (self._transport is not None and getattr(self._transport, 'protocol_version', 1) != 2)):
+                raise EngineError('Four physical FDD lanes require the ESP32 v2 controller')
+            if (self._track_routing_mode == 'STRICT_TRACKS' and self._hardware_active and
+                    self._transport is not None and
+                    getattr(self._transport, 'controller_status', {}).get('strict_tracks') != '1'):
+                raise EngineError('STRICT TRACKS requires ESP32 firmware with strict_tracks=1')
             if self._timeline is None or not self._timeline.commands:
                 raise EngineError("nie ma czego grac - wybierz plik i track")
 
@@ -1454,6 +1564,11 @@ class PlaybackEngine:
             self._fail_locked("brak polaczenia z Arduino")
             return
 
+        if (self._track_routing_mode == 'STRICT_TRACKS' and self._hardware_active and
+                self._transport is not None and
+                getattr(self._transport, 'controller_status', {}).get('strict_tracks') != '1'):
+            raise EngineError('STRICT TRACKS requires ESP32 firmware with strict_tracks=1')
+
         if not self._virtual_mode or self._hardware_active:
             if self._handshake:
                 self._pending_play = True
@@ -1494,6 +1609,14 @@ class PlaybackEngine:
         # moze zostac z dzwiekiem ze starego planu.
         if not self._reset_instruments_locked():
             return
+
+        if self._hardware_active and self._transport is not None and self._track_routing_mode == 'STRICT_TRACKS':
+            tracks = ' '.join(str(t if t is not None else -1) for t in self._strict_tracks)
+            if not self._send_raw_locked(f'TRACKS SET {tracks}'):
+                return
+        elif self._transport is not None and getattr(self._transport, 'controller_status', {}).get('strict_tracks') == '1':
+            if not self._send_raw_locked('TRACKS OFF'):
+                return
 
         self._next_index = timeline.index_after(position)
         self._origin = time.monotonic() - position
@@ -1566,7 +1689,8 @@ class PlaybackEngine:
 
     def _drum_midi_active_locked(self) -> bool:
         """Czy beben jest wlasnie sterowany przez MIDI (a nie recznie)."""
-        return self._state is PlaybackState.PLAYING and self._drum_track_index is not None
+        return (self._track_routing_mode != 'STRICT_TRACKS' and
+                self._state is PlaybackState.PLAYING and self._drum_track_index is not None)
 
     def _guard_manual_drum_locked(self) -> None:
         if self._drum_midi_active_locked():
@@ -1694,6 +1818,104 @@ class PlaybackEngine:
             elif action == 'lab_heartbeat': self._lab.touch(owner)
             else: raise EngineError('Nieznana akcja Lab')
 
+    def _record_sent_locked(self, command: Command | None, lines: list[str], *,
+                            stop_confirmed: bool = False) -> None:
+        """Bounded host dispatch journal. A write is not proof of motor motion."""
+        if not lines or all(line in ('PING', 'STATUS') for line in lines):
+            return
+        self._monitor_sequence += 1
+        now = time.time()
+        lane = command.lane if command else None
+        track = command.track if command else None
+        device = self._hardware_bound.get(lane) if lane else None
+        row = {
+            'seq': self._monitor_sequence,
+            'sentAtUnixMs': round(now * 1000),
+            'file': self._file_name,
+            'playbackPositionSec': round(self._position_locked(), 3),
+            'lane': lane,
+            'deviceId': device.id if device else None,
+            'kind': command.kind if command else 'control',
+            'trackIndex': track,
+            'trackName': (self._source.tracks[track].name if self._source is not None and
+                          track is not None and 0 <= track < len(self._source.tracks) else None),
+            'hz': command.hz if command else None,
+            'wireLines': list(lines),
+            'evidence': 'sent_to_transport',
+            'stopConfirmed': stop_confirmed,
+        }
+        self._monitor_commands.append(row)
+        if any(line.startswith(('ALL STOP', 'TRACKS SET', 'TRACKS OFF')) for line in lines):
+            self._monitor_last_by_lane.clear()
+        elif lane and command and command.kind in ('play', 'stop', 'drum_on', 'drum_off', 'hit', 'tray_pulse'):
+            self._monitor_last_by_lane[lane] = row
+        elif lines[0].startswith('FDD ') and lines[0].endswith(' STOP'):
+            parts = lines[0].split()
+            self._monitor_last_by_lane[f'fdd:{parts[1]}'] = row
+
+    def monitor_view(self, since: int = 0, limit: int = 100) -> dict:
+        """Compact, read-only, cursor-based runtime view for diagnostics/agents."""
+        if not isinstance(since, int) or since < 0 or not isinstance(limit, int) or not 1 <= limit <= 200:
+            raise ValueError('since must be >= 0 and limit must be 1..200')
+        with self._lock:
+            now = time.time()
+            oldest = self._monitor_commands[0]['seq'] if self._monitor_commands else self._monitor_sequence + 1
+            rows = [row.copy() for row in self._monitor_commands if row['seq'] > since][:limit]
+            next_cursor = rows[-1]['seq'] if rows else max(since, self._monitor_sequence)
+            observed = getattr(self._transport, 'status_observed_at', None)
+            solo = any(d.get('enabled', True) and d.get('solo') and not d.get('mute')
+                       for d in self._orchestra.devices)
+            lanes = {d.id: lane for lane, d in self._hardware_bound.items()}
+            devices = []
+            for d in self._orchestra.devices:
+                enabled = (d.get('enabled', True) and not d.get('mute') and
+                           (not solo or d.get('solo', False)))
+                if self._four_fdd_only and d['type'] != 'FDD':
+                    enabled = False
+                if self._track_routing_mode == 'STRICT_TRACKS' and d['type'] == 'FDD':
+                    fdds = [x['id'] for x in self._orchestra.devices if x['type'] == 'FDD'][:4]
+                    enabled = enabled and d['id'] in fdds and self._strict_tracks[fdds.index(d['id'])] is not None
+                devices.append({'id': d['id'], 'type': d['type'], 'mode': d.get('mode', 'virtual'),
+                                'enabled': enabled, 'mute': bool(d.get('mute')), 'solo': bool(d.get('solo')),
+                                'physicalLane': lanes.get(d['id'])})
+            return {
+                'schemaVersion': 1,
+                'serverTimeUnixMs': round(now * 1000),
+                'evidence': {'commands': 'host transport writes; not firmware execution or audio',
+                             'controllerStatus': 'last cached STATUS transaction; may be stale',
+                             'plan': 'scheduled allocation; not measured execution'},
+                'playback': {'state': self._state.value, 'file': self._file_name,
+                             'positionSec': round(self._position_locked(), 3),
+                             'durationSec': round(self._timeline.duration, 3) if self._timeline else 0.,
+                             'planRevision': self._arrangement_revision,
+                             'planOrigin': self._plan.origin if self._plan else None},
+                'routing': {'mode': self._track_routing_mode, 'fourFddOnly': self._four_fdd_only,
+                            'tracks': list(self._strict_tracks)},
+                'hardware': {'connected': self._hardware.connected, 'homed': self._hardware.homed,
+                             'target': self._controller_target,
+                             'transport': 'ble' if self._controller_target == 'esp32' else 'serial',
+                             'error': self._hardware.error, 'warning': self._hardware.warning,
+                             'controllerCapabilities': dict(getattr(self._transport, 'controller_status', {})),
+                             'controllerStatusObservedAtUnixMs': round(observed * 1000) if observed else None,
+                             'controllerStatusAgeSec': round(now - observed, 3) if observed else None,
+                             'controllerDevices': dict(getattr(self._transport, 'device_status', {})),
+                             'lastSentByLane': dict(self._monitor_last_by_lane)},
+                'devices': devices,
+                'plan': {'totals': self._plan_report.get('totals') if self._plan_report else None,
+                         'output': self._plan_report.get('output') if self._plan_report else None,
+                         'strictTracks': self._plan_report.get('strictTracks') if self._plan_report else None},
+                'timing': {'lateCommands': self._late_commands,
+                           'discardedAtEnd': self._end_discarded_commands,
+                           'maxObservedLagMs': round(self._max_dispatch_lag * 1000, 3),
+                           'dropReasons': dict(self._late_reasons),
+                           'bleBatches': self._ble_batches, 'bleCommands': self._ble_commands},
+                'journal': {'oldestSeq': oldest, 'latestSeq': self._monitor_sequence,
+                            'nextCursor': next_cursor,
+                            'overrun': since > 0 and since < oldest - 1,
+                            'hasMore': self._monitor_sequence > next_cursor,
+                            'events': rows},
+            }
+
     def snapshot(self) -> dict:
         with self._lock:
             timeline = self._timeline
@@ -1762,6 +1984,11 @@ class PlaybackEngine:
                 "arrangementOrigin": self._plan.origin if self._plan is not None else None,
                 "hardwarePlanning": self._plan.hardware if self._plan else {},
                 "arrangementTotals": self._plan_report['totals'] if self._plan_report else None,
+                "trackRouting": {"mode": self._track_routing_mode,
+                                 "fourFddOnly": self._four_fdd_only,
+                                 "tracks": self._strict_tracks,
+                                 "report": self._plan_report.get('strictTracks') if self._plan_report else None,
+                                 "output": self._plan_report.get('output') if self._plan_report else None},
                 "arrangementHardware": {
                     # active = aranzacja kieruje cokolwiek na fizyczne linie,
                     # connected = czy jest gdzie to wyslac (Arduino).
@@ -1842,6 +2069,7 @@ class PlaybackEngine:
     def _hdd_snapshot_locked(self) -> dict:
         connected = self._transport is not None
         midi_active = (
+            self._track_routing_mode != 'STRICT_TRACKS' and
             self._state is PlaybackState.PLAYING and self._hdd_track_index is not None
         )
         current = self._hdd_current if midi_active else None
@@ -1920,7 +2148,10 @@ class PlaybackEngine:
     # ==========================================================
 
     def _sync_v2_devices_locked(self, force: bool = False) -> None:
-        bound, _ = bind_devices(self._planning_orchestra_locked().instances(), 2)
+        # Routing experiment gates commands on the host; it does not change
+        # controller ENABLE/HOME state or physical profiles.
+        inventory = self._orchestra if self._four_fdd_only else self._planning_orchestra_locked()
+        bound, _ = bind_devices(inventory.instances(), 2)
         context = self._physical_context_locked()
         if context is not None:
             filtered={}
@@ -1971,7 +2202,15 @@ class PlaybackEngine:
                     or not expected or getattr(self,'_execution_profiles',{}).get(prefix)!=expected):
                 self._pause_fdd_locked('Hardware: brak potwierdzonej wersji/konfiguracji profili; wymagane nowe firmware i konfiguracja')
                 return False
-        if command.kind == 'play': text = f'{prefix} PLAY {command.hz:.2f}'
+        if command.kind == 'play':
+            text = f'{prefix} PLAY {command.hz:.2f}'
+            if self._track_routing_mode == 'STRICT_TRACKS' and family == 'fdd':
+                lane_index = int(ident) - 1
+                if (command.track is None or lane_index not in range(4) or
+                        command.track != self._strict_tracks[lane_index]):
+                    self._pause_fdd_locked('STRICT TRACKS: missing or mismatched MIDI track provenance')
+                    return False
+                text += f' TRACK {command.track}'
         elif command.kind == 'hit': text = f'{prefix} HIT'
         elif command.kind == 'tray_pulse': text = f'{prefix} PULSE FWD {int(command.hz)}'
         elif command.kind == 'drum_on':
@@ -1985,6 +2224,7 @@ class PlaybackEngine:
             return False
         for text in lines:
             self._transport.send(text)
+        return lines
 
     def _late_reason_locked(self, index, position):
         """Classify stale commands against immutable per-lane timeline state."""
@@ -2052,7 +2292,7 @@ class PlaybackEngine:
                         return False
                     if wire is False: return False
                     lines.extend(wire)
-                    accepted.append(command)
+                    accepted.append((command, wire))
             index += 1
         if lines:
             started = time.monotonic()
@@ -2067,8 +2307,10 @@ class PlaybackEngine:
             self._ble_batches += 1
             self._ble_commands += len(lines)
             self._max_batch_commands = max(self._max_batch_commands, len(lines))
+            for command, wire in accepted:
+                self._record_sent_locked(command, wire)
             if self._on_command:
-                for command in accepted:
+                for command, _ in accepted:
                     try: self._on_command(command)
                     except Exception: pass
         self._next_index = index
@@ -2090,19 +2332,24 @@ class PlaybackEngine:
                 self._start_home_locked()
             return False
 
+        wire = []
         try:
             if ':' in command.lane and getattr(transport, 'protocol_version', 1) == 2:
-                if self._v2_command_locked(command) is False:
+                wire = self._v2_command_locked(command)
+                if wire is False:
                     return False
             elif command.kind == "play":
                 transport.play(command.hz)
+                wire = [f'PLAY {command.hz:.2f}']
             else:
                 transport.stop()
+                wire = ['STOP']
         except Exception as exc:
             self._fail_locked(f"blad transportu: {exc}")
             return False
 
         self._last_io = time.monotonic()
+        self._record_sent_locked(command, wire)
 
         if self._on_command is not None:
             try:
@@ -2116,11 +2363,13 @@ class PlaybackEngine:
         if self._transport is None:
             return False
 
+        stop_confirmed = False
         try:
             if getattr(self._transport, 'protocol_version', 1) == 2:
                 confirmed = getattr(self._transport, 'controller_status', {}).get('stop_ack') == '1'
                 if confirmed and not self._handshake:
                     self._transport.all_stop_confirmed()
+                    stop_confirmed = True
                 else:
                     self._transport.send('ALL STOP')
             else:
@@ -2134,6 +2383,7 @@ class PlaybackEngine:
             return False
 
         self._last_io = time.monotonic()
+        self._record_sent_locked(None, ['ALL STOP'], stop_confirmed=stop_confirmed)
 
         return True
 
@@ -2156,6 +2406,7 @@ class PlaybackEngine:
             return False
 
         self._last_io = time.monotonic()
+        self._record_sent_locked(None, [text])
 
         return True
 

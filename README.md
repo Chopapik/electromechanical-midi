@@ -563,6 +563,7 @@ rzeczywistego i sterowanie.
 | Metoda | Ścieżka | Opis |
 | --- | --- | --- |
 | `GET` | `/api/state` | aktualny stan playera (ten sam co po WebSocketcie) |
+| `GET` | `/api/monitor/raw?since=0&limit=100` | zwięzły stan wykonania i nowe komendy wysłane do transportu; bez sterowania sprzętem |
 | `GET` | `/api/files` | lista plików `.mid` z katalogu `midi/` |
 | `GET` | `/api/files/{name}` | metadane: długość, zmiany tempa, lista tracków |
 | `POST` | `/api/files` | **wgranie pliku MIDI** (`multipart/form-data`, pole `file`) |
@@ -571,6 +572,15 @@ rzeczywistego i sterowanie.
 
 Metadane pliku zawierają dla każdego tracku: `index`, `name`, `noteCount`,
 `channels`, `isDrums`, `polyphonic` (czy cokolwiek brzmi jednocześnie).
+
+Monitor zwraca `playback`, `routing`, `devices`, `plan`, `timing`, `hardware`
+oraz `journal`. Odczytuj kolejne porcje z `since=<journal.nextCursor>`
+(`limit` 1–200). `journal.overrun=true` oznacza, że najstarsze wpisy w
+ograniczonym buforze zostały już nadpisane. `wireLines` są faktycznymi
+komendami przekazanymi do transportu, nie potwierdzeniem ruchu napędów.
+`controllerStatusAgeSec` wskazuje wiek ostatniego statusu ESP32; brak
+znacznika oznacza, że świeżość statusu nie jest znana. Ten endpoint nie
+odpytuje ESP32 i nie wysyła żadnych komend.
 
 ### 6.2. WebSocket `/ws`
 

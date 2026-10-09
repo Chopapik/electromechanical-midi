@@ -87,7 +87,7 @@ def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1
     return bound, unmapped
 
 
-def _tone_commands(events, lane: str) -> list[Command]:
+def _tone_commands(events, lane: str, source_tracks=None) -> list[Command]:
     """Nuty linii monofonicznej: PLAY/STOP z legato i artykulacja powtorek.
 
     Ta sama logika co ``timeline.build_schedule``, ale wejściem sa juz
@@ -117,7 +117,8 @@ def _tone_commands(events, lane: str) -> list[Command]:
             commands.append(Command(gap_start, 'stop', lane=lane))
             current_hz = None
 
-        commands.append(Command(start, 'play', hz=event.hz, lane=lane))
+        track = source_tracks.get(event.source_id) if source_tracks is not None else None
+        commands.append(Command(start, 'play', hz=event.hz, lane=lane, track=track))
         current_hz = event.hz
         current_start = start
         last_end = end
@@ -169,7 +170,7 @@ def _hit_commands(events, lane=LANE_HDD) -> list[Command]:
 
 
 def build_commands(orchestra: VirtualOrchestra,
-                   bound: dict[str, VirtualDeviceInstance]) -> list[Command]:
+                   bound: dict[str, VirtualDeviceInstance], source_tracks=None) -> list[Command]:
     """Komendy sprzetowe dla instancji przypisanych do linii.
 
     Bierze ``orchestra.events`` (czyli tylko zdarzenia zaakceptowane przez
@@ -201,7 +202,7 @@ def build_commands(orchestra: VirtualOrchestra,
         elif lane == LANE_DRUM or lane.startswith('drum:'):
             commands.extend(dataclasses.replace(c, lane=lane) for c in _drum_commands(events))
         else:
-            commands.extend(_tone_commands(events, lane))
+            commands.extend(_tone_commands(events, lane, source_tracks))
 
     return commands
 
@@ -210,12 +211,15 @@ def build_plan_commands(plan, bound):
     """Physical schedule directly from evaluated PerformancePlan (no PCM model)."""
     from .virtual import AcousticEvent
     grouped = {lane:[] for lane in bound}
+    event_tracks = {}
     device_lane = {device.id:lane for lane,device in bound.items()}
     for e in plan.events:
         lane = device_lane.get(e.device_id)
         if e.played and lane and e.hardware.get('authorized'):
+            event_tracks[e.id] = e.track
             grouped[lane].append(AcousticEvent(e.actual_start, 'tone', e.device_id,
-                                               e.played_hz or 0., e.actual_duration, e.velocity))
+                                               e.played_hz or 0., e.actual_duration, e.velocity,
+                                               source_id=e.id))
     for e in plan.reinforcements:
         lane = device_lane.get(e.device_id)
         if lane: grouped[lane].append(AcousticEvent(e.start, 'tone', e.device_id, e.hz, e.duration, e.velocity))
@@ -227,7 +231,8 @@ def build_plan_commands(plan, bound):
             # gap or minimum-length discard from the historical acoustic renderer.
             ordered=sorted(events,key=lambda x:x.time)
             for index,e in enumerate(ordered):
-                commands.append(Command(e.time,'drum_on' if lane.startswith('drum:') else 'play',hz=e.hz,lane=lane))
+                commands.append(Command(e.time,'drum_on' if lane.startswith('drum:') else 'play',hz=e.hz,lane=lane,
+                                        track=event_tracks.get(e.source_id)))
                 if index+1==len(ordered) or ordered[index+1].time>e.time+e.duration+1e-9:
                     commands.append(Command(e.time+e.duration,'drum_off' if lane.startswith('drum:') else 'stop',lane=lane))
     return sorted(commands,key=lambda c:(c.time, 0 if c.kind in ('stop','drum_off') else 1,c.lane))

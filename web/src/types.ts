@@ -68,11 +68,14 @@ export interface HddState {
 }
 
 export interface PlayerState {
+  trackRouting?: { mode: 'AUTO' | 'STRICT_TRACKS'; fourFddOnly: boolean; tracks: Array<number | null>
+    report?: Record<string, { track: number | null; requested: number; played: number; dropped: number; retention: number; chordRejected: number; pitchChanges: number; folded: number }> | null
+    output?: { plannedPlayed: number; enabledPlayed: number; disabledReservations: number; byDevice: Record<string, number> } | null }
   lab?: import("./components/InstrumentLab").LabState
   virtual?: VirtualState
   arrangementRevision?: number
   arrangementActive?: boolean
-  arrangementOrigin?: 'auto' | 'manual' | 'hybrid' | null
+  arrangementOrigin?: 'auto' | 'manual' | 'hybrid' | 'strict_tracks' | null
   arrangementTotals?: ArrangementReport['totals'] | null
   arrangementHardware?: ArrangementHardware
   state: PlaybackStateValue
@@ -166,6 +169,7 @@ export interface TrackInfo {
   channels: number[]
   isDrums: boolean
   polyphonic: boolean
+  programs?: number[]
 }
 
 export interface FileMetadata {

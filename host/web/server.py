@@ -206,6 +206,7 @@ class MidiLibrary:
                     "channels": list(track.channels),
                     "isDrums": track.is_drums,
                     "polyphonic": polyphonic,
+                    "programs": list(source.programs(track.index)),
                 }
             )
 
@@ -337,6 +338,9 @@ def create_app(
             await asyncio.to_thread(engine.play)
         elif action == "set_virtual":
             await asyncio.to_thread(engine.configure_virtual, message.get('config') or {})
+        elif action == "set_track_routing":
+            await asyncio.to_thread(engine.set_track_routing, message.get('mode', 'AUTO'),
+                                    message.get('fourFddOnly', False), message.get('tracks', [None] * 4))
         elif action == "pause":
             await asyncio.to_thread(engine.pause)
         elif action == "resume":
@@ -455,6 +459,14 @@ def create_app(
     @app.get("/api/state")
     def api_state() -> dict:
         return engine.snapshot()
+
+    @app.get('/api/monitor/raw')
+    def api_monitor_raw(since: int = 0, limit: int = 100) -> dict:
+        """Read-only live state and bounded host dispatch journal."""
+        try:
+            return engine.monitor_view(since=since, limit=limit)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     @app.post('/api/firmware/upload')
     async def api_firmware_upload(target: str = 'uno') -> dict:

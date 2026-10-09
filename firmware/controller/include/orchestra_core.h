@@ -130,6 +130,7 @@ struct Tray:Bridge {
 struct Controller {
  IO& io;ShiftRegisterBus bus;FloppyDrive fdd[4]={{0},{1},{2},{3}};Hdd hdd[4]={{0},{1},{2},{3}};Sled sled[4]={{0},{1},{2},{3}};Tray tray[2]={{0},{1}};
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
+ bool strictTracks=false; int16_t strictTrack[4]={-1,-1,-1,-1};
  explicit Controller(IO& value):io(value),bus(value){}
  void begin(){bus.begin();io.vhs(0,0);lastCommand=io.us();}
  void wake(){bus.setBit(map::sleep,true);bus.flush();}
@@ -148,11 +149,28 @@ struct Controller {
  // Pure parser shared with native tests. Responses are queued outside STEP generation.
  const char* command(const char* text){
   char copy[96];if(strlen(text)>=sizeof(copy))return "ERR LINE_TOO_LONG";strcpy(copy,text);
-  char* args[6]={};unsigned n=0;char* save=nullptr;for(char* p=strtok_r(copy," ", &save);p&&n<6;p=strtok_r(nullptr," ",&save))args[n++]=p;
+  char* args[6]={};unsigned n=0;char* save=nullptr;
+  for(char* p=strtok_r(copy," ",&save);p;p=strtok_r(nullptr," ",&save)){
+   if(n==6)return "ERR COMMAND";
+   args[n++]=p;
+  }
   if(!n)return "ERR COMMAND";lastCommand=io.us();watchdogStopped=false;
   if(!strcmp(args[0],"PING")&&n==1)return "PONG";
   if(!strcmp(args[0],"STATUS")&&n==1)return "STATUS";
   if(!strcmp(text,"ALL STOP")){allStop();return "OK";}
+  // Host supplies MIDI provenance on every PLAY while this guard is active.
+  // -1 disables a lane. Switching modes always silences the current output.
+  if(!strcmp(text,"TRACKS OFF")){allStop();strictTracks=false;for(auto& t:strictTrack)t=-1;return "OK";}
+  if(n==6&&!strcmp(args[0],"TRACKS")&&!strcmp(args[1],"SET")){
+   int16_t tracks[4];
+   for(int i=0;i<4;++i){
+    char* end;long value=strtol(args[i+2],&end,10);
+    if(*end||value < -1||value > 32767)return "ERR TRACK";
+    for(int j=0;j<i;++j)if(value!=-1&&tracks[j]==value)return "ERR TRACK";
+    tracks[i]=int16_t(value);
+   }
+   allStop();for(int i=0;i<4;++i)strictTrack[i]=tracks[i];strictTracks=true;return "OK";
+  }
   char expanded[96];
   if(!strcmp(args[0],"PLAY")&&n==2){snprintf(expanded,96,"FDD 1 PLAY %s",args[1]);return command(expanded);}
   if(!strcmp(text,"STOP"))return command("FDD 1 STOP");
@@ -162,6 +180,7 @@ struct Controller {
   if((!strcmp(args[0],"DRUM")||!strcmp(args[0],"DRUMF"))&&n==2){snprintf(expanded,96,"VHS %s %s",!strcmp(args[0],"DRUM")?"AMP":"FREQ",args[1]);return command(expanded);}
   if(!strcmp(args[0],"VHS")){
    if(n==2&&!strcmp(args[1],"STOP")){amp=0;frequency=0;io.vhs(0,0);return "OK";}
+   if(strictTracks&&strcmp(text,"VHS ENABLE 0"))return "ERR STRICT_OUTPUT";
    if(n!=3)return "ERR COMMAND";char* end;float v=strtof(args[2],&end);if(*end||!isfinite(v)||v<0)return "ERR VALUE";
    if(!strcmp(args[1],"ENABLE")&&(v==0||v==1)){vhsEnabled=v==1;if(!vhsEnabled){amp=0;frequency=0;io.vhs(0,0);}return "OK";}
    if(!vhsEnabled)return "ERR DISABLED";
@@ -171,6 +190,14 @@ struct Controller {
   if(n<3)return "ERR COMMAND";char* end;long id=strtol(args[1],&end,10);if(*end||id<1)return "ERR ID";--id;
   bool isFdd=!strcmp(args[0],"FDD"),isHdd=!strcmp(args[0],"HDD"),isSled=!strcmp(args[0],"SLED"),isTray=!strcmp(args[0],"TRAY");
   if((!isFdd&&!isHdd&&!isSled&&!isTray)||id>=(isTray?2:4))return "ERR ID";
+  if(strictTracks&&isFdd&&n>=4&&!strcmp(args[2],"PLAY")){
+   if(n!=6||strcmp(args[4],"TRACK"))return "ERR TRACK_REQUIRED";
+   char* trackEnd;long track=strtol(args[5],&trackEnd,10);
+   if(*trackEnd||track<0||track>32767||strictTrack[id]!=track)return "ERR TRACK";
+  }
+  if(strictTracks&&((isHdd&&n==3&&!strcmp(args[2],"HIT"))||
+      (isSled&&n>=3&&!strcmp(args[2],"PLAY"))||
+      (isTray&&n>=3&&!strcmp(args[2],"PULSE"))))return "ERR STRICT_OUTPUT";
   bool* enabled=isFdd?&fdd[id].enabled:isHdd?&hdd[id].enabled:isSled?&sled[id].enabled:&tray[id].enabled;
   if(n==3&&!strcmp(args[2],"STOP")){if(isFdd)fdd[id].stop();else if(isHdd)hdd[id].stop(bus);else if(isSled)sled[id].stop(bus);else tray[id].stop(bus);bus.flush();return "OK";}
   if(n==4&&!strcmp(args[2],"ENABLE")&&(!strcmp(args[3],"0")||!strcmp(args[3],"1"))){snprintf(expanded,96,"%s %ld STOP",args[0],id+1);command(expanded);*enabled=args[3][0]=='1';return "OK";}
@@ -197,7 +224,7 @@ struct Controller {
   if(!*enabled)return "ERR DISABLED";
   if(isFdd&&n==3&&!strcmp(args[2],"HOME")){wake();fdd[id].home(bus);return "OK";}
   if(isHdd&&n==3&&!strcmp(args[2],"HIT")){wake();bool ok=hdd[id].hit(bus);bus.flush();return ok?"OK":"ERR BUSY";}
-  if((isFdd||isSled)&&n==4&&!strcmp(args[2],"PLAY")){float value=strtof(args[3],&end);if(*end||!isfinite(value))return "ERR VALUE";bool ok=isFdd?fdd[id].play(value,io):sled[id].play(value);if(ok)wake();if(isSled&&sled[id].softMax<0)return "ERR TRAVEL_UNKNOWN";return ok?"OK":isFdd&&!fdd[id].homed?"ERR NOT_HOMED":"ERR VALUE";}
+  if((isFdd||isSled)&&(n==4||(strictTracks&&isFdd&&n==6))&&!strcmp(args[2],"PLAY")){float value=strtof(args[3],&end);if(*end||!isfinite(value))return "ERR VALUE";bool ok=isFdd?fdd[id].play(value,io):sled[id].play(value);if(ok)wake();if(isSled&&sled[id].softMax<0)return "ERR TRAVEL_UNKNOWN";return ok?"OK":isFdd&&!fdd[id].homed?"ERR NOT_HOMED":"ERR VALUE";}
   if(isSled&&n==4&&!strcmp(args[2],"DIR")&&(!strcmp(args[3],"FWD")||!strcmp(args[3],"REV"))){sled[id].forward=!strcmp(args[3],"FWD");return "OK";}
   if(isTray&&n==5&&!strcmp(args[2],"PULSE")&&(!strcmp(args[3],"FWD")||!strcmp(args[3],"REV"))){long ms=strtol(args[4],&end,10);if(*end||ms<1||ms>60000)return "ERR VALUE";wake();tray[id].pulse(bus,!strcmp(args[3],"FWD")?1:-1,ms);bus.flush();return "OK";}
   return "ERR COMMAND";

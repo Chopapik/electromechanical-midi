@@ -178,6 +178,27 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("SLED 1 PLAY 100"),"ERR VALUE"));
  }else if(c=="disable"){
   d.fdd[0].homed=true;d.command("PLAY 220");d.command("FDD 1 ENABLE 0");assert(!d.fdd[0].playing&&!d.fdd[0].enabled);assert(!strcmp(d.command("PLAY 220"),"ERR DISABLED"));
+ }else if(c=="strict_tracks"){
+  for(auto& f:d.fdd)f.homed=true;
+  assert(!strcmp(d.command("TRACKS SET 3 1 4 8"),"OK"));
+  assert(d.strictTracks&&d.strictTrack[0]==3&&d.strictTrack[3]==8);
+  assert(!strcmp(d.command("FDD 1 PLAY 220"),"ERR TRACK_REQUIRED"));
+  assert(!strcmp(d.command("PLAY 220"),"ERR TRACK_REQUIRED"));
+  assert(!strcmp(d.command("FDD 1 PLAY 220 TRACK 1"),"ERR TRACK"));
+  assert(!strcmp(d.command("FDD 1 PLAY 220 TRACK 3 EXTRA"),"ERR COMMAND"));
+  assert(!d.fdd[0].playing);
+  assert(!strcmp(d.command("FDD 1 PLAY 220 TRACK 3"),"OK"));
+  assert(d.fdd[0].playing&&!d.fdd[1].playing);
+  assert(!strcmp(d.command("TRACKS SET 3 3 4 8"),"ERR TRACK"));
+  assert(d.fdd[0].playing&&d.strictTrack[1]==1);
+  assert(!strcmp(d.command("TRACKS SET 3 1 -1 8"),"OK"));
+  assert(!d.fdd[0].playing);
+  assert(!strcmp(d.command("FDD 3 PLAY 220 TRACK 4"),"ERR TRACK"));
+  assert(!strcmp(d.command("HDD 1 HIT"),"ERR STRICT_OUTPUT"));
+  assert(!strcmp(d.command("SLED 1 PLAY 220"),"ERR STRICT_OUTPUT"));
+  assert(!strcmp(d.command("VHS AMP 30"),"ERR STRICT_OUTPUT"));
+  assert(!strcmp(d.command("TRACKS OFF"),"OK"));
+  assert(!d.strictTracks&&!strcmp(d.command("FDD 1 PLAY 220"),"OK"));
  }else assert(false);
 }
 '''
@@ -197,7 +218,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

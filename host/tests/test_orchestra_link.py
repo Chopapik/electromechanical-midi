@@ -57,6 +57,7 @@ class ProtocolTests(unittest.TestCase):
         with patch('floppy_link.FloppyLink.poll_lines', side_effect=[lines[:-1],lines[-1:]]):
             l.poll_lines(); self.assertEqual(l.device_status,{})
             l.poll_lines(); self.assertEqual(l.device_status,parsed['devices'])
+            self.assertIsNotNone(l.status_observed_at)
 
     def test_ready_negotiates_v2(self):
         l=self.link();l.protocol_version=1

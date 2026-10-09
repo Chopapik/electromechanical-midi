@@ -67,6 +67,7 @@ class Command:
     hz: float | None = None
     note: int | None = None        # nuta zrodlowa z pliku MIDI
     lane: str = LANE_FDD           # "fdd" | "drum" | "hdd"
+    track: int | None = None       # MIDI provenance for ESP32 STRICT TRACKS
 
     @property
     def is_note_on(self) -> bool:
