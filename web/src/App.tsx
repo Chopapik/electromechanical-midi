@@ -47,7 +47,7 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
       <label>Czas (s) <input type="number" min="0.1" max="10" step="0.1" value={duration} onChange={e=>setDuration(Number(e.target.value))}/></label>
       <button disabled={disabled||!device||(!virtual&&!s?.output.connected)||!s?.devices.find(d=>d.id===device)?.enabled} onClick={()=>void app.send('lab_test',{deviceId:device,hz,duration})}>Uruchom test</button>
       <button onClick={()=>void app.send('stop')}>Stop</button>
-      <p>{s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
+      <p>{s?.devices.find(d=>d.id===device)?.continuousRotation?'Ciągły ruch do przodu · bez limitu drogi i pasm Hz':s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
     </section>}
     <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
     </main>

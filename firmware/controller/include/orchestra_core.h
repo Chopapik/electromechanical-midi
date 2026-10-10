@@ -78,14 +78,15 @@ struct Hdd:Bridge {
 struct Sled {
  static constexpr int16_t SOFT_MIN=0;
  // Relative STEP command counter, not measured physical position. No endstop:
- // boot 0 requires manual placement. Only calibrated DVD1 has a travel limit.
- int16_t position=0,softMax;
+ // softMax=0 selects continuous rotation; -1 remains unknown travel.
+ // Saturating telemetry never stops an unlimited stepper or wraps its counter.
+ int32_t position=0;int16_t softMax;
  uint8_t id,phase=0;bool enabled=false,playing=false,forward=true,clockStarted=false;
  uint32_t period=0,last=0;float hz=0,currentStepRate=0,targetStepRate=0,accelerationLimit,pitchRatio,fraction=0;
  Sled(uint8_t i):softMax(physical::sledTravel[i]),id(i),accelerationLimit(physical::sledAcceleration[i]),pitchRatio(physical::sledPitchRatio[i]){}
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;currentStepRate=targetStepRate=fraction=0;clockStarted=false;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){
-  if(!enabled||softMax<=0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;
+  if(!enabled||softMax<0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;
   if(!physical::sledFrequencyAllowed(id,value/pitchRatio))return false;
   double interval=1000000.0/(value/pitchRatio);
   if(interval<physical::sledMinPeriodUs||interval>2147483647)return false;
@@ -100,10 +101,12 @@ struct Sled {
   float dt=float(elapsed>physical::sledRampMaxTickUs?physical::sledRampMaxTickUs:elapsed)/1000000.f;
   float speed=fabsf(currentStepRate),brake=speed*speed/(2*accelerationLimit);
   // Start braking before the endpoint; the integer counter is only a guard.
-  if(currentStepRate>0 && softMax-position<=brake+physical::sledBrakingGuardSteps)forward=false;
-  else if(currentStepRate<0 && position<=brake+physical::sledBrakingGuardSteps)forward=true;
-  if(position>=softMax && currentStepRate>=0)forward=false;
-  else if(position<=SOFT_MIN && currentStepRate<=0)forward=true;
+  if(softMax>0){
+   if(currentStepRate>0 && softMax-position<=brake+physical::sledBrakingGuardSteps)forward=false;
+   else if(currentStepRate<0 && position<=brake+physical::sledBrakingGuardSteps)forward=true;
+   if(position>=softMax && currentStepRate>=0)forward=false;
+   else if(position<=SOFT_MIN && currentStepRate<=0)forward=true;
+  }
   targetStepRate=(forward?1.f:-1.f)*hz/pitchRatio;
   float old=currentStepRate,delta=targetStepRate-currentStepRate,change=accelerationLimit*dt;
   currentStepRate+=delta>change?change:delta<-change?-change:delta;
@@ -111,14 +114,14 @@ struct Sled {
   fraction+=fabsf(currentStepRate)*dt;
   if(fraction<1.f)return;
   bool stepForward=currentStepRate>0;
-  if((stepForward&&position>=softMax)||(!stepForward&&position<=SOFT_MIN)){
+  if(softMax>0&&((stepForward&&position>=softMax)||(!stepForward&&position<=SOFT_MIN))){
    currentStepRate=0;fraction=0;return; // final guard; never phase outside travel
   }
   fraction-=1.f;if(fraction>1.f)fraction=1.f;
   phase=(phase+(stepForward?1:3))%4;
   constexpr uint8_t seq[4]={5,6,10,9};
   for(int i=0;i<4;++i)bus.setBit(map::sled[id][i],seq[phase]&(1u<<i));
-  position+=stepForward?1:-1;
+  if(stepForward){if(position<INT32_MAX)++position;}else if(position>INT32_MIN)--position;
  }
 };
 struct Tray:Bridge {
@@ -201,8 +204,8 @@ struct Controller {
   bool* enabled=isFdd?&fdd[id].enabled:isHdd?&hdd[id].enabled:isSled?&sled[id].enabled:&tray[id].enabled;
   if(n==3&&!strcmp(args[2],"STOP")){if(isFdd)fdd[id].stop();else if(isHdd)hdd[id].stop(bus);else if(isSled)sled[id].stop(bus);else tray[id].stop(bus);bus.flush();return "OK";}
   if(n==4&&!strcmp(args[2],"ENABLE")&&(!strcmp(args[3],"0")||!strcmp(args[3],"1"))){snprintf(expanded,96,"%s %ld STOP",args[0],id+1);command(expanded);*enabled=args[3][0]=='1';return "OK";}
-  // Execution parameters only while stopped. Unknown travel stays -1, never
-  // unlimited. PROFILE does not redefine current position or move any output.
+  // Execution parameters only while stopped. SLED travel 0 explicitly selects
+  // continuous rotation; unknown travel stays -1. PROFILE never moves outputs.
   if((isFdd||isSled||isHdd)&&n==6&&!strcmp(args[2],"PROFILE")){
    char* e1;char* e2;char* e3;float a=strtof(args[3],&e1),b=strtof(args[4],&e2),c=strtof(args[5],&e3);
    if(*e1||*e2||*e3||!isfinite(a)||!isfinite(b)||!isfinite(c)||b<=0||c<=0)return "ERR PROFILE";
@@ -216,7 +219,7 @@ struct Controller {
     fdd[id].safeAwaySteps=uint8_t(a);fdd[id].reversalIntervalUs=uint32_t(b);fdd[id].minStepUs=uint32_t(c);
    }else{
     if(sled[id].playing)return "ERR BUSY";
-    if((a!=-1&&(a<1||a>32767||a!=floorf(a)))||(a!=-1&&sled[id].position>a))return "ERR PROFILE";
+    if((a!=-1&&(a<0||a>32767||a!=floorf(a)))||(a>0&&(sled[id].position>a||sled[id].position<0)))return "ERR PROFILE";
     sled[id].softMax=int16_t(a);sled[id].accelerationLimit=b;sled[id].pitchRatio=c;
    }
    return "OK";

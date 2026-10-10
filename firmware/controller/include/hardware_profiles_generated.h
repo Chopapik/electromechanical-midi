@@ -16,11 +16,11 @@ constexpr uint32_t sledBrakingGuardSteps = 2u;
 constexpr int32_t fddTravel[4] = {72, 72, 72, 72};
 constexpr int32_t fddReversalUs[4] = {5000, 5000, 5000, 5000};
 constexpr int32_t fddMinStepUs[4] = {2439, 2439, 2439, 2439};
-constexpr int32_t sledTravel[4] = {140, 140, 140, 140};
+constexpr int32_t sledTravel[4] = {0, 0, 0, 0};
 constexpr float sledAcceleration[4] = {5000.0f, 5000.0f, 5000.0f, 5000.0f};
 constexpr float sledPitchRatio[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-constexpr uint8_t sledAllowedBandCount[4] = {4, 0, 0, 0};
-constexpr float sledAllowedBandsHz[4][4][2] = {{{50.0f, 120.0f}, {180.0f, 190.0f}, {270.0f, 300.0f}, {340.0f, 470.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}, {{0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}}};
+constexpr uint8_t sledAllowedBandCount[4] = {0, 0, 0, 0};
+constexpr float sledAllowedBandsHz[4][1][2] = {{{0.0f, 0.0f}}, {{0.0f, 0.0f}}, {{0.0f, 0.0f}}, {{0.0f, 0.0f}}};
 inline bool sledFrequencyAllowed(uint8_t id, float stepHz) {
  if (!sledAllowedBandCount[id]) return true;
  for (uint8_t i=0; i<sledAllowedBandCount[id]; ++i)

@@ -459,27 +459,32 @@ control exists in the current FDD wiring, so the PCM envelope cannot be
 reproduced physically by dropping STEP pulses.
 
 
-## DVD SLED relative software travel limit
+## DVD Stepper continuous rotation
 
-SLED uses a relative phase-step counter `position` with `SOFT_MIN=0` and
-`SOFT_MAX=140`. Boot assumes position 0: manually place the mechanism at the
-starting end before testing. There is no TRACK0/endstop or absolute position
-measurement. Missed physical steps are not detectable by this counter.
+All four DVD steppers default to `continuousRotation=true`. Host configuration
+sends `SLED n PROFILE 0 5000 1` and `SLED n DIR FWD`: travel 0 explicitly means
+continuous rotation without automatic endpoint reversal. Positive travel values
+still select bounded motion; -1 remains unknown travel and rejects PLAY.
 
-Each generated phase step increments the counter in FWD or decrements it in
-REV. On reaching 140 the direction becomes REV; on reaching 0 it becomes FWD.
-Playback continues without stopping: `0 -> 140 -> 0 -> ...`. Manual DIR works
-inside the range; at an endpoint the next step always points inward. STOP
-and subsequent PLAY preserve the counter. The Q8–Q23 mapping and phase
-sequence are unchanged.
+Measured DVD1 bands remain in the calibration metadata, but continuous mode
+does not block them or fold notes into those bands. Finite positive frequencies
+are accepted within the controller's timer representation: the 100 us minimum
+step period permits at most 10,000 steps/s at pitchRatio=1. Acceleration ramps,
+STOP, disable and the communication watchdog still apply.
 
-Commands remain `SLED 1 ENABLE 1`, `SLED 1 DIR FWD/REV`,
-`SLED 1 PLAY 250`, and `SLED 1 STOP`. Tested physical range: 250–300 Hz;
-the software limit is not evidence of absolute physical travel safety.
-STATUS adds `position`, `dir`, `soft_min`, and `soft_max`, for example:
+The relative `position` counter is telemetry, not a physical position sensor.
+It now saturates at signed 32-bit limits without stopping rotation or wrapping.
+Manual `DIR REV` remains available. STOP and subsequent PLAY preserve position.
+The Q8–Q23 mapping and coil phase sequence are unchanged.
+
+This requires the new ESP32 firmware advertising `dvd_continuous=1` in controller
+STATUS. Rebuilding Docker updates the host and UI; use Settings → Wgraj firmware
+ESP32 to apply the controller change through USB.
+
+Example status:
 
 ```text
-STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=73 dir=fwd soft_min=0 soft_max=140
+STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=173 dir=fwd soft_min=0 soft_max=0
 ```
 
 
@@ -489,8 +494,6 @@ STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=73 dir=fwd soft_min=0 soft_
 4 HDD VCM and VHS present. All four FDD retain the shared controller execution
 settings: 72 away steps, 5 ms direction setup and 2439 us minimum step interval.
 This is a shared software configuration, not an individual calibration claim.
-DVD2–4 now have the user-confirmed 140-step software travel limit, matching DVD1;
-the mechanism still requires manual starting position because no endstop exists.
-Only DVD1 retains its measured 250–300 steps/s evidence. Other per-unit quantities
-are not labelled measured. Runtime PROFILE commands apply these settings on the
-existing firmware; flashing is unnecessary. Tray configuration is unchanged.
+DVD1–4 use continuous rotation by default. Their previous 140-step travel
+settings and DVD1 frequency measurements remain historical calibration data;
+continuous mode does not enforce them. Tray configuration is unchanged.

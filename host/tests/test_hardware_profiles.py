@@ -88,10 +88,10 @@ class ProfileTests(unittest.TestCase):
         p=self.r.effective('DVD_SLED','sled:2',{'travelSteps':quantity(110)})
         self.assertEqual(p.get('travelSteps'),110);self.assertEqual(p.quantities['travelSteps'].evidence_type,'MEASURED')
     def test_explicit_unknown_revokes(self):
-        p=self.r.effective('DVD_SLED','sled:1',{'travelSteps':quantity(None)})
+        p=self.r.effective('DVD_SLED','sled:1',{'travelSteps':quantity(None),'continuousRotation':quantity(False)})
         self.assertIsNone(p.get('travelSteps'));self.assertFalse(evaluate(p,HardwareNote(250,.2,0)).authorized)
     def test_unknown_travel_no_authorization(self):
-        e=evaluate(self.r.effective('DVD_SLED'),HardwareNote(250,.2,0));self.assertFalse(e.authorized)
+        e=evaluate(self.r.effective('DVD_SLED',overrides={'continuousRotation':quantity(False)}),HardwareNote(250,.2,0));self.assertFalse(e.authorized)
         self.assertIn('TRAVEL_LIMIT_UNKNOWN',e.reasons)
     def test_fdd_calibration_retained(self):
         p=self.r.effective('FDD','fdd:1');self.assertEqual(p.get('stableHz'),[130,410]);self.assertEqual(p.get('travelSteps'),72)
@@ -129,7 +129,7 @@ class ProfileTests(unittest.TestCase):
         p=self.r.effective('DVD_SLED','sled:1',{'pitchRatio':quantity(.5)})
         e=evaluate(p,HardwareNote(150,.2,0));self.assertEqual(e.audio_frequency,150);self.assertEqual(e.step_rate,300)
     def test_sled_projection_bounds(self):
-        p=self.r.effective('DVD_SLED','sled:1');s=HardwareDeviceState(position=0.)
+        p=self.r.effective('DVD_SLED','sled:1',{'continuousRotation':quantity(False)});s=HardwareDeviceState(position=0.)
         for _ in range(100):
             advance_sled(s,p,600,.02);self.assertGreaterEqual(s.position,0);self.assertLessEqual(s.position,140)
         self.assertEqual(s.position_confidence,'LOW')
@@ -219,7 +219,7 @@ class PhysicalArrangerTests(unittest.TestCase):
         c=self.config()
         for d in c.devices:
             d['enabled']=d['type']=='DVD_SLED'
-            if d['type']=='DVD_SLED':d['hardware_overrides']={'travelSteps':quantity(None)}
+            if d['type']=='DVD_SLED':d['hardware_overrides']={'travelSteps':quantity(None),'continuousRotation':quantity(False)}
         p=self.plan(c,HardwareContext(True,inventory={'sled:2':True}))
         self.assertTrue(all(not e.played for e in p.events));self.assertEqual(p.events[0].reason,'TRAVEL_LIMIT_UNKNOWN')
     def test_best_quality_device(self):

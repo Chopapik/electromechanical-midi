@@ -121,7 +121,7 @@ struct CommandProtocol {
  }
  void status(Transport origin) {
   char line[160]; reply(origin, "STATUS BEGIN");
-  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 strict_tracks=1 strict_active=%d",ctrl.strictTracks);
+  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 strict_tracks=1 strict_active=%d",ctrl.strictTracks);
   reply(origin,line);
   for (int i=0; i<4; ++i) {
    auto& d=ctrl.fdd[i]; bool active=ctrl.io.track0(d.track0Pin);

@@ -94,14 +94,17 @@ int main(int argc,char** argv){
   auto& s=d.sled[0];s.position=73;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");
   nextPhase(0);assert(s.position==72&&!s.forward);
  }else if(c=="sled_bounce_max"){
+  d.command("SLED 1 PROFILE 140 5000 1");
   auto& s=d.sled[0];s.position=139;d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");
   nextPhase(0);assert(s.position==138&&!s.forward&&s.playing);
   d.command("SLED 1 DIR FWD");assert(s.forward);runFor(100000);assert(s.position<=140&&s.playing);
  }else if(c=="sled_bounce_min"){
+  d.command("SLED 1 PROFILE 140 5000 1");
   auto& s=d.sled[0];s.position=1;d.command("SLED 1 ENABLE 1");d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");
   nextPhase(0);assert(s.position==2&&s.forward&&s.playing);
   d.command("SLED 1 DIR REV");runFor(100000);assert(s.position>=0&&s.playing);
  }else if(c=="sled_bounds"){
+  d.command("SLED 1 PROFILE 140 5000 1");
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 400");auto& s=d.sled[0];bool forward=false,reverse=false;
   for(int n=0;n<30000;++n){io.now+=100;d.lastCommand=io.now;d.tick();
    assert(s.position>=0&&s.position<=s.softMax&&s.playing);forward|=s.currentStepRate>0;reverse|=s.currentStepRate<0;
@@ -129,6 +132,7 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("HDD 1 PROFILE 40 40 nan"),"ERR PROFILE"));
   assert(!strcmp(d.command("HDD 1 PROFILE 40 40 0.00001"),"ERR PROFILE"));
  }else if(c=="sled_brake"){
+  d.command("SLED 1 PROFILE 140 5000 1");
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 400");auto& s=d.sled[0];s.position=125;
   s.currentStepRate=400;s.clockStarted=true;s.last=io.now;
   io.now+=100;d.tick();assert(!s.forward&&s.targetStepRate<0&&s.position<140&&s.currentStepRate>0);
@@ -141,10 +145,10 @@ int main(int argc,char** argv){
   assert(d.bus.getBit(f.dirBit)); // toward is HIGH
   io.active[1]=true;f.wantsStep(d.bus);assert(f.awaySteps==0&&f.directionAway&&!d.bus.getBit(f.dirBit));
  }else if(c=="profiles"){
-  for(int i=0;i<4;++i)assert(d.sled[i].softMax==140);
+  for(int i=0;i<4;++i)assert(d.sled[i].softMax==0);
   assert(d.fdd[0].safeAwaySteps==72&&d.fdd[0].minStepUs==2439);
   assert(!strcmp(d.command("SLED 2 PROFILE -1 5000 1"),"OK"));
-  assert(!strcmp(d.command("SLED 2 PROFILE 0 5000 1"),"ERR PROFILE"));
+  assert(!strcmp(d.command("SLED 2 PROFILE 0 5000 1"),"OK"));
   assert(!strcmp(d.command("SLED 1 PROFILE 140 nan 1"),"ERR PROFILE"));
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 0.5");d.command("SLED 1 PLAY 140");runFor(100000);
   assert(d.sled[0].hz==140&&fabsf(d.sled[0].targetStepRate)==280);
@@ -161,7 +165,7 @@ int main(int argc,char** argv){
   d.command("SLED 1 ENABLE 1");
   for(int hz: {150,160,220,250,320,490,49,125,175,195,265,305,335,475,501}){
    char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);
-   assert(!strcmp(d.command(cmd),"ERR VALUE"));assert(!d.sled[0].playing);
+   assert(!strcmp(d.command(cmd),"OK"));assert(d.sled[0].playing);d.command("SLED 1 STOP");
   }
   for(int hz: {50,100,120,180,190,270,280,300,340,400,440,470}){
    char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);
@@ -171,11 +175,24 @@ int main(int argc,char** argv){
   d.command("SLED 2 ENABLE 1");assert(!strcmp(d.command("SLED 2 PLAY 250"),"OK"));
  }else if(c=="sled_bands_ratio"){
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 2");
-  assert(!strcmp(d.command("SLED 1 PLAY 440"),"ERR VALUE")); // physical 220 is forbidden
+  assert(!strcmp(d.command("SLED 1 PLAY 440"),"OK")); // physical 220 is unrestricted
   assert(!strcmp(d.command("SLED 1 PLAY 200"),"OK")); // physical 100 is allowed
   assert(d.sled[0].targetStepRate==100);d.command("SLED 1 STOP");
   d.command("SLED 1 PROFILE 140 5000 0.001");
   assert(!strcmp(d.command("SLED 1 PLAY 100"),"ERR VALUE"));
+ }else if(c=="sled_continuous"){
+  d.command("SLED 1 ENABLE 1");auto& s=d.sled[0];assert(s.softMax==0);
+  for(int hz: {10,150,220,490,1200,8000}){
+   char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);assert(!strcmp(d.command(cmd),"OK"));d.command("SLED 1 STOP");
+  }
+  assert(!strcmp(d.command("SLED 1 PLAY 10001"),"ERR VALUE"));
+  d.command("SLED 1 PLAY 1000");s.position=32766;s.currentStepRate=1000;
+  runFor(100000);assert(s.position>32767&&s.forward&&s.playing&&s.currentStepRate>0);
+  s.position=INT32_MAX;nextPhase(0);assert(s.position==INT32_MAX&&s.playing&&s.forward);
+  d.command("SLED 1 STOP");assert(!s.playing&&((io.previous>>8)&15)==0);
+  d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 1000");s.position=INT32_MIN;
+  nextPhase(0);assert(s.position==INT32_MIN&&s.playing&&!s.forward);
+  d.command("ALL STOP");assert(!s.playing);
  }else if(c=="disable"){
   d.fdd[0].homed=true;d.command("PLAY 220");d.command("FDD 1 ENABLE 0");assert(!d.fdd[0].playing&&!d.fdd[0].enabled);assert(!strcmp(d.command("PLAY 220"),"ERR DISABLED"));
  }else if(c=="strict_tracks"){
@@ -218,7 +235,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

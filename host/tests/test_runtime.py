@@ -22,7 +22,7 @@ ROOT=Path(__file__).resolve().parents[2]
 class Link:
     def __init__(self):
         self.sent=[];self.closed=False;self.fail_stop=False;self.fail_write=False
-        self.controller_status={'board':'esp32','protocol':'2','ready':'1','stop_ack':'1','hardware_profiles':'1','strict_tracks':'1'}
+        self.controller_status={'board':'esp32','protocol':'2','ready':'1','stop_ack':'1','hardware_profiles':'1','dvd_continuous':'1','strict_tracks':'1'}
         self.status_generation=0
         self.device_status={d['lane'].upper() if d['type']!='VHS' else 'VHS':{'enabled':'1','homed':'1','homing':'0'} for d in DeviceRegistry().devices}
         self.lines=[]

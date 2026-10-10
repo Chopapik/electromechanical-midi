@@ -82,7 +82,10 @@ class RealOutput:
             on = d['enabled'] and p is not None and (not strict or d['type']=='FDD')
             profile = execution_command(p,d['lane']) if p else None
             if on and d['type'] in ('FDD','DVD_SLED','HDD_VCM') and not profile: on=False
+            if on and p.get('continuousRotation') and self.link.controller_status.get('dvd_continuous')!='1':
+                raise OutputError('Wgraj nowe firmware ESP32: wymagany ciągły ruch DVD Stepper')
             if on and profile: lines.append(profile)
+            if on and p.get('continuousRotation'): lines.append(f'{prefix} DIR FWD')
             lines.append(f'{prefix} ENABLE {int(on)}')
         if strict:
             if self.link.controller_status.get('strict_tracks')!='1': raise OutputError('Firmware bez STRICT TRACKS')

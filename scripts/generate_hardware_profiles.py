@@ -23,7 +23,7 @@ def generate():
                     ('fddReversalUs','reversalIntervalMs',lambda p:round(p.get('reversalIntervalMs')*1000)),
                     ('fddMinStepUs','executionMinStepUs',lambda p:p.get('executionMinStepUs') or round(p.get('datasheetMinStepMs')*1000))]
         else:
-            fields=[('sledTravel','travelSteps',lambda p:p.get('travelSteps') if p.get('travelSteps') is not None else -1),
+            fields=[('sledTravel','travelSteps',lambda p:0 if p.get('continuousRotation') else p.get('travelSteps') if p.get('travelSteps') is not None else -1),
                     ('sledAcceleration','accelerationLimit',lambda p:p.get('accelerationLimit')),
                     ('sledPitchRatio','pitchRatio',lambda p:p.get('pitchRatio'))]
         for variable,_,value in fields:
@@ -33,7 +33,7 @@ def generate():
             if ctype=='float': values=', '.join(f'{float(value(p))}f' for p in ps)
             lines.append(f'constexpr {ctype} {variable}[4] = {{{values}}};')
     ps = [registry.effective('DVD_SLED', f'sled:{i}') for i in range(1, 5)]
-    bands = [p.get('allowedBandsHz') or [] for p in ps]
+    bands = [[] if p.get('continuousRotation') else p.get('allowedBandsHz') or [] for p in ps]
     width = max(1, max(map(len, bands)))
     lines.append('constexpr uint8_t sledAllowedBandCount[4] = {' + ', '.join(str(len(b)) for b in bands) + '};')
     entries = []

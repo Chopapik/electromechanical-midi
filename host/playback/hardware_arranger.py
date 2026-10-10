@@ -9,12 +9,12 @@ from collections import Counter
 
 from pitch import fold_note, midi_to_hz
 from .hardware import bind_devices
-from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evaluate, advance_state
+from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evaluate, advance_state, sled_frequency_range
 from .performance import PerformancePlan
 
 
 def fold_for_profile(note, minimum, maximum, mode, profile):
-    bands = profile.get('allowedBandsHz')
+    bands = None if profile.get('continuousRotation') else profile.get('allowedBandsHz')
     if bands is None:
         return fold_note(note, minimum, maximum, mode)
     ratio = profile.get('pitchRatio') if profile.name == 'DVD_SLED' else 1.
@@ -70,7 +70,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         if profile is None:
             excluded[device.id] = 'PROFILE_UNKNOWN'; continue
         cap = caps[device.id]
-        musical = profile.get('musicalStepRate' if profile.name == 'DVD_SLED' else 'musicalHz')
+        musical = sled_frequency_range(profile) if profile.name == 'DVD_SLED' else profile.get('musicalHz')
         if profile.name != 'HDD_PERCUSSION' and musical is None:
             excluded[device.id] = 'MUSICAL_RANGE_UNKNOWN'; continue
         if profile.name == 'DVD_SLED':

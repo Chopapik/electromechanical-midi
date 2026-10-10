@@ -52,7 +52,9 @@ class DeviceRegistry:
             bands = bands or ([interval] if interval else [])
             ratio = (p.get('pitchRatio') or 1) if p and d['type']=='DVD_SLED' else 1
             bands = [[max(lo,interval[0])*ratio,min(hi,interval[1])*ratio] if interval else [lo*ratio,hi*ratio] for lo,hi in bands]
-            result.append({**d, 'bands':bands, 'reason':None if d['enabled'] and p else 'Brak potwierdzonego profilu lub obecności w registry'})
+            continuous=bool(p and p.get('continuousRotation'))
+            if continuous: bands=[]
+            result.append({**d, 'bands':bands, 'continuousRotation':continuous, 'reason':None if d['enabled'] and p else 'Brak potwierdzonego profilu lub obecności w registry'})
         return result
 
 class PlanningProfiles:

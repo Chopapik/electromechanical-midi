@@ -152,6 +152,14 @@
       }
     },
     "DVD_SLED": {
+      "continuousRotation": {
+        "value": true,
+        "unit": "",
+        "uncertainty": null,
+        "source": "User requested continuous DVD stepper rotation without travel or calibrated frequency restrictions, 2026-10-10",
+        "evidenceType": "FACT",
+        "confidence": "HIGH"
+      },
       "driveMode": {
         "value": "two_phase_full_step",
         "unit": "",

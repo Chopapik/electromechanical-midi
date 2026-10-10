@@ -74,6 +74,8 @@ class HardwareProfile:
         return profile
 
     def validate(self):
+        continuous=self.get('continuousRotation')
+        if continuous is not None and not isinstance(continuous,bool): raise ValueError('continuousRotation must be boolean')
         for key in ('pitchRatio','accelerationLimit','travelSteps','minCycles','executionMinStepUs','reversalIntervalMs', 'datasheetMinStepMs','minNoteFloorMs','preferredNoteMs',
                     'maxNoteChangeRatePerSec','parkMs','settleMs','strikeMs','nominalStartToStartMs',
                     'burstWindowMs','maxContinuousHitsPerSec','maxBurstHitsPerSec','transitionCycles','modalTransientMs'):
@@ -227,6 +229,12 @@ from functools import lru_cache
 def _sled_min_period_us():
     return HardwareRegistry().protocol['sledMinPeriodUs']
 
+def sled_frequency_range(profile):
+    """Representable step rates; no calibration bands in continuous mode."""
+    if profile.get('continuousRotation'):
+        return [1000000./2147483647, 1000000./_sled_min_period_us()]
+    return profile.get('musicalStepRate')
+
 
 def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDeviceState | None=None):
     state=dataclasses.replace(state) if state is not None else HardwareDeviceState()
@@ -253,20 +261,21 @@ def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDevice
         if ratio is None: timing=Verdict.UNKNOWN;reasons.append('PITCH_RATIO_UNKNOWN');authorized=False
         else:step=f/ratio
     if name=='DVD_SLED':
-        bands = profile.get('allowedBandsHz')
+        continuous=profile.get('continuousRotation')
+        bands = None if continuous else profile.get('allowedBandsHz')
         if bands is not None and (step is None or not any(lo <= step <= hi for lo, hi in bands)):
             quality=Verdict.BLOCKED;authorized=False;reasons.append('OUTSIDE_ALLOWED_BANDS')
         if step is not None and step > 1000000. / _sled_min_period_us():
             timing=Verdict.BLOCKED;authorized=False;reasons.append('STEP_INTERVAL_LIMIT')
         travel=profile.get('travelSteps');accel=profile.get('accelerationLimit')
-        if travel is None: timing=Verdict.UNKNOWN;reasons.append('TRAVEL_LIMIT_UNKNOWN');authorized=False
+        if travel is None and not continuous: timing=Verdict.UNKNOWN;reasons.append('TRAVEL_LIMIT_UNKNOWN');authorized=False
         if accel is None:timing=Verdict.UNKNOWN;reasons.append('ACCELERATION_UNKNOWN');authorized=False
         if step is not None and accel is not None:
             target=step*(note.direction or state.direction)
             transition=signed_transition_time(state.current_step_rate,target,accel)
             brake=braking_distance(state.current_step_rate,accel)
             if transition>0:qr.append('ACCELERATION_LIMIT');score-=min(.3,transition/max(note.duration,.001)*.15)
-            if travel is not None and state.position is not None:
+            if not continuous and travel is not None and state.position is not None:
                 remaining=travel-state.position if state.current_step_rate>=0 else state.position
                 if remaining<=brake+1:qr.append('TRAVEL_REVERSAL');score-=.1
         # A hypothesis about mapping acoustics to steps remains explicitly uncertain.
@@ -329,7 +338,10 @@ def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDevice
     if f and name!='HDD_PERCUSSION':
         value=step if name=='DVD_SLED' else f
         suffix='StepRate' if name=='DVD_SLED' else 'Hz'
-        musical=profile.get('musical'+suffix);stable=profile.get('stable'+suffix);preferred=profile.get('preferred'+suffix)
+        continuous=name=='DVD_SLED' and profile.get('continuousRotation')
+        musical=sled_frequency_range(profile) if continuous else profile.get('musical'+suffix)
+        stable=musical if continuous else profile.get('stable'+suffix)
+        preferred=musical if continuous else profile.get('preferred'+suffix)
         if musical is None:quality=Verdict.UNKNOWN;qr.append('MUSICAL_RANGE_UNKNOWN')
         elif value is None:quality=Verdict.UNKNOWN;qr.append('PITCH_RATIO_UNKNOWN');authorized=False
         elif not musical[0]<=value<=musical[1]:quality=Verdict.BLOCKED;reasons.append('OUTSIDE_MUSICAL_RANGE');authorized=False
@@ -350,7 +362,7 @@ def evaluate(profile: HardwareProfile, note: HardwareNote, state: HardwareDevice
         rate=profile.get('maxNoteChangeRatePerSec')
         if rate and state.last_event_time is not None and note.start>state.last_event_time and 1/(note.start-state.last_event_time)>rate:
             qr.append('NOTE_CHANGE_RATE');score-=.1
-        aggressive=note.aggressive or (name=='FDD' and f>400 and (stable is None or f>stable[1])) or (name=='DVD_SLED' and stable is not None and value is not None and value>stable[1])
+        aggressive=note.aggressive or (name=='FDD' and f>400 and (stable is None or f>stable[1])) or (name=='DVD_SLED' and not continuous and stable is not None and value is not None and value>stable[1])
     else:aggressive=note.aggressive
     if name=='HDD_PERCUSSION':
         # Raising the existing 4 ms bridge impulse is an aggressive change,
@@ -396,17 +408,21 @@ class HardwareContext:
 def advance_sled(state,profile,target,seconds):
     """Deterministic command-space projection, not a measured physical trajectory."""
     travel=profile.get('travelSteps');a=profile.get('accelerationLimit')
-    if travel is None or a is None:return
+    continuous=profile.get('continuousRotation')
+    if (travel is None and not continuous) or a is None:return
     if state.position is None:state.position=0.
     state.position_confidence='LOW';state.physical_state_confidence='LOW'
     # Host estimates need not duplicate the firmware's integer phase accumulator.
     count=max(1,math.ceil(seconds/.005));dt=seconds/count
     for _ in range(count):
-        v=state.current_step_rate;remaining=travel-state.position if v>=0 else state.position
+        v=state.current_step_rate
         direction=state.direction
-        if remaining<=braking_distance(v,a)+1:direction=-1 if v>=0 else 1
+        if not continuous:
+            remaining=travel-state.position if v>=0 else state.position
+            if remaining<=braking_distance(v,a)+1:direction=-1 if v>=0 else 1
         requested=abs(target)*direction;dv=max(-a*dt,min(a*dt,requested-v));new=v+dv
-        state.position=max(0.,min(travel,state.position+(v+new)*.5*dt))
+        position=state.position+(v+new)*.5*dt
+        state.position=position if continuous else max(0.,min(travel,position))
         if (v>=0 and new<0) or (v<0 and new>=0):state.travel_reversals+=1
         state.current_step_rate=new;state.direction=direction;state.target_step_rate=requested
     state.current_frequency=abs(state.current_step_rate)*profile.get('pitchRatio')
@@ -435,7 +451,7 @@ def execution_command(profile, lane):
     if profile.name=='DVD_SLED':
         acceleration=profile.get('accelerationLimit');ratio=profile.get('pitchRatio')
         if acceleration is None or ratio is None:return None
-        travel=profile.get('travelSteps')
+        travel=0 if profile.get('continuousRotation') else profile.get('travelSteps')
         return f"{prefix} PROFILE {travel if travel is not None else -1} {acceleration} {ratio}"
     if profile.name=='HDD_PERCUSSION':
         values=[profile.get(k) for k in ('parkMs','settleMs','strikeMs')]
