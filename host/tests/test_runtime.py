@@ -57,6 +57,42 @@ class RuntimeTests(unittest.TestCase):
         self.app.virtual.emit=emit
     def timeline(self):
         self.player.load(T((C(0,'fdd-1','tone',1,220),C(1,'fdd-1','stop'),C(2,'fdd-1','tone',1,250),C(3,'fdd-1','stop')),3))
+    def test_real_seek_continues_current_note_after_confirmed_stop(self):
+        self.real();self.timeline();self.player.play();self.player.tick();self.now+=.3
+        epoch=self.player.epoch;self.link.sent.clear();self.player.seek(2.4)
+        self.assertEqual(self.player.state,'playing');self.assertAlmostEqual(self.player.position(),2.4)
+        self.assertGreater(self.player.epoch,epoch)
+        self.assertIn('STOP',self.link.sent[0]);self.assertTrue(any('250' in line for line in self.link.sent))
+        self.assertFalse(any('220' in line for line in self.link.sent))
+        self.now+=.1;self.assertAlmostEqual(self.player.position(),2.5)
+    def test_virtual_seek_cancels_old_epoch_and_continues_in_both_directions(self):
+        self.virtual();self.timeline();self.player.play();self.player.tick();self.now+=.3
+        for target in (2.3,.4):
+            self.packets.clear();epoch=self.player.epoch;self.player.seek(target)
+            self.assertEqual(self.player.state,'playing');self.assertAlmostEqual(self.player.base,target)
+            self.assertEqual(self.packets[0]['type'],'audio_cancel')
+            audio=[m for m in self.packets if m['type']=='audio']
+            self.assertEqual(len(audio),1);self.assertGreater(audio[0]['epoch'],epoch)
+            self.assertAlmostEqual(audio[0]['commands'][0]['time'],target)
+            self.assertAlmostEqual(audio[0]['commands'][0]['duration'],(3 if target>2 else 1)-target)
+    def test_seek_retains_pause_or_stopped_state_and_does_not_play_offline(self):
+        self.timeline();self.player.seek(.4)
+        self.assertEqual(self.player.state,'stopped');self.assertAlmostEqual(self.player.position(),.4)
+        self.player.state='paused';self.player.seek(2.2)
+        self.assertEqual(self.player.state,'paused');self.assertAlmostEqual(self.player.position(),2.2)
+        self.assertEqual(self.link.sent,[])
+    def test_seek_to_end_does_not_restart_from_beginning(self):
+        self.real();self.timeline();self.player.play();self.player.tick();self.link.sent.clear()
+        self.player.seek(99)
+        self.assertEqual(self.player.state,'stopped');self.assertEqual(self.player.position(),3)
+        self.assertFalse(any('PLAY' in line for line in self.link.sent))
+    def test_seek_does_not_resume_if_stop_confirmation_fails(self):
+        self.real();self.timeline();self.player.play();self.player.tick();self.link.fail_stop=True
+        self.link.sent.clear()
+        with self.assertRaises(OutputError):self.player.seek(2.4)
+        self.assertNotEqual(self.player.state,'playing');self.assertTrue(self.app.real.unknown)
+        self.assertFalse(any('PLAY' in line for line in self.link.sent))
+
     def test_default_real_offline_no_fallback_and_no_auto_play(self):
         self.timeline()
         with self.assertRaisesRegex(OutputError,'Brak połączenia'):self.player.play()

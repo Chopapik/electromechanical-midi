@@ -53,7 +53,9 @@ Dokładne dopasowanie barwy wymaga nagrań referencyjnych z fizycznych urządze�
 Aktywny REAL wymaga rzeczywistego `ALL STOP <token>` / `STOPPED <token>`.
 Brak potwierdzenia lub utrata aktywnego połączenia oznacza nieznany stan sprzętu
 oraz błąd przełączenia. Offline bez wcześniejszego wykonania nie wymaga STOP.
-Zmiana wyjścia, właściciela, seek i STOP nie wznawiają automatycznie odtwarzania.
+Zmiana wyjścia, właściciela i STOP nie wznawiają automatycznie odtwarzania.
+Seek podczas grania anuluje poprzednią kolejkę i kontynuuje od wybranego momentu;
+seek podczas pauzy pozostawia pauzę. Przewinięcie do końca kończy odtwarzanie.
 
 ## Skład i kalibracje
 

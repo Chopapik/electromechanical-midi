@@ -70,7 +70,15 @@ class Player:
     def seek(self, position):
         if isinstance(position,bool) or not isinstance(position,(int,float)) or not math.isfinite(position): raise ValueError('Invalid position')
         with self.lock:
-            self.stop(); self.base=max(0.,min(position,self.timeline.duration))
+            previous=self.state
+            target=max(0.,min(position,self.timeline.duration))
+            # Cancel the previous queue and confirm REAL STOP before moving the clock.
+            self.stop(reset=False); self.base=target
+            if previous=='paused': self.state='paused'
+            elif previous=='playing' and target<self.timeline.duration:
+                try: self.play()
+                except Exception as exc:
+                    self.error=str(exc); raise
     def switch(self, mode):
         if mode not in ('REAL','VIRTUAL'): raise ValueError('Unknown output')
         with self.lock:

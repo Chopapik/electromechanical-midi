@@ -43,7 +43,7 @@ it('keeps the staff viewport and clef fixed through silence and pitch changes', 
       const svg = image.querySelector('svg')!
       expect(svg).not.toBeNull()
       expect(svg.querySelector('.vf-stave')).toBe(originalStaff)
-      expect(svg.getAttribute('viewBox')).toBe('-8 -30 176 170')
+      expect(svg.getAttribute('viewBox')).toBe('-18 -20 196 112')
       expect(svg.textContent).toContain('\uE050') // Fixed treble clef, including below middle C.
       expect(svg.querySelectorAll('.vf-stavenote').length).toBe(pitch === null ? 0 : 1)
     })
@@ -67,6 +67,6 @@ it.each([0,43,127])('keeps the notehead and stem within the fixed viewport for M
   const values = stem.getAttribute('d')!.match(/-?\d+(?:\.\d+)?/g)!.map(Number)
   const yValues = values.filter((_,i)=>i%2===1)
   expect(Math.max(...yValues)-Math.min(...yValues)).toBeLessThanOrEqual(40)
-  expect(Math.min(...yValues)).toBeGreaterThanOrEqual(-30)
-  expect(Math.max(...yValues)).toBeLessThanOrEqual(140)
+  expect(Math.min(...yValues)).toBeGreaterThanOrEqual(-20)
+  expect(Math.max(...yValues)).toBeLessThanOrEqual(92)
 })

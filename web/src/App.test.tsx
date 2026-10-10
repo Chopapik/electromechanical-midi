@@ -18,3 +18,11 @@ describe('Orchestra UI',()=>{
  it('virtual is a manual output allowing offline Play',()=>{state.output.mode='VIRTUAL';render(<App/>);expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(false);fireEvent.click(screen.getByRole('button',{name:'Play'}));expect(send).toHaveBeenCalledWith('play')})
  it('Lab is entered through Settings and shares device labels',()=>{render(<App/>);fireEvent.click(screen.getByText('Settings'));fireEvent.click(screen.getByText('Laboratory · debug'));expect(send).toHaveBeenCalledWith('lab_enter')})
 })
+
+it('restores the footer status and Settings trigger below the centered instrument content',()=>{
+ render(<App/>)
+ const footer=screen.getByRole('contentinfo')
+ expect(footer.contains(screen.getByRole('status'))).toBe(true)
+ expect(footer.contains(screen.getByRole('button',{name:'Settings'}))).toBe(true)
+ expect(screen.getByRole('main').contains(screen.getByRole('article',{name:'FDD #1'}))).toBe(true)
+})

@@ -62,9 +62,9 @@ export const StaffNote = memo(function StaffNote({ midiNote, preferFlats = false
         context.closeGroup()
       }
       updateNote.current()
-      // The staff and clef keep identical geometry in silence and for every pitch.
-      svg.setAttribute('viewBox', '-8 -30 176 170')
-      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+      // Side padding keeps the clef unclipped; YMin pulls the staff up under the title.
+      svg.setAttribute('viewBox', '-18 -20 196 112')
+      svg.setAttribute('preserveAspectRatio', 'xMidYMin meet')
       svg.setAttribute('aria-hidden', 'true')
     }
     // The Bravura build bundles its fonts; no runtime CDN request is needed.
