@@ -12,3 +12,10 @@ python-multipart>=0.0.9
 
 # NumPy supports deterministic musical/acoustic regression calculations.
 numpy>=1.24
+
+# PlatformIO's tool-esptoolpy 4.x expects these on the host Python path;
+# the package copy under ~/.platformio often ships without _contrib/.
+intelhex>=2.3
+bitstring>=3.1.6,!=4.2.0
+reedsolo>=1.5.3,<1.8
+ecdsa>=0.16.0

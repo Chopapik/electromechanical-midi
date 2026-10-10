@@ -211,14 +211,53 @@ class SafetyTests(unittest.TestCase):
             with self.assertRaises(OutputError):app.player.switch('REAL')
         self.assertEqual(app.router.mode,'VIRTUAL');self.assertEqual(app.player.state,'stopped')
     def test_firmware_uses_existing_uploader_only_under_exclusive_stop(self):
-        app=Application();link=Link();app.real.attach(link)
+        app=Application();link=Link();app.real.attach(link);replacement=Link()
         def upload(*args,**kwargs):
             self.assertEqual(app.player.owner,'service');self.assertEqual(app.player.state,'stopped')
             self.assertEqual(kwargs['target'],'esp32');return 'ok'
         from types import SimpleNamespace
-        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',side_effect=upload) as flash:
+        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',side_effect=upload) as flash,patch.object(app.service,'connect_fn',return_value=replacement):
             app.service.run('firmware');self.assertEqual(flash.call_count,2)
-        self.assertTrue(link.closed);self.assertEqual(app.player.owner,'orchestra')
+        self.assertTrue(link.closed);self.assertIs(app.real.link,replacement)
+        self.assertEqual(app.player.owner,'orchestra')
+    def test_firmware_available_for_forwarded_cp2102_without_vid(self):
+        app=Application()
+        from types import SimpleNamespace
+        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=None,device='/host-dev/cu.usbserial-0001')]),patch('runtime.device_service.platformio',return_value='pio'):
+            app.service.refresh()
+        self.assertEqual(app.service.upload_port,'/host-dev/cu.usbserial-0001')
+        self.assertTrue(app.service.status()['firmware']['available'])
+        self.assertIsNone(app.service.status()['firmware']['reason'])
+    def test_firmware_stays_unavailable_when_only_ble_is_connected(self):
+        app=Application();app.real.attach(Link())
+        with patch('runtime.device_service.scan_ports',return_value=[]),patch('runtime.device_service.platformio',return_value='pio'):
+            app.service.refresh()
+        self.assertFalse(app.service.status()['firmware']['available'])
+        self.assertIn('USB',app.service.status()['firmware']['reason'])
+    def test_firmware_is_not_blocked_by_background_ble_connect(self):
+        import threading
+        from types import SimpleNamespace
+        app=Application();started=threading.Event();release=threading.Event()
+        def slow_connect():
+            started.set();self.assertTrue(release.wait(5));raise RuntimeError('BLE still scanning')
+        app.service.connect_fn=slow_connect
+        thread=threading.Thread(target=app.service.connect);thread.start()
+        self.assertTrue(started.wait(2));self.assertTrue(app.service.connecting)
+        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',return_value='ok'):
+            app.service.run('firmware')
+        release.set();thread.join(timeout=2)
+        self.assertFalse(app.service.busy);self.assertIsNone(app.real.link)
+    def test_firmware_upload_works_without_ble_when_usb_is_present(self):
+        """Foreign/non-orchestra firmware has no BLE; USB flash must still work."""
+        from types import SimpleNamespace
+        app=Application();replacement=Link()
+        self.assertIsNone(app.real.link)
+        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',return_value='ok') as flash,patch.object(app.service,'connect_fn',return_value=replacement):
+            app.service.refresh()
+            self.assertTrue(app.service.status()['firmware']['available'])
+            app.service.run('firmware')
+            self.assertEqual(flash.call_count,2)
+        self.assertIs(app.real.link,replacement)
     def test_disconnect_never_falls_back_or_replays_on_reconnect(self):
         app=Application();link=Link();app.real.attach(link);app.real.configured=True
         app.player.load(T((C(0,'fdd-1','tone',2,220),C(2,'fdd-1','stop')),2));app.player.play()

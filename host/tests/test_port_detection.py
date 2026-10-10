@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from floppy_link import resolve_port, scan_ports, SerialLinkError
+from floppy_link import esp32_upload_ports, resolve_port, scan_ports, SerialLinkError
 
 
 def port(device, vid=None, description='n/a', manufacturer=None):
@@ -48,3 +48,26 @@ class PortDetectionTest(unittest.TestCase):
     def test_explicit_port_still_overrides_autodetection(self):
         with patch('floppy_link.list_ports.comports', return_value=[port('/dev/cu.usbmodem1', 0x2341)]):
             self.assertEqual(resolve_port('/dev/custom', interactive=False).device, '/dev/custom')
+
+    def test_forwarded_cp2102_without_vid_is_eligible_for_esp32_upload(self):
+        with patch.dict('os.environ', {'ORCHESTRA_SERIAL_DIR': '/host-dev'}), \
+             patch('floppy_link.list_ports.comports', return_value=[]), \
+             patch('floppy_link.Path.glob', side_effect=[[
+                 Path('/host-dev/cu.Bluetooth-Incoming-Port'),
+                 Path('/host-dev/cu.usbserial-0001')], [], []]), \
+             patch('floppy_link.Path.is_char_device', return_value=True):
+            ports = esp32_upload_ports()
+            self.assertEqual([p.device for p in ports], ['/host-dev/cu.usbserial-0001'])
+
+    def test_forwarded_uno_usbmodem_is_rejected_for_esp32_upload(self):
+        with patch.dict('os.environ', {'ORCHESTRA_SERIAL_DIR': '/host-dev'}), \
+             patch('floppy_link.list_ports.comports', return_value=[]), \
+             patch('floppy_link.Path.glob', side_effect=[[
+                 Path('/host-dev/cu.usbmodem987')], [], []]), \
+             patch('floppy_link.Path.is_char_device', return_value=True):
+            self.assertEqual(esp32_upload_ports(), [])
+
+    def test_cp2102_vid_selects_esp32_upload_port(self):
+        ports = [SimpleNamespace(device='/dev/cu.usbserial-1', vid=0x10C4, label='CP2102', score=60),
+                 SimpleNamespace(device='/dev/cu.usbmodem1', vid=0x2341, label='Uno', score=100)]
+        self.assertEqual([p.device for p in esp32_upload_ports(ports)], ['/dev/cu.usbserial-1'])

@@ -46,10 +46,17 @@ USB_SERIAL_HINTS = (
     "ftdi",
     "cp210",
     "silabs",
+    "slab",
+    "usbserial",
     "usb serial",
     "usb-serial",
     "usb2.0-serial",
 )
+
+# Silicon Labs CP2102 on the ESP32-WROOM-32 Micro-USB board.
+ESP32_UPLOAD_VID = 0x10C4
+# OrbStack-forwarded ports lack USB identity; match CP2102 callout names only.
+ESP32_UPLOAD_HINTS = ("usbserial", "slab_usb", "cp210", "silabs")
 
 # Opisy, ktore nic nie mowia (macOS czesto zwraca wlasnie takie).
 GENERIC_LABELS = {
@@ -166,6 +173,25 @@ def scan_ports() -> list[PortCandidate]:
     candidates.sort(key=lambda candidate: (-candidate.score, candidate.device))
 
     return candidates
+
+
+def esp32_upload_ports(candidates: list[PortCandidate] | None = None) -> list[PortCandidate]:
+    """USB ports eligible for ESP32 firmware flash (never BLE / OTA).
+
+    Native enumeration exposes the CP2102 VID. OrbStack's ORCHESTRA_SERIAL_DIR
+    forwards character devices without VID/PID, so those are matched by the
+    usual macOS CP2102 callout names and never by Uno ``usbmodem`` paths.
+    """
+    selected = []
+    for port in candidates if candidates is not None else scan_ports():
+        if port.vid in ARDUINO_VIDS:
+            continue
+        name = port.device.lower()
+        if port.vid == ESP32_UPLOAD_VID or (
+            port.vid is None and any(hint in name for hint in ESP32_UPLOAD_HINTS)
+        ):
+            selected.append(port)
+    return selected
 
 
 def describe_ports(candidates: list[PortCandidate]) -> str:
