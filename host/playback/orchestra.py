@@ -18,6 +18,16 @@ from .virtual import PROFILES, VirtualDeviceInstance
 # dopuszcza krotkie przesuniecie, dropuje dopiero w ostatecznosci.
 BALANCED = {
     'mode': 'balanced',
+    'mechanicalAware': True,
+    'dvdSustainThresholdMs': 500.,
+    'mechanicalPhraseWindowMs': 1500.,
+    'mechanicalPreferenceWeight': .8,
+    'partContinuityWeight': .12,
+    'sustainCompetitionTolerance': 8.,
+    'fddUnisonEnabled': True,
+    'fddUnisonMaxVoices': 2,
+    'fddUnisonMinVelocity': 90.,
+    'fddUnisonMaxDurationMs': 800.,
     'preserveLead': True,
     'preserveBass': True,
     'maxMicroDelayMs': 30.0,
@@ -159,6 +169,8 @@ def parse_policy(payload: dict | None) -> dict:
 
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
                    'leadMaxMicroDelayMs', 'capacitySafety',
+                   'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
+                   'partContinuityWeight', 'sustainCompetitionTolerance', 'fddUnisonMinVelocity', 'fddUnisonMaxDurationMs',
                    'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
                    'releaseGapMs', 'maxSustainExtensionMs', 'sourceContinuityAmount'):
         policy[key] = float(policy[key])
@@ -167,9 +179,18 @@ def parse_policy(payload: dict | None) -> dict:
             raise ValueError(f'{key} nie moze byc ujemny')
 
     for key in ('preserveLead', 'preserveBass', 'allowVoiceSteal', 'softenRepeats',
-                'mechanicalSustain', 'sourceContinuity'):
+                'mechanicalSustain', 'sourceContinuity', 'mechanicalAware', 'fddUnisonEnabled'):
         policy[key] = bool(policy[key])
 
+    import math
+    if any(isinstance(v, float) and not math.isfinite(v) for v in policy.values()):
+        raise ValueError('policy numbers must be finite')
+    if policy['dvdSustainThresholdMs'] <= 0 or policy['mechanicalPhraseWindowMs'] <= 0:
+        raise ValueError('mechanical thresholds must be positive')
+    if isinstance(policy['fddUnisonMaxVoices'], bool) or not isinstance(policy['fddUnisonMaxVoices'], int) or policy['fddUnisonMaxVoices'] not in (1, 2):
+        raise ValueError('fddUnisonMaxVoices must be 1 or 2')
+    if not 0 <= policy['fddUnisonMinVelocity'] <= 127:
+        raise ValueError('fddUnisonMinVelocity must be between 0 and 127')
     if not 0 <= policy['sourceContinuityAmount'] <= 1:
         raise ValueError('sourceContinuityAmount must be between 0 and 1')
 

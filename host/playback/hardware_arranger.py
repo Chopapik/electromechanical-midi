@@ -98,6 +98,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             policy['maxNoteSeconds'] = _adaptive_cap(notes, accompaniment, policy, frozenset({BASS, HARMONY}))
         if not policy.get('leadMaxNoteSeconds'):
             policy['leadMaxNoteSeconds'] = _adaptive_cap(notes, lead or accompaniment, policy, frozenset({LEAD}))
+    from .mechanical_arrangement import phrase_context, preference, add_unison
+    phrases = phrase_context(notes, policy['mechanicalPhraseWindowMs']/1000.)
+    last_part = {}; decisions = {}; priorities = {i['id']: i['priority'] for i in notes}
     events = []; attempts = {}; requested = Counter(); denied = Counter(); rejected = {d: Counter() for d in slots}
     for item in notes:
         span = item['span']; role = item['role']; pin = pins.get(item['id'])
@@ -105,13 +108,15 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             events.append(_dropped(item, 'MANUAL_DROP', role, None, pin)); continue
         pool = ([s for s in slots.values() if profiles[s.device.id].name == 'HDD_PERCUSSION']
                 if role == PERCUSSION else lead if role == LEAD and lead else accompaniment)
-        candidates = []; diagnostics = {}
+        candidates = []; diagnostics = {}; blocked_candidates = []
         for slot in pool:
             device = slot.device; ident = device.id; profile = profiles[ident]; state = states[ident]
             requested[ident] += 1
             gate = pin.gate if pin else 1.
             duration = _clip(span.duration * gate, slot.capability.min_note_s, policy,
                              'leadMaxNoteSeconds' if role == LEAD else 'maxNoteSeconds')
+            if policy['mechanicalAware'] and profile.name == 'DVD_SLED' and profile.get('continuousRotation'):
+                duration = max(span.duration * gate, slot.capability.min_note_s)
             if profile.name == 'HDD_PERCUSSION':
                 played = None; hz = None; folded = False
                 stages=[profile.get(k) for k in ('parkMs','settleMs','strikeMs')]
@@ -127,7 +132,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 else: played = shifted; hz = midi_to_hz(shifted); folded = False
             note = HardwareNote(hz, duration, span.start)
             ev = evaluate(profile, note, state)
-            diagnostics[ident] = ev.as_dict()
+            bonus, musical = preference(item, profile, phrases[item['id']], policy,
+                last_part.get((item['track'], span.channel)) == ident)
+            diagnostics[ident] = {**ev.as_dict(), 'musical': musical}
             if not ev.authorized or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load):
                 denied[ident] += 1
                 for reason in ev.reasons: rejected[ident][reason] += 1
@@ -137,9 +144,41 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                       policy['maxMicroDelayMs'] if role == PERCUSSION else policy['maxArpeggioMs']) / 1000.
             if arrival - span.start > window + 1e-9:
                 denied[ident] += 1
-                rejected[ident]['TIMING_CONFLICT'] += 1; continue
-            candidates.append((selection_key(ev, profile, ident), slot, played, hz, folded, duration, arrival))
+                rejected[ident]['TIMING_CONFLICT'] += 1
+                if policy['mechanicalAware'] and policy['allowVoiceSteal'] and profile.name=='DVD_SLED':
+                    blocked_candidates.append((slot, played, hz, folded, duration))
+                continue
+            key = selection_key(ev, profile, ident)
+            if policy['mechanicalAware'] and profile.name in ('FDD', 'DVD_SLED'):
+                # Waiting and octave displacement also cost musical fidelity.
+                key = (key[0]-bonus+(arrival-span.start)*2.+(.15 if folded else 0.), *key[1:])
+            candidates.append((key, slot, played, hz, folded, duration, arrival))
         attempts[item['id']] = diagnostics
+        if not candidates and blocked_candidates:
+            # An optional low-priority sustain may yield to an important new part.
+            blocked_candidates.sort(key=lambda c: min((priorities[e.id] for e in events if e.played and e.device_id==c[0].device.id and e.end>span.start), default=float('inf')))
+            for slot, played, hz, folded, duration in blocked_candidates:
+                old = next((e for e in reversed(events) if e.played and e.device_id==slot.device.id), None)
+                if old is None or old.end<=span.start or old.actual_start+slot.capability.min_note_s>span.start:
+                    continue
+                protected = (old.role==LEAD and policy['preserveLead']) or (old.role==BASS and policy['preserveBass'])
+                margin = policy['stealMargin'] if protected else -policy['sustainCompetitionTolerance']
+                if item['priority'] < priorities[old.id]+margin:
+                    continue
+                shortened = dataclasses.replace(old, actual_duration=span.start-old.actual_start,
+                    outcome='SHORTENED', reason='DVD sustain yielded to competing musical part; lead/bass protection respected')
+                state = HardwareDeviceState(position=0.)
+                for e in events:
+                    if e.played and e.device_id==slot.device.id:
+                        e = shortened if e.id==old.id else e
+                        n = HardwareNote(e.played_hz,e.actual_duration,e.actual_start)
+                        advance_state(state,profiles[slot.device.id],n,evaluate(profiles[slot.device.id],n,state))
+                ev = evaluate(profiles[slot.device.id],HardwareNote(hz,duration,span.start),state)
+                if not ev.authorized or ev.ready_at>span.start+1e-9: continue
+                events[events.index(old)] = shortened
+                states[slot.device.id] = state; slot.busy_until=span.start
+                candidates.append((selection_key(ev,profiles[slot.device.id],slot.device.id),slot,played,hz,folded,duration,span.start))
+                break
         if not candidates:
             reasons = [r for v in diagnostics.values() for r in v['reasons'] if r != 'PHYSICAL_UNKNOWN']
             reason = ('NO_DEVICE' if not pool else reasons[0] if reasons else
@@ -151,6 +190,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         outcome = ('ARPEGGIATED' if arrival - span.start > policy['maxMicroDelayMs']/1000. else
                    'DELAYED') if arrival > span.start+1e-9 else 'REASSIGNED' if preferred != slot.device.id else 'ACCEPTED'
         _place(slot, _Candidate(slot, played, hz, folded), item, outcome, arrival, duration, role, pin, preferred, events)
+        decisions[item['id']] = diagnostics[slot.device.id]['musical']
+        last_part[(item['track'], span.channel)] = slot.device.id
         note = HardwareNote(hz, duration, arrival)
         ev = evaluate(profiles[slot.device.id], note, states[slot.device.id])
         if profiles[slot.device.id].name=='DVD_SLED' and arrival>states[slot.device.id].ready_at+1e-9:
@@ -175,6 +216,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .allocator import _priority
     apply_reinforcement(plan, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
     validate_reinforcement(plan, profiles, lanes)
+    add_unison(plan, profiles, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
+    for i,e in enumerate(plan.events):
+        if e.id in decisions:
+            plan.events[i] = dataclasses.replace(e, hardware={**e.hardware, 'selection': decisions[e.id]})
     return plan
 
 

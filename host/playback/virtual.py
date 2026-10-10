@@ -487,7 +487,7 @@ class VirtualOrchestra:
             report['reinforcementTime'] += extra.duration
             if not device.mute and (not audible_solo or device.solo):
                 self.activity[device.id].append((extra.start, extra.start + extra.duration))
-                self.events.append(AcousticEvent(extra.start, extra.kind, device.id,
+                self.events.append(AcousticEvent(extra.start, 'tone' if extra.kind == 'UNISON' else extra.kind, device.id,
                                                  extra.hz, extra.duration, extra.velocity,
                     hdd_articulation=(classify_hdd(sources[extra.source_id].note, sources[extra.source_id].channel,
                         sources[extra.source_id].velocity, sources[extra.source_id].articulation)
@@ -497,7 +497,7 @@ class VirtualOrchestra:
                     tonal_articulation=(retarget_tonal(self.tonal_decisions[extra.source_id],
                         device.type, extra.duration, extra.velocity,
                         extra.start-sources[extra.source_id].actual_start)
-                        if extra.kind == "tone" and extra.source_id in self.tonal_decisions else None)))
+                        if extra.kind in ("tone", "UNISON") and extra.source_id in self.tonal_decisions else None)))
         for extra in plan.tray_events:
             if extra.device_id not in by_id:
                 continue

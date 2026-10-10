@@ -236,7 +236,7 @@ class PhysicalArrangerTests(unittest.TestCase):
     def test_schedule_from_plan_not_pcm(self):
         p=self.plan();bound,_=bind_devices(self.config().instances(),2)
         commands=build_plan_commands(p,bound)
-        self.assertEqual(sum(c.kind=='play' for c in commands),sum(e.played for e in p.events))
+        self.assertEqual(sum(c.kind=='play' for c in commands),sum(e.played for e in p.events)+len(p.reinforcements))
     def test_virtual_legacy_unchanged(self):
         c=self.config()
         for d in c.devices:d['mode']='virtual'

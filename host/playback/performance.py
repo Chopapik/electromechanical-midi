@@ -506,6 +506,7 @@ def build_report(plan: PerformancePlan) -> dict:
     violations = [event for event in on_lead_device if event.role != 'lead']
 
     return {
+        'mechanicalArrangement': mechanical_metrics(plan),
         'sourceEvents': total_requested,
         'dvdMode': plan.dvd_mode,
         'reinforcement': {
@@ -554,3 +555,19 @@ def build_report(plan: PerformancePlan) -> dict:
         'duplicates': plan.duplicates,
         'articulation': plan.articulation,
     }
+
+
+def mechanical_metrics(plan):
+    """Primary coverage and optional unison are reported separately."""
+    played = [e for e in plan.events if e.played]
+    dvd = [e.actual_duration for e in played if e.device_type == 'DVD_SLED']
+    unison = [e for e in plan.reinforcements if e.kind == 'UNISON']
+    types = {d['id']: d['type'] for d in plan.devices}
+    return {'fddNotes': sum(e.device_type == 'FDD' for e in played),
+            'dvdNotes': len(dvd), 'dvdMeanSeconds': round(sum(dvd)/len(dvd), 6) if dvd else 0.,
+            'dvdMaxSeconds': round(max(dvd, default=0.), 6),
+            'multiSecondFddNotes': sum(e.device_type == 'FDD' and e.actual_duration >= 2 for e in played),
+            'unisonEvents': len(unison), 'unisonSeconds': round(sum(e.duration for e in unison), 6),
+            'reinforcementDevices': {ident: {'events': sum(e.device_id == ident for e in plan.reinforcements),
+                'seconds': round(sum(e.duration for e in plan.reinforcements if e.device_id == ident), 6),
+                'type': kind} for ident, kind in types.items()}}

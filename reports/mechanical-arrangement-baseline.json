@@ -1,0 +1,1402 @@
+{
+  "Every breath you take.mid": {
+    "played": 3536,
+    "dropped": 2,
+    "fdd": 1013,
+    "dvd": 1193,
+    "dvdMean": 0.3155631809513838,
+    "dvdMax": 4.246497875000003,
+    "longFdd": 10,
+    "unison": 0,
+    "unisonSeconds": 0,
+    "conflicts": 0,
+    "devices": [
+      {
+        "deviceId": "DVD_STEPPER_1",
+        "type": "DVD_SLED",
+        "notes": 675,
+        "dropped": 0,
+        "activeTime": 160.985,
+        "utilization": 0.7324
+      },
+      {
+        "deviceId": "DVD_STEPPER_2",
+        "type": "DVD_SLED",
+        "notes": 382,
+        "dropped": 0,
+        "activeTime": 137.228,
+        "utilization": 0.6243
+      },
+      {
+        "deviceId": "DVD_STEPPER_3",
+        "type": "DVD_SLED",
+        "notes": 136,
+        "dropped": 0,
+        "activeTime": 78.253,
+        "utilization": 0.356
+      },
+      {
+        "deviceId": "DVD_STEPPER_4",
+        "type": "DVD_SLED",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_1",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_2",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "fdd-1",
+        "type": "FDD",
+        "notes": 569,
+        "dropped": 0,
+        "activeTime": 180.948,
+        "utilization": 0.8232
+      },
+      {
+        "deviceId": "fdd-2",
+        "type": "FDD",
+        "notes": 279,
+        "dropped": 0,
+        "activeTime": 120.463,
+        "utilization": 0.548
+      },
+      {
+        "deviceId": "fdd-3",
+        "type": "FDD",
+        "notes": 137,
+        "dropped": 0,
+        "activeTime": 65.503,
+        "utilization": 0.298
+      },
+      {
+        "deviceId": "fdd-4",
+        "type": "FDD",
+        "notes": 28,
+        "dropped": 0,
+        "activeTime": 19.498,
+        "utilization": 0.0887
+      },
+      {
+        "deviceId": "hdd_vcm-1",
+        "type": "HDD_VCM",
+        "notes": 681,
+        "dropped": 0,
+        "activeTime": 57.204,
+        "utilization": 0.2602
+      },
+      {
+        "deviceId": "hdd_vcm-2",
+        "type": "HDD_VCM",
+        "notes": 369,
+        "dropped": 0,
+        "activeTime": 30.996,
+        "utilization": 0.141
+      },
+      {
+        "deviceId": "hdd_vcm-3",
+        "type": "HDD_VCM",
+        "notes": 55,
+        "dropped": 0,
+        "activeTime": 4.62,
+        "utilization": 0.021
+      },
+      {
+        "deviceId": "hdd_vcm-4",
+        "type": "HDD_VCM",
+        "notes": 6,
+        "dropped": 0,
+        "activeTime": 0.504,
+        "utilization": 0.0023
+      },
+      {
+        "deviceId": "vhs-1",
+        "type": "VHS",
+        "notes": 219,
+        "dropped": 0,
+        "activeTime": 113.31,
+        "utilization": 0.5155
+      }
+    ],
+    "hardware": {
+      "fdd-1": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 569,
+        "playedNotes": 569,
+        "droppedNotes": 806,
+        "degradedNotes": 509,
+        "dropReasons": {
+          "TIMING_CONFLICT": 806
+        },
+        "transitions": 0,
+        "reversals": 647,
+        "travelReversals": 647,
+        "accelerationLimited": 0,
+        "tooShort": 1,
+        "outsidePreferredRange": 17,
+        "outsideStableRange": 0,
+        "physicalUnknown": 569
+      },
+      "fdd-2": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 279,
+        "playedNotes": 279,
+        "droppedNotes": 265,
+        "degradedNotes": 257,
+        "dropReasons": {
+          "TIMING_CONFLICT": 265
+        },
+        "transitions": 0,
+        "reversals": 446,
+        "travelReversals": 446,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 12,
+        "outsideStableRange": 3,
+        "physicalUnknown": 279
+      },
+      "fdd-3": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 137,
+        "playedNotes": 137,
+        "droppedNotes": 97,
+        "degradedNotes": 119,
+        "dropReasons": {
+          "TIMING_CONFLICT": 97
+        },
+        "transitions": 0,
+        "reversals": 250,
+        "travelReversals": 250,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 7,
+        "outsideStableRange": 5,
+        "physicalUnknown": 137
+      },
+      "fdd-4": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 28,
+        "playedNotes": 28,
+        "droppedNotes": 25,
+        "degradedNotes": 27,
+        "dropReasons": {
+          "TIMING_CONFLICT": 25
+        },
+        "transitions": 0,
+        "reversals": 89,
+        "travelReversals": 89,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 11,
+        "outsideStableRange": 10,
+        "physicalUnknown": 28
+      },
+      "DVD_STEPPER_1": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 675,
+        "playedNotes": 675,
+        "droppedNotes": 971,
+        "degradedNotes": 675,
+        "dropReasons": {
+          "TIMING_CONFLICT": 971
+        },
+        "transitions": 672,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 672,
+        "tooShort": 1,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 675
+      },
+      "DVD_STEPPER_2": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 382,
+        "playedNotes": 382,
+        "droppedNotes": 369,
+        "degradedNotes": 382,
+        "dropReasons": {
+          "TIMING_CONFLICT": 369
+        },
+        "transitions": 377,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 377,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 382
+      },
+      "DVD_STEPPER_3": {
+        "requestedNotes": 2208,
+        "acceptedNotes": 136,
+        "playedNotes": 136,
+        "droppedNotes": 84,
+        "degradedNotes": 136,
+        "dropReasons": {
+          "TIMING_CONFLICT": 84
+        },
+        "transitions": 134,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 134,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 136
+      },
+      "vhs-1": {
+        "requestedNotes": 219,
+        "acceptedNotes": 219,
+        "playedNotes": 219,
+        "droppedNotes": 0,
+        "degradedNotes": 219,
+        "dropReasons": {},
+        "transitions": 0,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 219
+      },
+      "hdd_vcm-1": {
+        "requestedNotes": 1111,
+        "acceptedNotes": 681,
+        "playedNotes": 681,
+        "droppedNotes": 430,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 430
+        },
+        "transitions": 681,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 681
+      },
+      "hdd_vcm-2": {
+        "requestedNotes": 1111,
+        "acceptedNotes": 369,
+        "playedNotes": 369,
+        "droppedNotes": 61,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 61
+        },
+        "transitions": 369,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 369
+      },
+      "hdd_vcm-3": {
+        "requestedNotes": 1111,
+        "acceptedNotes": 55,
+        "playedNotes": 55,
+        "droppedNotes": 6,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 6
+        },
+        "transitions": 55,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 55
+      },
+      "hdd_vcm-4": {
+        "requestedNotes": 1111,
+        "acceptedNotes": 6,
+        "playedNotes": 6,
+        "droppedNotes": 0,
+        "degradedNotes": 0,
+        "dropReasons": {},
+        "transitions": 6,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 6
+      }
+    },
+    "commands": 5876
+  },
+  "The Police - Message in a Bottle.mid": {
+    "played": 7388,
+    "dropped": 229,
+    "fdd": 2665,
+    "dvd": 1624,
+    "dvdMean": 0.4217414203612481,
+    "dvdMax": 3.19166666666667,
+    "longFdd": 12,
+    "unison": 0,
+    "unisonSeconds": 0,
+    "conflicts": 0,
+    "devices": [
+      {
+        "deviceId": "DVD_STEPPER_1",
+        "type": "DVD_SLED",
+        "notes": 654,
+        "dropped": 0,
+        "activeTime": 248.349,
+        "utilization": 0.8622
+      },
+      {
+        "deviceId": "DVD_STEPPER_2",
+        "type": "DVD_SLED",
+        "notes": 536,
+        "dropped": 0,
+        "activeTime": 224.227,
+        "utilization": 0.7785
+      },
+      {
+        "deviceId": "DVD_STEPPER_3",
+        "type": "DVD_SLED",
+        "notes": 434,
+        "dropped": 0,
+        "activeTime": 212.333,
+        "utilization": 0.7372
+      },
+      {
+        "deviceId": "DVD_STEPPER_4",
+        "type": "DVD_SLED",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_1",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_2",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "fdd-1",
+        "type": "FDD",
+        "notes": 827,
+        "dropped": 0,
+        "activeTime": 264.984,
+        "utilization": 0.92
+      },
+      {
+        "deviceId": "fdd-2",
+        "type": "FDD",
+        "notes": 755,
+        "dropped": 0,
+        "activeTime": 246.499,
+        "utilization": 0.8558
+      },
+      {
+        "deviceId": "fdd-3",
+        "type": "FDD",
+        "notes": 606,
+        "dropped": 0,
+        "activeTime": 214.346,
+        "utilization": 0.7441
+      },
+      {
+        "deviceId": "fdd-4",
+        "type": "FDD",
+        "notes": 477,
+        "dropped": 0,
+        "activeTime": 213.321,
+        "utilization": 0.7406
+      },
+      {
+        "deviceId": "hdd_vcm-1",
+        "type": "HDD_VCM",
+        "notes": 1416,
+        "dropped": 0,
+        "activeTime": 118.944,
+        "utilization": 0.4129
+      },
+      {
+        "deviceId": "hdd_vcm-2",
+        "type": "HDD_VCM",
+        "notes": 899,
+        "dropped": 0,
+        "activeTime": 75.516,
+        "utilization": 0.2622
+      },
+      {
+        "deviceId": "hdd_vcm-3",
+        "type": "HDD_VCM",
+        "notes": 241,
+        "dropped": 0,
+        "activeTime": 20.244,
+        "utilization": 0.0703
+      },
+      {
+        "deviceId": "hdd_vcm-4",
+        "type": "HDD_VCM",
+        "notes": 60,
+        "dropped": 0,
+        "activeTime": 5.04,
+        "utilization": 0.0175
+      },
+      {
+        "deviceId": "vhs-1",
+        "type": "VHS",
+        "notes": 483,
+        "dropped": 0,
+        "activeTime": 161.854,
+        "utilization": 0.5619
+      }
+    ],
+    "hardware": {
+      "fdd-1": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 827,
+        "playedNotes": 827,
+        "droppedNotes": 2904,
+        "degradedNotes": 705,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2904
+        },
+        "transitions": 0,
+        "reversals": 941,
+        "travelReversals": 941,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 36,
+        "outsideStableRange": 0,
+        "physicalUnknown": 827
+      },
+      "fdd-2": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 755,
+        "playedNotes": 755,
+        "droppedNotes": 2138,
+        "degradedNotes": 633,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2138
+        },
+        "transitions": 0,
+        "reversals": 911,
+        "travelReversals": 911,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 85,
+        "outsideStableRange": 77,
+        "physicalUnknown": 755
+      },
+      "fdd-3": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 606,
+        "playedNotes": 606,
+        "droppedNotes": 1650,
+        "degradedNotes": 520,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1650
+        },
+        "transitions": 0,
+        "reversals": 758,
+        "travelReversals": 758,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 64,
+        "outsideStableRange": 43,
+        "physicalUnknown": 606
+      },
+      "fdd-4": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 477,
+        "playedNotes": 477,
+        "droppedNotes": 1300,
+        "degradedNotes": 426,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1300
+        },
+        "transitions": 0,
+        "reversals": 723,
+        "travelReversals": 723,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 19,
+        "outsideStableRange": 1,
+        "physicalUnknown": 477
+      },
+      "DVD_STEPPER_1": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 654,
+        "playedNotes": 654,
+        "droppedNotes": 2256,
+        "degradedNotes": 654,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2256
+        },
+        "transitions": 648,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 648,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 654
+      },
+      "DVD_STEPPER_2": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 536,
+        "playedNotes": 536,
+        "droppedNotes": 1456,
+        "degradedNotes": 536,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1456
+        },
+        "transitions": 491,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 491,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 536
+      },
+      "DVD_STEPPER_3": {
+        "requestedNotes": 4512,
+        "acceptedNotes": 434,
+        "playedNotes": 434,
+        "droppedNotes": 1242,
+        "degradedNotes": 434,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1242
+        },
+        "transitions": 434,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 434,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 434
+      },
+      "vhs-1": {
+        "requestedNotes": 483,
+        "acceptedNotes": 483,
+        "playedNotes": 483,
+        "droppedNotes": 0,
+        "degradedNotes": 483,
+        "dropReasons": {},
+        "transitions": 0,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 483
+      },
+      "hdd_vcm-1": {
+        "requestedNotes": 2622,
+        "acceptedNotes": 1416,
+        "playedNotes": 1416,
+        "droppedNotes": 1206,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1206
+        },
+        "transitions": 1416,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 1416
+      },
+      "hdd_vcm-2": {
+        "requestedNotes": 2622,
+        "acceptedNotes": 899,
+        "playedNotes": 899,
+        "droppedNotes": 347,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 347
+        },
+        "transitions": 899,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 899
+      },
+      "hdd_vcm-3": {
+        "requestedNotes": 2622,
+        "acceptedNotes": 241,
+        "playedNotes": 241,
+        "droppedNotes": 94,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 94
+        },
+        "transitions": 241,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 241
+      },
+      "hdd_vcm-4": {
+        "requestedNotes": 2622,
+        "acceptedNotes": 60,
+        "playedNotes": 60,
+        "droppedNotes": 12,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 12
+        },
+        "transitions": 60,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 60
+      }
+    },
+    "commands": 11007
+  },
+  "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+    "played": 9193,
+    "dropped": 171,
+    "fdd": 5824,
+    "dvd": 1185,
+    "dvdMean": 0.31732106803445853,
+    "dvdMax": 11.422591633333326,
+    "longFdd": 1,
+    "unison": 0,
+    "unisonSeconds": 0,
+    "conflicts": 0,
+    "devices": [
+      {
+        "deviceId": "DVD_STEPPER_1",
+        "type": "DVD_SLED",
+        "notes": 572,
+        "dropped": 0,
+        "activeTime": 137.484,
+        "utilization": 0.5792
+      },
+      {
+        "deviceId": "DVD_STEPPER_2",
+        "type": "DVD_SLED",
+        "notes": 387,
+        "dropped": 0,
+        "activeTime": 130.028,
+        "utilization": 0.5478
+      },
+      {
+        "deviceId": "DVD_STEPPER_3",
+        "type": "DVD_SLED",
+        "notes": 226,
+        "dropped": 0,
+        "activeTime": 108.513,
+        "utilization": 0.4571
+      },
+      {
+        "deviceId": "DVD_STEPPER_4",
+        "type": "DVD_SLED",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_1",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_2",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "fdd-1",
+        "type": "FDD",
+        "notes": 2907,
+        "dropped": 0,
+        "activeTime": 225.383,
+        "utilization": 0.9495
+      },
+      {
+        "deviceId": "fdd-2",
+        "type": "FDD",
+        "notes": 1596,
+        "dropped": 0,
+        "activeTime": 188.651,
+        "utilization": 0.7947
+      },
+      {
+        "deviceId": "fdd-3",
+        "type": "FDD",
+        "notes": 777,
+        "dropped": 0,
+        "activeTime": 162.896,
+        "utilization": 0.6862
+      },
+      {
+        "deviceId": "fdd-4",
+        "type": "FDD",
+        "notes": 544,
+        "dropped": 0,
+        "activeTime": 134.073,
+        "utilization": 0.5648
+      },
+      {
+        "deviceId": "hdd_vcm-1",
+        "type": "HDD_VCM",
+        "notes": 790,
+        "dropped": 0,
+        "activeTime": 66.36,
+        "utilization": 0.2795
+      },
+      {
+        "deviceId": "hdd_vcm-2",
+        "type": "HDD_VCM",
+        "notes": 625,
+        "dropped": 0,
+        "activeTime": 52.5,
+        "utilization": 0.2212
+      },
+      {
+        "deviceId": "hdd_vcm-3",
+        "type": "HDD_VCM",
+        "notes": 456,
+        "dropped": 0,
+        "activeTime": 38.304,
+        "utilization": 0.1614
+      },
+      {
+        "deviceId": "hdd_vcm-4",
+        "type": "HDD_VCM",
+        "notes": 3,
+        "dropped": 0,
+        "activeTime": 0.252,
+        "utilization": 0.0011
+      },
+      {
+        "deviceId": "vhs-1",
+        "type": "VHS",
+        "notes": 310,
+        "dropped": 0,
+        "activeTime": 113.293,
+        "utilization": 0.4773
+      }
+    ],
+    "hardware": {
+      "fdd-1": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 2907,
+        "playedNotes": 2907,
+        "droppedNotes": 3471,
+        "degradedNotes": 2764,
+        "dropReasons": {
+          "TIMING_CONFLICT": 3471
+        },
+        "transitions": 0,
+        "reversals": 898,
+        "travelReversals": 898,
+        "accelerationLimited": 0,
+        "tooShort": 1851,
+        "outsidePreferredRange": 520,
+        "outsideStableRange": 0,
+        "physicalUnknown": 2907
+      },
+      "fdd-2": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 1596,
+        "playedNotes": 1596,
+        "droppedNotes": 2015,
+        "degradedNotes": 1487,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2015
+        },
+        "transitions": 0,
+        "reversals": 733,
+        "travelReversals": 733,
+        "accelerationLimited": 0,
+        "tooShort": 812,
+        "outsidePreferredRange": 266,
+        "outsideStableRange": 204,
+        "physicalUnknown": 1596
+      },
+      "fdd-3": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 777,
+        "playedNotes": 777,
+        "droppedNotes": 1497,
+        "degradedNotes": 678,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1497
+        },
+        "transitions": 0,
+        "reversals": 604,
+        "travelReversals": 604,
+        "accelerationLimited": 0,
+        "tooShort": 156,
+        "outsidePreferredRange": 92,
+        "outsideStableRange": 70,
+        "physicalUnknown": 777
+      },
+      "fdd-4": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 544,
+        "playedNotes": 544,
+        "droppedNotes": 1082,
+        "degradedNotes": 459,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1082
+        },
+        "transitions": 0,
+        "reversals": 503,
+        "travelReversals": 503,
+        "accelerationLimited": 0,
+        "tooShort": 34,
+        "outsidePreferredRange": 23,
+        "outsideStableRange": 18,
+        "physicalUnknown": 544
+      },
+      "DVD_STEPPER_1": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 572,
+        "playedNotes": 572,
+        "droppedNotes": 1418,
+        "degradedNotes": 572,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1418
+        },
+        "transitions": 572,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 572,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 572
+      },
+      "DVD_STEPPER_2": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 387,
+        "playedNotes": 387,
+        "droppedNotes": 671,
+        "degradedNotes": 387,
+        "dropReasons": {
+          "TIMING_CONFLICT": 671
+        },
+        "transitions": 387,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 387,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 387
+      },
+      "DVD_STEPPER_3": {
+        "requestedNotes": 7174,
+        "acceptedNotes": 226,
+        "playedNotes": 226,
+        "droppedNotes": 347,
+        "degradedNotes": 226,
+        "dropReasons": {
+          "TIMING_CONFLICT": 347
+        },
+        "transitions": 226,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 226,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 226
+      },
+      "vhs-1": {
+        "requestedNotes": 316,
+        "acceptedNotes": 310,
+        "playedNotes": 310,
+        "droppedNotes": 6,
+        "degradedNotes": 310,
+        "dropReasons": {
+          "TIMING_CONFLICT": 6
+        },
+        "transitions": 0,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 310
+      },
+      "hdd_vcm-1": {
+        "requestedNotes": 1874,
+        "acceptedNotes": 790,
+        "playedNotes": 790,
+        "droppedNotes": 1084,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1084
+        },
+        "transitions": 790,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 790
+      },
+      "hdd_vcm-2": {
+        "requestedNotes": 1874,
+        "acceptedNotes": 625,
+        "playedNotes": 625,
+        "droppedNotes": 690,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 690
+        },
+        "transitions": 625,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 625
+      },
+      "hdd_vcm-3": {
+        "requestedNotes": 1874,
+        "acceptedNotes": 456,
+        "playedNotes": 456,
+        "droppedNotes": 152,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 152
+        },
+        "transitions": 456,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 456
+      },
+      "hdd_vcm-4": {
+        "requestedNotes": 1874,
+        "acceptedNotes": 3,
+        "playedNotes": 3,
+        "droppedNotes": 0,
+        "degradedNotes": 0,
+        "dropReasons": {},
+        "transitions": 3,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 3
+      }
+    },
+    "commands": 13306
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place.mid": {
+    "played": 6856,
+    "dropped": 605,
+    "fdd": 2844,
+    "dvd": 1620,
+    "dvdMean": 0.3101535231944446,
+    "dvdMax": 2.822057412499987,
+    "longFdd": 5,
+    "unison": 0,
+    "unisonSeconds": 0,
+    "conflicts": 0,
+    "devices": [
+      {
+        "deviceId": "DVD_STEPPER_1",
+        "type": "DVD_SLED",
+        "notes": 656,
+        "dropped": 0,
+        "activeTime": 186.69,
+        "utilization": 0.7919
+      },
+      {
+        "deviceId": "DVD_STEPPER_2",
+        "type": "DVD_SLED",
+        "notes": 536,
+        "dropped": 0,
+        "activeTime": 170.136,
+        "utilization": 0.7216
+      },
+      {
+        "deviceId": "DVD_STEPPER_3",
+        "type": "DVD_SLED",
+        "notes": 428,
+        "dropped": 0,
+        "activeTime": 145.622,
+        "utilization": 0.6177
+      },
+      {
+        "deviceId": "DVD_STEPPER_4",
+        "type": "DVD_SLED",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_1",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "DVD_TRAY_2",
+        "type": "DVD_TRAY",
+        "notes": 0,
+        "dropped": 0,
+        "activeTime": 0.0,
+        "utilization": 0.0
+      },
+      {
+        "deviceId": "fdd-1",
+        "type": "FDD",
+        "notes": 878,
+        "dropped": 0,
+        "activeTime": 228.431,
+        "utilization": 0.9689
+      },
+      {
+        "deviceId": "fdd-2",
+        "type": "FDD",
+        "notes": 831,
+        "dropped": 0,
+        "activeTime": 209.718,
+        "utilization": 0.8895
+      },
+      {
+        "deviceId": "fdd-3",
+        "type": "FDD",
+        "notes": 628,
+        "dropped": 0,
+        "activeTime": 183.624,
+        "utilization": 0.7789
+      },
+      {
+        "deviceId": "fdd-4",
+        "type": "FDD",
+        "notes": 507,
+        "dropped": 0,
+        "activeTime": 163.335,
+        "utilization": 0.6928
+      },
+      {
+        "deviceId": "hdd_vcm-1",
+        "type": "HDD_VCM",
+        "notes": 876,
+        "dropped": 0,
+        "activeTime": 73.584,
+        "utilization": 0.3121
+      },
+      {
+        "deviceId": "hdd_vcm-2",
+        "type": "HDD_VCM",
+        "notes": 746,
+        "dropped": 0,
+        "activeTime": 62.664,
+        "utilization": 0.2658
+      },
+      {
+        "deviceId": "hdd_vcm-3",
+        "type": "HDD_VCM",
+        "notes": 453,
+        "dropped": 0,
+        "activeTime": 38.052,
+        "utilization": 0.1614
+      },
+      {
+        "deviceId": "hdd_vcm-4",
+        "type": "HDD_VCM",
+        "notes": 7,
+        "dropped": 0,
+        "activeTime": 0.588,
+        "utilization": 0.0025
+      },
+      {
+        "deviceId": "vhs-1",
+        "type": "VHS",
+        "notes": 310,
+        "dropped": 0,
+        "activeTime": 143.721,
+        "utilization": 0.6096
+      }
+    ],
+    "hardware": {
+      "fdd-1": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 878,
+        "playedNotes": 878,
+        "droppedNotes": 3579,
+        "degradedNotes": 729,
+        "dropReasons": {
+          "TIMING_CONFLICT": 3579
+        },
+        "transitions": 0,
+        "reversals": 847,
+        "travelReversals": 847,
+        "accelerationLimited": 0,
+        "tooShort": 23,
+        "outsidePreferredRange": 53,
+        "outsideStableRange": 0,
+        "physicalUnknown": 878
+      },
+      "fdd-2": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 831,
+        "playedNotes": 831,
+        "droppedNotes": 2881,
+        "degradedNotes": 709,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2881
+        },
+        "transitions": 0,
+        "reversals": 774,
+        "travelReversals": 774,
+        "accelerationLimited": 0,
+        "tooShort": 65,
+        "outsidePreferredRange": 53,
+        "outsideStableRange": 40,
+        "physicalUnknown": 831
+      },
+      "fdd-3": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 628,
+        "playedNotes": 628,
+        "droppedNotes": 2499,
+        "degradedNotes": 527,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2499
+        },
+        "transitions": 0,
+        "reversals": 684,
+        "travelReversals": 684,
+        "accelerationLimited": 0,
+        "tooShort": 8,
+        "outsidePreferredRange": 53,
+        "outsideStableRange": 38,
+        "physicalUnknown": 628
+      },
+      "fdd-4": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 507,
+        "playedNotes": 507,
+        "droppedNotes": 2146,
+        "degradedNotes": 428,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2146
+        },
+        "transitions": 0,
+        "reversals": 613,
+        "travelReversals": 613,
+        "accelerationLimited": 0,
+        "tooShort": 5,
+        "outsidePreferredRange": 48,
+        "outsideStableRange": 29,
+        "physicalUnknown": 507
+      },
+      "DVD_STEPPER_1": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 656,
+        "playedNotes": 656,
+        "droppedNotes": 2911,
+        "degradedNotes": 656,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2911
+        },
+        "transitions": 656,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 656,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 656
+      },
+      "DVD_STEPPER_2": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 536,
+        "playedNotes": 536,
+        "droppedNotes": 2404,
+        "degradedNotes": 536,
+        "dropReasons": {
+          "TIMING_CONFLICT": 2404
+        },
+        "transitions": 536,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 536,
+        "tooShort": 1,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 536
+      },
+      "DVD_STEPPER_3": {
+        "requestedNotes": 5069,
+        "acceptedNotes": 428,
+        "playedNotes": 428,
+        "droppedNotes": 1926,
+        "degradedNotes": 428,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1926
+        },
+        "transitions": 427,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 427,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 428
+      },
+      "vhs-1": {
+        "requestedNotes": 310,
+        "acceptedNotes": 310,
+        "playedNotes": 310,
+        "droppedNotes": 0,
+        "degradedNotes": 310,
+        "dropReasons": {},
+        "transitions": 0,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 310
+      },
+      "hdd_vcm-1": {
+        "requestedNotes": 2082,
+        "acceptedNotes": 876,
+        "playedNotes": 876,
+        "droppedNotes": 1206,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 1206
+        },
+        "transitions": 876,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 876
+      },
+      "hdd_vcm-2": {
+        "requestedNotes": 2082,
+        "acceptedNotes": 746,
+        "playedNotes": 746,
+        "droppedNotes": 770,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 770
+        },
+        "transitions": 746,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 746
+      },
+      "hdd_vcm-3": {
+        "requestedNotes": 2082,
+        "acceptedNotes": 453,
+        "playedNotes": 453,
+        "droppedNotes": 52,
+        "degradedNotes": 0,
+        "dropReasons": {
+          "TIMING_CONFLICT": 52
+        },
+        "transitions": 453,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 453
+      },
+      "hdd_vcm-4": {
+        "requestedNotes": 2082,
+        "acceptedNotes": 7,
+        "playedNotes": 7,
+        "droppedNotes": 0,
+        "degradedNotes": 0,
+        "dropReasons": {},
+        "transitions": 7,
+        "reversals": 0,
+        "travelReversals": 0,
+        "accelerationLimited": 0,
+        "tooShort": 0,
+        "outsidePreferredRange": 0,
+        "outsideStableRange": 0,
+        "physicalUnknown": 7
+      }
+    },
+    "commands": 11338
+  }
+}

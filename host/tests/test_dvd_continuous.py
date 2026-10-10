@@ -36,7 +36,8 @@ class ContinuousDvdTests(unittest.TestCase):
         self.assertEqual(len(catalog),4)
         self.assertTrue(all(d['continuousRotation'] and d['bands']==[] for d in catalog))
         app=Application(); link=Link();app.real.attach(link);app.real.configure()
-        for ident in range(1,5):
+        self.assertFalse(app.registry.by_id['DVD_STEPPER_4']['enabled'])
+        for ident in range(1,4):
             self.assertTrue(any(line.startswith(f'SLED {ident} PROFILE 0 ') for line in link.sent))
             self.assertIn(f'SLED {ident} DIR FWD',link.sent)
         self.assertFalse(any(' PLAY ' in line for line in link.sent))

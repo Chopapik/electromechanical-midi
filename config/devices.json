@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "Balanced 4FDD + 4DVD + VHS + 4HDD + 2Tray",
+  "name": "Balanced 4FDD + 3DVD + VHS + 4HDD + 2Tray",
   "devices": [
     {
       "id": "fdd-1",
@@ -86,7 +86,7 @@
       "lane": "sled:4",
       "profile": "DVD_REFERENCE",
       "hardwareProfile": "DVD_SLED",
-      "enabled": true,
+      "enabled": false,
       "volume": 0.2,
       "pan": 0.0
     },
@@ -170,9 +170,13 @@
   ],
   "parameters": {
     "sourceContinuity": true,
-    "sourceContinuityAmount": 1.0
+    "sourceContinuityAmount": 1.0,
+    "mechanicalAware": true,
+    "dvdSustainThresholdMs": 500.0,
+    "fddUnisonEnabled": true,
+    "fddUnisonMaxVoices": 2
   },
-  "dvdMode": "reinforcement",
+  "dvdMode": "independent",
   "idleReinforcement": {
     "enabled": false,
     "maxCopiesPerEvent": 1,

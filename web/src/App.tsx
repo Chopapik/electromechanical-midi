@@ -5,6 +5,7 @@ import {useRuntime} from './runtime'
 import {MidiFileSelector} from './components/MidiFileSelector'
 import {PlayerControls} from './components/PlayerControls'
 import {InstrumentGrid} from './components/InstrumentGrid'
+import {ArrangementPreview} from './components/ArrangementPreview'
 import {ProgressBar} from './components/ProgressBar'
 import {SettingsPage} from './SettingsPage'
 
@@ -50,6 +51,7 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
       <p>{s?.devices.find(d=>d.id===device)?.continuousRotation?'Ciągły ruch do przodu · bez limitu drogi i pasm Hz':s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
     </section>}
     <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
+    {!lab&&<ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>}
     </main>
     <footer className="workstation-status"><div className="workstation-status-content">
       <span role="status" className={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'arduino-connected':''}><Circle size={10} weight={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'fill':'regular'} aria-hidden="true"/> {!app.connected?'Brak połączenia z backendem':s?.output.message}</span>

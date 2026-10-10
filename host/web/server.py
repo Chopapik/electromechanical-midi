@@ -66,7 +66,8 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
         return {**runtime.snapshot(),'commands':runtime.real.sent,'plan':runtime.plan.report() if runtime.plan else None}
     @app.get('/api/plan')
     def plan():
-        return {'report':runtime.plan.report(),'events':[e.as_dict() for e in runtime.plan.events]} if runtime.plan else None
+        return {'report':runtime.plan.report(),'events':[e.as_dict() for e in runtime.plan.events],
+                'reinforcements':[e.as_dict() for e in runtime.plan.reinforcements]} if runtime.plan else None
     @app.get('/api/timeline')
     def timeline(): return runtime.timeline.as_dict() if runtime.timeline else None
     @app.get('/api/files')
