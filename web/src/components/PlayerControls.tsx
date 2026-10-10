@@ -13,8 +13,10 @@ interface Props {
   onStop: () => void
 }
 
-export function PlayerControls({ state, disabled, loading = false, loadingFrom = 'stopped', onRestart, onToggle, onStop }: Props) {
-  const playing = state === 'playing'
+export function PlayerControls({ state, disabled, loading = false, onRestart, onToggle, onStop }: Props) {
+  // Idle (szary + play): stopped oraz każdy nieznany stan. Orange tylko przy jawnej pauzie.
+  const mode = state === 'playing' ? 'playing' : state === 'paused' ? 'paused' : 'idle'
+  const showPause = mode === 'playing'
 
   return (
     <div className="controls">
@@ -31,15 +33,15 @@ export function PlayerControls({ state, disabled, loading = false, loadingFrom =
 
       <button
         type="button"
-        className={`button icon playback-toggle ${loading ? loadingFrom : state}${loading ? ' loading' : ''}`}
-        aria-label={loading ? 'Ładowanie odtwarzania' : playing ? 'Pauza' : 'Play'}
+        className={`button icon playback-toggle is-${loading ? 'idle' : mode}${loading ? ' loading' : ''}`}
+        aria-label={loading ? 'Ładowanie odtwarzania' : showPause ? 'Pauza' : 'Play'}
         aria-busy={loading}
         aria-description={loading ? 'loading' : state}
-        title={loading ? 'Ładowanie odtwarzania' : playing ? 'Pauza' : 'Play'}
+        title={loading ? 'Ładowanie odtwarzania' : showPause ? 'Pauza' : 'Play'}
         onClick={onToggle}
         disabled={disabled || loading}
       >
-        {loading ? <CircleNotch className="playback-spinner" size={18} weight="bold" aria-hidden="true" /> : playing ? <Pause size={18} weight="fill" aria-hidden="true" /> : <Play size={18} weight="fill" aria-hidden="true" />}
+        {loading ? <CircleNotch className="playback-spinner" size={18} weight="bold" aria-hidden="true" /> : showPause ? <Pause size={18} weight="fill" aria-hidden="true" /> : <Play size={18} weight="fill" aria-hidden="true" />}
       </button>
 
       <button

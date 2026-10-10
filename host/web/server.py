@@ -101,7 +101,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                     p.play()
                 elif operation=='audio_error':
                     if runtime.virtual.owner==owner and runtime.router.mode=='VIRTUAL' and message.get('epoch')==p.epoch:
-                        p.pause(); p.error='Web Audio: '+str(message.get('message','wyjście niedostępne'))[:250]
+                        p.stop(); p.error='Web Audio: '+str(message.get('message','wyjście niedostępne'))[:250]
                 elif operation=='pause': p.pause()
                 elif operation=='stop': p.stop()
                 elif operation=='seek': p.seek(message['position'])
