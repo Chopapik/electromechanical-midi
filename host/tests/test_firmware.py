@@ -2,6 +2,7 @@ import subprocess
 import sys
 import unittest
 import tempfile
+import io
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -10,6 +11,21 @@ from firmware import run_firmware, PROJECT
 
 
 class FirmwareTest(unittest.TestCase):
+    def test_streams_carriage_return_progress_and_rejects_failed_process(self):
+        class Process:
+            def __init__(self,code):
+                self.stdout=io.StringIO('Writing at 0x1000 (37 %)\rWriting at 0x2000 (100 %)\n')
+                self.code=code
+            def wait(self): return self.code
+            def kill(self): pass
+        lines=[]
+        with patch('firmware.subprocess.Popen',return_value=Process(0)):
+            run_firmware('pio','/dev/fake',target='esp32',on_line=lines.append)
+        self.assertEqual(len(lines),2)
+        self.assertIn('37 %',lines[0])
+        with patch('firmware.subprocess.Popen',return_value=Process(1)):
+            with self.assertRaisesRegex(RuntimeError,'Writing at'):
+                run_firmware('pio','/dev/fake',target='esp32',on_line=lines.append)
 
 
     def test_fixed_uno_project_and_explicit_port(self):

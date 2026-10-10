@@ -55,6 +55,7 @@ USB_SERIAL_HINTS = (
 
 # Silicon Labs CP2102 on the ESP32-WROOM-32 Micro-USB board.
 ESP32_UPLOAD_VID = 0x10C4
+ESP32_UPLOAD_PIDS = {0xEA60}  # CP2102/CP210x bridge, not proof of ESP32 firmware.
 # OrbStack-forwarded ports lack USB identity; match CP2102 callout names only.
 ESP32_UPLOAD_HINTS = ("usbserial", "slab_usb", "cp210", "silabs")
 
@@ -187,7 +188,10 @@ def esp32_upload_ports(candidates: list[PortCandidate] | None = None) -> list[Po
         if port.vid in ARDUINO_VIDS:
             continue
         name = port.device.lower()
-        if port.vid == ESP32_UPLOAD_VID or (
+        if (port.vid == ESP32_UPLOAD_VID and (
+            getattr(port, 'pid', None) in ESP32_UPLOAD_PIDS or
+            (getattr(port, 'pid', None) is None and any(hint in name for hint in ESP32_UPLOAD_HINTS))
+        )) or (
             port.vid is None and any(hint in name for hint in ESP32_UPLOAD_HINTS)
         ):
             selected.append(port)

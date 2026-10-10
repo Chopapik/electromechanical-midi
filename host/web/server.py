@@ -21,13 +21,16 @@ MAX_UPLOAD_BYTES=5*1024*1024
 def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_path=None):
     library=MidiLibrary(Path(midi_dir or HOST_DIR.parent/'midi'))
     runtime=runtime or Application(DeviceRegistry(registry_path) if registry_path else None)
-    peers={}; tasks=set(); loop=None
+    peers={}; peer_locks={}; tasks=set(); loop=None
+    async def send_peer(peer, message):
+        async with peer_locks[peer]: await peer.send_json(message)
     async def send_all(message):
         for peer in list(peers.values()):
-            with contextlib.suppress(Exception): await peer.send_json(message)
+            with contextlib.suppress(Exception): await send_peer(peer,message)
     def emit(message):
         if loop: asyncio.run_coroutine_threadsafe(send_all(message),loop)
     runtime.virtual.emit=emit
+    runtime.service.emit=emit
     async def broadcast():
         while True:
             await send_all({'type':'state','state':await asyncio.to_thread(runtime.snapshot)})
@@ -49,12 +52,15 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
         await asyncio.gather(*workers,return_exceptions=True)
         # Stop barriers need the socket receiver alive; disconnected browsers self-silence.
         with contextlib.suppress(Exception): await asyncio.to_thread(runtime.player.close)
+        runtime.service.shutdown()
         if runtime.real.link: runtime.real.link.close()
         for task in tasks: task.cancel()
     app=FastAPI(lifespan=lifespan)
     app.state.runtime=runtime
     @app.get('/api/state')
     def state(): return runtime.snapshot()
+    @app.get('/api/firmware/events')
+    def firmware_events(): return list(runtime.service.events)
     @app.get('/api/monitor/raw')
     def monitor():
         return {**runtime.snapshot(),'commands':runtime.real.sent,'plan':runtime.plan.report() if runtime.plan else None}
@@ -116,27 +122,30 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 else: raise ValueError('Unknown action')
             async with command_lock:
                 await asyncio.to_thread(perform)
-            await peer.send_json({'type':'ack','requestId':request,'state':await asyncio.to_thread(runtime.snapshot)})
+            await send_peer(peer,{'type':'ack','requestId':request,'state':await asyncio.to_thread(runtime.snapshot)})
         except Exception as exc:
-            with contextlib.suppress(Exception): await peer.send_json({'type':'error','requestId':request,'message':str(exc)})
+            with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':str(exc)})
     command_lock=asyncio.Lock()
     @app.websocket('/ws')
     async def websocket(peer:WebSocket):
         import uuid,time
-        await peer.accept(); owner=uuid.uuid4().hex; peers[owner]=peer
-        await peer.send_json({'type':'hello','session':owner})
+        await peer.accept(); owner=uuid.uuid4().hex; peers[owner]=peer; peer_locks[peer]=asyncio.Lock()
+        async with peer_locks[peer]:
+            await peer.send_json({'type':'hello','session':owner})
+            for event in list(runtime.service.events): await peer.send_json(event)
         try:
             while True:
                 message=await peer.receive_json()
                 if message.get('action')=='audio_ack': runtime.virtual.acknowledge(owner,message.get('token'))
                 elif message.get('action')=='sync':
                     runtime.lab.touch(owner)
-                    await peer.send_json({'type':'sync','sent':message['sent'],'serverTime':time.monotonic()})
+                    await send_peer(peer,{'type':'sync','sent':message['sent'],'serverTime':time.monotonic()})
                 else:
                     task=asyncio.create_task(action(peer,owner,message)); tasks.add(task); task.add_done_callback(tasks.discard)
         except WebSocketDisconnect: pass
         finally:
             peers.pop(owner,None)
+            peer_locks.pop(peer,None)
             if runtime.virtual.owner==owner:
                 # Browser heartbeat watchdog silences scheduled nodes within 500 ms.
                 # Keep owner through STOP timeout; do not claim acknowledgement.

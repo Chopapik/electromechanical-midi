@@ -71,3 +71,7 @@ class PortDetectionTest(unittest.TestCase):
         ports = [SimpleNamespace(device='/dev/cu.usbserial-1', vid=0x10C4, label='CP2102', score=60),
                  SimpleNamespace(device='/dev/cu.usbmodem1', vid=0x2341, label='Uno', score=100)]
         self.assertEqual([p.device for p in esp32_upload_ports(ports)], ['/dev/cu.usbserial-1'])
+
+    def test_silicon_labs_vid_alone_is_not_an_esp32_candidate(self):
+        ports=[SimpleNamespace(device='/dev/cu.silabs-debugger',vid=0x10C4,pid=0x9999)]
+        self.assertEqual(esp32_upload_ports(ports),[])

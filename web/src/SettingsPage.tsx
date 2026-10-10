@@ -1,3 +1,4 @@
+import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
 
@@ -7,6 +8,20 @@ export function SettingsPage({app}:{app:Runtime}){
   const navigate=useNavigate(),s=app.state
   const virtual=s?.output.mode==='VIRTUAL'
   const disabled=!s||!app.connected||s.service.busy
+  const events=app.firmwareEvents??[]
+  const reverseStart=[...events].reverse().findIndex(event=>event.kind==='status'&&event.stage==='prepare')
+  const started=reverseStart<0?-1:events.length-1-reverseStart
+  const current=started>=0?events.slice(started):events
+  const latest=[...current].reverse().find(event=>event.kind==='status')
+  const firmware=s?.service.firmware
+  const stage=latest?.stage??firmware?.stage??'idle'
+  const flash=latest?.flash??firmware?.flash??'idle'
+  const ble=latest?.ble??firmware?.ble??'idle'
+  const progress=latest?latest.progress:firmware?.progress
+  const issue=latest?latest.error:firmware?.error
+  const consoleRef=useRef<HTMLPreElement>(null)
+  useEffect(()=>{if(consoleRef.current)consoleRef.current.scrollTop=consoleRef.current.scrollHeight},[events])
+  const labels:Record<string,string>={idle:'Gotowe',prepare:'Przygotowanie i zatrzymanie odtwarzania',build:'Kompilacja firmware',upload:'Upload przez USB',flash_confirmed:'Potwierdzenie flashowania',reboot_wait:'Restart ESP32',ble_connect:'Nawiązywanie BLE',ble_retry:'Ponawianie połączenia BLE',ready:'Handshake i kontroler gotowy',failed:'Błąd aktualizacji'}
   return <div className="workstation">
     <header className="top-bar settings-top"><div className="settings-shell settings-header">
       <Link to="/" className="settings-back">← Wróć</Link>
@@ -26,9 +41,20 @@ export function SettingsPage({app}:{app:Runtime}){
         <section className="settings-section">
           <h2>Serwis</h2>
           <div className="settings-action">
-            <button disabled={disabled||!s?.service.firmware.available} onClick={()=>void app.send('service',{operation:'firmware'})}>Wgraj firmware ESP32</button>
-            <small>{s?.service.firmware.reason}</small>
+            <button disabled={!app.connected||s?.service.busy||!firmware?.available} onClick={()=>void app.send('service',{operation:'firmware'})}>Wgraj firmware ESP32</button>
+            <small>{firmware?.port?`Port USB: ${firmware.port} · kandydat CP2102 (tożsamość ESP32 potwierdzi upload)`:(firmware?.reason??'Wykrywanie USB…')}</small>
+            {!!firmware?.ports?.length&&firmware.ports.length>1&&<small>Porty: {firmware.ports.join(', ')}</small>}
           </div>
+          {(stage!=='idle'||current.some(event=>event.kind==='log'))&&<section className="firmware-panel" aria-label="Aktualizacja firmware">
+            <h3>Aktualizacja firmware</h3>
+            {flash==='success'&&<p className="firmware-success" role="status">✓ Firmware ESP32 zostało pomyślnie wgrane przez USB.</p>}
+            <p role="status">Etap: {labels[stage]??stage}</p>
+            {progress!=null&&stage==='upload'?<progress aria-label="Postęp uploadu" max="100" value={progress}/>:['prepare','build','upload','reboot_wait','ble_connect','ble_retry'].includes(stage)&&<progress aria-label="Operacja w toku"/>}
+            <p>Flash USB: {flash==='success'?'zakończony pomyślnie':flash==='failed'?'nieudany':flash==='running'?'w toku':'jeszcze nie rozpoczęty'}</p>
+            <p>BLE: {ble==='verified'?'połączono i zweryfikowano handshake':ble==='retrying'?'niedostępne, ponawianie':ble==='connecting'?'łączenie i weryfikacja':ble==='waiting'?'oczekiwanie na restart ESP32':'niezweryfikowane'}</p>
+            {issue&&<p role="alert">{issue}</p>}
+            <pre ref={consoleRef} className="firmware-console" aria-label="Log PlatformIO">{current.filter(event=>event.kind==='log').map(event=>event.line).join('\n')}</pre>
+          </section>}
           <div className="settings-action">
             <button disabled title={s?.service.reset.reason}>Reset ESP32 — niedostępny</button>
             <small>{s?.service.reset.reason}</small>

@@ -891,3 +891,8 @@ select:disabled {
 .top-bar .controls .playback-toggle.is-playing:hover:not(:disabled) {background:#16a34a;color:#052e16;}
 .top-bar .controls .playback-toggle.is-paused {background:#f59e0b;color:#451a03;}
 .top-bar .controls .playback-toggle.is-paused:hover:not(:disabled) {background:#d97706;color:#451a03;}
+.firmware-panel {margin:18px 0;padding:16px;border:1px solid var(--line);display:grid;gap:8px;}
+.firmware-panel h3,.firmware-panel p {margin:0;}
+.firmware-panel progress {width:100%;height:12px;}
+.firmware-panel .firmware-success {padding:12px;border:1px solid #15803d;border-radius:6px;background:#052e16;color:#86efac;font-weight:600;}
+.firmware-console {min-height:140px;max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#090909;color:#d4d4d4;padding:12px;font:11px/1.5 ui-monospace,SFMono-Regular,monospace;}
