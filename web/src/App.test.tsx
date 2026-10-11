@@ -46,3 +46,8 @@ it('restores the footer status and Settings trigger below the centered instrumen
  expect(footer.contains(screen.getByRole('link',{name:'Settings'}))).toBe(true)
  expect(screen.getByRole('main').contains(screen.getByRole('article',{name:'FDD #1'}))).toBe(true)
 })
+
+it('sends arrangement preset selection to the runtime',()=>{
+ mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_quality'})
+})

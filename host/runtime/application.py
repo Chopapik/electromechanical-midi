@@ -26,10 +26,27 @@ class Application:
             self.player.load(timeline)
             self.lab.session=None
             self.source=source; self.plan=plan; self.timeline=timeline; self.revision+=1
+    def set_preset(self, preset):
+        if preset not in ('balanced','fdd_quality'): raise ValueError('Unknown arrangement preset')
+        with self.player.lock:
+            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            self.player.stop()  # STOP confirmation/cancellation precedes any planning.
+            parameters=self.registry.document.setdefault('parameters',{})
+            old=parameters.get('arrangementPreset','balanced')
+            parameters['arrangementPreset']=preset
+            try:
+                if self.source:
+                    plan=arrange(self.source,self.registry);timeline=compile_plan(plan)
+                    self.player.load(timeline)
+                    self.plan=plan;self.timeline=timeline;self.lab.session=None
+                self.revision+=1
+            except Exception:
+                parameters['arrangementPreset']=old
+                raise
     def orchestra(self):
         self.player.select_owner('orchestra'); self.lab.session=None
         if self.timeline: self.player.load(self.timeline)
     def snapshot(self):
         return {**self.player.snapshot(),'file':self.source.path.name if self.source else None,
-                'revision':self.revision,'devices':self.registry.catalog(),'service':self.service.status(),
+                'revision':self.revision,'arrangementPreset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced'),'devices':self.registry.catalog(),'service':self.service.status(),
                 'audioOwner':self.virtual.owner}

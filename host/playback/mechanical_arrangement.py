@@ -84,8 +84,14 @@ def add_unison(plan, profiles, priority):
         and e.velocity>=policy['fddUnisonMinVelocity']
         and .04<=e.actual_duration<=policy['fddUnisonMaxDurationMs']/1000.],
         key=lambda e:(e.actual_start,-priority(e),e.id))
+    from . import fdd_quality as quality
+    quality_mode=quality.enabled(policy)
     added = []; rejected = 0
     for source in candidates:
+        value=source.hardware.get('candidates',{}).get(source.device_id,{}).get('musical',{}).get('fddQuality',{})
+        if quality_mode and (value.get('musicalValue',0)<policy['fddQualityUnisonPriority'] or
+            sum(e.duration for e in added)+source.actual_duration>plan.duration*policy['fddQualityUnisonDuty']):
+            continue
         existing = [e for e in plan.reinforcements if e.source_id==source.id and profiles.get(e.device_id)
                     and profiles[e.device_id].name=='FDD']
         if existing: continue
@@ -100,6 +106,16 @@ def add_unison(plan, profiles, priority):
                 rejected += 1; continue
             if any(e.start < source.end-1e-9 and e.start+e.duration > source.actual_start+1e-9 for e in extras):
                 rejected += 1; continue
+            if quality_mode:
+                state=HardwareDeviceState();history=[]
+                prior=[(e.actual_start,e.actual_duration,e.played_hz) for e in primaries[ident] if e.end<=source.actual_start]
+                prior += [(e.start,e.duration,e.hz) for e in extras if e.start+e.duration<=source.actual_start]
+                for start,duration,hz in sorted(prior):
+                    note=HardwareNote(hz,duration,start);ev=evaluate(profiles[ident],note,state)
+                    advance_state(state,profiles[ident],note,ev)
+                    quality.reserve(history,start,duration,(ev.step_rate or 0)*duration,policy['fddQualityRestMs']/1000.)
+                cost=quality.mechanical_cost(profiles[ident],state,source.played_hz,source.actual_duration,source.actual_start,history,policy)
+                if cost['cost']>policy['fddQualityOptionalCost']: continue
             combined = _chronology(profiles[ident],primaries[ident],extras+[dub])
             if combined is None or any(combined[e.id].score+1e-8<baseline[ident][e.id].score for e in primaries[ident]):
                 rejected += 1; continue

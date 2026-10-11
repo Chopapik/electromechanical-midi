@@ -57,6 +57,8 @@ BALANCED = {
     'capacitySafety': 1.15,
 }
 
+from .fdd_quality import DEFAULTS as FDD_QUALITY_DEFAULTS
+BALANCED.update(FDD_QUALITY_DEFAULTS)
 _POLICY_KEYS = frozenset(BALANCED)
 
 
@@ -167,6 +169,14 @@ def parse_policy(payload: dict | None) -> dict:
 
         policy[key] = value
 
+    if policy['arrangementPreset'] not in ('balanced','fdd_quality'):
+        raise ValueError('Unknown arrangement preset')
+    for key in FDD_QUALITY_DEFAULTS:
+        if key=='arrangementPreset': continue
+        policy[key]=float(policy[key])
+        if not 0 < policy[key] < float('inf'): raise ValueError('Invalid '+key)
+    for key in ('fddQualityDensity','fddQualityOptionalPriority','fddQualityUnisonPriority','fddQualityUnisonDuty'):
+        if policy[key]>1: raise ValueError('Invalid '+key)
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
                    'leadMaxMicroDelayMs', 'capacitySafety',
                    'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',

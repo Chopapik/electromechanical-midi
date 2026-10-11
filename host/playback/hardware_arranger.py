@@ -100,6 +100,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             policy['leadMaxNoteSeconds'] = _adaptive_cap(notes, lead or accompaniment, policy, frozenset({LEAD}))
     from .mechanical_arrangement import phrase_context, preference, add_unison
     phrases = phrase_context(notes, policy['mechanicalPhraseWindowMs']/1000.)
+    from . import fdd_quality as quality
+    quality_mode=quality.enabled(policy)
+    values=quality.musical_values(notes,phrases,source) if quality_mode else {}
+    quality_history={ident:[] for ident in profiles}
     last_part = {}; decisions = {}; priorities = {i['id']: i['priority'] for i in notes}
     events = []; attempts = {}; requested = Counter(); denied = Counter(); rejected = {d: Counter() for d in slots}
     for item in notes:
@@ -130,11 +134,25 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                     fold = fold_for_profile(shifted, slot.capability.min_hz, slot.capability.max_hz, policy['foldMode'], profile)
                     played = fold.midi_note + 12 * fold.octave_shift; hz = fold.hz; folded = bool(fold.octave_shift)
                 else: played = shifted; hz = midi_to_hz(shifted); folded = False
+            quality_detail=None
+            if quality_mode and profile.name=='FDD' and all(profile.get(k) is not None for k in ('pitchRatio','travelSteps','reversalIntervalMs')):
+                duration=max(slot.capability.min_note_s,quality.target_duration(duration,values[item['id']],policy))
+                quality_detail={**values[item['id']],**quality.mechanical_cost(profile,state,hz,duration,span.start,quality_history[ident],policy)}
             note = HardwareNote(hz, duration, span.start)
             ev = evaluate(profile, note, state)
             bonus, musical = preference(item, profile, phrases[item['id']], policy,
                 last_part.get((item['track'], span.channel)) == ident)
+            if quality_detail:
+                wait=max(span.start,ev.ready_at,slot.busy_until)-span.start
+                window=(policy['leadMaxMicroDelayMs'] if role==LEAD else policy['maxArpeggioMs'])/1000.
+                quality_detail['withoutQualityScore']=ev.score+bonus-wait*2.-(.15 if folded else 0.)
+                quality_detail['availableWithoutQuality']=ev.authorized and wait<=window+1e-9
+                bonus-=quality_detail['cost']*policy['fddQualityCostWeight']
+                musical={**musical,'fddQuality':quality_detail,'reason':'FDD Quality: musical value vs head movement cost'}
             diagnostics[ident] = {**ev.as_dict(), 'musical': musical}
+            if quality_detail and not quality_detail['important'] and quality_detail['musicalValue']<policy['fddQualityOptionalPriority'] and quality_detail['cost']>policy['fddQualityOptionalCost']:
+                diagnostics[ident]['reasons'].append('FDD_QUALITY_OPTIONAL_COST')
+                continue
             if not ev.authorized or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load):
                 denied[ident] += 1
                 for reason in ev.reasons: rejected[ident][reason] += 1
@@ -185,12 +203,22 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                       'PHYSICAL_UNKNOWN' if any(not v['authorized'] for v in diagnostics.values()) else 'TIMING_CONFLICT')
             event = _dropped(item, reason, role, pin.device_id if pin else None, pin)
             events.append(dataclasses.replace(event, hardware={'candidates': diagnostics})); continue
-        _, slot, played, hz, folded, duration, arrival = min(candidates, key=lambda c: c[0])
+        selected_key, slot, played, hz, folded, duration, arrival = min(candidates, key=lambda c: c[0])
         preferred = pin.device_id if pin and pin.device_id else slot.device.id
         outcome = ('ARPEGGIATED' if arrival - span.start > policy['maxMicroDelayMs']/1000. else
                    'DELAYED') if arrival > span.start+1e-9 else 'REASSIGNED' if preferred != slot.device.id else 'ACCEPTED'
+        if quality_mode and slot.device.type=='FDD' and duration<span.duration*(pin.gate if pin else 1.)-1e-9:
+            outcome='SHORTENED'
         _place(slot, _Candidate(slot, played, hz, folded), item, outcome, arrival, duration, role, pin, preferred, events)
         decisions[item['id']] = diagnostics[slot.device.id]['musical']
+        if quality_mode:
+            alternatives={d:v['musical']['fddQuality'] for d,v in diagnostics.items() if 'fddQuality' in v['musical']
+                and v['musical']['fddQuality']['availableWithoutQuality']
+                and v['musical']['fddQuality']['withoutQualityScore']>-selected_key[0]+1e-9}
+            if slot.device.type=='DVD_SLED' and alternatives:
+                decisions[item['id']]['fddQualityAlternatives']=alternatives
+            if slot.device.type=='FDD':
+                quality.reserve(quality_history[slot.device.id],arrival,duration,decisions[item['id']]['fddQuality']['steps'],policy['fddQualityRestMs']/1000.)
         last_part[(item['track'], span.channel)] = slot.device.id
         note = HardwareNote(hz, duration, arrival)
         ev = evaluate(profiles[slot.device.id], note, states[slot.device.id])

@@ -100,6 +100,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
                 p=runtime.player
                 if operation=='set_file': runtime.load(library.resolve(message['file']))
+                elif operation=='arrangement_preset': runtime.set_preset(message['preset'])
                 elif operation=='play':
                     if runtime.router.mode=='VIRTUAL':
                         if runtime.virtual.active and runtime.virtual.owner!=owner: raise ValueError('Web Audio jest używane przez inną przeglądarkę')

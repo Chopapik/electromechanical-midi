@@ -174,7 +174,8 @@
     "mechanicalAware": true,
     "dvdSustainThresholdMs": 500.0,
     "fddUnisonEnabled": true,
-    "fddUnisonMaxVoices": 2
+    "fddUnisonMaxVoices": 2,
+    "arrangementPreset": "balanced"
   },
   "dvdMode": "independent",
   "idleReinforcement": {

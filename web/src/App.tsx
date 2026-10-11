@@ -51,7 +51,7 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
       <p>{s?.devices.find(d=>d.id===device)?.continuousRotation?'Ciągły ruch do przodu · bez limitu drogi i pasm Hz':s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
     </section>}
     <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
-    {!lab&&<ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>}
+    {!lab&&<ArrangementPreview revision={s?.revision??0} file={s?.file??null} preset={s?.arrangementPreset??'balanced'} disabled={disabled} onPreset={preset=>void app.send('arrangement_preset',{preset})}/>}
     </main>
     <footer className="workstation-status"><div className="workstation-status-content">
       <span role="status" className={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'arduino-connected':''}><Circle size={10} weight={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'fill':'regular'} aria-hidden="true"/> {!app.connected?'Brak połączenia z backendem':s?.output.message}</span>

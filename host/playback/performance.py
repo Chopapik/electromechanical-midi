@@ -237,7 +237,10 @@ class PerformancePlan:
 
     def report(self) -> dict:
         report = build_report(self)
-        if self.hardware: report['hardware'] = self.hardware
+        if self.hardware:
+            report['hardware'] = self.hardware
+            from .fdd_quality import diagnostics
+            report['fddQuality'] = diagnostics(self)
         if self.strict_report: report['strictTracks'] = self.strict_report
         return report
 

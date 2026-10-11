@@ -30,3 +30,13 @@ describe('Arrangement plan preview',()=>{
   await open();expect((await screen.findByRole('alert')).textContent).toContain('Nie można pobrać planu')
  })
 })
+
+it('selects FDD Quality and displays mechanical diagnostics',async()=>{
+ const onPreset=vi.fn()
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({events:[],reinforcements:[],report:{totals:{played:20,dropped:3},fddQuality:{fddNotes:12,fddSeconds:2.4,estimatedSteps:600,estimatedReversals:8,omittedNotes:3,dvdTakeovers:4,unisonEvents:1}}})}))
+ render(<ArrangementPreview revision={1} file="song.mid" preset="balanced" onPreset={onPreset}/>);await open()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality'}})
+ expect(onPreset).toHaveBeenCalledWith('fdd_quality')
+ expect(screen.getByLabelText('Diagnostyka FDD').textContent).toContain('12 nut · 2.40 s aktywności · ~600 kroków · ~8 zawróceń')
+ expect(screen.getByLabelText('Diagnostyka FDD').textContent).toContain('4 nut przejętych przez DVD')
+})
