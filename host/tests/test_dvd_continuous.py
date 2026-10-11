@@ -21,10 +21,11 @@ class ContinuousDvdTests(unittest.TestCase):
             profile=self.registry.profile(f'DVD_STEPPER_{ident}')
             self.assertTrue(profile.get('continuousRotation'))
             self.assertIn('PROFILE 0 ',execution_command(profile,f'sled:{ident}'))
-            for hz in (10,49,150,220,490,1200,8000,10000):
+            maximum=10000*profile.get('pitchRatio')
+            for hz in (10,49,150,220,490,1200,maximum):
                 with self.subTest(ident=ident,hz=hz):
                     self.assertTrue(evaluate(profile,HardwareNote(hz,.5,0)).authorized)
-            self.assertFalse(evaluate(profile,HardwareNote(10001,.5,0)).authorized)
+            self.assertFalse(evaluate(profile,HardwareNote(maximum+1,.5,0)).authorized)
     def test_projection_moves_past_old_travel_limit_without_reversing(self):
         state=HardwareDeviceState(position=139.)
         advance_sled(state,self.registry.profile('DVD_STEPPER_1'),1000,2)

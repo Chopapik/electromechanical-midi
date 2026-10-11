@@ -119,6 +119,7 @@ int main(int argc,char** argv){
   d.command("SLED 1 DIR REV");d.command("SLED 1 PLAY 280");nextPhase(0);assert(s.position==69&&s.phase==3&&((io.previous>>8)&15)==9);
   d.command("SLED 1 DIR FWD");runFor(100000);assert(s.currentStepRate>0&&s.position>69);
  }else if(c=="sled_ramp"){
+  d.command("SLED 1 PROFILE 0 5000 1");
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PLAY 300");auto& s=d.sled[0];s.position=70;d.tick();float previous=0;
   for(int n=0;n<250;++n){uint32_t before=io.now;io.now+=100;d.tick();float dt=(io.now-before)/1000000.f;
    assert(s.currentStepRate-previous<=s.accelerationLimit*dt+.01f);assert(s.currentStepRate<=300);previous=s.currentStepRate;
@@ -180,9 +181,26 @@ int main(int argc,char** argv){
   assert(d.sled[0].targetStepRate==100);d.command("SLED 1 STOP");
   d.command("SLED 1 PROFILE 140 5000 0.001");
   assert(!strcmp(d.command("SLED 1 PLAY 100"),"ERR VALUE"));
+ }else if(c=="sled_calibration"){
+  for(int id=0;id<4;++id){
+   auto& s=d.sled[id];assert(s.pitchRatio==(id<3?.5f:1.f));assert(s.softMax==0);
+   char cmd[60];snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",id+1);d.command(cmd);
+   for(int hz: {200,500}){
+    snprintf(cmd,sizeof(cmd),"SLED %d PLAY %d",id+1,hz);assert(!strcmp(d.command(cmd),"OK"));
+    assert(s.hz==hz);assert(s.targetStepRate==hz/s.pitchRatio);
+    assert(s.period==uint32_t(1000000.f/(hz/s.pitchRatio)));
+    runFor(300000);assert(s.currentStepRate==s.targetStepRate&&s.forward);
+    snprintf(cmd,sizeof(cmd),"SLED %d STOP",id+1);d.command(cmd);assert(!s.playing&&s.currentStepRate==0);
+   }
+  }
+  // Existing firmware defaults can be overridden without rebuilding/flashing.
+  d.command("SLED 1 PROFILE 0 5000 1");d.command("SLED 1 PLAY 200");assert(d.sled[0].targetStepRate==200);
+  d.command("SLED 1 STOP");assert(!strcmp(d.command("SLED 1 PROFILE 0 5000 0.5"),"OK"));
+  d.command("SLED 1 PLAY 200");assert(d.sled[0].targetStepRate==400);
+  d.command("SLED 1 STOP");assert(!strcmp(d.command("SLED 1 PLAY 5001"),"ERR VALUE"));
  }else if(c=="sled_continuous"){
   d.command("SLED 1 ENABLE 1");auto& s=d.sled[0];assert(s.softMax==0);
-  for(int hz: {10,150,220,490,1200,8000}){
+  for(int hz: {10,150,220,490,1200,5000}){
    char cmd[40];snprintf(cmd,sizeof(cmd),"SLED 1 PLAY %d",hz);assert(!strcmp(d.command(cmd),"OK"));d.command("SLED 1 STOP");
   }
   assert(!strcmp(d.command("SLED 1 PLAY 10001"),"ERR VALUE"));
@@ -235,7 +253,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

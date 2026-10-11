@@ -16,7 +16,7 @@ from test_hardware_profiles import quantity
 class Dvd1CalibrationTests(unittest.TestCase):
     def setUp(self):
         self.registry = HardwareRegistry()
-        self.profile = self.registry.effective('DVD_SLED', 'sled:1', {'continuousRotation':quantity(False)})
+        self.profile = self.registry.effective('DVD_SLED', 'sled:1', {'pitchRatio':quantity(1.),'continuousRotation':quantity(False)})
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
 
@@ -56,7 +56,7 @@ class Dvd1CalibrationTests(unittest.TestCase):
         config=default_orchestra(fdd_count=1,dvd_count=1,hdd_count=0,tray_count=0)
         for d in config.devices:
             d['mode']='real'
-            if d['type']=='DVD_SLED':d['hardware_overrides']={'continuousRotation':quantity(False)}
+            if d['type']=='DVD_SLED':d['hardware_overrides']={'pitchRatio':quantity(1.),'continuousRotation':quantity(False)}
         config.policy.update(mechanicalSustain=False,sourceContinuity=False)
         return config
 
@@ -75,14 +75,14 @@ class Dvd1CalibrationTests(unittest.TestCase):
     def test_no_octave_reassigns_or_drops_and_manual_no_fold_rejects(self):
         source=MidiSource(write_tracks(Path(self.tmp.name)/'a.mid',[('Guitar',0,[(0,.5,57)])]))
         config=self.config();dvd=next(d for d in config.devices if d['type']=='DVD_SLED')
-        dvd['hardware_overrides']={'continuousRotation':quantity(False),'musicalStepRate':quantity([200,260])}
+        dvd['hardware_overrides']={'pitchRatio':quantity(1.),'continuousRotation':quantity(False),'musicalStepRate':quantity([200,260])}
         pin={'1:0':ManualPin(rule_id='test',device_id=dvd['id'])}
         plan=allocate(source,config,hardware_context=HardwareContext(True,inventory={'sled:1':True,'fdd:1':True}),pins=pin)
         self.assertEqual(plan.events[0].device_type,'FDD')
         self.assertTrue(plan.events[0].reassigned)
         plan=allocate(source,config,hardware_context=HardwareContext(True,inventory={'sled:1':True}),pins=pin)
         self.assertFalse(plan.events[0].played)
-        dvd['hardware_overrides']={'continuousRotation':quantity(False)}
+        dvd['hardware_overrides']={'pitchRatio':quantity(1.),'continuousRotation':quantity(False)}
         plan=allocate(source,config,hardware_context=HardwareContext(True,inventory={'sled:1':True}),pins={'1:0':ManualPin(rule_id='test',device_id=dvd['id'],octave_fold=False)})
         self.assertFalse(plan.events[0].played)
 

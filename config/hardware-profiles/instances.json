@@ -114,6 +114,17 @@
           "source": "outer envelope derived from individual DVD1 measured allowedBandsHz; gaps remain forbidden",
           "evidenceType": "DERIVED",
           "confidence": "MEDIUM"
+        },
+        "pitchRatio": {
+          "value": 0.5,
+          "unit": "acoustic Hz / steps per second",
+          "uncertainty": {
+            "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+            "quantitativeError": null
+          },
+          "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
         }
       }
     },
@@ -276,6 +287,17 @@
           "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
           "evidenceType": "FACT",
           "confidence": "MEDIUM"
+        },
+        "pitchRatio": {
+          "value": 0.5,
+          "unit": "acoustic Hz / steps per second",
+          "uncertainty": {
+            "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+            "quantitativeError": null
+          },
+          "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
         }
       }
     },
@@ -290,6 +312,17 @@
           "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
           "evidenceType": "FACT",
           "confidence": "MEDIUM"
+        },
+        "pitchRatio": {
+          "value": 0.5,
+          "unit": "acoustic Hz / steps per second",
+          "uncertainty": {
+            "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+            "quantitativeError": null
+          },
+          "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
         }
       }
     },
