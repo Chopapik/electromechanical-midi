@@ -1,0 +1,50 @@
+{
+  "0005-05-radiohead_1993-thinking_about_you.mid": {
+    "balanced": {
+      "fingerprint": "0c876c621a8ce3a4ae5c9a6c1de53f49b1cccc4e718a47a775b49b1e929a9336"
+    },
+    "fdd_quality": {
+      "fingerprint": "78aa5b7a12e0e4f57ab464149bb515ea4336f6c63e01d4d21060c26537c04b82"
+    }
+  },
+  "0016-08-radiohead_1994-creep_(acoustic).mid": {
+    "balanced": {
+      "fingerprint": "a4da6c25e1e014f8d6ff665d9a6a7681ba5ef342a52166edbc1e5bef48c7cd4a"
+    },
+    "fdd_quality": {
+      "fingerprint": "823f79a85e184d7ce12f19e2c9ac8792a2594865a6e0a6303fbeca3bb2b8cf1b"
+    }
+  },
+  "0068-06-radiohead-2003-where_i_end_and_you_begin.mid": {
+    "balanced": {
+      "fingerprint": "ac9c2f7a0cbb27cfd31e3ac3541adf4ec0af9121e595feab0f272d364451a51d"
+    },
+    "fdd_quality": {
+      "fingerprint": "f73b42166404a7d3b2d3c75f4a9614500667a318faf6d2badb0c5923a06b8851"
+    }
+  },
+  "0087-09-radiohead_2007-jigsaw_falling_into_place.mid": {
+    "balanced": {
+      "fingerprint": "8ca2b2bca3b9acd6dce3a0b9668d81b257b407075d2e9c4303cb4644c2c4dbe6"
+    },
+    "fdd_quality": {
+      "fingerprint": "dc9429671e48cec216162eefcdcd5d12a0fc2a6035ccc43fb93fe8845539dc95"
+    }
+  },
+  "0032-01-radiohead_1997-airbag-[k].mid": {
+    "balanced": {
+      "fingerprint": "fa8bdc37113372ee851ebeed209a2110a1e4ac527c84ed297f956d922f2c80c9"
+    },
+    "fdd_quality": {
+      "fingerprint": "597f736e287bec032fe584b411105ca54337753a3a51beb382588c0f684352d4"
+    }
+  },
+  "0063-01-radiohead_2003-2+2=5-[k].mid": {
+    "balanced": {
+      "fingerprint": "c4bccaa938fde0999ee6a35362d74b7b8fbc18a7007bde389d7b3f69dbfc5dfa"
+    },
+    "fdd_quality": {
+      "fingerprint": "44e7aa420738a83cdd88573e588d97a3605b805639786fdff8983043931efa56"
+    }
+  }
+}

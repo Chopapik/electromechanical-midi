@@ -5,6 +5,7 @@ Counters describe PLANNED commands, not verified movement or audible notes.
 """
 from __future__ import annotations
 import dataclasses
+import bisect
 from collections import Counter
 
 from pitch import fold_note, midi_to_hz
@@ -101,9 +102,12 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .mechanical_arrangement import phrase_context, preference, add_unison
     phrases = phrase_context(notes, policy['mechanicalPhraseWindowMs']/1000.)
     from . import fdd_quality as quality
+    from . import dvd_lead
+    low_mode=dvd_lead.enabled(policy)
     quality_mode=quality.enabled(policy)
-    values=quality.musical_values(notes,phrases,source) if quality_mode else {}
+    values=quality.musical_values(notes,phrases,source) if quality_mode or low_mode else {}
     quality_history={ident:[] for ident in profiles}
+    protected_starts=sorted(n['span'].start for n in notes if n['role'] in (LEAD,BASS)) if low_mode else []
     last_part = {}; decisions = {}; priorities = {i['id']: i['priority'] for i in notes}
     events = []; attempts = {}; requested = Counter(); denied = Counter(); rejected = {d: Counter() for d in slots}
     for item in notes:
@@ -111,7 +115,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         if pin is not None and pin.device_id is None:
             events.append(_dropped(item, 'MANUAL_DROP', role, None, pin)); continue
         pool = ([s for s in slots.values() if profiles[s.device.id].name == 'HDD_PERCUSSION']
-                if role == PERCUSSION else lead if role == LEAD and lead else accompaniment)
+                if role == PERCUSSION else lead if role == LEAD and lead and not low_mode else accompaniment)
         candidates = []; diagnostics = {}; blocked_candidates = []
         for slot in pool:
             device = slot.device; ident = device.id; profile = profiles[ident]; state = states[ident]
@@ -121,6 +125,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                              'leadMaxNoteSeconds' if role == LEAD else 'maxNoteSeconds')
             if policy['mechanicalAware'] and profile.name == 'DVD_SLED' and profile.get('continuousRotation'):
                 duration = max(span.duration * gate, slot.capability.min_note_s)
+            if low_mode and profile.name in ('FDD','DVD_SLED'):
+                duration=max(span.duration * gate, slot.capability.min_note_s)
             if profile.name == 'HDD_PERCUSSION':
                 played = None; hz = None; folded = False
                 stages=[profile.get(k) for k in ('parkMs','settleMs','strikeMs')]
@@ -130,18 +136,36 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             else:
                 transpose = device.transpose + (pin.transpose if pin else 0)
                 shifted = span.note + transpose
-                if pin is None or pin.octave_fold:
+                if low_mode and profile.name=='FDD':
+                    played,hz,folded=dvd_lead.fdd_pitch(shifted,slot.capability.min_hz,slot.capability.max_hz)
+                elif low_mode and profile.name=='DVD_SLED':
+                    played=shifted;hz=midi_to_hz(shifted);folded=False
+                elif pin is None or pin.octave_fold:
                     fold = fold_for_profile(shifted, slot.capability.min_hz, slot.capability.max_hz, policy['foldMode'], profile)
                     played = fold.midi_note + 12 * fold.octave_shift; hz = fold.hz; folded = bool(fold.octave_shift)
                 else: played = shifted; hz = midi_to_hz(shifted); folded = False
             quality_detail=None
-            if quality_mode and profile.name=='FDD' and all(profile.get(k) is not None for k in ('pitchRatio','travelSteps','reversalIntervalMs')):
-                duration=max(slot.capability.min_note_s,quality.target_duration(duration,values[item['id']],policy))
+            if (quality_mode or low_mode) and profile.name=='FDD' and all(profile.get(k) is not None for k in ('pitchRatio','travelSteps','reversalIntervalMs')):
+                if quality_mode:
+                    duration=max(slot.capability.min_note_s,quality.target_duration(duration,values[item['id']],policy))
                 quality_detail={**values[item['id']],**quality.mechanical_cost(profile,state,hz,duration,span.start,quality_history[ident],policy)}
             note = HardwareNote(hz, duration, span.start)
             ev = evaluate(profile, note, state)
             bonus, musical = preference(item, profile, phrases[item['id']], policy,
                 last_part.get((item['track'], span.channel)) == ident)
+            if low_mode and profile.name in ('FDD','DVD_SLED'):
+                value=values[item['id']]
+                bonus=(4. + value['musicalValue'] + (.3 if span.duration>.5 else 0.)) if profile.name=='DVD_SLED' else .2
+                bonus+=policy['partContinuityWeight'] if last_part.get((item['track'],span.channel))==ident else 0.
+                musical={**musical,**value,'reason':'DVD main voice / selective low FDD fallback'}
+                if profile.name=='FDD':
+                    musical['lowFdd']={'semitones':played-shifted,'lowered':folded,'rangeFallback':not folded,'originalMidi':span.note,'performedMidi':played}
+                # Optional sustain must leave space for upcoming lead/bass attacks.
+                upcoming=bisect.bisect_right(protected_starts,span.start)
+                if profile.name=='DVD_SLED' and not value['important'] and upcoming<len(protected_starts) and protected_starts[upcoming]<span.start+duration:
+                    diagnostics[ident]={**evaluate(profile,HardwareNote(hz,duration,span.start),state).as_dict(),'musical':musical}
+                    diagnostics[ident]['reasons'].append('DVD_RESERVED_FOR_MAIN_PHRASE')
+                    continue
             if quality_detail:
                 wait=max(span.start,ev.ready_at,slot.busy_until)-span.start
                 window=(policy['leadMaxMicroDelayMs'] if role==LEAD else policy['maxArpeggioMs'])/1000.
@@ -167,7 +191,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                     blocked_candidates.append((slot, played, hz, folded, duration))
                 continue
             key = selection_key(ev, profile, ident)
-            if policy['mechanicalAware'] and profile.name in ('FDD', 'DVD_SLED'):
+            if (policy['mechanicalAware'] or low_mode) and profile.name in ('FDD', 'DVD_SLED'):
                 # Waiting and octave displacement also cost musical fidelity.
                 key = (key[0]-bonus+(arrival-span.start)*2.+(.15 if folded else 0.), *key[1:])
             candidates.append((key, slot, played, hz, folded, duration, arrival))
@@ -217,6 +241,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 and v['musical']['fddQuality']['withoutQualityScore']>-selected_key[0]+1e-9}
             if slot.device.type=='DVD_SLED' and alternatives:
                 decisions[item['id']]['fddQualityAlternatives']=alternatives
+        if quality_mode or low_mode:
             if slot.device.type=='FDD':
                 quality.reserve(quality_history[slot.device.id],arrival,duration,decisions[item['id']]['fddQuality']['steps'],policy['fddQualityRestMs']/1000.)
         last_part[(item['track'], span.channel)] = slot.device.id

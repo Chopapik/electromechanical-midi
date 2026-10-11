@@ -40,3 +40,12 @@ it('selects FDD Quality and displays mechanical diagnostics',async()=>{
  expect(screen.getByLabelText('Diagnostyka FDD').textContent).toContain('12 nut · 2.40 s aktywności · ~600 kroków · ~8 zawróceń')
  expect(screen.getByLabelText('Diagnostyka FDD').textContent).toContain('4 nut przejętych przez DVD')
 })
+
+it('selects DVD Lead and displays octave and range diagnostics',async()=>{
+ const onPreset=vi.fn()
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({events:[],reinforcements:[],report:{totals:{played:10,dropped:2},dvdLeadLowFdd:{dvdNotes:8,octaveLowered:2,octaveRangeFallback:1,shortenedNotes:0}}})}))
+ render(<ArrangementPreview revision={1} file="song.mid" onPreset={onPreset}/>);await open()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'dvd_lead_low_fdd'}})
+ expect(onPreset).toHaveBeenCalledWith('dvd_lead_low_fdd')
+ expect(screen.getByLabelText('Diagnostyka DVD Lead').textContent).toContain('DVD: 8 nut · FDD −12: 2 nut · bez obniżenia (zakres): 1 · skrócone: 0')
+})

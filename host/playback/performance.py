@@ -241,6 +241,9 @@ class PerformancePlan:
             report['hardware'] = self.hardware
             from .fdd_quality import diagnostics
             report['fddQuality'] = diagnostics(self)
+            if self.policy.get('arrangementPreset')=='dvd_lead_low_fdd':
+                from .dvd_lead import diagnostics as low_diagnostics
+                report['dvdLeadLowFdd']=low_diagnostics(self)
         if self.strict_report: report['strictTracks'] = self.strict_report
         return report
 

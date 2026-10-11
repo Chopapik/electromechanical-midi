@@ -85,12 +85,14 @@ def add_unison(plan, profiles, priority):
         and .04<=e.actual_duration<=policy['fddUnisonMaxDurationMs']/1000.],
         key=lambda e:(e.actual_start,-priority(e),e.id))
     from . import fdd_quality as quality
-    quality_mode=quality.enabled(policy)
+    quality_mode=quality.enabled(policy) or policy.get('arrangementPreset')=='dvd_lead_low_fdd'
     added = []; rejected = 0
     for source in candidates:
         value=source.hardware.get('candidates',{}).get(source.device_id,{}).get('musical',{}).get('fddQuality',{})
         if quality_mode and (value.get('musicalValue',0)<policy['fddQualityUnisonPriority'] or
             sum(e.duration for e in added)+source.actual_duration>plan.duration*policy['fddQualityUnisonDuty']):
+            continue
+        if policy.get('arrangementPreset')=='dvd_lead_low_fdd' and value.get('cost',float('inf'))>policy['fddQualityOptionalCost']:
             continue
         existing = [e for e in plan.reinforcements if e.source_id==source.id and profiles.get(e.device_id)
                     and profiles[e.device_id].name=='FDD']

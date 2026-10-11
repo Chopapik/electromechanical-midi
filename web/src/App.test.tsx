@@ -51,3 +51,8 @@ it('sends arrangement preset selection to the runtime',()=>{
  mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_quality'})
 })
+
+it('sends DVD Lead preset selection to the runtime',()=>{
+ mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'dvd_lead_low_fdd'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'dvd_lead_low_fdd'})
+})
