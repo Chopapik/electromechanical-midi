@@ -5,7 +5,6 @@ import {useRuntime} from './runtime'
 import {MidiFileSelector} from './components/MidiFileSelector'
 import {PlayerControls} from './components/PlayerControls'
 import {InstrumentGrid} from './components/InstrumentGrid'
-import {ArrangementPreview} from './components/ArrangementPreview'
 import {ProgressBar} from './components/ProgressBar'
 import {SettingsPage} from './SettingsPage'
 
@@ -21,7 +20,7 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
   const s=app.state
   const [device,setDevice]=useState(''),[hz,setHz]=useState(200),[duration,setDuration]=useState(1)
   const virtual=s?.output.mode==='VIRTUAL',lab=s?.owner==='lab'
-  const disabled=!s||!app.connected||s.service.busy
+  const disabled=!s||!app.connected||s.service.busy||!!app.midiLoading
   const canPlay=!disabled&&!!s?.file&&(virtual||!!s?.output.connected)&&!s?.output.unknown
   return <div className="workstation">
     <header className="top-bar"><div className="top-bar-content">
@@ -29,12 +28,12 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
         <h1>Laboratory · debug</h1>
         <button onClick={()=>void app.send('lab_leave')}>Wróć do Orkiestry</button>
       </>:<>
-        <ProgressBar position={s?.position??0} duration={s?.duration??0} playing={s?.state==='playing'} onSeek={position=>void app.send('seek',{position})}/>
+        <ProgressBar position={s?.position??0} duration={s?.duration??0} playing={s?.state==='playing'} loading={!!app.midiLoading} onSeek={position=>void app.send('seek',{position})}/>
         <div className="top-bar-main">
           <div className="top-bar-playback">
             <PlayerControls state={s?.state??'stopped'} disabled={!canPlay} loading={s?.service.busy} onRestart={()=>void app.send('seek',{position:0})} onToggle={()=>void app.send(s?.state==='playing'?'pause':'play')} onStop={()=>void app.send('stop')}/>
           </div>
-          <MidiFileSelector selected={s?.file??null} onUpload={file=>void app.upload(file)}/>
+          <MidiFileSelector selected={s?.file??null} loading={app.midiLoading} onUpload={file=>void app.upload(file)}/>
         </div>
       </>}
     </div></header>
@@ -50,7 +49,6 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
       <p>{s?.devices.find(d=>d.id===device)?.continuousRotation?'Ciągły ruch do przodu · bez limitu drogi i pasm Hz':s?.devices.find(d=>d.id===device)?.bands.map(b=>`${b[0]}–${b[1]} Hz`).join(', ')}</p>
     </section>}
     <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
-    {!lab&&<ArrangementPreview revision={s?.revision??0} file={s?.file??null} preset={s?.arrangementPreset??'balanced'} disabled={disabled} onPreset={preset=>void app.send('arrangement_preset',{preset})}/>}
     </main>
     <StatusFooter app={app}/>
   </div>

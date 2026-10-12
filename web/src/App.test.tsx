@@ -48,12 +48,12 @@ it('restores the footer status and Settings trigger below the centered instrumen
 })
 
 it('sends arrangement preset selection to the runtime',()=>{
- mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality'}})
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_quality'})
 })
 
 it('sends DVD Lead preset selection to the runtime',()=>{
- mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'dvd_lead_low_fdd'}})
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'dvd_lead_low_fdd'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'dvd_lead_low_fdd'})
 })
 
@@ -74,4 +74,14 @@ it('distinguishes ordinary offline from an unconfirmed hardware stop',()=>{
  mount()
  expect(screen.getByRole('status').textContent).toContain('brak potwierdzenia STOP')
  expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true)
+})
+
+
+it('keeps arrangement settings and plan preview out of the player',()=>{
+ mount()
+ expect(screen.queryByLabelText('Preset aranżacji')).toBeNull()
+ expect(screen.queryByText('Arrangement · PerformancePlan')).toBeNull()
+ cleanup();mount('/settings')
+ expect(screen.getByLabelText('Preset aranżacji')).toBeTruthy()
+ expect(screen.getByText('Arrangement · PerformancePlan')).toBeTruthy()
 })

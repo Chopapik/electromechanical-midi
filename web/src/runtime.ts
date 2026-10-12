@@ -8,10 +8,14 @@ export interface State {
   service:{busy:boolean;error:string|null;reset:{available:boolean;reason:string};home:{available:boolean;reason:string};firmware:{available:boolean;reason:string|null;port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
 }
 export interface FirmwareEvent {type:'firmware_event';seq:number;kind:'status'|'log';line?:string;stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}
+export interface MidiLoading {name:string;stage:'stopping'|'uploading'|'planning'}
 export function useRuntime(){
   const [state,setState]=useState<State|null>(null),[error,setError]=useState<string|null>(null)
   const [connected,setConnected]=useState(false),[files,setFiles]=useState<{name:string;size:number;modified:number}[]>([])
   const [firmwareEvents,setFirmwareEvents]=useState<FirmwareEvent[]>([])
+  const [midiLoading,setMidiLoading]=useState<MidiLoading|null>(null)
+  const uploadBusy=useRef(false)
+  const requests=useRef(new Map<string,{resolve:()=>void;reject:(error:Error)=>void}>())
   const lastFirmwareSeq=useRef(0)
   const pendingFirmwareRequest=useRef<string|null>(null)
   const socket=useRef<WebSocket|null>(null),audio=useRef(new VirtualOutput()),session=useRef(''),latest=useRef<State|null>(null)
@@ -20,7 +24,7 @@ export function useRuntime(){
     const connect=()=>{
       const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws`);socket.current=ws
       ws.onopen=()=>setConnected(true)
-      ws.onclose=()=>{audio.current.stop();setConnected(false);if(!closed)retry=setTimeout(connect,1000)}
+      ws.onclose=()=>{audio.current.stop();setConnected(false);for(const request of requests.current.values())request.reject(new Error('Brak połączenia z backendem'));requests.current.clear();if(!closed)retry=setTimeout(connect,1000)}
       ws.onmessage=event=>{
         const msg=JSON.parse(event.data)
         if(msg.type==='hello'){
@@ -29,6 +33,10 @@ export function useRuntime(){
           setFirmwareEvents([])
         }
         if(msg.type==='error')setError(msg.message)
+        if(msg.requestId&&(msg.type==='ack'||msg.type==='error')){
+          const request=requests.current.get(msg.requestId)
+          if(request){requests.current.delete(msg.requestId);if(msg.type==='error')request.reject(new Error(msg.message));else request.resolve()}
+        }
         if(msg.requestId&&msg.requestId===pendingFirmwareRequest.current){
           pendingFirmwareRequest.current=null
           if(msg.type==='error')setFirmwareEvents(events=>[...events,{type:'firmware_event',seq:0,kind:'status',stage:'failed',flash:'failed',ble:'idle',error:msg.message}])
@@ -63,8 +71,30 @@ export function useRuntime(){
       socket.current.send(JSON.stringify({action,...payload,...(requestId?{requestId}:{})}))
     }catch(e){setError(String(e))}
   }
-  async function upload(file:File){
-    try{const data=new FormData();data.append('file',file);const response=await fetch('/api/files',{method:'POST',body:data});const result=await response.json();if(!response.ok)throw new Error(result.detail);setFiles(await fetch('/api/files').then(r=>r.json()));await send('set_file',{file:result.name})}catch(e){setError(String(e))}
+  function command(action:string,payload:Record<string,unknown>={}){
+    return new Promise<void>((resolve,reject)=>{
+      if(socket.current?.readyState!==WebSocket.OPEN){reject(new Error('Brak połączenia z backendem'));return}
+      const requestId=crypto.randomUUID()
+      const timer=setTimeout(()=>{requests.current.delete(requestId);reject(new Error('Przekroczono czas oczekiwania na załadowanie MIDI'))},120000)
+      requests.current.set(requestId,{resolve:()=>{clearTimeout(timer);resolve()},reject:error=>{clearTimeout(timer);reject(error)}})
+      try{socket.current.send(JSON.stringify({action,...payload,requestId}))}
+      catch(error){requests.current.get(requestId)?.reject(error instanceof Error?error:new Error(String(error)));requests.current.delete(requestId)}
+    })
   }
-  return {state,error,connected,files,send,upload,firmwareEvents}
+  async function upload(file:File){
+    if(uploadBusy.current)return
+    uploadBusy.current=true;setError(null);setMidiLoading({name:file.name,stage:'stopping'})
+    try{
+      await command('stop')
+      setMidiLoading({name:file.name,stage:'uploading'})
+      const data=new FormData();data.append('file',file)
+      const response=await fetch('/api/files',{method:'POST',body:data});const result=await response.json()
+      if(!response.ok)throw new Error(result.detail)
+      setMidiLoading({name:file.name,stage:'planning'})
+      await command('set_file',{file:result.name})
+      setFiles(await fetch('/api/files').then(r=>r.json()))
+    }catch(e){setError(String(e))}
+    finally{uploadBusy.current=false;setMidiLoading(null)}
+  }
+  return {state,error,connected,files,send,upload,firmwareEvents,midiLoading}
 }

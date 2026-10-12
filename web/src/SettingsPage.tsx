@@ -1,6 +1,7 @@
 import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
+import {ArrangementPreview} from './components/ArrangementPreview'
 import {StatusFooter} from './components/StatusFooter'
 
 type Runtime=ReturnType<typeof useRuntime>
@@ -8,7 +9,7 @@ type Runtime=ReturnType<typeof useRuntime>
 export function SettingsPage({app}:{app:Runtime}){
   const navigate=useNavigate(),s=app.state
   const virtual=s?.output.mode==='VIRTUAL'
-  const disabled=!s||!app.connected||s.service.busy
+  const disabled=!s||!app.connected||s.service.busy||!!app.midiLoading
   const events=app.firmwareEvents??[]
   const reverseStart=[...events].reverse().findIndex(event=>event.kind==='status'&&event.stage==='prepare')
   const started=reverseStart<0?-1:events.length-1-reverseStart
@@ -33,6 +34,20 @@ export function SettingsPage({app}:{app:Runtime}){
         <section className="settings-section">
           <h2>Output</h2>
           <label><input type="checkbox" checked={virtual} disabled={disabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
+        </section>
+        <section className="settings-section">
+          <h2>Aranżacja</h2>
+          <div className="settings-action">
+            <label className="settings-select">Preset aranżacji
+              <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>void app.send('arrangement_preset',{preset:e.target.value})}>
+                <option value="balanced">Balanced</option>
+                <option value="fdd_quality">FDD Quality · eksperymentalny</option>
+                <option value="dvd_lead_low_fdd">DVD Lead + Low FDD · eksperymentalny</option>
+              </select>
+            </label>
+            <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
+          </div>
+          <ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>
         </section>
         <section className="settings-section">
           <h2>Laboratory</h2>

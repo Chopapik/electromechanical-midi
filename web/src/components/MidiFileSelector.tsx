@@ -3,16 +3,18 @@
 import { Eject } from '@phosphor-icons/react'
 import { useRef, useState } from 'react'
 import type { DragEvent as ReactDragEvent } from 'react'
+import type {MidiLoading} from '../runtime'
 
 interface Props {
   selected: string | null
   onUpload: (file: File) => void
-  uploading?: boolean
+  loading?: MidiLoading|null
 }
 
 const ACCEPTED = '.mid,.midi,audio/midi,audio/x-midi'
 
-export function MidiFileSelector({ selected, onUpload, uploading = false }: Props) {
+export function MidiFileSelector({ selected, onUpload, loading }: Props) {
+  const uploading=!!loading
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [dragging, setDragging] = useState(false)
 
@@ -20,7 +22,7 @@ export function MidiFileSelector({ selected, onUpload, uploading = false }: Prop
 
   const handleFiles = (list: FileList | null) => {
     const file = list?.[0]
-    if (file) onUpload(file)
+    if (file&&!uploading) onUpload(file)
   }
 
   return (
@@ -37,7 +39,9 @@ export function MidiFileSelector({ selected, onUpload, uploading = false }: Prop
         if (!uploading) handleFiles(event.dataTransfer.files)
       }}
     >
-      <p className="midi-title" title={selected ?? undefined}>{selected ?? 'Brak pliku MIDI'}</p>
+      <div className="midi-file-info" aria-busy={uploading}>
+        <p className="midi-title" title={loading?.name??selected??undefined}>{loading?.name??selected??'Brak pliku MIDI'}</p>
+      </div>
       <button
         type="button"
         className="midi-eject"

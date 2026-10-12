@@ -11,6 +11,7 @@ HOST_DIR=Path(__file__).resolve().parents[1]
 if str(HOST_DIR) not in sys.path: sys.path.insert(0,str(HOST_DIR))
 from fastapi import FastAPI, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from midi_source import MidiSource
 from runtime.application import Application
 from runtime.registry import DeviceRegistry
@@ -158,7 +159,10 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
             if runtime.lab.session==owner:
                 with contextlib.suppress(Exception): await asyncio.to_thread(runtime.lab.leave,owner)
     dist=HOST_DIR.parent/'web/dist'
-    if dist.exists(): app.mount('/',StaticFiles(directory=dist,html=True),name='web')
+    if dist.exists():
+        @app.get('/settings',include_in_schema=False)
+        def settings_page(): return FileResponse(dist/'index.html')
+        app.mount('/',StaticFiles(directory=dist,html=True),name='web')
     return app
 
 def main(argv=None):

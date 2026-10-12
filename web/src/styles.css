@@ -909,3 +909,18 @@ select:disabled {
 .arrangement-table th,.arrangement-table td { text-align:left; padding:7px; border-bottom:1px solid var(--line); }
 .arrangement-table .dvd-note td:nth-child(3) { color:#7bcfa4; }
 .arrangement-table .fdd-note td:nth-child(3) { color:#e8ba77; }
+
+.settings-body .settings-select {display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+.settings-select select {width:100%;min-width:0;padding:10px 12px;font:inherit;line-height:1.4;}
+.settings-select select:focus-visible {outline:2px solid #a3a3a3;outline-offset:3px;}
+.settings-body .arrangement-preview {margin:0;padding:12px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;min-width:0;}
+.settings-body .arrangement-preview > summary {font-size:12px;color:#a3a3a3;}
+.settings-body .arrangement-preview > summary:hover {color:#f5f5f5;}
+
+.midi-file-info {min-width:0;position:relative;}
+/* The song timeline doubles as the MIDI loading indicator. */
+.progress.is-loading .time {visibility:hidden;}
+.progress.is-loading .progress-track {overflow:hidden;cursor:default;}
+.top-bar .progress.is-loading .progress-fill {width:35%;background:linear-gradient(90deg,transparent,#d4d4d4,transparent);animation:midi-loading-slide 1.4s ease-in-out infinite;}
+@keyframes midi-loading-slide {from {transform:translateX(-100%);}to {transform:translateX(390%);}}
+@media (prefers-reduced-motion:reduce) {.top-bar .progress.is-loading .progress-fill {animation:none;width:100%;background:#a3a3a3;opacity:.65;}}
