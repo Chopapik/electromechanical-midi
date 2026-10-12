@@ -102,6 +102,22 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(OutputError,'Brak połączenia'):self.player.play()
         self.assertEqual(self.app.router.mode,'REAL');self.assertEqual(self.player.state,'stopped')
         self.real();self.player.tick();self.assertFalse(any('PLAY' in s for s in self.link.sent))
+    def test_offline_dispatch_does_not_mark_hardware_active_or_unknown(self):
+        with self.assertRaisesRegex(OutputError,'Brak połączenia'):
+            self.app.real.dispatch([C(0,'fdd-1','tone',1,220)])
+        self.assertFalse(self.app.real.active)
+        self.app.real.lost('BLE: disconnected')
+        self.assertFalse(self.app.real.unknown)
+        self.player.switch('VIRTUAL')
+        self.assertEqual(self.app.router.mode,'VIRTUAL')
+
+    def test_partial_write_failure_keeps_hardware_unknown(self):
+        self.real();self.link.fail_write=True
+        with self.assertRaises(OutputError):
+            self.app.real.dispatch([C(0,'fdd-1','tone',1,220)])
+        self.assertTrue(self.app.real.unknown)
+        with self.assertRaises(OutputError): self.player.switch('VIRTUAL')
+
     def test_planning_identical_offline_real_virtual_and_no_transport(self):
         source=MidiSource(ROOT/'midi/test.mid');before=arrange(source,self.app.registry).as_dict()
         self.real();connected=arrange(source,self.app.registry).as_dict()

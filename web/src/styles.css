@@ -867,6 +867,11 @@ select:disabled {
 .workstation-status {margin-top:0;flex-shrink:0;position:relative;z-index:2;background:#111111;padding:18px 24px;box-sizing:border-box;}
 .workstation-status-content {width:100%;max-width:var(--shell-max);margin-inline:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
 .workstation-status [role=status] {display:flex;align-items:center;gap:6px;min-width:0;overflow-wrap:anywhere;}
+.workstation-messages {display:flex;flex-direction:column;gap:6px;min-width:0;line-height:1.5;}
+.workstation-messages svg {flex-shrink:0;}
+.workstation-status .status-warning {color:#fbbf24;}
+.workstation-status .status-error {color:#fca5a5;overflow-wrap:anywhere;}
+.workstation-status .settings-trigger {flex-shrink:0;}
 @media (max-width:759px) {.top-bar {padding-block:16px;padding-inline:16px;}.top-bar-content {max-width:none;gap:14px;}.orchestra-content {padding:20px 16px;}.runtime-lab {padding:12px 0;gap:12px;width:100%;}.runtime-lab label {display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:min(160px,100%);flex:1 1 140px;}.runtime-lab input,.runtime-lab select {width:100%;}}
 @media (max-width:539px) {.runtime-grid {grid-template-columns:repeat(auto-fill,minmax(140px,160px));}.orchestra-content,.settings-main {padding:16px 12px;}.settings-top {padding-inline:12px;}.workstation-status {padding:16px 12px;}.midi-title {font-size:12px;}}
 @media (max-width:359px) {.runtime-grid {grid-template-columns:minmax(0,1fr);}}

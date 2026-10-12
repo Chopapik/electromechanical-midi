@@ -8,15 +8,15 @@ beforeAll(() => Element.setTextMeasurementCanvas({getContext: () => ({
 })} as unknown as HTMLCanvasElement))
 const send=vi.fn()
 const firmwareEvents=vi.hoisted(()=>[] as Array<{type:string;seq:number;kind:string;stage?:string;flash?:string;ble?:string;progress?:number;line?:string}>)
-const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orchestra',epoch:0,revision:0,error:null,audioOwner:null,
+const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orchestra',epoch:0,revision:0,error:null as string|null,audioOwner:null,
   devices:[{id:'fdd-1',name:'FDD #1',type:'FDD',enabled:true,volume:.6,bands:[[200,410]],reason:null}],
   output:{mode:'REAL',connected:false,unknown:false,message:'Brak połączenia z ESP32',muted:[]},
   service:{busy:false,error:null,reset:{available:false,reason:'Brak komendy resetu'},home:{available:false,reason:'Offline'},firmware:{available:false,reason:'Podłącz ESP32 przez USB (CP2102), aby wgrać firmware'}}}
 vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents})}))
-beforeEach(()=>{cleanup();send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.owner='orchestra';state.service.firmware.available=false})
+beforeEach(()=>{cleanup();send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
 function mount(path='/'){return render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>)}
 describe('Orchestra UI',()=>{
- it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Brak połączenia z ESP32')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
+ it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Offline · ESP32 nie jest połączony')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
  it('Settings only exposes debug, maintenance and device mute',()=>{mount('/settings');fireEvent.click(screen.getByLabelText('Virtual debug · Web Audio'));expect(send).toHaveBeenCalledWith('output',{mode:'VIRTUAL'});fireEvent.click(screen.getByLabelText('Mute FDD #1'));expect(send).toHaveBeenCalledWith('mute',{deviceId:'fdd-1',muted:true});expect((screen.getByText('Reset ESP32 — niedostępny') as HTMLButtonElement).disabled).toBe(true);expect(screen.queryByText('AUTO · 4 FDD')).toBeNull()})
  it('virtual is a manual output allowing offline Play',()=>{state.output.mode='VIRTUAL';mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(false);fireEvent.click(screen.getByRole('button',{name:'Play'}));expect(send).toHaveBeenCalledWith('play')})
  it('Lab is entered through Settings and shares device labels',()=>{mount('/settings');fireEvent.click(screen.getByText('Laboratory · debug'));expect(send).toHaveBeenCalledWith('lab_enter')})
@@ -55,4 +55,23 @@ it('sends arrangement preset selection to the runtime',()=>{
 it('sends DVD Lead preset selection to the runtime',()=>{
  mount();fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'dvd_lead_low_fdd'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'dvd_lead_low_fdd'})
+})
+
+
+it.each(['/', '/settings'])('shows runtime errors only in the footer on %s',path=>{
+ state.error='Błąd odczytu MIDI'
+ mount(path)
+ const alert=screen.getByRole('alert')
+ expect(alert.textContent).toBe('Błąd odczytu MIDI')
+ expect(screen.getByRole('contentinfo').contains(alert)).toBe(true)
+ expect(screen.getByRole('main').contains(alert)).toBe(false)
+})
+
+it('distinguishes ordinary offline from an unconfirmed hardware stop',()=>{
+ mount()
+ expect(screen.queryByRole('alert')).toBeNull()
+ cleanup();state.output.unknown=true
+ mount()
+ expect(screen.getByRole('status').textContent).toContain('brak potwierdzenia STOP')
+ expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true)
 })

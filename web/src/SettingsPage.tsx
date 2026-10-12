@@ -1,6 +1,7 @@
 import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
+import {StatusFooter} from './components/StatusFooter'
 
 type Runtime=ReturnType<typeof useRuntime>
 
@@ -28,7 +29,6 @@ export function SettingsPage({app}:{app:Runtime}){
       <h1>Settings</h1>
     </div></header>
     <main className="settings-main">
-      {(app.error||s?.error)&&<p className="banner error" role="alert">{app.error||s?.error}</p>}
       <div className="settings-shell settings-body">
         <section className="settings-section">
           <h2>Output</h2>
@@ -52,7 +52,6 @@ export function SettingsPage({app}:{app:Runtime}){
             {progress!=null&&stage==='upload'?<progress aria-label="Postęp uploadu" max="100" value={progress}/>:['prepare','build','upload','reboot_wait','ble_connect','ble_retry'].includes(stage)&&<progress aria-label="Operacja w toku"/>}
             <p>Flash USB: {flash==='success'?'zakończony pomyślnie':flash==='failed'?'nieudany':flash==='running'?'w toku':'jeszcze nie rozpoczęty'}</p>
             <p>BLE: {ble==='verified'?'połączono i zweryfikowano handshake':ble==='retrying'?'niedostępne, ponawianie':ble==='connecting'?'łączenie i weryfikacja':ble==='waiting'?'oczekiwanie na restart ESP32':'niezweryfikowane'}</p>
-            {issue&&<p role="alert">{issue}</p>}
             <pre ref={consoleRef} className="firmware-console" aria-label="Log PlatformIO">{current.filter(event=>event.kind==='log').map(event=>event.line).join('\n')}</pre>
           </section>}
           <div className="settings-action">
@@ -69,5 +68,6 @@ export function SettingsPage({app}:{app:Runtime}){
         </section>
       </div>
     </main>
+    <StatusFooter app={app} settings issue={issue}/>
   </div>
 }

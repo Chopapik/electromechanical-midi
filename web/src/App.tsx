@@ -1,6 +1,6 @@
 import {useState} from 'react'
-import {Link,Route,Routes} from 'react-router-dom'
-import {Circle} from '@phosphor-icons/react'
+import {Route,Routes} from 'react-router-dom'
+import {StatusFooter} from './components/StatusFooter'
 import {useRuntime} from './runtime'
 import {MidiFileSelector} from './components/MidiFileSelector'
 import {PlayerControls} from './components/PlayerControls'
@@ -39,7 +39,6 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
       </>}
     </div></header>
     <main className="orchestra-content">
-    {(app.error||s?.error)&&<p className="banner error" role="alert">{app.error||s?.error}</p>}
     {lab&&<section className="runtime-lab">
       <label>Urządzenie <select aria-label="Urządzenie" value={device} onChange={e=>{setDevice(e.target.value);const d=s?.devices.find(d=>d.id===e.target.value);setHz(d?.bands[0]?.[0]??200)}}>
         <option value="">Wybierz</option>{s?.devices.map(d=><option key={d.id} value={d.id}>{d.name}{d.reason?` · ${d.reason}`:''}</option>)}
@@ -53,9 +52,6 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
     <InstrumentGrid devices={s?.devices??[]} activity={s?.activity??{}} muted={s?.output.muted??[]} />
     {!lab&&<ArrangementPreview revision={s?.revision??0} file={s?.file??null} preset={s?.arrangementPreset??'balanced'} disabled={disabled} onPreset={preset=>void app.send('arrangement_preset',{preset})}/>}
     </main>
-    <footer className="workstation-status"><div className="workstation-status-content">
-      <span role="status" className={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'arduino-connected':''}><Circle size={10} weight={app.connected&&s?.output.mode==='REAL'&&s.output.connected?'fill':'regular'} aria-hidden="true"/> {!app.connected?'Brak połączenia z backendem':s?.output.message}</span>
-      <Link className="settings-trigger" to="/settings" aria-label="Settings">Settings</Link>
-    </div></footer>
+    <StatusFooter app={app}/>
   </div>
 }

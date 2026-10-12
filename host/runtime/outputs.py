@@ -120,6 +120,9 @@ class RealOutput:
         return 'VHS' if lane=='drum:1' else lane.upper().replace(':',' ')
 
     def dispatch(self, commands, **_):
+        # An offline attempt cannot have started physical motion. Keep genuine
+        # write failures conservative: a connected batch may be partially sent.
+        if not self.link: raise OutputError('Brak połączenia z ESP32')
         lines=[]
         for c in commands:
             prefix=self.prefix(c.device_id)
