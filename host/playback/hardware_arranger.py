@@ -14,7 +14,12 @@ from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evalu
 from .performance import PerformancePlan
 
 
+DVD_MAX_HZ = 600.  # Musical DVD ceiling in acoustic Hz, before pitchRatio conversion.
+
+
 def fold_for_profile(note, minimum, maximum, mode, profile):
+    if profile.name == 'DVD_SLED':
+        maximum = min(maximum, DVD_MAX_HZ)
     bands = None if profile.get('continuousRotation') else profile.get('allowedBandsHz')
     if bands is None:
         return fold_note(note, minimum, maximum, mode)
@@ -77,6 +82,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         if profile.name == 'DVD_SLED':
             ratio = profile.get('pitchRatio')
             if ratio is not None: musical = [x * ratio for x in musical]
+            musical = [musical[0], min(musical[1], DVD_MAX_HZ)]
         if profile.name == 'FDD':
             step_ms=profile.get('datasheetMinStepMs')
             minimum_us = profile.get('executionMinStepUs') or (step_ms*1000 if step_ms is not None else None)
@@ -144,6 +150,13 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                     fold = fold_for_profile(shifted, slot.capability.min_hz, slot.capability.max_hz, policy['foldMode'], profile)
                     played = fold.midi_note + 12 * fold.octave_shift; hz = fold.hz; folded = bool(fold.octave_shift)
                 else: played = shifted; hz = midi_to_hz(shifted); folded = False
+            # The DVD ceiling also applies to lead presets and manual pins
+            # that bypass ordinary octave folding. Keep NOTE_ON unchanged.
+            if profile.name == 'DVD_SLED':
+                while hz > DVD_MAX_HZ:
+                    played -= 12
+                    hz /= 2.
+                    folded = True
             quality_detail=None
             if (quality_mode or low_mode) and profile.name=='FDD' and all(profile.get(k) is not None for k in ('pitchRatio','travelSteps','reversalIntervalMs')):
                 if quality_mode:
@@ -270,6 +283,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     apply_reinforcement(plan, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
     validate_reinforcement(plan, profiles, lanes)
     add_unison(plan, profiles, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
+    from .dvd_sustain import apply as apply_dvd_sustain
+    plan.articulation['dvdContinuousSustain'] = apply_dvd_sustain(plan, profiles, source)
     for i,e in enumerate(plan.events):
         if e.id in decisions:
             plan.events[i] = dataclasses.replace(e, hardware={**e.hardware, 'selection': decisions[e.id]})
@@ -328,6 +343,12 @@ def validate_reinforcement(plan, profiles, lanes):
         if dub.device_id not in profiles: continue
         profile = profiles[dub.device_id]
         if profile.name not in ('FDD','DVD_SLED'): continue
+        if profile.name == 'DVD_SLED':
+            hz = dub.hz
+            while hz > DVD_MAX_HZ:
+                hz /= 2.
+            if hz != dub.hz:
+                dub = dataclasses.replace(dub, hz=hz)
         # A conservative stop boundary leaves both reversal/acceleration settling
         # and all primary reservations untouched. No hardware percussion dubs.
         preceding = [e for e in primary[dub.device_id] if e.actual_start < dub.start]

@@ -1,0 +1,259 @@
+{
+  "inventory": [
+    {
+      "id": "fdd-1",
+      "name": "FDD #1",
+      "type": "FDD",
+      "lane": "fdd:1",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-2",
+      "name": "FDD #2",
+      "type": "FDD",
+      "lane": "fdd:2",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-3",
+      "name": "FDD #3",
+      "type": "FDD",
+      "lane": "fdd:3",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "fdd-4",
+      "name": "FDD #4",
+      "type": "FDD",
+      "lane": "fdd:4",
+      "profile": "FDD_CURRENT",
+      "hardwareProfile": "FDD",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_1",
+      "name": "DVD Stepper 1",
+      "type": "DVD_SLED",
+      "lane": "sled:1",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_2",
+      "name": "DVD Stepper 2",
+      "type": "DVD_SLED",
+      "lane": "sled:2",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_3",
+      "name": "DVD Stepper 3",
+      "type": "DVD_SLED",
+      "lane": "sled:3",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": true,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_STEPPER_4",
+      "name": "DVD Stepper 4",
+      "type": "DVD_SLED",
+      "lane": "sled:4",
+      "profile": "DVD_REFERENCE",
+      "hardwareProfile": "DVD_SLED",
+      "enabled": false,
+      "volume": 0.2,
+      "pan": 0.0
+    },
+    {
+      "id": "vhs-1",
+      "name": "VHS #1",
+      "type": "VHS",
+      "lane": "drum:1",
+      "profile": "VHS_CURRENT",
+      "hardwareProfile": "VHS",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-1",
+      "name": "HDD_VCM #1",
+      "type": "HDD_VCM",
+      "lane": "hdd:1",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-2",
+      "name": "HDD_VCM #2",
+      "type": "HDD_VCM",
+      "lane": "hdd:2",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-3",
+      "name": "HDD_VCM #3",
+      "type": "HDD_VCM",
+      "lane": "hdd:3",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "hdd_vcm-4",
+      "name": "HDD_VCM #4",
+      "type": "HDD_VCM",
+      "lane": "hdd:4",
+      "profile": "WD_CAVIAR_CURRENT",
+      "hardwareProfile": "HDD_PERCUSSION",
+      "enabled": true,
+      "volume": 0.6,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_TRAY_1",
+      "name": "DVD Tray 1",
+      "type": "DVD_TRAY",
+      "lane": "tray:1",
+      "profile": "DVD_TRAY_REFERENCE",
+      "hardwareProfile": null,
+      "enabled": false,
+      "volume": 0.35,
+      "pan": 0.0
+    },
+    {
+      "id": "DVD_TRAY_2",
+      "name": "DVD Tray 2",
+      "type": "DVD_TRAY",
+      "lane": "tray:2",
+      "profile": "DVD_TRAY_REFERENCE",
+      "hardwareProfile": null,
+      "enabled": false,
+      "volume": 0.35,
+      "pan": 0.0
+    }
+  ],
+  "parameters": {
+    "sourceContinuity": true,
+    "sourceContinuityAmount": 1.0,
+    "mechanicalAware": true,
+    "dvdSustainThresholdMs": 500.0,
+    "dvdContinuousSustain": true,
+    "dvdDynamicAware": true,
+    "dvdMaxBridgeMs": 200.0,
+    "fddUnisonEnabled": true,
+    "fddUnisonMaxVoices": 2,
+    "arrangementPreset": "balanced"
+  },
+  "metricScope": "DVD work and silence summed across actuators; silence excludes leading/trailing rests; longest is one actuator; STOP from compiled timeline including reinforcement",
+  "thermalSafety": "Unknown; software is not physical motor verification",
+  "songs": {
+    "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+      "baseline": {
+        "dvdNotes": 925,
+        "dvdStops": 897,
+        "dvdWorkSeconds": 372.338392,
+        "dvdSilenceSeconds": 251.213683,
+        "dvdLongestContinuousSeconds": 9.994024,
+        "dropped": 169,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": false,
+          "bridged": 0,
+          "addedSeconds": 0.0,
+          "maxBridgeMs": 200.0
+        },
+        "dvdReinforcements": 0
+      },
+      "experiment": {
+        "dvdNotes": 925,
+        "dvdStops": 791,
+        "dvdWorkSeconds": 373.147914,
+        "dvdSilenceSeconds": 250.404161,
+        "dvdLongestContinuousSeconds": 9.994024,
+        "dropped": 169,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 106,
+          "addedSeconds": 0.809522,
+          "maxBridgeMs": 200.0
+        },
+        "dvdReinforcements": 0
+      },
+      "primaryDecisionsPreserved": true,
+      "otherDevicesAndExtrasUnchanged": true,
+      "physicalChronologyValid": true
+    },
+    "Every breath you take.mid": {
+      "baseline": {
+        "dvdNotes": 442,
+        "dvdStops": 380,
+        "dvdWorkSeconds": 479.375288,
+        "dvdSilenceSeconds": 158.434675,
+        "dvdLongestContinuousSeconds": 13.434588,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": false,
+          "bridged": 0,
+          "addedSeconds": 0.0,
+          "maxBridgeMs": 200.0
+        },
+        "dvdReinforcements": 0
+      },
+      "experiment": {
+        "dvdNotes": 442,
+        "dvdStops": 376,
+        "dvdWorkSeconds": 479.562204,
+        "dvdSilenceSeconds": 158.247759,
+        "dvdLongestContinuousSeconds": 13.434588,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 4,
+          "addedSeconds": 0.186916,
+          "maxBridgeMs": 200.0
+        },
+        "dvdReinforcements": 0
+      },
+      "primaryDecisionsPreserved": true,
+      "otherDevicesAndExtrasUnchanged": true,
+      "physicalChronologyValid": true
+    }
+  }
+}

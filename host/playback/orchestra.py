@@ -20,6 +20,9 @@ BALANCED = {
     'mode': 'balanced',
     'mechanicalAware': True,
     'dvdSustainThresholdMs': 500.,
+    'dvdContinuousSustain': False,
+    'dvdDynamicAware': True,
+    'dvdMaxBridgeMs': 200.,
     'mechanicalPhraseWindowMs': 1500.,
     'mechanicalPreferenceWeight': .8,
     'partContinuityWeight': .12,
@@ -179,7 +182,7 @@ def parse_policy(payload: dict | None) -> dict:
         if policy[key]>1: raise ValueError('Invalid '+key)
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
                    'leadMaxMicroDelayMs', 'capacitySafety',
-                   'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
+                   'dvdMaxBridgeMs', 'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
                    'partContinuityWeight', 'sustainCompetitionTolerance', 'fddUnisonMinVelocity', 'fddUnisonMaxDurationMs',
                    'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
                    'releaseGapMs', 'maxSustainExtensionMs', 'sourceContinuityAmount'):
@@ -189,7 +192,7 @@ def parse_policy(payload: dict | None) -> dict:
             raise ValueError(f'{key} nie moze byc ujemny')
 
     for key in ('preserveLead', 'preserveBass', 'allowVoiceSteal', 'softenRepeats',
-                'mechanicalSustain', 'sourceContinuity', 'mechanicalAware', 'fddUnisonEnabled'):
+                'dvdContinuousSustain', 'dvdDynamicAware', 'mechanicalSustain', 'sourceContinuity', 'mechanicalAware', 'fddUnisonEnabled'):
         policy[key] = bool(policy[key])
 
     import math

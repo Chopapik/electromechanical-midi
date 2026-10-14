@@ -173,6 +173,9 @@
     "sourceContinuityAmount": 1.0,
     "mechanicalAware": true,
     "dvdSustainThresholdMs": 500.0,
+    "dvdContinuousSustain": true,
+    "dvdDynamicAware": true,
+    "dvdMaxBridgeMs": 200.0,
     "fddUnisonEnabled": true,
     "fddUnisonMaxVoices": 2,
     "arrangementPreset": "balanced"

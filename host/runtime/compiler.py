@@ -40,6 +40,18 @@ def compile_plan(plan):
         add(e.device_id,e.start,e.duration,0,e.velocity,e.track,e.source_id,direction='FWD' if e.direction>0 else 'REV')
     # Touching tones change pitch without an extra actuator STOP, as before.
     starts={(c.device_id,c.time) for c in commands if c.kind=='tone'}
-    commands=[c for c in commands if c.kind!='stop' or (c.device_id,c.time) not in starts]
+    # DVD-only nanosecond tolerance: subtraction/addition of exact gates can
+    # differ by an ULP. Real musical release gaps remain STOPs.
+    from bisect import bisect_left
+    dvd_starts = {}
+    for c in commands:
+        if c.kind == 'tone' and kinds[c.device_id] == 'DVD_SLED':
+            dvd_starts.setdefault(c.device_id, []).append(c.time)
+    for times in dvd_starts.values(): times.sort()
+    def dvd_touch(c):
+        times = dvd_starts.get(c.device_id, [])
+        i = bisect_left(times, c.time - 1e-9)
+        return i < len(times) and abs(times[i] - c.time) <= 1e-9
+    commands=[c for c in commands if c.kind!='stop' or ((c.device_id,c.time) not in starts and not dvd_touch(c))]
     commands.sort(key=lambda c:(c.time, 0 if c.kind=='stop' else 1,c.device_id,c.source_id or ''))
     return ExecutionTimeline(tuple(commands), max(plan.duration,max((c.time+c.duration for c in commands),default=0.)))

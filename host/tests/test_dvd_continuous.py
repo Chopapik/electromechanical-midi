@@ -47,7 +47,7 @@ class ContinuousDvdTests(unittest.TestCase):
         app.real.attach(link)
         with self.assertRaisesRegex(OutputError,'Wgraj nowe firmware'): app.real.configure()
         self.assertFalse(any(' PLAY ' in line for line in link.sent))
-    def test_arranger_preserves_high_dvd_note_without_octave_folding(self):
+    def test_arranger_lowers_high_dvd_note_by_octaves_to_600_hz(self):
         registry=DeviceRegistry()
         for d in registry.devices: d['enabled']=d['id']=='DVD_STEPPER_1'
         with tempfile.TemporaryDirectory() as directory:
@@ -55,4 +55,25 @@ class ContinuousDvdTests(unittest.TestCase):
             plan=arrange(source,registry)
         event=next(event for event in plan.events if event.played)
         self.assertEqual(event.device_id,'DVD_STEPPER_1')
-        self.assertEqual(event.played_note,84)
+        self.assertEqual(event.played_note,72)
+        self.assertLessEqual(event.played_hz,600)
+        self.assertEqual(event.note,84)
+        self.assertEqual(event.actual_start,0)
+
+    def test_dvd_ceiling_all_auto_presets_and_multiple_octaves(self):
+        for preset in ('balanced','fdd_quality','dvd_lead_low_fdd'):
+            with self.subTest(preset=preset):
+                registry=DeviceRegistry()
+                for d in registry.devices: d['enabled']=d['id']=='DVD_STEPPER_1'
+                registry.document['parameters']['arrangementPreset']=preset
+                notes=[(i,.5,n) for i,n in enumerate((69,74,75,84,96))]
+                with tempfile.TemporaryDirectory() as directory:
+                    source=MidiSource(write_tracks(Path(directory)/'ceiling.mid',[('Guitar',0,notes)]))
+                    plan=arrange(source,registry)
+                events=[e for e in plan.events if e.played]
+                self.assertEqual(len(events),5)
+                self.assertEqual([e.played_note for e in events],[69,74,63,72,72])
+                self.assertEqual([e.note for e in events],[69,74,75,84,96])
+                self.assertEqual([e.actual_start for e in events],[0,1,2,3,4])
+                from runtime.compiler import compile_plan
+                self.assertTrue(all(c.hz<=600 for c in compile_plan(plan).commands))
