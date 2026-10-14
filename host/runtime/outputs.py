@@ -130,7 +130,7 @@ class RealOutput:
             if c.kind=='stop': lines.append(prefix+' STOP')
             elif c.kind=='hit': lines.append(prefix+' HIT')
             elif c.kind=='pulse': lines.append(f'{prefix} PULSE {c.direction} {round(c.duration*1000)}')
-            elif d['type']=='VHS': lines.extend(['VHS AMP 38',f'VHS FREQ {c.hz:.2f}'])
+            elif d['type']=='VHS': lines.extend(['VHS AMP 50',f'VHS FREQ {c.hz:.2f}'])
             else:
                 text=f'{prefix} PLAY {c.hz:.2f}'
                 if self.registry.document.get('routing',{}).get('mode')=='STRICT_TRACKS' and d['type']=='FDD':

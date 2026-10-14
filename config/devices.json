@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "Balanced 4FDD + 3DVD + VHS + 4HDD + 2Tray",
+  "name": "Balanced 4FDD + 3DVD + PC Speaker + 4HDD + 2Tray",
   "devices": [
     {
       "id": "fdd-1",
@@ -92,7 +92,7 @@
     },
     {
       "id": "vhs-1",
-      "name": "VHS #1",
+      "name": "PC Speaker",
       "type": "VHS",
       "lane": "drum:1",
       "profile": "VHS_CURRENT",

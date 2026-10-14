@@ -78,11 +78,11 @@ export class VirtualOutput {
         const buffer=ctx.createBuffer(1,samples.length,ctx.sampleRate);buffer.copyToChannel(samples,0)
         source=ctx.createBufferSource();source.buffer=buffer
       } else {
-        source=ctx.createOscillator();source.type='sine';source.frequency.setValueAtTime(c.hz,start)
+        source=ctx.createOscillator();source.type='square';source.frequency.setValueAtTime(c.hz,start)
       }
       // Hardware STEP has no per-note amplitude control. Equal units share the same level.
       const stepper=device?.type==='FDD'||device?.type==='DVD_SLED'
-      const volume=(mechanical ? .22*.6 : .12*(device?.volume??.5))*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
+      const volume=(mechanical ? .22*.6 : .045*(device?.volume??.5))*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
       const attack=Math.min(mechanical ? .001 : (a?.attack??.003),(end-start)/4)
       gain.gain.setValueAtTime(0,start)
       gain.gain.linearRampToValueAtTime(volume,start+attack)
