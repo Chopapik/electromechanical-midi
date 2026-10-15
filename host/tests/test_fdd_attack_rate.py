@@ -121,7 +121,7 @@ class FddAttackRateTests(unittest.TestCase):
         from runtime.arranger import arrange
         from test_allocator import write_tracks
         presets = ('balanced', 'fdd_quality', 'fdd_quality_adaptive', 'dvd_lead_low_fdd',
-                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet')
+                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
         with tempfile.TemporaryDirectory() as directory:
             source = MidiSource(write_tracks(Path(directory)/'fast.mid',
                 [('Riff', 0, [(i*.045, i*.045+.03, 57+i%3) for i in range(24)])]))

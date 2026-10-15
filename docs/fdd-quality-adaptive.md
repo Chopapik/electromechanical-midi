@@ -5,7 +5,7 @@
 > Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
 > pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
 
-An independent AUTO preset, alongside the six other current choices.
+An independent AUTO preset, alongside the seven other current choices.
 Choose it explicitly in Settings → Aranżacja; startup
 and Docker restart retain the existing Balanced default. Selection remains
 session-only. Application.set_preset confirms STOP / virtual cancellation before

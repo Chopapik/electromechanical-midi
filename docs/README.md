@@ -15,10 +15,11 @@ testów i wyniki tabel w starszych raportach nie opisują automatycznie tej wers
 
 ## Aranżacja i analiza MIDI
 
-Wybór wszystkich siedmiu presetów: `/settings` → **Aranżacja → Preset aranżacji**.
+Wybór wszystkich ośmiu presetów: `/settings` → **Aranżacja → Preset aranżacji**.
 AUTO ma wspólną normalizację i klasyfikację oraz jeden plan dla REAL/VIRTUAL.
-STRICT_TRACKS to osobny tryb JSON, a nie ósmy preset.
+STRICT_TRACKS to osobny tryb JSON, a nie dziewiąty preset.
 
+- [Universal: frazy, fallback i benchmark 31 MIDI](universal-arrangement.md)
 - [Balanced / Mechanical-Aware oraz dynamiczny UNISON](mechanical-arrangement.md)
 - [FDD Riffs + DVD Tło i sustain tła](instrument-roles.md)
 - [Pary FDD: Unisono i Dwugłos](fdd-pairs.md)

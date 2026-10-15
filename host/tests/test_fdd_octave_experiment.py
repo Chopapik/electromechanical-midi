@@ -33,7 +33,7 @@ class FddOctaveExperimentTests(unittest.TestCase):
 
     def test_all_presets_strict_unison_and_expression_use_lower_register(self):
         presets = ('balanced', 'fdd_quality', 'fdd_quality_adaptive', 'dvd_lead_low_fdd',
-                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet')
+                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
         with tempfile.TemporaryDirectory() as directory:
             source = MidiSource(write_tracks(Path(directory)/'register.mid',
                 [('Riff', 0, [(i*.3, i*.3+.15, 60) for i in range(8)])]))

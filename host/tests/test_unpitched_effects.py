@@ -119,7 +119,7 @@ class UnpitchedEffectsTests(unittest.TestCase):
         pin = ManualPin(device_id=config.devices[0]['id'], rule_id='test-pin')
         legacy = allocate(normalize(source), config, pins={'0:0': pin})
         self.assertEqual(next(e for e in legacy.events if e.id == '0:0').reason, UNSUPPORTED_EFFECT)
-        for preset in ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet'):
+        for preset in ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal'):
             with self.subTest(preset=preset):
                 registry = DeviceRegistry()
                 registry.document['parameters']['arrangementPreset'] = preset

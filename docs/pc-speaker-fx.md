@@ -101,3 +101,18 @@ REAL playback of other shapes is refused with an update message. Selecting a
 shape in VIRTUAL works without hardware; selection remains shared when changing
 to REAL. No automatic flashing is performed. Configuration avoids waveform
 commands on disabled/Strict Tracks speaker channels.
+
+## Universal arrangement
+
+The optional `universal` preset keeps the source vocal and recognized FX attacks
+reserved, including near-future pickups. Outside those reservations, speakers
+can also retain short melodic notes that motors cannot accommodate. Main vocal
+attacks prefer the main speaker and can fall back to FX or motors during
+polyphony instead of being dropped by a hard pool. Long pads, low bass and
+percussion do not use this secondary melodic pool. All candidates still obey
+the profile, device transpose, occupancy and mechanical chronology. Ordinary
+legato note overlap on the vocal speaker is gated at the following source attack
+so one syllable does not block the next. Source MIDI remains unchanged.
+
+This flexible behavior is specific to [Universal](universal-arrangement.md); the
+previous presets keep their original dedicated-pool rules.

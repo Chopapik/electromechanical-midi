@@ -64,6 +64,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .tonal_articulation import capture
 
     policy = parse_policy(config.policy)
+    from . import universal
+    universal_mode = universal.enabled(policy)
     from . import fdd_pairs
     if fdd_pairs.enabled(policy):
         base = dataclasses.replace(config, policy={**policy, 'arrangementPreset': 'instrument_roles'})
@@ -88,6 +90,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     solo = any(d.solo for d in devices if d.enabled)
     for lane, device in bound.items():
         profile = context.profile_for(device, lane)
+        if universal_mode and device.type=='DVD_TRAY':
+            excluded[device.id]='UNIVERSAL_TRAY_EXCLUDED'; continue
         if not context.present(lane) or device.mute or (solo and not device.solo):
             excluded[device.id] = 'NO_DEVICE'; continue
         if profile is None:
@@ -140,6 +144,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     role_context = instrument_roles.contexts(notes, policy['mechanicalPhraseWindowMs']/1000.) if role_mode else {}
     if role_mode:
         notes = instrument_roles.prioritize(notes, role_context, fx_tracks, pins)
+    orchestration = universal.Phrases(notes, role_context, source, fx_tracks) if universal_mode else None
+    if orchestration:
+        notes = orchestration.prioritized(notes)
     from . import fdd_quality as quality
     from . import dvd_lead
     low_mode=dvd_lead.enabled(policy)
@@ -158,6 +165,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 if role == PERCUSSION else lead if role == LEAD and lead and not low_mode else accompaniment)
         if fx and item['track'] in fx_tracks and role != PERCUSSION and pin is None:
             pool = fx
+        if orchestration:
+            pool = orchestration.pool(item, slots, profiles, lead, fx, accompaniment, fx_tracks, pin)
         candidates = []; diagnostics = {}; blocked_candidates = []
         for slot in pool:
             device = slot.device; ident = device.id; profile = profiles[ident]; state = states[ident]
@@ -171,6 +180,11 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 duration=max(span.duration * gate, slot.capability.min_note_s)
             if role_mode and profile.name == 'FDD':
                 duration = instrument_roles.fdd_gate(duration, covered)
+            if orchestration and profile.name != 'HDD_PERCUSSION':
+                duration = orchestration.gate(item, profile, duration,
+                    'fx' if device.role == 'fx' else 'lead', item['track'] in fx_tracks, span.duration*gate)
+                if duration is None:
+                    continue
             if profile.name == 'HDD_PERCUSSION':
                 played = None; hz = None; folded = False
                 stages=[profile.get(k) for k in ('parkMs','settleMs','strikeMs')]
@@ -220,6 +234,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                     diagnostics[ident]={**evaluate(profile,HardwareNote(hz,duration,span.start),state).as_dict(),'musical':musical}
                     diagnostics[ident]['reasons'].append('DVD_RESERVED_FOR_MAIN_PHRASE')
                     continue
+            if orchestration and profile.name != 'HDD_PERCUSSION':
+                bonus, musical = orchestration.bonus(item, profile, ident, span.start,
+                    played, shifted, musical, 'fx' if device.role == 'fx' else 'lead')
+                if pin and pin.device_id==ident: bonus += .5
             if quality_detail:
                 wait=max(span.start,ev.ready_at,slot.busy_until)-span.start
                 window=(policy['leadMaxMicroDelayMs'] if role==LEAD else policy['maxArpeggioMs'])/1000.
@@ -236,6 +254,11 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 for reason in ev.reasons: rejected[ident][reason] += 1
                 continue
             arrival = max(span.start, ev.ready_at, slot.busy_until)
+            if orchestration and profile.name=='FDD':
+                attack_ready = orchestration.last_attack.get(ident, -float('inf'))+policy['fddMinAttackIntervalMs']/1000.
+                if attack_ready>arrival+1e-9:
+                    orchestration.fdd_rejected += 1
+                    arrival = attack_ready
             window = (policy['leadMaxMicroDelayMs'] if role == LEAD else
                       policy['maxMicroDelayMs'] if role == PERCUSSION else policy['maxArpeggioMs']) / 1000.
             if arrival - span.start > window + 1e-9:
@@ -244,8 +267,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 if policy['mechanicalAware'] and policy['allowVoiceSteal'] and profile.name=='DVD_SLED':
                     blocked_candidates.append((slot, played, hz, folded, duration))
                 continue
+            if orchestration and orchestration.reserved_conflict(item,device,arrival,duration,fx_tracks):
+                continue
             key = selection_key(ev, profile, ident)
-            if (policy['mechanicalAware'] or low_mode) and profile.name in ('FDD', 'DVD_SLED'):
+            if (policy['mechanicalAware'] or low_mode) and (profile.name in ('FDD', 'DVD_SLED') or orchestration and profile.name=='VHS'):
                 # Waiting and octave displacement also cost musical fidelity.
                 key = (key[0]-bonus+(arrival-span.start)*2.+(.15 if folded else 0.), *key[1:])
             candidates.append((key, slot, played, hz, folded, duration, arrival))
@@ -289,6 +314,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             outcome='SHORTENED'
         _place(slot, _Candidate(slot, played, hz, folded), item, outcome, arrival, duration, role, pin, preferred, events)
         decisions[item['id']] = diagnostics[slot.device.id]['musical']
+        if orchestration:
+            orchestration.accepted(item,slot.device.id,slot.device.type,arrival)
+            if (role=='lead' and slot not in lead) or (item['track'] in fx_tracks and slot not in fx):
+                orchestration.fallbacks += 1
         if quality_mode:
             alternatives={d:v['musical']['fddQuality'] for d,v in diagnostics.items() if 'fddQuality' in v['musical']
                 and v['musical']['fddQuality']['availableWithoutQuality']
@@ -312,6 +341,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                            dvd_mode=config.dvd_mode, tray_enabled=config.tray_enabled,
                            idle_reinforcement=dict(config.idle_reinforcement),
                            duplicates=_duplicate_kpis(source, notes, accompaniment, duplicate_report) if duplicate_report else {})
+    if orchestration: plan.tray_enabled=False
     plan.analysis['fxTracks'] = sorted(fx_tracks) if fx else []
     plan.articulation = apply(plan, caps, params_from_policy(policy))
     if policy.get('sourceContinuity'):
@@ -330,6 +360,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     for i,e in enumerate(plan.events):
         if e.id in decisions:
             plan.events[i] = dataclasses.replace(e, hardware={**e.hardware, 'selection': decisions[e.id]})
+    if orchestration:
+        plan.hardware['universal'] = orchestration.report()
     return plan
 
 

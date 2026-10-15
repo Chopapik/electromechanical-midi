@@ -1,0 +1,152 @@
+# Universal — adaptacyjna aranżacja fraz
+
+Wybór: **Settings → Aranżacja → Preset aranżacji → Universal · adaptacyjny**
+(`universal`). Zmiana potwierdza STOP i przebudowuje wspólny ExecutionTimeline,
+bez autoplay. Domyślne `balanced` w JSON i dotychczasowe presety są zachowane.
+
+Preset używa czterech FDD, czterech DVD, PC Speaker, PC Speaker FX i perkusyjnych
+HDD zgodnie z zadeklarowaną dostępnością. Obie tacki są jawnie wykluczone.
+Nie ma specjalnych reguł dla nazw utworów ani generowanych nut harmonii.
+
+## Status weryfikacji: wyłącznie VIRTUAL i testy software
+
+**BRAK TESTÓW TEGO PRESETU NA FIZYCZNYCH INSTRUMENTACH W REAL.**
+Odsłuch dotyczy wyłącznie syntezy VIRTUAL. Użytkownik zgłosił pozytywny odsłuch
+Let Down i No Surprises; Let Down nie należy do opisanego niżej benchmarku 31 MIDI.
+Ocena odsłuchowa jest subiektywna i nie oznacza odsłuchania całego korpusu.
+
+Testy automatyczne i benchmark sprawdzają plan oraz model mechaniczny offline.
+Nie wykonano prób silników, pomiarów prądu/temperatury ani odsłuchu REAL w ramach
+tej zmiany. Wspólny ExecutionTimeline nie potwierdza zgodności akustycznej,
+wykonania fizycznego ani bezpieczeństwa pracy. Przed uznaniem presetu za
+zweryfikowany w REAL potrzebne są osobne testy sprzętowe.
+
+## Decyzje muzyczne
+
+- Lokalny kontekst śledzi niepokrywające się głosy w obrębie track/channel.
+  Ruchomy riff nie zmienia stabilnego dolnego głosu w „szybki riff”.
+- Na wspólnym ataku lead i bas mają priorytet. W obrębie roli pierwsze tony
+  poszczególnych partii poprzedzają kolejne tony ich akordów. Preferowane są
+  skrajne głosy, dłuższe warstwy i velocity; nie wszystkie dźwięki jednego
+  wielkiego akordu muszą wypchnąć inną partię.
+- Przed wyborem FDD kandydat uwzględnia najwcześniejszy dozwolony kolejny atak
+  (domyślnie 120 ms). Zajęta stacja nie wygrywa nuty, którą dopiero końcowy pass
+  musiałby usunąć. Inny FDD, DVD lub dozwolony speaker może przejąć źródłowy atak.
+  Pozostają istniejące okna mikroopóźnień; nuty nie trafiają do bezterminowej kolejki.
+- FDD zachowuje eksperyment oktawy w dół, gate do 400 ms oraz ograniczenie przed
+  kolejnym atakiem tego samego głosu. DVD preferuje długi sustain; jego gate nie
+  jest ograniczany globalnym budżetem krótkich akompaniamentów.
+- Wokal preferuje główny speaker. Nakładające się gate'y legato kończą się na
+  następnym ataku źródłowej partii, zamiast powodować pominięcie kolejnej sylaby.
+  Dodatkowy równoczesny głos może użyć FX lub silników.
+- Źródłowe ataki wokalu i rozpoznanych FX rezerwują oba speakery także przed
+  przyszłym wejściem. Krótkie, wyższe partie melodyczne mogą korzystać z wolnego
+  speakera poza rezerwacjami; nie dotyczy to niskiego basu ani długich padów.
+  Jeśli track sklasyfikowany jako bas zawiera równoczesne głosy akordu, górny
+  ton co najmniej oktawę ponad aktywnym dolnym głosem może użyć FX (od MIDI 55).
+  Sama sekwencyjna zmiana rejestru monofonicznego basu nie spełnia tej reguły.
+- Preferencja ostatniego urządzenia dla głosu i koszt przesunięcia oktawowego
+  ograniczają przerzucanie barwy oraz niepotrzebne składanie rejestru. Koszt
+  oktawy liczy się po jawnej transpozycji urządzenia (główny speaker +12,
+  FDD −12). Zmiany oktaw wynikające z zakresów nadal są możliwe.
+
+Klasyfikacja GM/lyrics i normalizacja duplikatów są wspólne. Jawne efekty szumowe
+pozostają pominięte. Perkusja zachowuje dotychczasową kolejność i komendy HIT.
+Opcjonalny dowolny UNISON FDD jest wyłączony na rzecz niezależnych głosów.
+
+## Artykulacja i wykonanie
+
+Universal korzysta z istniejącego sustainu tła Instrument Roles: chronione
+mostkowanie DVD do 350 ms, po dynamicznym passie do 200 ms. Pauzy, niezależne
+partie, akcenty powtórzeń, skrócone gate'y i obce rezerwacje mogą je zablokować.
+Każda zmiana przechodzi pełną chronologię mechaniczną.
+
+Sufit DVD 600 Hz akustycznych, pitchRatio, przyspieszenie firmware, limity STEP,
+TRACK0, potwierdzany STOP i watchdog są zachowane. Końcowy wspólny pass FDD jest
+nadal aktywny jako zabezpieczenie planu. REAL i VIRTUAL nie aranżują oddzielnie.
+`plan.hardware.universal` opisuje trasy, odroczonych kandydatów ataku FDD i
+fallbacki; są to decyzje planowania, nie pomiar ruchu lub dźwięku.
+
+## Benchmark
+
+Zestaw obejmuje wszystkie 31 wskazanych MIDI. Manifest z nazwami i SHA-256:
+[universal-corpus.json](../reports/universal-corpus.json). Pełne metryki:
+[universal-arrangement.json](../reports/universal-arrangement.json).
+
+```sh
+.venv/bin/python scripts/benchmark_universal.py \
+  --manifest reports/universal-corpus.json \
+  --midi-dir /path/to/radiohead-midi --midi-dir /path/to/Downloads \
+  --presets instrument_roles universal --workers 3
+```
+
+Oba warianty używają tego samego inventory i profili oraz oktawy FDD w dół;
+różni się wyłącznie preset. Baseline to niezależne **FDD Riffs + DVD Tło**,
+które zachowuje więcej źródłowych głosów niż warianty par. Wskaźniki nie są
+oceną odsłuchu. Retencja dotyczy nut po wspólnej normalizacji; efekty nietonalne
+nie trafiają do mianownika. Coverage długości jest przecięciem wykonania z
+oryginalnym gate'em, więc dodatkowy sustain nie zawyża wyniku. Okno partii to
+2 s z co najmniej jednym źródłowym NOTE_ON danej pary track/channel; zachowanie
+jednej nuty w oknie nie oznacza odtworzenia całego jego wielogłosu.
+
+W całym zestawie liczba pominiętych nut tonalnych spadła z **20392 do 5687**.
+Zachowano **107793 → 122498** źródłowych nut tonalnych.
+Poprawa liczby ataków dotyczy 29 utworów; pozostałe 2 zachowują tę samą liczbę.
+Nie utracono żadnego wcześniej granego ID leadu/basu. Wszystkie 31 porównań
+ma identyczne komendy perkusji, zero konfliktów, overlapów, naruszeń odstępu FDD
+i komend tacek. Wszystkie 31 osi baseline zgadza się z kopią kodu sprzed zmiany.
+
+| MIDI | Pominięte tonalne przed | Universal | Pokrycie długości przed → po | Najdłuższy DVD po (s) |
+| --- | ---: | ---: | ---: | ---: |
+| 0001-01-radiohead_1993-you.mid | 1451 | 958 | 63.1% → 70.6% | 24.809 |
+| 0002-02-radiohead_1993-creep-[k].mid | 985 | 39 | 62.2% → 77.5% | 28.677 |
+| 0005-05-radiohead_1993-thinking_about_you.mid | 1858 | 1090 | 44.0% → 60.7% | 18.459 |
+| 0022-03-radiohead_1995-high_and_dry-[k].mid | 945 | 176 | 62.0% → 82.2% | 41.353 |
+| 0023-04-radiohead_1995-fake_plastic_trees-[k].mid | 154 | 42 | 89.1% → 94.8% | 136.195 |
+| 0024-05-radiohead_1995-bones.mid | 59 | 13 | 80.9% → 91.3% | 8.070 |
+| 0025-06-radiohead_1995-(nice_dream)-[k].mid | 952 | 334 | 69.3% → 87.3% | 10.451 |
+| 0026-07-radiohead_1995-just-[k].mid | 1726 | 537 | 60.1% → 77.8% | 19.145 |
+| 0032-01-radiohead_1997-airbag-[k].mid | 800 | 10 | 71.7% → 82.3% | 36.057 |
+| 0033-02-radiohead_1997-paranoid_android-[k].mid | 1126 | 227 | 64.7% → 84.5% | 48.375 |
+| 0037-06-radiohead_1997-karma_police-[k].mid | 404 | 176 | 68.3% → 76.4% | 19.222 |
+| 0038-07-radiohead_1997-fitter_happier.mid | 37 | 0 | 70.8% → 73.9% | 69.476 |
+| 0041-10-radiohead_1997-no_surprises-[k].mid | 552 | 200 | 65.4% → 73.9% | 15.588 |
+| 0042-11-radiohead_1997-lucky-[k].mid | 867 | 593 | 59.3% → 65.2% | 69.866 |
+| 0045-02-radiohead_2000-kid_a.mid | 14 | 0 | 74.0% → 77.7% | 67.759 |
+| 0046-03-radiohead_2000-the_national_anthem.mid | 2 | 0 | 94.1% → 98.5% | 79.336 |
+| 0060-11-radiohead_2001-life_in_a_glass_house-[k].mid | 154 | 0 | 77.1% → 79.7% | 65.836 |
+| 0062-08-radiohead_2001-true_love_waits_(live).mid | 920 | 104 | 64.4% → 83.5% | 18.177 |
+| 0063-01-radiohead_2003-2+2=5-[k].mid | 1053 | 429 | 63.0% → 78.2% | 64.621 |
+| 0064-02-radiohead_2003-sit_down_stand_up-[k].mid | 233 | 48 | 67.8% → 84.0% | 43.187 |
+| 0068-06-radiohead-2003-where_i_end_and_you_begin.mid | 1489 | 89 | 56.3% → 70.0% | 90.274 |
+| 0071-09-radiohead_2003-there_there-[k].mid | 336 | 186 | 73.1% → 89.5% | 51.217 |
+| 0072-10-radiohead_2003-i_will.mid | 0 | 0 | 80.7% → 83.7% | 28.883 |
+| 0079-01-radiohead_2007-15_step-[k].mid | 28 | 0 | 87.6% → 89.8% | 31.912 |
+| 0080-02-radiohead_2007-bodysnatchers-[k].mid | 2675 | 103 | 65.2% → 90.1% | 16.974 |
+| 0081-03-radiohead_2007-nude.mid | 163 | 25 | 61.2% → 68.6% | 42.710 |
+| 0082-04-radiohead_2007-weird_fishes-arpegi.mid | 0 | 0 | 95.7% → 99.9% | 16.178 |
+| 0083-05-radiohead_2007-all_i_need.mid | 15 | 1 | 72.6% → 73.9% | 23.997 |
+| 0087-09-radiohead_2007-jigsaw_falling_into_place.mid | 394 | 137 | 66.9% → 74.7% | 22.587 |
+| Avicii_Levels.mid | 552 | 20 | 71.6% → 82.7% | 38.091 |
+| One_Republic_Counting_stars.mid | 448 | 150 | 65.4% → 63.3% | 38.811 |
+
+Counting Stars pokazuje kompromis: więcej zachowanych ataków przy nieco mniejszym
+pokryciu gate'ów. True Love Waits wymaga rozróżnienia niskiego basu od górnych
+równoczesnych głosów partii oznaczonej jako bas; bez tej reguły globalna suma nut
+maskowała utratę 16 wcześniejszych ID. Testy obejmują oba przypadki.
+
+Najdłuższy ciągły okres DVD w zestawie to **136.195 s**
+(0023-04-radiohead_1995-fake_plastic_trees-[k].mid). Jest to plan, nie zmierzony czas bezpiecznej pracy silnika.
+
+## Ograniczenia fizyczne i muzyczne
+
+Osiem silników i dwa monofoniczne speakery nie odtworzą bez strat dowolnej
+polifonii. Priorytety mogą zmienić wybór konkretnych nut akordu, podział barw,
+rejestr i gate'y. Nazwy/GM/lyrics są dowodami heurystycznymi, nie odsłuchem;
+błędna klasyfikacja w źródle nadal może skierować niewłaściwą partię do wokalu.
+Mniejsze dropy nie są dowodem lepszego brzmienia.
+
+Najdłuższe ciągłe okresy DVD raportujemy ze skompilowanej osi. Ciągły obrót nie
+potwierdza bezpiecznej pracy termicznej. Proponowane VM 3,3 V wymaga pomiarów
+prądu i temperatury; przy 5 V obserwowano nadmierne grzanie. Testy nie uruchamiają
+silników ani nie zastępują pomiarów fizycznego układu.

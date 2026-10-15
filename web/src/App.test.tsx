@@ -112,3 +112,8 @@ it('keeps arrangement settings and plan preview out of the player',()=>{
  expect(screen.getByLabelText('Preset aranżacji')).toBeTruthy()
  expect(screen.getByText('Arrangement · PerformancePlan')).toBeTruthy()
 })
+
+it('selects the universal adaptive arrangement',()=>{
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'universal'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'universal'})
+})

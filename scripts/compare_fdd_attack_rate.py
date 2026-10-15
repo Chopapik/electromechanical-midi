@@ -17,7 +17,7 @@ from playback.fdd_attack_rate import apply
 from playback.mechanical_arrangement import _chronology
 
 PRESETS = ('balanced', 'fdd_quality', 'fdd_quality_adaptive', 'dvd_lead_low_fdd',
-           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet')
+           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
 
 
 def metrics(p):

@@ -35,7 +35,7 @@ Disabling dynamic-awareness removes the fast-cadence requirement, but preserves
 all phrase, reservation and repeat safeguards.
 
 This describes the dynamic pass shared by AUTO physical plans. Instrument Roles
-and its paired variants additionally use the [background/grace sustain pass](instrument-roles.md#stronger-dvd-background-sustain),
+and its paired variants, as well as Universal, additionally use the [background/grace sustain pass](instrument-roles.md#stronger-dvd-background-sustain),
 with an experimental 350 ms ceiling and guarded repeated-note/handoff bridges.
 STRICT_TRACKS uses only FDD. Routing across devices or independent parts can
 still produce gaps. No new motor driver is introduced.
