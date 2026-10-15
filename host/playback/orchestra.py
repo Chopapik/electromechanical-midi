@@ -23,6 +23,7 @@ BALANCED = {
     'dvdContinuousSustain': False,
     'dvdDynamicAware': True,
     'dvdMaxBridgeMs': 200.,
+    'dvdBackgroundMaxBridgeMs': 350.,
     'mechanicalPhraseWindowMs': 1500.,
     'mechanicalPreferenceWeight': .8,
     'partContinuityWeight': .12,
@@ -172,7 +173,7 @@ def parse_policy(payload: dict | None) -> dict:
 
         policy[key] = value
 
-    if policy['arrangementPreset'] not in ('balanced','fdd_quality','dvd_lead_low_fdd'):
+    if policy['arrangementPreset'] not in ('balanced','fdd_quality','dvd_lead_low_fdd','instrument_roles'):
         raise ValueError('Unknown arrangement preset')
     for key in FDD_QUALITY_DEFAULTS:
         if key=='arrangementPreset': continue
@@ -182,7 +183,7 @@ def parse_policy(payload: dict | None) -> dict:
         if policy[key]>1: raise ValueError('Invalid '+key)
     for key in ('maxMicroDelayMs', 'maxArpeggioMs', 'stealMargin', 'maxNoteSeconds', 'leadMaxNoteSeconds',
                    'leadMaxMicroDelayMs', 'capacitySafety',
-                   'dvdMaxBridgeMs', 'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
+                   'dvdMaxBridgeMs', 'dvdBackgroundMaxBridgeMs', 'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
                    'partContinuityWeight', 'sustainCompetitionTolerance', 'fddUnisonMinVelocity', 'fddUnisonMaxDurationMs',
                    'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
                    'releaseGapMs', 'maxSustainExtensionMs', 'sourceContinuityAmount'):

@@ -77,7 +77,77 @@ class DvdSustainTests(unittest.TestCase):
         p=plan([event(i,i*.25) for i in range(3)]); before=list(p.events)
         with patch('playback.dvd_sustain._chronology', return_value=None):
             self.assertEqual(self.apply(p)['bridged'],0)
-        self.assertEqual(p.events,before)
+            self.assertEqual(p.events,before)
+
+    def background(self, events):
+        p = plan(events)
+        p.policy['arrangementPreset'] = 'instrument_roles'
+        return p
+
+    def test_background_slow_repeats_become_one_continuous_run(self):
+        original = [event(i, i*.6, .45, note=60, played_note=60, played_hz=220.) for i in range(5)]
+        p = self.background(original)
+        report = self.apply(p)
+        self.assertEqual(report['bridged'], 4)
+        self.assertEqual(report['repeatsBridged'], 4)
+        self.assertEqual(sum(c.kind == 'stop' for c in compile_plan(p).commands), 1)
+        for a, b in zip(original, p.events):
+            self.assertEqual(replace(b, actual_duration=a.actual_duration, sustain_added=0), a)
+        self.assertEqual(self.apply(p)['bridged'], 0)
+
+    def test_background_preserves_existing_dynamic_links(self):
+        original = [event(i, i*.25) for i in range(6)]
+        dynamic = plan(original)
+        self.apply(dynamic)
+        p = self.background(original)
+        report = self.apply(p)
+        self.assertEqual(report['dynamicBridgesPreserved'], 5)
+        self.assertTrue(all(b.actual_duration >= a.actual_duration for a, b in zip(dynamic.events, p.events)))
+
+    def test_background_long_notes_and_polyphonic_inner_voice_can_connect(self):
+        p = self.background([event(0, 0, .9), event(1, 1, .9)])
+        self.assertEqual(self.apply(p)['bridged'], 1)
+        low = [event(i, i*.6, .5, note=48, played_note=48, played_hz=130.8) for i in range(4)]
+        upper = [event(20+i, i*.2, .12, note=72+i%3, played_note=72+i%3,
+                       device_id='fdd-1', device_type='FDD') for i in range(12)]
+        p = self.background(low+upper)
+        self.assertEqual(self.apply(p)['bridged'], 3)
+        self.assertEqual(p.events[4:], upper)
+
+    def test_background_preserves_phrase_pauses_pickups_accents_and_other_parts(self):
+        cases = [
+            [event(0, 0, 1), event(1, 2, 1)],
+            [event(0, 0, .04), event(1, .25)],
+            [event(0, 0, .4, note=60, played_note=60),
+             event(1, .5, note=60, played_note=60, velocity=127)],
+            [event(0, 0, .4), event(1, .5, track=2)],
+            [event(0, 0, .4, articulation='STACCATO'), event(1, .5)],
+            [event(0, 0, .4, outcome='SHORTENED'), event(1, .5)],
+            [event(0, 0, .15), event(9, .2, outcome='DROPPED', device_id=None), event(1, .5)],
+        ]
+        for original in cases:
+            with self.subTest(events=original):
+                p = self.background(original)
+                self.apply(p)
+                self.assertEqual(p.events[0], original[0])
+
+    def test_background_ceiling_tempo_and_reinforcement_are_hard_limits(self):
+        for policy in ({'dvdBackgroundMaxBridgeMs': 50}, {'dvdContinuousSustain': False}):
+            p = self.background([event(i, i*.6, .45) for i in range(3)])
+            original = list(p.events)
+            p.policy.update(policy)
+            self.apply(p)
+            self.assertEqual(p.events, original)
+        for value in (-1, float('nan'), float('inf')):
+            with self.assertRaises(ValueError): parse_policy({'dvdBackgroundMaxBridgeMs': value})
+        p = self.background([event(i, i*.6, .45) for i in range(3)])
+        self.source.tempo = SimpleNamespace(_segments=[SimpleNamespace(seconds=0, tempo=100000)])
+        self.assertEqual(self.apply(p)['bridged'], 0)
+        p = self.background([event(i, i*.6, .45) for i in range(3)])
+        self.source = SimpleNamespace()
+        p.reinforcements = [ReinforcementEvent('other', DVD, .48, .04, 220, 100)]
+        self.apply(p)
+        self.assertEqual(p.events[0].actual_duration, .45)
     def test_source_continuity_gate_and_both_outputs_share_compiled_schedule(self):
         from runtime.outputs import RealOutput, VirtualOutput
         from playback.articulation import apply_source_continuity

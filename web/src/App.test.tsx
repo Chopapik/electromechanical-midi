@@ -58,6 +58,11 @@ it('sends DVD Lead preset selection to the runtime',()=>{
 })
 
 
+it('selects the FDD riffs and DVD background preset',()=>{
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles'})
+})
+
 it.each(['/', '/settings'])('shows runtime errors only in the footer on %s',path=>{
  state.error='Błąd odczytu MIDI'
  mount(path)

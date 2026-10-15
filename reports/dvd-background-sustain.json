@@ -1,0 +1,94 @@
+{
+  "scope": "same Instrument Roles allocation; only DVD articulation changes; STOP counted from ExecutionTimeline",
+  "thermalSafety": "Unknown; software timelines are not a thermal measurement",
+  "songs": {
+    "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+      "baseline": {
+        "dvdNotes": 901,
+        "dvdStops": 775,
+        "dvdWorkSeconds": 382.009083,
+        "dvdSilenceSeconds": 197.971668,
+        "dvdLongestContinuousSeconds": 11.779734,
+        "dropped": 159,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 94,
+          "addedSeconds": 0.738093,
+          "maxBridgeMs": 200.0,
+          "mode": "dynamic",
+          "repeatsBridged": 0
+        },
+        "dvdReinforcements": 0
+      },
+      "background": {
+        "dvdNotes": 901,
+        "dvdStops": 499,
+        "dvdWorkSeconds": 392.401915,
+        "dvdSilenceSeconds": 187.578836,
+        "dvdLongestContinuousSeconds": 17.494006,
+        "dropped": 159,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 370,
+          "addedSeconds": 11.130925,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 85,
+          "dynamicBridgesPreserved": 94
+        },
+        "dvdReinforcements": 0
+      },
+      "allocationAndNonDvdCommandsUnchanged": true,
+      "afterTwoMinutes": {
+        "baselineDvdStops": 533,
+        "backgroundDvdStops": 287
+      }
+    },
+    "Every breath you take.mid": {
+      "baseline": {
+        "dvdNotes": 473,
+        "dvdStops": 430,
+        "dvdWorkSeconds": 537.208266,
+        "dvdSilenceSeconds": 100.274593,
+        "dvdLongestContinuousSeconds": 13.434588,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 0,
+          "addedSeconds": 0.0,
+          "maxBridgeMs": 200.0,
+          "mode": "dynamic",
+          "repeatsBridged": 0
+        },
+        "dvdReinforcements": 0
+      },
+      "background": {
+        "dvdNotes": 473,
+        "dvdStops": 212,
+        "dvdWorkSeconds": 551.892854,
+        "dvdSilenceSeconds": 85.590005,
+        "dvdLongestContinuousSeconds": 28.81427,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 218,
+          "addedSeconds": 14.684588,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 157,
+          "dynamicBridgesPreserved": 0
+        },
+        "dvdReinforcements": 0
+      },
+      "allocationAndNonDvdCommandsUnchanged": true,
+      "afterTwoMinutes": {
+        "baselineDvdStops": 200,
+        "backgroundDvdStops": 107
+      }
+    }
+  }
+}

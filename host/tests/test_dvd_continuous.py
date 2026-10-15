@@ -37,8 +37,8 @@ class ContinuousDvdTests(unittest.TestCase):
         self.assertEqual(len(catalog),4)
         self.assertTrue(all(d['continuousRotation'] and d['bands']==[] for d in catalog))
         app=Application(); link=Link();app.real.attach(link);app.real.configure()
-        self.assertFalse(app.registry.by_id['DVD_STEPPER_4']['enabled'])
-        for ident in range(1,4):
+        self.assertTrue(app.registry.by_id['DVD_STEPPER_4']['enabled'])
+        for ident in range(1,5):
             self.assertTrue(any(line.startswith(f'SLED {ident} PROFILE 0 ') for line in link.sent))
             self.assertIn(f'SLED {ident} DIR FWD',link.sent)
         self.assertFalse(any(' PLAY ' in line for line in link.sent))
@@ -61,7 +61,7 @@ class ContinuousDvdTests(unittest.TestCase):
         self.assertEqual(event.actual_start,0)
 
     def test_dvd_ceiling_all_auto_presets_and_multiple_octaves(self):
-        for preset in ('balanced','fdd_quality','dvd_lead_low_fdd'):
+        for preset in ('balanced','fdd_quality','dvd_lead_low_fdd','instrument_roles'):
             with self.subTest(preset=preset):
                 registry=DeviceRegistry()
                 for d in registry.devices: d['enabled']=d['id']=='DVD_STEPPER_1'

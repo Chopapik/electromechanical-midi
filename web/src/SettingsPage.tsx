@@ -41,11 +41,13 @@ export function SettingsPage({app}:{app:Runtime}){
             <label className="settings-select">Preset aranżacji
               <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>void app.send('arrangement_preset',{preset:e.target.value})}>
                 <option value="balanced">Balanced</option>
+                <option value="instrument_roles">FDD Riffs + DVD Tło</option>
                 <option value="fdd_quality">FDD Quality · eksperymentalny</option>
                 <option value="dvd_lead_low_fdd">DVD Lead + Low FDD · eksperymentalny</option>
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
+            {s?.arrangementPreset==='instrument_roles'&&<small>FDD: krótkie nuty i zmiany wysokości. DVD: długie tło. PC Speaker: wokal, PC Speaker FX: ozdobniki. Perkusja bez zmian.</small>}
           </div>
           <ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>
         </section>

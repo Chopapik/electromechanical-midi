@@ -1,0 +1,89 @@
+{
+  "scope": "same inventory and settings; only arrangementPreset changes; software planning only",
+  "songs": [
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "baseline": {
+        "playedTonal": 7321,
+        "droppedTonal": 169,
+        "fddNotes": 6086,
+        "dvdNotes": 925,
+        "longSourceNotesOnFdd": 37,
+        "longSourceNotesOnDvd": 46,
+        "fddLongestHoldSeconds": 7.676,
+        "dvdLongestContinuousSeconds": 9.994,
+        "overlaps": 0,
+        "sourceLongBackgroundAfter120Seconds": 104.113,
+        "dvdSilentDuringLongBackgroundAfter120Seconds": 16.333
+      },
+      "experiment": {
+        "playedTonal": 7331,
+        "droppedTonal": 159,
+        "fddNotes": 6120,
+        "dvdNotes": 901,
+        "longSourceNotesOnFdd": 41,
+        "longSourceNotesOnDvd": 47,
+        "fddLongestHoldSeconds": 0.173,
+        "dvdLongestContinuousSeconds": 11.78,
+        "overlaps": 0,
+        "sourceLongBackgroundAfter120Seconds": 104.113,
+        "dvdSilentDuringLongBackgroundAfter120Seconds": 12.756
+      },
+      "percussionTimelineIdentical": true,
+      "speakerTimelinesIdentical": true,
+      "backgroundTailRegression": [
+        {
+          "sourceId": "5:989",
+          "device": "DVD_STEPPER_1",
+          "start": 188.570976,
+          "compiledEnd": 199.993568
+        },
+        {
+          "sourceId": "5:990",
+          "device": "DVD_STEPPER_2",
+          "start": 188.570976,
+          "compiledEnd": 199.993568
+        },
+        {
+          "sourceId": "5:991",
+          "device": "DVD_STEPPER_3",
+          "start": 188.570976,
+          "compiledEnd": 199.993568
+        }
+      ]
+    },
+    {
+      "file": "Every breath you take.mid",
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "baseline": {
+        "playedTonal": 2427,
+        "droppedTonal": 0,
+        "fddNotes": 1766,
+        "dvdNotes": 442,
+        "longSourceNotesOnFdd": 281,
+        "longSourceNotesOnDvd": 248,
+        "fddLongestHoldSeconds": 3.949,
+        "dvdLongestContinuousSeconds": 13.435,
+        "overlaps": 0,
+        "sourceLongBackgroundAfter120Seconds": 98.54,
+        "dvdSilentDuringLongBackgroundAfter120Seconds": 0.362
+      },
+      "experiment": {
+        "playedTonal": 2427,
+        "droppedTonal": 0,
+        "fddNotes": 1735,
+        "dvdNotes": 473,
+        "longSourceNotesOnFdd": 249,
+        "longSourceNotesOnDvd": 280,
+        "fddLongestHoldSeconds": 0.275,
+        "dvdLongestContinuousSeconds": 13.435,
+        "overlaps": 0,
+        "sourceLongBackgroundAfter120Seconds": 98.54,
+        "dvdSilentDuringLongBackgroundAfter120Seconds": 0.537
+      },
+      "percussionTimelineIdentical": true,
+      "speakerTimelinesIdentical": true
+    }
+  ]
+}

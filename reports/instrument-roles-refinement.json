@@ -1,0 +1,53 @@
+{
+  "scope": "same three active DVD devices; previous preset snapshot vs refined preset; prior snapshot times serialized to six decimals; software only",
+  "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+  "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+  "before": {
+    "playedTonal": 7321,
+    "droppedTonal": 169,
+    "fddNotes": 6091,
+    "dvdNotes": 920,
+    "longSourceNotesOnFdd": 37,
+    "longSourceNotesOnDvd": 46,
+    "fddLongestHoldSeconds": 0.173,
+    "dvdLongestContinuousSeconds": 9.994,
+    "overlaps": 0,
+    "sourceLongBackgroundAfter120Seconds": 104.113,
+    "dvdSilentDuringLongBackgroundAfter120Seconds": 16.333
+  },
+  "after": {
+    "playedTonal": 7331,
+    "droppedTonal": 159,
+    "fddNotes": 6120,
+    "dvdNotes": 901,
+    "longSourceNotesOnFdd": 41,
+    "longSourceNotesOnDvd": 47,
+    "fddLongestHoldSeconds": 0.173,
+    "dvdLongestContinuousSeconds": 11.78,
+    "overlaps": 0,
+    "sourceLongBackgroundAfter120Seconds": 104.113,
+    "dvdSilentDuringLongBackgroundAfter120Seconds": 12.756
+  },
+  "backgroundTailRegression": [
+    {
+      "sourceId": "5:989",
+      "device": "DVD_STEPPER_1",
+      "start": 188.570976,
+      "compiledEnd": 199.993568
+    },
+    {
+      "sourceId": "5:990",
+      "device": "DVD_STEPPER_2",
+      "start": 188.570976,
+      "compiledEnd": 199.993568
+    },
+    {
+      "sourceId": "5:991",
+      "device": "DVD_STEPPER_3",
+      "start": 188.570976,
+      "compiledEnd": 199.993568
+    }
+  ],
+  "percussionTimelineIdentical": true,
+  "speakerTimelinesIdentical": true
+}

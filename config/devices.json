@@ -86,7 +86,7 @@
       "lane": "sled:4",
       "profile": "DVD_REFERENCE",
       "hardwareProfile": "DVD_SLED",
-      "enabled": false,
+      "enabled": true,
       "volume": 0.2,
       "pan": 0.0
     },

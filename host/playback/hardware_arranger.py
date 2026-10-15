@@ -64,6 +64,12 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .tonal_articulation import capture
 
     policy = parse_policy(config.policy)
+    from . import instrument_roles
+    role_mode = instrument_roles.enabled(policy)
+    if role_mode:
+        policy['mechanicalAware'] = True
+        # Keep FDD voices available for independent riffs instead of doubling.
+        policy['fddUnisonEnabled'] = False
     devices = config.instances()  # Keep disabled ordinals: FDD2 must never become FDD1.
     bound, unmapped = bind_devices(devices, 2)
     caps = capabilities_for(devices)
@@ -109,6 +115,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             policy['leadMaxNoteSeconds'] = _adaptive_cap(notes, lead or accompaniment, policy, frozenset({LEAD}))
     from .mechanical_arrangement import phrase_context, preference, add_unison
     phrases = phrase_context(notes, policy['mechanicalPhraseWindowMs']/1000.)
+    role_context = instrument_roles.contexts(notes, policy['mechanicalPhraseWindowMs']/1000.) if role_mode else {}
+    if role_mode:
+        notes = instrument_roles.prioritize(notes, role_context, pins=pins)
     from . import fdd_quality as quality
     from . import dvd_lead
     low_mode=dvd_lead.enabled(policy)
@@ -122,6 +131,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         span = item['span']; role = item['role']; pin = pins.get(item['id'])
         if pin is not None and pin.device_id is None:
             events.append(_dropped(item, 'MANUAL_DROP', role, None, pin)); continue
+        covered = role_mode and instrument_roles.held_background(span, events)
         pool = ([s for s in slots.values() if profiles[s.device.id].name == 'HDD_PERCUSSION']
                 if role == PERCUSSION else lead if role == LEAD and lead and not low_mode else accompaniment)
         candidates = []; diagnostics = {}; blocked_candidates = []
@@ -135,6 +145,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 duration = max(span.duration * gate, slot.capability.min_note_s)
             if low_mode and profile.name in ('FDD','DVD_SLED'):
                 duration=max(span.duration * gate, slot.capability.min_note_s)
+            if role_mode and profile.name == 'FDD':
+                duration = instrument_roles.fdd_gate(duration, covered)
             if profile.name == 'HDD_PERCUSSION':
                 played = None; hz = None; folded = False
                 stages=[profile.get(k) for k in ('parkMs','settleMs','strikeMs')]
@@ -168,6 +180,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             ev = evaluate(profile, note, state)
             bonus, musical = preference(item, profile, phrases[item['id']], policy,
                 last_part.get((item['track'], span.channel)) == ident)
+            if role_mode and profile.name in ('FDD', 'DVD_SLED'):
+                bonus, musical = instrument_roles.preference(profile, role_context[item['id']], covered)
+                bonus += policy['partContinuityWeight'] if last_part.get((item['track'], span.channel)) == ident else 0.
             if low_mode and profile.name in ('FDD','DVD_SLED'):
                 value=values[item['id']]
                 bonus=(4. + value['musicalValue'] + (.3 if span.duration>.5 else 0.)) if profile.name=='DVD_SLED' else .2
