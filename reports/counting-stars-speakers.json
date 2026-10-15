@@ -1,0 +1,81 @@
+{
+  "baseline": {
+    "leadTrack": 7,
+    "leadSelection": "heuristic",
+    "fxTracks": [],
+    "vocalRouting": {
+      "fdd-1": 290,
+      "DVD_STEPPER_1": 27,
+      "fdd-3": 89,
+      "DVD_STEPPER_3": 15,
+      "fdd-4": 97,
+      "DVD_STEPPER_2": 17,
+      "fdd-2": 130
+    },
+    "fxRouting": {
+      "vhs-1": 141
+    },
+    "fxPhrase": [
+      [
+        34.502916,
+        830.609,
+        "vhs-1"
+      ],
+      [
+        35.978325,
+        987.767,
+        "vhs-1"
+      ],
+      [
+        36.347178,
+        830.609,
+        "vhs-1"
+      ],
+      [
+        36.470128,
+        739.989,
+        "vhs-1"
+      ]
+    ],
+    "conflicts": 0,
+    "dropped": 874
+  },
+  "experiment": {
+    "leadTrack": 3,
+    "leadSelection": "semantic-vocal",
+    "fxTracks": [
+      7
+    ],
+    "vocalRouting": {
+      "vhs-1": 665
+    },
+    "fxRouting": {
+      "pc-speaker-fx": 141
+    },
+    "fxPhrase": [
+      [
+        34.502916,
+        830.609,
+        "pc-speaker-fx"
+      ],
+      [
+        35.978325,
+        987.767,
+        "pc-speaker-fx"
+      ],
+      [
+        36.347178,
+        830.609,
+        "pc-speaker-fx"
+      ],
+      [
+        36.470128,
+        739.989,
+        "pc-speaker-fx"
+      ]
+    ],
+    "conflicts": 0,
+    "dropped": 786
+  },
+  "scope": "same enabled inventory; baseline removes new strong-lyrics evidence, so FX remains inactive; track indices are zero based"
+}

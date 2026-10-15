@@ -190,7 +190,7 @@ class VirtualDeviceInstance:
         if track is not None and track < 0:
             raise ValueError('track must be nonnegative')
         volume, pan, gate = float(data.get('volume', .6)), float(data.get('pan', 0)), float(data.get('gate', 1))
-        if not (0 <= volume <= 1 and -1 <= pan <= 1 and 0 < gate <= 2):
+        if not (0 <= volume <= (2.5 if kind=='VHS' else 1) and -1 <= pan <= 1 and 0 < gate <= 2):
             raise ValueError('volume, pan or gate outside supported range')
         transpose = int(data.get('transpose', 0))
         if not -48 <= transpose <= 48:

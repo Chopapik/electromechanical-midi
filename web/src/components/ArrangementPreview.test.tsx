@@ -43,3 +43,12 @@ it('displays DVD Lead octave and range diagnostics',async()=>{
  render(<ArrangementPreview revision={1} file="song.mid"/>);await open()
  expect(screen.getByLabelText('Diagnostyka DVD Lead').textContent).toContain('DVD: 8 nut · FDD −12: 2 nut · bez obniżenia (zakres): 1 · skrócone: 0')
 })
+
+it('shows Adaptive density, recovery and independent activity',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({events:[],reinforcements:[],report:{totals:{played:10,dropped:2},fddAdaptive:{recoveredNotes:3,restoredGates:5,valuableOmittedNotes:1,dropReasons:{TIMING_CONFLICT:2},frames:[{start:0,end:.25,level:.8,independentParts:3,meanActiveFdd:2}],activity:{primary:{fractions:[.1,.2,.3,.3,.1]}},silence:{oneFddWithFeasibleUnusedSourceSeconds:.5}}}})}))
+ render(<ArrangementPreview revision={1} file="song.mid"/>);await open()
+ expect(screen.getByLabelText('Diagnostyka Adaptive').textContent).toContain('Odzyskane nuty: 3 · przywrócone gate: 5')
+ expect(screen.getByText(/Aktywne niezależne FDD/).textContent).toContain('4: 10.0%')
+ expect(screen.getByText('80.0%')).toBeTruthy()
+ expect(screen.getByText(/Odrzucenia:/).textContent).toContain('TIMING_CONFLICT: 2')
+})

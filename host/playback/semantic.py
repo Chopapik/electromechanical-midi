@@ -161,6 +161,14 @@ def classify(source, profiles) -> tuple[TrackClassification, ...]:
                 add('BACKING_VOCAL', .10 * min(1.0, alignment / .75),
                     f'lyrics alignment: {alignment:.0%}')
 
+        # Strong timed lyrics plus a single melodic voice can identify vocals
+        # even when exported under an instrumental GM program.
+        if (not backing and family != 'Bass' and not profile.is_drums
+                and len(notes) >= 20 and alignment >= .85
+                and profile.monophony >= .95 and profile.overlap_ratio <= .15
+                and 48 <= profile.mean_pitch <= 76 and profile.step_ratio >= .3):
+            add('VOCAL', .14, 'strong lyric-aligned monophonic melody')
+
         ranked = sorted(ROLES, key=lambda role: (-scores[role], ROLES.index(role)))
         if all_notes and not notes:
             # Hard program semantics take precedence over names and lyrics.

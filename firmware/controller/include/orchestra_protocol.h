@@ -121,7 +121,7 @@ struct CommandProtocol {
  }
  void status(Transport origin) {
   char line[160]; reply(origin, "STATUS BEGIN");
-  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 strict_tracks=1 strict_active=%d",ctrl.strictTracks);
+  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 speaker_fx=1 speaker_waves=%d strict_tracks=1 strict_active=%d",ctrl.io.speakerAudioReady(),ctrl.strictTracks);
   reply(origin,line);
   for (int i=0; i<4; ++i) {
    auto& d=ctrl.fdd[i]; bool active=ctrl.io.track0(d.track0Pin);
@@ -130,7 +130,7 @@ struct CommandProtocol {
   for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d mode=percussion state=%s ready_at=%lu hz=0 safety=UNKNOWN profile=HDD_PERCUSSION",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle,ctrl.hdd[i].state==Hdd::Park?"RESET":ctrl.hdd[i].state==Hdd::Settle?"SETTLE":ctrl.hdd[i].state==Hdd::Strike?"STRIKE":"READY",(unsigned long)(ctrl.hdd[i].state==Hdd::Idle?ctrl.io.us():ctrl.hdd[i].deadline+(ctrl.hdd[i].state==Hdd::Park?ctrl.hdd[i].settleUs+ctrl.hdd[i].strikeUs:ctrl.hdd[i].state==Hdd::Settle?ctrl.hdd[i].strikeUs:0)));reply(origin,line);}
   for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS SLED %d enabled=%d playing=%d hz=%.2f position=%d dir=%s soft_min=%d soft_max=%d rate=%.0f target=%.0f pos_conf=LOW ramp=%d",i+1,ctrl.sled[i].enabled,ctrl.sled[i].playing,ctrl.sled[i].hz,ctrl.sled[i].position,ctrl.sled[i].forward?"fwd":"rev",Sled::SOFT_MIN,ctrl.sled[i].softMax,ctrl.sled[i].currentStepRate,ctrl.sled[i].targetStepRate,fabsf(ctrl.sled[i].currentStepRate-ctrl.sled[i].targetStepRate)>1);reply(origin,line);}
   for(int i=0;i<2;++i){snprintf(line,sizeof(line),"STATUS TRAY %d enabled=%d busy=%d",i+1,ctrl.tray[i].enabled,ctrl.tray[i].busy);reply(origin,line);}
-  snprintf(line,sizeof(line),"STATUS VHS enabled=%d amp=%d hz=%.2f",ctrl.vhsEnabled,ctrl.amp,ctrl.frequency);reply(origin,line);reply(origin,"STATUS END");
+  snprintf(line,sizeof(line),"STATUS VHS enabled=%d amp=%d hz=%.2f",ctrl.vhsEnabled,ctrl.amp,ctrl.frequency);reply(origin,line);snprintf(line,sizeof(line),"STATUS VHS2 enabled=%d amp=%d hz=%.2f",ctrl.fxEnabled,ctrl.fxAmp,ctrl.fxFrequency);reply(origin,line);reply(origin,"STATUS END");
  }
 };
 }

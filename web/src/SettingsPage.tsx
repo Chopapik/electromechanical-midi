@@ -1,3 +1,4 @@
+import {waveformPoints} from './pulseWave'
 import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
@@ -34,6 +35,30 @@ export function SettingsPage({app}:{app:Runtime}){
         <section className="settings-section">
           <h2>Output</h2>
           <label><input type="checkbox" checked={virtual} disabled={disabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
+        </section>
+        <section className="settings-section">
+          <h2>Brzmienie PC Speaker</h2>
+          {s?.devices.filter(d=>d.type==='VHS').map(d=><div className="settings-action speaker-volume" key={d.id}>
+            <h3>{d.name}</h3>
+            <label>VIRTUAL · {Math.round(d.volume/2.5*100)}%
+              <input aria-label={`${d.name} VIRTUAL głośność`} type="range" min="0" max="100" step="1" value={Math.round(d.volume/2.5*100)} disabled={disabled} onChange={e=>void app.send('speaker_volume',{deviceId:d.id,output:'VIRTUAL',value:Number(e.target.value)/100*2.5})}/>
+            </label>
+            <label>Kształt · REAL + VIRTUAL
+              <select aria-label={`${d.name} kształt fali`} value={d.waveform??'pulse'} disabled={disabled} onChange={e=>void app.send('speaker_waveform',{deviceId:d.id,waveform:e.target.value})}>
+                <option value="pulse">Kwadrat / impuls</option>
+                <option value="sine">Sinus</option>
+                <option value="triangle">Trójkąt</option>
+                <option value="sawtooth">Piła</option>
+              </select>
+            </label>
+            <label>{(d.waveform??'pulse')==='pulse'?'Wypełnienie · REAL + VIRTUAL':'Poziom REAL'} · {((d.realAmplitude??50)/256*100).toFixed(1)}%
+              <input aria-label={`${d.name} wypełnienie fali`} type="range" min="0" max="128" step="1" value={d.realAmplitude??50} disabled={disabled} onChange={e=>void app.send('speaker_volume',{deviceId:d.id,output:'REAL',value:Number(e.target.value)})}/>
+            </label>
+            <svg className="pulse-preview" viewBox="0 0 200 40" role="img" aria-label={`${d.name} podgląd fali`}>
+              <polyline points={waveformPoints(d.waveform??'pulse',d.realAmplitude??50)} fill="none" stroke="currentColor" strokeWidth="1.5"/>
+            </svg>
+          </div>)}
+          <small>VIRTUAL: nowe 100% odpowiada dawnemu 250%. Kształt jest wspólny dla REAL i VIRTUAL. Sinus, trójkąt i piła w REAL wymagają nowego firmware. Dla impulsu 50% to kwadrat, 0% to cisza. Ustawienia zapisują się automatycznie.</small>
         </section>
         <section className="settings-section">
           <h2>Aranżacja</h2>

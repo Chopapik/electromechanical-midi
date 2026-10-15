@@ -17,8 +17,8 @@ def parse_status(lines):
         if len(parts) < 3 or parts[0] != 'STATUS':
             raise ValueError('invalid STATUS record')
         kind = parts[1]
-        start = 2 if kind in ('CTRL', 'VHS') else 3
-        if kind not in ('CTRL', 'VHS', 'FDD', 'HDD', 'SLED', 'TRAY'):
+        start = 2 if kind in ('CTRL', 'VHS', 'VHS2') else 3
+        if kind not in ('CTRL', 'VHS', 'VHS2', 'FDD', 'HDD', 'SLED', 'TRAY'):
             raise ValueError('unknown device kind')
         if start == 3 and (len(parts) < 4 or not parts[2].isdigit()):
             raise ValueError('invalid device ID')

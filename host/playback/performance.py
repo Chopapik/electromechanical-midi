@@ -241,6 +241,8 @@ class PerformancePlan:
             report['hardware'] = self.hardware
             from .fdd_quality import diagnostics
             report['fddQuality'] = diagnostics(self)
+            if self.hardware.get('adaptive'):
+                report['fddAdaptive']=self.hardware['adaptive']
             if self.policy.get('arrangementPreset')=='dvd_lead_low_fdd':
                 from .dvd_lead import diagnostics as low_diagnostics
                 report['dvdLeadLowFdd']=low_diagnostics(self)

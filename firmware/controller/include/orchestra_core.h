@@ -6,10 +6,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include "hardware_profiles_generated.h"
+#include "speaker_waveform.h"
 
 namespace orchestra {
 namespace map {
-constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25;
+constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25, speakerFx=26;
 constexpr uint8_t track0[4]={34,35,36,39};
 constexpr uint8_t step[4]={0,2,4,6}, dir[4]={1,3,5,7};
 constexpr uint8_t sled[4][4]={{8,9,10,11},{12,13,14,15},{16,17,18,19},{20,21,22,23}};
@@ -27,6 +28,9 @@ struct IO {
  // Return timestamp immediately after the latch edge, before any other work.
  virtual uint32_t frame(const uint8_t*,size_t)=0;
  virtual void vhs(uint8_t,float)=0;
+ virtual void vhsFx(uint8_t,float){}
+ virtual void speakerWave(uint8_t,uint8_t){}
+ virtual bool speakerAudioReady(){return true;}
 };
 struct ShiftRegisterBus {
  IO& io; uint8_t shadow[5]={};
@@ -132,12 +136,14 @@ struct Tray:Bridge {
 };
 struct Controller {
  IO& io;ShiftRegisterBus bus;FloppyDrive fdd[4]={{0},{1},{2},{3}};Hdd hdd[4]={{0},{1},{2},{3}};Sled sled[4]={{0},{1},{2},{3}};Tray tray[2]={{0},{1}};
+ uint8_t vhsWave=Pulse,fxWave=Pulse;
+ bool fxEnabled=false;uint8_t fxAmp=0;float fxFrequency=0;
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
  bool strictTracks=false; int16_t strictTrack[4]={-1,-1,-1,-1};
  explicit Controller(IO& value):io(value),bus(value){}
- void begin(){bus.begin();io.vhs(0,0);lastCommand=io.us();}
+ void begin(){bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
  void wake(){bus.setBit(map::sleep,true);bus.flush();}
- void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);for(auto& d:tray)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);for(auto b:map::step)bus.setBit(b,true);bus.setBit(map::sleep,false);bus.flush();}
+ void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);for(auto& d:tray)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.setBit(map::sleep,false);bus.flush();}
  void tick(){
   if(uint32_t(io.us()-lastCommand)>physical::hostWatchdogUs){if(!watchdogStopped){allStop();watchdogStopped=true;}return;}
   for(auto& d:hdd)d.tick(bus);for(auto& d:sled)d.tick(bus);for(auto& d:tray)d.tick(bus);
@@ -181,13 +187,24 @@ struct Controller {
   if(!strcmp(text,"HIT"))return command("HDD 1 HIT");
   if(!strcmp(text,"HDD 0"))return command("ALL STOP");
   if((!strcmp(args[0],"DRUM")||!strcmp(args[0],"DRUMF"))&&n==2){snprintf(expanded,96,"VHS %s %s",!strcmp(args[0],"DRUM")?"AMP":"FREQ",args[1]);return command(expanded);}
+  if(!strcmp(args[0],"VHS2")){
+   if(n==2&&!strcmp(args[1],"STOP")){fxAmp=0;fxFrequency=0;io.vhsFx(0,0);return "OK";}
+   if(strictTracks&&strcmp(text,"VHS2 ENABLE 0"))return "ERR STRICT_OUTPUT";
+   if(n==3&&!strcmp(args[1],"WAVE")){int wave=speakerWaveParse(args[2]);if(wave<0||(wave!=Pulse&&fxFrequency>2000))return "ERR VALUE";fxWave=wave;io.speakerWave(1,fxWave);return "OK";}
+   if(n!=3)return "ERR COMMAND";char* end;float v=strtof(args[2],&end);if(*end||!isfinite(v)||v<0)return "ERR VALUE";
+   if(!strcmp(args[1],"ENABLE")&&(v==0||v==1)){fxEnabled=v==1;if(!fxEnabled){fxAmp=0;fxFrequency=0;io.vhsFx(0,0);}return "OK";}
+   if(!fxEnabled)return "ERR DISABLED";
+   if(!strcmp(args[1],"AMP")&&v<=255)fxAmp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v>0&&v<=(fxWave==Pulse?20000:2000))fxFrequency=v;else return "ERR VALUE";
+   wake();io.vhsFx(fxAmp,fxFrequency);return "OK";
+  }
   if(!strcmp(args[0],"VHS")){
    if(n==2&&!strcmp(args[1],"STOP")){amp=0;frequency=0;io.vhs(0,0);return "OK";}
    if(strictTracks&&strcmp(text,"VHS ENABLE 0"))return "ERR STRICT_OUTPUT";
+   if(n==3&&!strcmp(args[1],"WAVE")){int wave=speakerWaveParse(args[2]);if(wave<0||(wave!=Pulse&&frequency>2000))return "ERR VALUE";vhsWave=wave;io.speakerWave(0,vhsWave);return "OK";}
    if(n!=3)return "ERR COMMAND";char* end;float v=strtof(args[2],&end);if(*end||!isfinite(v)||v<0)return "ERR VALUE";
    if(!strcmp(args[1],"ENABLE")&&(v==0||v==1)){vhsEnabled=v==1;if(!vhsEnabled){amp=0;frequency=0;io.vhs(0,0);}return "OK";}
    if(!vhsEnabled)return "ERR DISABLED";
-   if(!strcmp(args[1],"AMP")&&v<=255)amp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v<=20000)frequency=v;else return "ERR VALUE";wake();io.vhs(amp,frequency);return "OK";
+   if(!strcmp(args[1],"AMP")&&v<=255)amp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v<=(vhsWave==Pulse?20000:2000))frequency=v;else return "ERR VALUE";wake();io.vhs(amp,frequency);return "OK";
   }
   if(!strcmp(text,"FDD ALL HOME")){wake();for(auto& d:fdd)if(d.enabled)d.home(bus);return "OK";}
   if(n<3)return "ERR COMMAND";char* end;long id=strtol(args[1],&end,10);if(*end||id<1)return "ERR ID";--id;

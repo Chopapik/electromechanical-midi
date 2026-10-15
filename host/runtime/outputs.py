@@ -15,6 +15,7 @@ class RealOutput:
         self.active = False
         self.error = None
         self.configured = False
+        self.active_speakers = set()
         self.last_ping = 0.
         self.sent = []
 
@@ -42,6 +43,7 @@ class RealOutput:
             except Exception: pass
         self.link = None
         self.configured = False
+        self.active_speakers.clear()
 
     def attach(self, link):
         self.link = link
@@ -65,6 +67,7 @@ class RealOutput:
             self.unknown = True
             self.error = 'Nieznany stan sprzętu: '+str(exc)
             raise OutputError(self.error) from exc
+        self.active_speakers.clear()
         self.active = self.unknown = False
         self.error = None
 
@@ -79,11 +82,15 @@ class RealOutput:
         for d in self.registry.devices:
             p = self.registry.profile(d['id'])
             prefix = self.prefix(d['id'])
+            if d['lane'] == 'drum:2' and self.link.controller_status.get('speaker_fx') != '1':
+                continue
             on = d['enabled'] and p is not None and (not strict or d['type']=='FDD')
             profile = execution_command(p,d['lane']) if p else None
             if on and d['type'] in ('FDD','DVD_SLED','HDD_VCM') and not profile: on=False
             if on and p.get('continuousRotation') and self.link.controller_status.get('dvd_continuous')!='1':
                 raise OutputError('Wgraj nowe firmware ESP32: wymagany ciągły ruch DVD Stepper')
+            if on and d['type']=='VHS' and self.link.controller_status.get('speaker_waves')=='1':
+                lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")
             if on and profile: lines.append(profile)
             if on and p.get('continuousRotation'): lines.append(f'{prefix} DIR FWD')
             lines.append(f'{prefix} ENABLE {int(on)}')
@@ -105,11 +112,16 @@ class RealOutput:
     def ready(self, commands=()):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
+        if any(self.registry.by_id[c.device_id]['lane']=='drum:2' and c.kind!='stop' for c in commands) and self.link.controller_status.get('speaker_fx')!='1':
+            raise OutputError('Wgraj nowe firmware ESP32: wymagany PC Speaker FX na GPIO 26')
+        for c in commands:
+            if c.kind!='stop' and self.registry.by_id[c.device_id]['type']=='VHS':
+                self.require_waveform(self.registry.by_id[c.device_id].get('waveform','pulse'))
         self.configure()
         for c in commands:
             if c.kind=='stop': continue
             d=self.registry.by_id[c.device_id]
-            key='VHS' if d['type']=='VHS' else d['lane'].upper()
+            key=('VHS2' if d['lane']=='drum:2' else 'VHS') if d['type']=='VHS' else d['lane'].upper()
             status=self.link.device_status.get(key,{})
             if status.get('enabled')!='1': raise OutputError(d['name']+': firmware nie potwierdził ENABLE')
             if d['type']=='FDD' and (status.get('homed')!='1' or status.get('homing')=='1'):
@@ -117,7 +129,7 @@ class RealOutput:
 
     def prefix(self, ident):
         lane=self.registry.by_id[ident]['lane']
-        return 'VHS' if lane=='drum:1' else lane.upper().replace(':',' ')
+        return 'VHS' if lane=='drum:1' else 'VHS2' if lane=='drum:2' else lane.upper().replace(':',' ')
 
     def dispatch(self, commands, **_):
         # An offline attempt cannot have started physical motion. Keep genuine
@@ -130,7 +142,10 @@ class RealOutput:
             if c.kind=='stop': lines.append(prefix+' STOP')
             elif c.kind=='hit': lines.append(prefix+' HIT')
             elif c.kind=='pulse': lines.append(f'{prefix} PULSE {c.direction} {round(c.duration*1000)}')
-            elif d['type']=='VHS': lines.extend(['VHS AMP 50',f'VHS FREQ {c.hz:.2f}'])
+            elif d['type']=='VHS':
+                if self.link.controller_status.get('speaker_waves')=='1':
+                    lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")
+                lines.extend([f"{prefix} AMP {d.get('realAmplitude',50)}",f'{prefix} FREQ {c.hz:.2f}'])
             else:
                 text=f'{prefix} PLAY {c.hz:.2f}'
                 if self.registry.document.get('routing',{}).get('mode')=='STRICT_TRACKS' and d['type']=='FDD':
@@ -139,9 +154,28 @@ class RealOutput:
                 lines.append(text)
         if any(c.kind!='stop' for c in commands): self.active=True
         self.write(lines)
+        for c in commands:
+            if self.registry.by_id[c.device_id]['type']=='VHS':
+                if c.kind=='stop': self.active_speakers.discard(c.device_id)
+                else: self.active_speakers.add(c.device_id)
+
+    def require_waveform(self,waveform):
+        if waveform!='pulse' and (not self.link or self.link.controller_status.get('speaker_waves')!='1'):
+            raise OutputError('Wgraj nowe firmware ESP32: wymagany generator sinus/trójkąt/piła')
+
+    def set_speaker_waveform(self,ident):
+        waveform=self.registry.by_id[ident].get('waveform','pulse')
+        if self.link and self.configured and self.link.controller_status.get('speaker_waves')=='1':
+            self.write([f'{self.prefix(ident)} WAVE {waveform}'])
+
+    def set_speaker_amplitude(self, ident):
+        if self.link and ident in self.active_speakers:
+            self.write([f"{self.prefix(ident)} AMP {self.registry.by_id[ident].get('realAmplitude',50)}"])
 
     def stop_device(self, ident):
-        if self.link: self.write([self.prefix(ident)+' STOP'])
+        if self.link:
+            self.write([self.prefix(ident)+' STOP'])
+            self.active_speakers.discard(ident)
         elif self.active or self.unknown: raise OutputError('Nieznany stan sprzętu; STOP urządzenia niepotwierdzony')
 
     def poll(self):

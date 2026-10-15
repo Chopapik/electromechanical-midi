@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react'
 export interface PlannedNote {id:string;trackName:string;deviceId:string|null;deviceType:string|null;playedNote:number|null;actualStart:number;actualDuration:number;outcome:string;hardware?:{selection?:{reason:string;sustainAffinity?:number}}}
 export interface PlannedUnison {sourceId:string;sourceDevice:string;deviceId:string;start:number;duration:number;kind:string}
-export interface PlanPreview {events:PlannedNote[];reinforcements:PlannedUnison[];report:{totals:{played:number;dropped:number};dvdLeadLowFdd?:{dvdNotes:number;octaveLowered:number;octaveRangeFallback:number;shortenedNotes:number};fddQuality?:{fddNotes:number;fddSeconds:number;estimatedSteps:number;estimatedReversals:number;omittedNotes:number;dvdTakeovers:number;unisonEvents:number}}}
+export interface PlanPreview {events:PlannedNote[];reinforcements:PlannedUnison[];report:{totals:{played:number;dropped:number};dvdLeadLowFdd?:{dvdNotes:number;octaveLowered:number;octaveRangeFallback:number;shortenedNotes:number};fddAdaptive?:{recoveredNotes:number;restoredGates:number;valuableOmittedNotes:number;dropReasons:Record<string,number>;frames:{start:number;end:number;level:number;independentParts:number;meanActiveFdd:number}[];activity:{primary:{fractions:number[]}};silence:{oneFddWithFeasibleUnusedSourceSeconds:number}};fddQuality?:{fddNotes:number;fddSeconds:number;estimatedSteps:number;estimatedReversals:number;omittedNotes:number;dvdTakeovers:number;unisonEvents:number}}}
 export function ArrangementPreview({revision,file}:{revision:number;file:string|null}){
  const [plan,setPlan]=useState<PlanPreview|null>(null),[error,setError]=useState(''),[page,setPage]=useState(0),[open,setOpen]=useState(false)
  useEffect(()=>{
@@ -11,6 +11,13 @@ export function ArrangementPreview({revision,file}:{revision:number;file:string|
  },[revision,file,open])
  const unisons=plan?.reinforcements.filter(e=>e.kind==='UNISON')??[]
  return <details className="arrangement-preview" onToggle={e=>setOpen(e.currentTarget.open)}><summary>Arrangement · PerformancePlan</summary>
+  {plan?.report.fddAdaptive&&<div aria-label="Diagnostyka Adaptive">
+   <p>Odzyskane nuty: {plan.report.fddAdaptive.recoveredNotes} · przywrócone gate: {plan.report.fddAdaptive.restoredGates} · wartościowe pominięte: {plan.report.fddAdaptive.valuableOmittedNotes}</p>
+   <p>Aktywne niezależne FDD (udział czasu): {plan.report.fddAdaptive.activity.primary.fractions.map((v,i)=>`${i}: ${(v*100).toFixed(1)}%`).join(' · ')}</p>
+   <p>Jeden FDD przy wykonalnym niewykorzystanym materiale: {plan.report.fddAdaptive.silence.oneFddWithFeasibleUnusedSourceSeconds.toFixed(2)} s (model)</p>
+   <p>Odrzucenia: {Object.entries(plan.report.fddAdaptive.dropReasons).map(([r,n])=>`${r}: ${n}`).join(' · ')||'brak'}</p>
+   <details><summary>Gęstość muzyczna w czasie</summary><div className="arrangement-table" style={{maxHeight:240,overflowY:'auto'}}><table><thead><tr><th>Czas (s)</th><th>Poziom adaptacji</th><th>Partie MIDI</th><th>Średnio aktywne FDD</th></tr></thead><tbody>{plan.report.fddAdaptive.frames.map((f,i)=><tr key={i}><td>{f.start.toFixed(2)}–{f.end.toFixed(2)}</td><td>{(f.level*100).toFixed(1)}%</td><td>{f.independentParts}</td><td>{f.meanActiveFdd.toFixed(2)}</td></tr>)}</tbody></table></div></details>
+  </div>}
   {plan?.report.dvdLeadLowFdd&&<p aria-label="Diagnostyka DVD Lead">DVD: {plan.report.dvdLeadLowFdd.dvdNotes} nut · FDD −12: {plan.report.dvdLeadLowFdd.octaveLowered} nut · bez obniżenia (zakres): {plan.report.dvdLeadLowFdd.octaveRangeFallback} · skrócone: {plan.report.dvdLeadLowFdd.shortenedNotes}</p>}
   {plan?.report.fddQuality&&<p aria-label="Diagnostyka FDD">FDD: {plan.report.fddQuality.fddNotes} nut · {plan.report.fddQuality.fddSeconds.toFixed(2)} s aktywności · ~{Math.round(plan.report.fddQuality.estimatedSteps)} kroków · ~{plan.report.fddQuality.estimatedReversals} zawróceń · {plan.report.fddQuality.omittedNotes} pominiętych · {plan.report.fddQuality.dvdTakeovers} nut przejętych przez DVD · {plan.report.fddQuality.unisonEvents} UNISON</p>}
   {error&&<p role="alert">{error}</p>}

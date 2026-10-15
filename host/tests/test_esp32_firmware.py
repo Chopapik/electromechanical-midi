@@ -14,6 +14,7 @@ SOURCE = r'''
 #include <array>
 using namespace orchestra;
 struct Fake: IO {
+ uint8_t fxAmp=0;float fxHz=0;
  uint32_t now=10000;bool active[4]={};bool outputs=false;uint64_t previous=0;
  std::vector<std::pair<uint32_t,uint64_t>> edges;
  std::vector<std::string> boot;std::vector<std::array<uint8_t,5>> bytes;
@@ -28,6 +29,7 @@ struct Fake: IO {
   bytes.push_back(copy);now+=45;edges.push_back({now,bits});boot.push_back("frame");previous=bits;return now;
  }
  void vhs(uint8_t,float)override{}
+ void vhsFx(uint8_t amp,float hz)override{fxAmp=amp;fxHz=hz;}
 };
 int main(int argc,char** argv){
  std::string c=argv[1];Fake io;Controller d(io);d.begin();
@@ -156,7 +158,30 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("SLED 1 PROFILE 140 5000 1"),"ERR BUSY"));
  }else if(c=="tray"){
   assert(!strcmp(d.command("TRAY 1 PULSE FWD 80"),"ERR DISABLED"));d.command("TRAY 1 ENABLE 1");d.command("TRAY 1 PULSE REV 80");assert((io.previous>>32&3)==2);io.now+=80000;d.tick();assert(!d.tray[0].busy&&(io.previous>>32&3)==0);
+ }else if(c=="speaker_waves"){
+  assert(!strcmp(d.command("VHS WAVE sine"),"OK")&&d.vhsWave==Sine);
+  assert(!strcmp(d.command("VHS2 WAVE triangle"),"OK")&&d.fxWave==Triangle);
+  assert(!strcmp(d.command("VHS WAVE invalid"),"ERR VALUE")&&d.vhsWave==Sine);
+  assert(!strcmp(d.command("VHS FREQ 2001"),"ERR VALUE"));d.command("VHS2 ENABLE 1");assert(!strcmp(d.command("VHS2 FREQ 2001"),"ERR VALUE"));
+  SpeakerOscillator s;s.amp=50;s.hz=100;s.wave=Sine;s.last=0;
+  assert(s.sample(2500)==100);assert(s.sample(7500)==0);
+  s.wave=Triangle;s.phase=0;s.last=0;assert(s.sample(5000)==100);assert(s.sample(10000)==0);
+  s.wave=Sawtooth;s.phase=0;s.last=0;assert(s.sample(5000)==50);
+  for(int wave=1;wave<4;++wave){s.wave=wave;s.phase=0;s.last=0;int sum=0;for(int i=1;i<=200;++i){int value=s.sample(i*50);assert(value>=0&&value<=100);sum+=value;}assert(abs(sum/200-50)<=1);}
+  s.amp=0;assert(s.sample(100000)==0);
+  d.command("TRACKS SET 1 2 3 4");assert(!strcmp(d.command("VHS WAVE sine"),"ERR STRICT_OUTPUT"));
+ }else if(c=="speaker_fx"){
+  assert(map::speakerFx==26&&map::vhs==25&&io.fxAmp==0);
+  assert(!strcmp(d.command("VHS2 FREQ 830"),"ERR DISABLED"));
+  d.command("VHS2 ENABLE 1");d.command("VHS AMP 50");d.command("VHS FREQ 220");
+  d.command("VHS2 AMP 50");d.command("VHS2 FREQ 987");assert(io.fxAmp==50&&io.fxHz==987&&d.frequency==220);
+  d.command("VHS2 STOP");assert(io.fxAmp==0&&d.amp==50&&d.frequency==220);
+  d.command("VHS2 AMP 50");d.command("VHS2 FREQ 740");d.command("ALL STOP");assert(io.fxAmp==0&&io.fxHz==0&&d.amp==0);
+  d.command("VHS2 AMP 50");d.command("VHS2 FREQ 830");io.now+=3000001;d.tick();assert(io.fxAmp==0&&io.fxHz==0);
+  assert(!strcmp(d.command("VHS2 FREQ nan"),"ERR VALUE"));
+  d.command("VHS2 ENABLE 0");assert(io.fxAmp==0&&!d.fxEnabled);
  }else if(c=="watchdog"){
+
   d.fdd[0].homed=true;d.command("PLAY 220");d.command("HIT");io.now+=3000001;d.tick();assert(!d.fdd[0].playing&&d.hdd[0].state==Hdd::Idle&&io.previous==0x55);
  }else if(c=="protocol"){
   assert(!strcmp(d.command("PING"),"PONG"));assert(!strcmp(d.command("PLAY 220"),"ERR NOT_HOMED"));d.fdd[0].homed=true;d.command("PLAY 220");assert(d.fdd[0].playing);d.command("STOP");assert(!d.fdd[0].playing);
@@ -253,7 +278,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

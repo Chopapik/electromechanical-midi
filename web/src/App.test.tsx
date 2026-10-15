@@ -13,11 +13,23 @@ const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orches
   output:{mode:'REAL',connected:false,unknown:false,message:'Brak połączenia z ESP32',muted:[]},
   service:{busy:false,error:null,reset:{available:false,reason:'Brak komendy resetu'},home:{available:false,reason:'Offline'},firmware:{available:false,reason:'Podłącz ESP32 przez USB (CP2102), aby wgrać firmware'}}}
 vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents})}))
-beforeEach(()=>{cleanup();send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
+beforeEach(()=>{cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
 function mount(path='/'){return render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>)}
 describe('Orchestra UI',()=>{
  it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Offline · ESP32 nie jest połączony')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
  it('Settings only exposes debug, maintenance and device mute',()=>{mount('/settings');fireEvent.click(screen.getByLabelText('Virtual debug · Web Audio'));expect(send).toHaveBeenCalledWith('output',{mode:'VIRTUAL'});fireEvent.click(screen.getByLabelText('Mute FDD #1'));expect(send).toHaveBeenCalledWith('mute',{deviceId:'fdd-1',muted:true});expect((screen.getByText('Reset ESP32 — niedostępny') as HTMLButtonElement).disabled).toBe(true);expect(screen.queryByText('AUTO · 4 FDD')).toBeNull()})
+ it('exposes shared waveform and independent VIRTUAL volume sliders in Settings',()=>{
+  state.devices.push({id:'vhs-1',name:'PC Speaker',type:'VHS',enabled:true,volume:.6,bands:[],reason:null},{id:'pc-speaker-fx',name:'PC Speaker FX',type:'VHS',enabled:true,volume:.4,bands:[],reason:null})
+  mount('/settings')
+  for(const [name,id] of [['PC Speaker','vhs-1'],['PC Speaker FX','pc-speaker-fx']]){
+   fireEvent.change(screen.getByRole('slider',{name:`${name} VIRTUAL głośność`}),{target:{value:'25'}})
+   expect(send).toHaveBeenCalledWith('speaker_volume',{deviceId:id,output:'VIRTUAL',value:.625})
+   fireEvent.change(screen.getByRole('combobox',{name:`${name} kształt fali`}),{target:{value:'sine'}})
+   expect(send).toHaveBeenCalledWith('speaker_waveform',{deviceId:id,waveform:'sine'})
+   fireEvent.change(screen.getByRole('slider',{name:`${name} wypełnienie fali`}),{target:{value:'64'}})
+   expect(send).toHaveBeenCalledWith('speaker_volume',{deviceId:id,output:'REAL',value:64})
+  }
+ })
  it('virtual is a manual output allowing offline Play',()=>{state.output.mode='VIRTUAL';mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(false);fireEvent.click(screen.getByRole('button',{name:'Play'}));expect(send).toHaveBeenCalledWith('play')})
  it('Lab is entered through Settings and shares device labels',()=>{mount('/settings');fireEvent.click(screen.getByText('Laboratory · debug'));expect(send).toHaveBeenCalledWith('lab_enter')})
  it('enables USB firmware without BLE and starts through React',()=>{
@@ -58,6 +70,7 @@ it('sends DVD Lead preset selection to the runtime',()=>{
 })
 
 
+
 it('selects the FDD riffs and DVD background preset',()=>{
  mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles'})
@@ -67,6 +80,7 @@ it.each(['instrument_roles_unison','instrument_roles_duet'])('selects paired FDD
  mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:preset}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset})
 })
+
 
 it.each(['/', '/settings'])('shows runtime errors only in the footer on %s',path=>{
  state.error='Błąd odczytu MIDI'

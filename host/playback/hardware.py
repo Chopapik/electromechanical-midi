@@ -67,7 +67,7 @@ def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1
         if protocol_version == 2:
             family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
                       'HDD_VCM': 'hdd', 'DVD_TRAY': 'tray'}.get(device.type)
-            capacity = {'fdd': 4, 'sled': 4, 'hdd': 4, 'tray': 2, 'drum': 1}
+            capacity = {'fdd': 4, 'sled': 4, 'hdd': 4, 'tray': 2, 'drum': 2}
             lane = f'{family}:{ordinal[family]}' if ordinal[family] <= capacity.get(family, 0) else None
 
 

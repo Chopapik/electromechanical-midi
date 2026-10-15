@@ -1,6 +1,7 @@
+import type {SpeakerWaveform} from './pulseWave'
 import {useEffect,useRef,useState} from 'react'
 import {VirtualOutput,type Command} from './virtualOutput'
-export interface Device {id:string;name:string;type:string;enabled:boolean;volume:number;bands:number[][];reason:string|null;continuousRotation?:boolean}
+export interface Device {id:string;name:string;type:string;enabled:boolean;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform;bands:number[][];reason:string|null;continuousRotation?:boolean}
 export interface State {
   activity?:Record<string,Command>; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
   arrangementPreset?:'balanced'|'fdd_quality'|'dvd_lead_low_fdd'|'instrument_roles'|'instrument_roles_unison'|'instrument_roles_duet';revision:number;error:string|null;audioOwner:string|null;devices:Device[];
@@ -45,7 +46,7 @@ export function useRuntime(){
           lastFirmwareSeq.current=msg.seq
           setFirmwareEvents(events=>[...events,msg].slice(-3000))
         }
-        if(msg.state&&(!latest.current||msg.state.epoch>=latest.current.epoch)){latest.current=msg.state;setState(msg.state);audio.current.state(msg.state.epoch,msg.state.state==='playing'&&msg.state.output.mode==='VIRTUAL'&&msg.state.audioOwner===session.current)}
+        if(msg.state&&(!latest.current||msg.state.epoch>=latest.current.epoch)){latest.current=msg.state;setState(msg.state);audio.current.setVolumes(msg.state.devices);audio.current.state(msg.state.epoch,msg.state.state==='playing'&&msg.state.output.mode==='VIRTUAL'&&msg.state.audioOwner===session.current)}
         if(msg.type==='sync')audio.current.sync(msg.sent,msg.serverTime)
         if(msg.type==='audio'&&msg.owner===session.current){
           const devices=Object.fromEntries((latest.current?.devices??[]).map(d=>[d.id,d]));try{audio.current.schedule(msg,devices)}catch(e){audio.current.stop();setError(String(e));ws.send(JSON.stringify({action:'audio_error',message:String(e),epoch:msg.epoch}))}

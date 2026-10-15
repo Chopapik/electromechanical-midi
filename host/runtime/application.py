@@ -43,6 +43,23 @@ class Application:
             except Exception:
                 parameters['arrangementPreset']=old
                 raise
+    def set_speaker_volume(self, ident, output, value):
+        with self.player.lock:
+            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            self.registry.set_volume(ident,output,value)
+            if output=='REAL' and self.router.mode=='REAL' and ident not in self.router.muted:
+                self.real.set_speaker_amplitude(ident)
+
+    def set_speaker_waveform(self,ident,waveform):
+        with self.player.lock:
+            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            self.registry.validate_waveform(ident,waveform)
+            if self.router.mode=='REAL' and ident in self.real.active_speakers:
+                self.real.require_waveform(waveform)
+            self.registry.set_waveform(ident,waveform)
+            if self.router.mode=='REAL' and ident not in self.router.muted:
+                self.real.set_speaker_waveform(ident)
+
     def orchestra(self):
         self.player.select_owner('orchestra'); self.lab.session=None
         if self.timeline: self.player.load(self.timeline)

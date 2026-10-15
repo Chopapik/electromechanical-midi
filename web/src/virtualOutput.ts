@@ -1,3 +1,4 @@
+import {pulseCoefficients,type SpeakerWaveform} from './pulseWave'
 import {mechanicalSamples,type MechanicalArticulation} from './mechanicalAudio'
 /** Web Audio executes Player timestamps. It owns audio nodes, never song time. */
 export interface Command {
@@ -5,7 +6,7 @@ export interface Command {
   hz:number; velocity:number; articulation?:MechanicalArticulation & {attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
     gain?:{times:number[];values:number[]}; frequency?:{times:number[];values:number[]}}
 }
-type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string}
+type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string;level?:GainNode;levelValue?:number;duty?:number;waveform?:SpeakerWaveform}
 export class VirtualOutput {
   context:AudioContext|null=null
   private voices:Voice[]=[]
@@ -39,14 +40,43 @@ export class VirtualOutput {
     this.epoch=epoch
     this.heartbeat()
   }
+  private pulse(source:OscillatorNode,amplitude:number){
+    if(!this.context)return
+    if(amplitude===0){source.type='square';return} // Mix gain silences a zero-duty pulse.
+    const {real,imag}=pulseCoefficients(amplitude)
+    source.setPeriodicWave(this.context.createPeriodicWave(real,imag,{disableNormalization:true}))
+  }
+  private setWave(source:OscillatorNode,waveform:SpeakerWaveform,amplitude:number){
+    if(waveform==='pulse')this.pulse(source,amplitude)
+    else source.type=waveform
+  }
+  setVolumes(devices:{id:string;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform}[]) {
+    const values=new Map(devices.map(d=>[d.id,d]))
+    for(const voice of this.voices){
+      const device=values.get(voice.device)
+      const duty=device?.realAmplitude??50
+      const value=device?(duty===0?0:device.volume):undefined
+      const waveform=device?.waveform??'pulse'
+      if(voice.level&&(voice.duty!==duty||voice.waveform!==waveform)&&'setPeriodicWave' in voice.source){
+        this.setWave(voice.source,waveform,duty);voice.duty=duty;voice.waveform=waveform
+      }
+      if(voice.level&&value!==undefined&&value!==voice.levelValue){
+        const at=Math.max(this.context?.currentTime??0,voice.start)
+        voice.level.gain.cancelScheduledValues(at)
+        voice.level.gain.setValueAtTime(voice.levelValue??value,at)
+        voice.level.gain.linearRampToValueAtTime(value,at+.01)
+        voice.levelValue=value
+      }
+    }
+  }
   stop(device?:string) {
     for(const voice of [...this.voices])if(!device || voice.device===device) {
       try { voice.gain.gain.cancelScheduledValues(0); voice.gain.gain.setValueAtTime(0,this.context?.currentTime??0); voice.source.stop() } catch { /* already ended */ }
-      voice.source.disconnect(); voice.gain.disconnect()
+      voice.source.disconnect(); voice.gain.disconnect();voice.level?.disconnect()
       this.voices=this.voices.filter(v=>v!==voice)
     }
   }
-  schedule(packet:{epoch:number;origin:number;serverTime:number;commands:Command[]}, devices:Record<string,{volume:number;type:string}>) {
+  schedule(packet:{epoch:number;origin:number;serverTime:number;commands:Command[]}, devices:Record<string,{volume:number;type:string;realAmplitude?:number;waveform?:SpeakerWaveform}>) {
     const ctx=this.context
     if(packet.epoch<this.epoch)return
     if(!ctx || ctx.state!=='running')throw new Error('Wyjście Web Audio nie działa')
@@ -78,11 +108,11 @@ export class VirtualOutput {
         const buffer=ctx.createBuffer(1,samples.length,ctx.sampleRate);buffer.copyToChannel(samples,0)
         source=ctx.createBufferSource();source.buffer=buffer
       } else {
-        source=ctx.createOscillator();source.type='square';source.frequency.setValueAtTime(c.hz,start)
+        source=ctx.createOscillator();this.setWave(source,device?.waveform??'pulse',device?.realAmplitude??50);source.frequency.setValueAtTime(c.hz,start)
       }
       // Hardware STEP has no per-note amplitude control. Equal units share the same level.
       const stepper=device?.type==='FDD'||device?.type==='DVD_SLED'
-      const volume=(mechanical ? .22*.6 : .045*(device?.volume??.5))*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
+      const volume=(mechanical ? .22*.6 : .045)*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
       const attack=Math.min(mechanical ? .001 : (a?.attack??.003),(end-start)/4)
       gain.gain.setValueAtTime(0,start)
       gain.gain.linearRampToValueAtTime(volume,start+attack)
@@ -99,9 +129,13 @@ export class VirtualOutput {
       }
       if(!mechanical&&c.kind!=='tone')gain.gain.linearRampToValueAtTime(0,Math.min(end,start+(a?.duration??.1)))
       gain.gain.setValueAtTime(0,end)
-      source.connect(gain);gain.connect(expression);expression.connect(this.bus??ctx.destination)
-      const voice={source,gain,start,end,device:c.device_id};this.voices.push(voice)
-      source.onended=()=>{source.disconnect();gain.disconnect();expression.disconnect();this.voices=this.voices.filter(v=>v!==voice)}
+      const level=mechanical?undefined:ctx.createGain()
+      const levelValue=(device?.realAmplitude??50)===0?0:(device?.volume??.5)
+      if(level){level.gain.setValueAtTime(levelValue,start);expression.connect(level);level.connect(this.bus??ctx.destination)}
+      else expression.connect(this.bus??ctx.destination)
+      source.connect(gain);gain.connect(expression)
+      const voice={source,gain,start,end,device:c.device_id,level,levelValue,duty:device?.realAmplitude??50,waveform:device?.waveform??'pulse' as SpeakerWaveform};this.voices.push(voice)
+      source.onended=()=>{source.disconnect();gain.disconnect();expression.disconnect();level?.disconnect();this.voices=this.voices.filter(v=>v!==voice)}
       if('buffer' in source)source.start(start,Math.max(0,start-when))
       else source.start(start)
       source.stop(end)

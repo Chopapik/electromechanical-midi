@@ -115,6 +115,8 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 elif operation=='stop': p.stop()
                 elif operation=='seek': p.seek(message['position'])
                 elif operation=='output': p.switch(message['mode'])
+                elif operation=='speaker_waveform': runtime.set_speaker_waveform(message['deviceId'],message['waveform'])
+                elif operation=='speaker_volume': runtime.set_speaker_volume(message['deviceId'],message['output'],message['value'])
                 elif operation=='mute': p.mute(message['deviceId'],message['muted'])
                 elif operation=='lab_enter': runtime.lab.enter(owner)
                 elif operation=='lab_leave': runtime.lab.leave(owner); runtime.orchestra()

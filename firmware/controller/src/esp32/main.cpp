@@ -2,10 +2,38 @@
 #include <SPI.h>
 #include <NimBLEDevice.h>
 #include <atomic>
+#include <esp_timer.h>
+#include <freertos/semphr.h>
 #include "orchestra_protocol.h"
 using namespace orchestra;
 class EspIO:public IO {
 public:
+ SpeakerOscillator speakers[2];SemaphoreHandle_t audioLock=nullptr;esp_timer_handle_t audioTimer=nullptr;
+ bool audioReady=false;
+ bool speakerAudioReady()override{return audioReady;}
+ static void audioCallback(void* context){static_cast<EspIO*>(context)->audioTick();}
+ void audioTick(){
+  if(!audioLock||xSemaphoreTake(audioLock,0)!=pdTRUE)return;
+  uint32_t now=micros();
+  for(int i=0;i<2;++i)if(speakers[i].wave!=Pulse&&speakers[i].amp&&speakers[i].hz>0)ledcWrite(i?2:0,speakers[i].sample(now));
+  xSemaphoreGive(audioLock);
+ }
+ void refreshSpeaker(int i){
+  auto& s=speakers[i];int channel=i?2:0;
+  ledcSetup(channel,s.wave==Pulse?(s.hz>0?s.hz:20000):40000,8);
+  ledcWrite(channel,s.wave==Pulse?s.amp:(s.amp&&s.hz>0?s.sample(micros()):0));
+ }
+ void updateSpeaker(int i,uint8_t amp,float hz){
+  if(!audioLock)return;
+  xSemaphoreTake(audioLock,portMAX_DELAY);
+  auto& s=speakers[i];bool restart=!s.amp||s.hz<=0;s.amp=amp;s.hz=hz;
+  if(restart||!amp||hz<=0){s.phase=0;s.last=micros();}
+  refreshSpeaker(i);xSemaphoreGive(audioLock);
+ }
+ void speakerWave(uint8_t i,uint8_t wave)override{
+  if(i>1||!audioLock)return;
+  xSemaphoreTake(audioLock,portMAX_DELAY);if(speakers[i].wave==wave){xSemaphoreGive(audioLock);return;}speakers[i].wave=wave;speakers[i].last=micros();refreshSpeaker(i);xSemaphoreGive(audioLock);
+ }
  uint32_t us()override{return micros();}
  void delayUs(uint32_t n)override{delayMicroseconds(n);}
  bool track0(uint8_t pin)override{return digitalRead(pin)==LOW;}
@@ -15,14 +43,21 @@ public:
   for(auto pin:map::track0)pinMode(pin,INPUT); // External pull-ups, never INPUT_PULLUP.
   SPI.begin(map::clock,-1,map::data,-1);
   pinMode(map::vhs,OUTPUT);digitalWrite(map::vhs,LOW);
+  pinMode(map::speakerFx,OUTPUT);digitalWrite(map::speakerFx,LOW);
+  // Channels 0/1 share a timer; channel 2 keeps FX pitch independent.
+  ledcSetup(2,20000,8);ledcAttachPin(map::speakerFx,2);ledcWrite(2,0);
   ledcSetup(0,20000,8);ledcAttachPin(map::vhs,0);ledcWrite(0,0);
+  audioLock=xSemaphoreCreateMutex();
+  esp_timer_create_args_t args={};args.callback=audioCallback;args.arg=this;args.dispatch_method=ESP_TIMER_TASK;args.name="speaker-audio";args.skip_unhandled_events=true;
+  audioReady=audioLock&&esp_timer_create(&args,&audioTimer)==ESP_OK&&esp_timer_start_periodic(audioTimer,50)==ESP_OK;
  }
  uint32_t frame(const uint8_t* bytes,size_t size)override{
   SPI.beginTransaction(SPISettings(orchestra::physical::spiClockHz,MSBFIRST,SPI_MODE0));
   digitalWrite(map::latch,LOW);for(size_t i=0;i<size;++i)SPI.transfer(bytes[i]);
   digitalWrite(map::latch,HIGH);uint32_t edge=micros();SPI.endTransaction();return edge;
  }
- void vhs(uint8_t amp,float hz)override{ledcSetup(0,hz>0?hz:20000,8);ledcWrite(0,amp);}
+ void vhsFx(uint8_t amp,float hz)override{updateSpeaker(1,amp,hz);}
+ void vhs(uint8_t amp,float hz)override{updateSpeaker(0,amp,hz);}
 } io;
 Controller ctrl(io);
 // Bounded TX ring. Never block on Serial: no print in the pulse generator.
@@ -158,7 +193,7 @@ void pollBle() {
 }
 void setup(){
  digitalWrite(ble::testPin,LOW);pinMode(ble::testPin,OUTPUT);protocol.beginTest();
- ctrl.begin();Serial.begin(115200);queue("READY protocol=2 board=esp32");beginBle();
+ ctrl.begin();Serial.begin(115200);if(!io.audioReady)queue("ERR SPEAKER_AUDIO_INIT");queue("READY protocol=2 board=esp32");beginBle();
 }
 void loop(){
  ctrl.tick();

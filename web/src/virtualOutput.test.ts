@@ -1,8 +1,8 @@
 import {afterEach,describe,it,expect,vi} from 'vitest'
 import {VirtualOutput,type Command} from './virtualOutput'
 class Param {setValueAtTime=vi.fn();linearRampToValueAtTime=vi.fn();cancelScheduledValues=vi.fn()}
-class Node {gain=new Param();frequency=new Param();connect=vi.fn();disconnect=vi.fn();start=vi.fn();stop=vi.fn();type='';onended=()=>{}}
-class Context {sampleRate=48000;currentTime=10;state='running';destination={};sources:Node[]=[];gains:Node[]=[];resume=vi.fn();close=vi.fn();createBuffer(_channels:number,length:number,rate:number){return {length,sampleRate:rate,copyToChannel:vi.fn()}}createBufferSource(){const n=new Node();this.sources.push(n);return Object.assign(n,{buffer:null})}createGain(){const n=new Node();this.gains.push(n);return n}createOscillator(){const n=new Node();this.sources.push(n);return n}}
+class Node {gain=new Param();frequency=new Param();connect=vi.fn();disconnect=vi.fn();start=vi.fn();stop=vi.fn();type='';setPeriodicWave=vi.fn();onended=()=>{}}
+class Context {sampleRate=48000;currentTime=10;state='running';destination={};sources:Node[]=[];gains:Node[]=[];resume=vi.fn();close=vi.fn();createBuffer(_channels:number,length:number,rate:number){return {length,sampleRate:rate,copyToChannel:vi.fn()}}createBufferSource(){const n=new Node();this.sources.push(n);return Object.assign(n,{buffer:null})}createGain(){const n=new Node();this.gains.push(n);return n}createPeriodicWave(real:Float32Array,imag:Float32Array){return {real,imag}}createOscillator(){const n=new Node();this.sources.push(n);return n}}
 const note=(device_id='fdd-1',time=0):Command=>({time,device_id,kind:'tone',duration:1,hz:220,velocity:100})
 const devices={'fdd-1':{volume:.6,type:'FDD'},'fdd-2':{volume:.6,type:'FDD'}}
 let output:VirtualOutput
@@ -16,6 +16,42 @@ describe('Web Audio output',()=>{
  it('uses equal STEP levels regardless of unit mix and MIDI velocity',async()=>{
   const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[{...note(),velocity:20,articulation:{intensity:.1}},{...note('fdd-2'),velocity:127,articulation:{intensity:1}}]}, {'fdd-1':{volume:.1,type:'FDD'},'fdd-2':{volume:.9,type:'FDD'}})
   expect(ctx.gains[1].gain.linearRampToValueAtTime.mock.calls[0][0]).toBe(ctx.gains[3].gain.linearRampToValueAtTime.mock.calls[0][0])
+ })
+ it('keeps the two PC Speakers independent and square',async()=>{
+  const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),{...note('pc-speaker-fx'),hz:987.77}]}, {'vhs-1':{volume:.6,type:'VHS'},'pc-speaker-fx':{volume:.4,type:'VHS'}})
+  expect(ctx.sources[0].setPeriodicWave).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[1].setPeriodicWave).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].frequency.setValueAtTime.mock.calls[0][0]).toBe(220)
+  expect(ctx.sources[1].frequency.setValueAtTime.mock.calls[0][0]).toBe(987.77)
+  output.stop('pc-speaker-fx');expect(ctx.sources[1].disconnect).toHaveBeenCalled();expect(ctx.sources[0].disconnect).not.toHaveBeenCalled()
+ })
+ it('changes one speaker live without restarting voices or touching its envelope',async()=>{
+  const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx')]}, {'vhs-1':{volume:.6,type:'VHS'},'pc-speaker-fx':{volume:.4,type:'VHS'}})
+  const envelopeCalls=ctx.gains[1].gain.linearRampToValueAtTime.mock.calls.length
+  output.setVolumes([{id:'vhs-1',volume:0},{id:'pc-speaker-fx',volume:.4}])
+  expect(ctx.gains[3].gain.linearRampToValueAtTime.mock.calls[0][0]).toBe(0)
+  expect(ctx.gains[6].gain.linearRampToValueAtTime).not.toHaveBeenCalled()
+  expect(ctx.gains[1].gain.linearRampToValueAtTime.mock.calls).toHaveLength(envelopeCalls)
+  expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[1].start).toHaveBeenCalledTimes(1)
+ })
+ it('updates shared duty for one active speaker without changing pitch or restarting it',async()=>{
+  const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx')]}, {'vhs-1':{volume:.6,type:'VHS',realAmplitude:50},'pc-speaker-fx':{volume:.4,type:'VHS',realAmplitude:50}})
+  output.setVolumes([{id:'vhs-1',volume:.6,realAmplitude:128},{id:'pc-speaker-fx',volume:.4,realAmplitude:50}])
+  expect(ctx.sources[0].setPeriodicWave).toHaveBeenCalledTimes(2)
+  expect(ctx.sources[1].setPeriodicWave).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].frequency.setValueAtTime).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
+  output.setVolumes([{id:'vhs-1',volume:.6,realAmplitude:0}])
+  expect(ctx.gains[3].gain.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(0)
+ })
+ it('switches sine, triangle and sawtooth independently on active speakers',async()=>{
+  const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx')]}, {'vhs-1':{volume:2.5,type:'VHS',waveform:'sine'},'pc-speaker-fx':{volume:.4,type:'VHS',waveform:'triangle'}})
+  expect(ctx.sources.map(n=>n.type)).toEqual(['sine','triangle'])
+  output.setVolumes([{id:'vhs-1',volume:2.5,waveform:'sawtooth'},{id:'pc-speaker-fx',volume:.4,waveform:'triangle'}])
+  expect(ctx.sources.map(n=>n.type)).toEqual(['sawtooth','triangle'])
+  expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].frequency.setValueAtTime).toHaveBeenCalledTimes(1)
  })
  it('silences when Player stops',async()=>{const ctx=await setup();output.schedule({epoch:1,origin:100,serverTime:100,commands:[note()]},devices);output.state(1,false);expect(ctx.sources[0].stop).toHaveBeenLastCalledWith()})
 })

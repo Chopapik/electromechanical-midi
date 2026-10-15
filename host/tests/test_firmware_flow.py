@@ -19,6 +19,7 @@ class Link:
         if not valid: self.controller_status['protocol']='1'
     def wait_boot(self,**_): return True
     def status(self): self.status_generation+=1
+    def ping(self): pass
     def poll_lines(self): return ['STATUS END']
     def all_stop_confirmed(self): return True
     def close(self): self.closed=True

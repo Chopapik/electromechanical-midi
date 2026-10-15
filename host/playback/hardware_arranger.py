@@ -112,7 +112,18 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .allocator import _partition_effects
     pins = pins or {}
     notes, effect_events = _partition_effects(_source_notes(source, midi_analysis, policy), pins)
-    lead = [s for s in slots.values() if profiles[s.device.id].name == 'VHS']
+    lead = [s for s in slots.values() if profiles[s.device.id].name == 'VHS' and s.device.role != 'fx']
+    fx = [s for s in slots.values() if profiles[s.device.id].name == 'VHS' and s.device.role == 'fx']
+    classes = {c.index:c for c in midi_analysis.classifications}
+    fx_tracks = {t.index for t in midi_analysis.tracks
+        if t.index != midi_analysis.lead_track and not t.is_drums and t.note_count >= 8
+        and t.monophony >= .95 and t.overlap_ratio <= .15
+        and 76 <= t.mean_pitch <= 96 and t.density <= 3
+        and classes[t.index].gm_family in ('Pipe','Synth Effects','Synth Lead')
+        and classes[t.index].final_role not in ('BACKING_VOCAL','BASS')
+        and not (classes[t.index].final_role == 'VOCAL' and classes[t.index].confidence >= .75)}
+    # Only allocate ornaments separately when the primary melody is identified.
+    if midi_analysis.lead_source not in ('semantic-vocal','manual'): fx_tracks = set()
     accompaniment = [s for s in slots.values() if profiles[s.device.id].name not in ('VHS', 'HDD_PERCUSSION')]
     if policy.get('tonalOverflow') == 'adaptive':
         if not policy.get('maxNoteSeconds'):
@@ -123,7 +134,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     phrases = phrase_context(notes, policy['mechanicalPhraseWindowMs']/1000.)
     role_context = instrument_roles.contexts(notes, policy['mechanicalPhraseWindowMs']/1000.) if role_mode else {}
     if role_mode:
-        notes = instrument_roles.prioritize(notes, role_context, pins=pins)
+        notes = instrument_roles.prioritize(notes, role_context, fx_tracks, pins)
     from . import fdd_quality as quality
     from . import dvd_lead
     low_mode=dvd_lead.enabled(policy)
@@ -140,6 +151,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         covered = role_mode and instrument_roles.held_background(span, events)
         pool = ([s for s in slots.values() if profiles[s.device.id].name == 'HDD_PERCUSSION']
                 if role == PERCUSSION else lead if role == LEAD and lead and not low_mode else accompaniment)
+        if fx and item['track'] in fx_tracks and role != PERCUSSION and pin is None:
+            pool = fx
         candidates = []; diagnostics = {}; blocked_candidates = []
         for slot in pool:
             device = slot.device; ident = device.id; profile = profiles[ident]; state = states[ident]
@@ -294,6 +307,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                            dvd_mode=config.dvd_mode, tray_enabled=config.tray_enabled,
                            idle_reinforcement=dict(config.idle_reinforcement),
                            duplicates=_duplicate_kpis(source, notes, accompaniment, duplicate_report) if duplicate_report else {})
+    plan.analysis['fxTracks'] = sorted(fx_tracks) if fx else []
     plan.articulation = apply(plan, caps, params_from_policy(policy))
     if policy.get('sourceContinuity'):
         plan.articulation['sourceContinuity'] = apply_source_continuity(plan, caps, policy['sourceContinuityAmount'])
