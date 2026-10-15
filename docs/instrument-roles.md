@@ -92,6 +92,11 @@ Within the same MIDI track/channel, DVD may connect unaccented repeated pitches,
 slow held phrases and voice handoffs on an allocated monophonic lane. Intervening
 attacks in the participating source voices still interrupt the phrase; activity
 in an unrelated upper riff does not. No cross-track bridging is introduced.
+An already rendered FDD grace attack inside a DVD source release gap is an
+exception: its source duration must be at most 30 ms and one eighth of the
+local beat, with no explicit articulation. Dropped notes, longer attacks and
+notes extending outside that gap retain the interruption guard. This allows
+FDD to articulate guitar ornaments over a continuous DVD bed.
 The source gate must occupy at least 40% of the onset interval, and a filled
 source gap cannot exceed 350 ms, 90% of the local beat, or 60% of the interval.
 Explicit articulation, shortened/stolen gates, accented repeats, long rests,
@@ -119,3 +124,30 @@ only the DVD articulation differs. The current registry enables DVD4 as well.
 Work/silence metrics sum across DVD actuators, while the longest run is for one
 actuator. These longer continuous periods require physical thermal verification;
 the software comparison does not establish safe unlimited motor duty.
+
+## FDD grace attacks over DVD beds
+
+Reproduce with `.venv/bin/python scripts/compare_dvd_grace_sustain.py`;
+results are in `reports/dvd-grace-sustain.json`. This comparison uses four
+enabled DVDs and the previous committed background policy (`f7bd18e`) against
+the grace-attack refinement, with identical allocation and configuration.
+
+| Metric | Previous background sustain | Grace-aware background sustain |
+| --- | ---: | ---: |
+| Bodysnatchers: DVD STOPs at 2:15–2:18 | 11 | 3 |
+| Bodysnatchers: total DVD STOPs | 542 | 426 |
+| Bodysnatchers: DVD notes | 949 | 949 |
+| Bodysnatchers: DVD work, sum across motors | 466.432 s | 487.836 s |
+| Bodysnatchers: silence between DVD notes, sum across motors | 266.400 s | 244.995 s |
+| Bodysnatchers: longest continuous DVD run | 17.137 s | 17.137 s |
+| Bodysnatchers: dropped notes | 94 | 94 |
+| Every Breath You Take: total DVD STOPs | 284 | 284 |
+| Every Breath You Take: longest continuous DVD run | 28.814 s | 28.814 s |
+| Every Breath You Take: dropped notes | 0 | 0 |
+| Overlapping reservations, either song | 0 | 0 |
+
+The eight removed stops in the target window were caused by 8.929 ms FDD
+ornaments interrupting 184.523 ms DVD release gaps. The remaining three stops
+are preserved source-part handoffs. All primary allocations, non-DVD execution
+commands and optional reservations remain identical. Full physical chronologies
+pass for both songs; thermal safety still requires physical measurements.

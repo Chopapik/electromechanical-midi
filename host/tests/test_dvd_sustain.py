@@ -148,6 +148,32 @@ class DvdSustainTests(unittest.TestCase):
         p.reinforcements = [ReinforcementEvent('other', DVD, .48, .04, 220, 100)]
         self.apply(p)
         self.assertEqual(p.events[0].actual_duration, .45)
+
+    def test_background_fdd_grace_in_release_gap_does_not_cut_dvd_bed(self):
+        # Bodysnatchers 2:16: short guitar ornaments sit between chord gates.
+        chord = [event(0, 0, .172619, note=53), event(1, .357142, .35119, note=53)]
+        grace = event(9, .178571, .008929, note=53,
+                      device_id='fdd-1', device_type='FDD')
+        p = self.background(chord+[grace])
+        p.devices.append({'id': 'fdd-1', 'type': 'FDD'})
+        self.apply(p)
+        self.assertAlmostEqual(p.events[0].end, chord[1].start)
+        self.assertEqual(p.events[2], grace)
+        self.assertEqual(sum(c.kind == 'stop' and c.device_id == DVD
+                             for c in compile_plan(p).commands), 1)
+        # This exception belongs only to background articulation, and only
+        # to already rendered, very short attacks inside the source gap.
+        for changes in ({'duration': .04}, {'duration': .2},
+                        {'outcome': 'DROPPED', 'device_id': None},
+                        {'device_type': 'VHS'}, {'articulation': 'STACCATO'},
+                        {'start': .352}):
+            with self.subTest(changes=changes):
+                p = self.background(chord+[replace(grace, **changes)])
+                self.apply(p)
+                self.assertEqual(p.events[0], chord[0])
+        p = plan(chord+[grace])
+        self.apply(p)
+        self.assertEqual(p.events[0], chord[0])
     def test_source_continuity_gate_and_both_outputs_share_compiled_schedule(self):
         from runtime.outputs import RealOutput, VirtualOutput
         from playback.articulation import apply_source_continuity

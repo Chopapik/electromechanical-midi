@@ -1,0 +1,101 @@
+{
+  "baselineCommit": "f7bd18e",
+  "preset": "instrument_roles",
+  "thermalSafety": "Unmeasured; software continuity does not establish thermal safety",
+  "songs": {
+    "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "before": {
+        "dvdNotes": 949,
+        "dvdStops": 542,
+        "dvdWorkSeconds": 466.4315,
+        "dvdSilenceSeconds": 266.400075,
+        "dvdLongestContinuousSeconds": 17.136864,
+        "dropped": 94,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 388,
+          "addedSeconds": 11.952352,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 118,
+          "dynamicBridgesPreserved": 88
+        },
+        "dvdReinforcements": 0
+      },
+      "after": {
+        "dvdNotes": 949,
+        "dvdStops": 426,
+        "dvdWorkSeconds": 487.83621,
+        "dvdSilenceSeconds": 244.995364,
+        "dvdLongestContinuousSeconds": 17.136864,
+        "dropped": 94,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 504,
+          "addedSeconds": 33.357063,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 152,
+          "dynamicBridgesPreserved": 88
+        },
+        "dvdReinforcements": 0
+      },
+      "dvdStops135To138": {
+        "before": 11,
+        "after": 3
+      },
+      "allocationAndOtherDevicesUnchanged": true,
+      "physicalChronologyValid": true
+    },
+    "Every breath you take.mid": {
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "before": {
+        "dvdNotes": 626,
+        "dvdStops": 284,
+        "dvdWorkSeconds": 698.458363,
+        "dvdSilenceSeconds": 150.408969,
+        "dvdLongestContinuousSeconds": 28.81427,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 284,
+          "addedSeconds": 18.995339,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 217,
+          "dynamicBridgesPreserved": 0
+        },
+        "dvdReinforcements": 0
+      },
+      "after": {
+        "dvdNotes": 626,
+        "dvdStops": 284,
+        "dvdWorkSeconds": 698.458363,
+        "dvdSilenceSeconds": 150.408969,
+        "dvdLongestContinuousSeconds": 28.81427,
+        "dropped": 0,
+        "conflicts": 0,
+        "bridges": {
+          "enabled": true,
+          "bridged": 284,
+          "addedSeconds": 18.995339,
+          "maxBridgeMs": 350.0,
+          "mode": "background",
+          "repeatsBridged": 217,
+          "dynamicBridgesPreserved": 0
+        },
+        "dvdReinforcements": 0
+      },
+      "dvdStops135To138": {
+        "before": 7,
+        "after": 7
+      },
+      "allocationAndOtherDevicesUnchanged": true,
+      "physicalChronologyValid": true
+    }
+  }
+}

@@ -74,10 +74,22 @@ def apply(plan, profiles, source):
             if current.articulation or following.articulation:
                 continue
             part = parts[(current.track, current.channel)]
-            interruptions = (voice_parts[voice_key(current)] + voice_parts[voice_key(following)]) if background else part
-            if any(current.start + 1e-9 < e.start < following.start - 1e-9 for e in interruptions):
-                continue
             beat = segments[max(0, bisect_right(times, current.start)-1)].tempo / 1e6 if segments else .5
+            interruptions = (voice_parts[voice_key(current)] + voice_parts[voice_key(following)]) if background else part
+            def interrupts(event):
+                if not current.start + 1e-9 < event.start < following.start - 1e-9:
+                    return False
+                # A rendered FDD grace attack can decorate the DVD release
+                # gap. It must fit wholly inside that source gap; missing,
+                # sustained or explicitly articulated notes still interrupt.
+                ornament = (background and event.played and event.device_type == 'FDD'
+                            and not event.articulation
+                            and event.duration <= min(.03, beat/8.)
+                            and event.start >= current.start+current.duration-1e-9
+                            and event.start+event.duration <= following.start+1e-9)
+                return not ornament
+            if any(interrupts(e) for e in interruptions):
+                continue
             ioi = following.start-current.start
             source_gap = following.start-(current.start+current.duration)
             # At least fast quarter-note activity when dynamic-aware; never fill a
