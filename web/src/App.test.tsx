@@ -69,7 +69,10 @@ it('sends DVD Lead preset selection to the runtime',()=>{
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'dvd_lead_low_fdd'})
 })
 
-
+it('sends Adaptive selection to the runtime',()=>{
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_quality_adaptive'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_quality_adaptive'})
+})
 
 it('selects the FDD riffs and DVD background preset',()=>{
  mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles'}})

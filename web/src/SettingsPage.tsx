@@ -70,6 +70,7 @@ export function SettingsPage({app}:{app:Runtime}){
                 <option value="instrument_roles_unison">FDD Riffs + DVD Tło · Pary Unisono</option>
                 <option value="instrument_roles_duet">FDD Riffs + DVD Tło · Pary Dwugłos</option>
                 <option value="fdd_quality">FDD Quality · eksperymentalny</option>
+                <option value="fdd_quality_adaptive">FDD Quality Adaptive · eksperymentalny</option>
                 <option value="dvd_lead_low_fdd">DVD Lead + Low FDD · eksperymentalny</option>
               </select>
             </label>

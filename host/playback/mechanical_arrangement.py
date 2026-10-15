@@ -85,7 +85,7 @@ def add_unison(plan, profiles, priority):
         and .04<=e.actual_duration<=policy['fddUnisonMaxDurationMs']/1000.],
         key=lambda e:(e.actual_start,-priority(e),e.id))
     from . import fdd_quality as quality
-    quality_mode=quality.enabled(policy) or policy.get('arrangementPreset')=='dvd_lead_low_fdd'
+    quality_mode=quality.enabled(policy) or policy.get('arrangementPreset') in ('dvd_lead_low_fdd','fdd_quality_adaptive')
     added = []; rejected = 0
     for source in candidates:
         value=source.hardware.get('candidates',{}).get(source.device_id,{}).get('musical',{}).get('fddQuality',{})
@@ -94,6 +94,10 @@ def add_unison(plan, profiles, priority):
             continue
         if policy.get('arrangementPreset')=='dvd_lead_low_fdd' and value.get('cost',float('inf'))>policy['fddQualityOptionalCost']:
             continue
+        if policy.get('arrangementPreset')=='fdd_quality_adaptive':
+            from .fdd_adaptive import density_level
+            if density_level(plan.hardware.get('adaptiveDensityFrames',[]),source.actual_start)>.15:
+                continue
         existing = [e for e in plan.reinforcements if e.source_id==source.id and profiles.get(e.device_id)
                     and profiles[e.device_id].name=='FDD']
         if existing: continue

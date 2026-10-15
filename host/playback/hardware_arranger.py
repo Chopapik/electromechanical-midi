@@ -76,6 +76,11 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         policy['mechanicalAware'] = True
         # Keep FDD voices available for independent riffs instead of doubling.
         policy['fddUnisonEnabled'] = False
+    from . import fdd_adaptive as adaptive
+    if adaptive.enabled(policy):
+        base=dataclasses.replace(config,policy={**policy,'arrangementPreset':'fdd_quality','dvdContinuousSustain':False})
+        reference=allocate_hardware(source,base,context,midi_analysis=midi_analysis,pins=pins,name=name,origin=origin)
+        return adapt_quality_plan(source,config,context,reference,midi_analysis=midi_analysis,pins=pins)
     devices = config.instances()  # Keep disabled ordinals: FDD2 must never become FDD1.
     bound, unmapped = bind_devices(devices, 2)
     caps = capabilities_for(devices)
@@ -409,3 +414,126 @@ def validate_reinforcement(plan, profiles, lanes):
     plan.hardware['reinforcementRejected'] = len(plan.reinforcements)-len(accepted)+len(plan.tray_events)
     plan.reinforcements = accepted
     plan.tray_events = []  # No measured travel/current profile for trays yet.
+
+
+def adapt_quality_plan(source, config, context, reference, *, midi_analysis=None, pins=None):
+    """Recover source notes/gates in idle FDD reservations of the same allocator.
+
+    Existing attacks and DVD primaries are immutable. Every proposed change is
+    evaluated against the entire lane chronology before being accepted.
+    """
+    import copy
+    from . import fdd_adaptive as adaptive, fdd_quality as quality
+    from .allocator import _source_notes, _Slot, _Candidate, _place, _priority, analysis_module
+    from .mechanical_arrangement import phrase_context, _chronology, add_unison
+    from .hardware_profiles import min_note_ms
+    from .capabilities import capabilities_for
+    plan=copy.deepcopy(reference);plan.policy.update(config.policy);plan.policy['arrangementPreset']=adaptive.PRESET
+    devices=config.instances();by_id={d.id:d for d in devices};caps=capabilities_for(devices)
+    lanes=reference.hardware['physicalLanes']
+    profiles={ident:context.profile_for(by_id[ident],lane) for ident,lane in lanes.items()}
+    fdds={d:p for d,p in profiles.items() if p.name=='FDD'}
+    from .sound_roles import UNPITCHED_EFFECT
+    notes=[n for n in _source_notes(source,midi_analysis or analysis_module.analyze(source),plan.policy)
+           if n['role'] != UNPITCHED_EFFECT]
+    phrases=phrase_context(notes,plan.policy['mechanicalPhraseWindowMs']/1000.)
+    values=quality.musical_values(notes,phrases,source)
+    density=adaptive.DensityMap(source,notes,len(fdds));opportunities=[]
+    if max((f['level'] for f in density.frames),default=0.)<=.005:
+        from .dvd_sustain import apply as apply_dvd_sustain
+        plan.articulation['dvdContinuousSustain'] = apply_dvd_sustain(plan, profiles, source)
+        plan.hardware['adaptive']=adaptive.summarize(plan,reference,density,source,opportunities)
+        return plan
+    # Independent source voices take precedence over every optional unison.
+    plan.reinforcements=[e for e in plan.reinforcements if e.kind!='UNISON']
+    for ident,p in fdds.items():
+        interval=p.get('musicalHz');step_us=p.get('executionMinStepUs') or p.get('datasheetMinStepMs')*1000
+        caps[ident]=dataclasses.replace(caps[ident],min_hz=interval[0],max_hz=min(interval[1],1e6/step_us),retrigger_s=0.)
+    def lane(ident):return [e for e in plan.events if e.played and e.device_id==ident]
+    def extras(ident):return [e for e in plan.reinforcements if e.device_id==ident]
+    def state_before(ident,start):
+        state=HardwareDeviceState();history=[]
+        sequence=[(e.actual_start,e.actual_duration,e.played_hz) for e in lane(ident) if e.end<=start+1e-9]
+        sequence += [(e.start,e.duration,e.hz) for e in extras(ident) if e.start+e.duration<=start+1e-9]
+        for a,d,hz in sorted(sequence):
+            n=HardwareNote(hz,d,a);ev=evaluate(fdds[ident],n,state);advance_state(state,fdds[ident],n,ev)
+            quality.reserve(history,a,d,(ev.step_rate or 0)*d,plan.policy['fddQualityRestMs']/1000.)
+        return state,history
+    items={n['id']:n for n in notes}
+    index={e.id:i for i,e in enumerate(plan.events)}
+    for item in notes:
+        old=plan.events[index[item['id']]];span=item['span'];amount=density.amount(span.start)
+        if old.played or old.reason=='MANUAL_DROP' or item['role']=='percussion' or amount<=.15 or span.duration>.5:continue
+        value=adaptive.adjusted_value(values[item['id']],phrases[item['id']],item,amount)
+        if not value['important'] and value['musicalValue']<.55:continue
+        candidates=[];attempts=dict(old.hardware.get('candidates',{}))
+        for ident,p in fdds.items():
+            cap=caps[ident];device=by_id[ident];pin=(pins or {}).get(item['id'])
+            shifted=span.note+device.transpose+(pin.transpose if pin else 0)
+            if pin is None or pin.octave_fold:
+                fold=fold_for_profile(shifted,cap.min_hz,cap.max_hz,plan.policy['foldMode'],p)
+                played=fold.played_midi_note;hz=fold.hz;folded=bool(fold.octave_shift)
+            else:
+                played=shifted;hz=midi_to_hz(shifted);folded=False
+            duration=min(span.duration*(pin.gate if pin else 1),.35)
+            minimum=min_note_ms(p,hz)
+            if minimum is None or duration*1000<minimum:continue
+            if any(e.actual_start<span.start+duration-1e-9 and e.end>span.start+1e-9 for e in lane(ident)):continue
+            state,history=state_before(ident,span.start);cost=quality.mechanical_cost(p,state,hz,duration,span.start,history,plan.policy)
+            ev=evaluate(p,HardwareNote(hz,duration,span.start),state)
+            if not ev.authorized or ev.ready_at>span.start+1e-9 or cost['cost']>plan.policy['fddQualityOptionalCost']*(1+1.5*amount):continue
+            if Verdict.BLOCKED in (ev.timing,ev.quality,ev.physical_load):continue
+            details={**value,**cost,'adaptiveLevel':amount}
+            attempts[ident]={**ev.as_dict(),'musical':{'fddQuality':details,'fddAdaptive':{'level':amount,'recovered':True},'reason':'Adaptive: recovered source riff in idle FDD reservation'}}
+            added=[];slot=_Slot(device,cap)
+            _place(slot,_Candidate(slot,played,hz,folded),item,'ACCEPTED',span.start,duration,item['role'],pin,ident,added)
+            event=dataclasses.replace(added[0],hardware={'candidates':attempts,'selection':attempts[ident]['musical']})
+            if _chronology(p,lane(ident)+[event],extras(ident)) is None:continue
+            # Prefer genuinely idle independent lanes, then physical/mechanical score.
+            recent=sum(max(0,min(span.start,e.end)-max(span.start-1,e.actual_start)) for e in lane(ident))
+            key=(selection_key(ev,p,ident)[0]+cost['cost']*.65/(1+amount)+recent*amount,ident)
+            candidates.append((key,event))
+        if candidates:
+            plan.events[index[item['id']]]=min(candidates,key=lambda c:c[0])[1]
+        opportunities.append({'start':span.start,'end':span.start+min(span.duration,.35),'feasibleFdd':len(candidates),'recovered':bool(candidates),'sourceId':item['id']})
+    # Source gates can grow only inside existing free time, before source note-off.
+    for i,event in enumerate(plan.events):
+        if not event.played or event.device_type!='FDD':continue
+        amount=density.amount(event.start);item=items[event.id]
+        value=adaptive.adjusted_value(values[event.id],phrases[event.id],item,amount)
+        short_limit=min(.6,density.at(event.start)['beatSeconds']*.75)
+        if amount<=.15 or not value['important'] or event.duration>short_limit:continue
+        source_gate=min(event.start+event.duration-event.actual_start,short_limit)
+        target=event.actual_duration+(source_gate-event.actual_duration)*amount
+        following=[e.actual_start for e in lane(event.device_id) if e.actual_start>event.actual_start]
+        if following:target=min(target,min(following)-event.actual_start-.003)
+        if target<=event.actual_duration+.005:continue
+        ident=event.device_id;state,history=state_before(ident,event.actual_start);proposed=None
+        for fraction in (1.,.75,.5,.25):
+            duration=event.actual_duration+(target-event.actual_duration)*fraction
+            if duration<=event.actual_duration+.005:continue
+            candidate=dataclasses.replace(event,actual_duration=duration)
+            cost=quality.mechanical_cost(fdds[ident],state,event.played_hz,duration,event.actual_start,history,plan.policy)
+            if cost['cost']>plan.policy['fddQualityOptionalCost']*(1+1.5*amount):continue
+            if _chronology(fdds[ident],[candidate if e.id==event.id else e for e in lane(ident)],extras(ident)) is not None:
+                proposed=candidate;break
+        if proposed is None:continue
+        musical={**event.hardware.get('selection',{}),'fddQuality':{**value,**cost},'fddAdaptive':{'level':amount,'restoredGate':True},'reason':'Adaptive: source riff gate restored inside free reservation'}
+        candidates=dict(event.hardware.get('candidates',{}));candidates[ident]={**candidates.get(ident,{}),'musical':musical}
+        plan.events[i]=dataclasses.replace(proposed,hardware={**event.hardware,'selection':musical,'candidates':candidates})
+    plan.events.sort(key=lambda e:(e.actual_start,e.track,e.id))
+    selections={e.id:e.hardware.get('selection') for e in plan.events}
+    attempts={e.id:e.hardware.get('candidates',{}) for e in plan.events}
+    requested=Counter({d:v['requestedNotes'] for d,v in reference.hardware['counters'].items()})
+    rejected={d:Counter(v['dropReasons']) for d,v in reference.hardware['counters'].items()}
+    denied=Counter({d:v['droppedNotes'] for d,v in reference.hardware['counters'].items()})
+    validate_plan(plan,profiles,lanes,attempts,requested,rejected,reference.hardware['excludedDevices'],reference.hardware['unmapped'],denied)
+    validate_reinforcement(plan,profiles,lanes)
+    plan.hardware['adaptiveDensityFrames']=density.frames
+    add_unison(plan,profiles,lambda e:_priority(e.role,e.velocity,e.duration,plan.policy))
+    for i,e in enumerate(plan.events):
+        if selections.get(e.id):plan.events[i]=dataclasses.replace(e,hardware={**e.hardware,'selection':selections[e.id]})
+    from .dvd_sustain import apply as apply_dvd_sustain
+    plan.articulation['dvdContinuousSustain'] = apply_dvd_sustain(plan, profiles, source)
+    plan.hardware['adaptive']=adaptive.summarize(plan,reference,density,source,opportunities)
+    return plan

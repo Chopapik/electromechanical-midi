@@ -173,7 +173,7 @@ def parse_policy(payload: dict | None) -> dict:
 
         policy[key] = value
 
-    if policy['arrangementPreset'] not in ('balanced','fdd_quality','dvd_lead_low_fdd','instrument_roles','instrument_roles_unison','instrument_roles_duet'):
+    if policy['arrangementPreset'] not in ('balanced','fdd_quality','dvd_lead_low_fdd','fdd_quality_adaptive','instrument_roles','instrument_roles_unison','instrument_roles_duet'):
         raise ValueError('Unknown arrangement preset')
     for key in FDD_QUALITY_DEFAULTS:
         if key=='arrangementPreset': continue
