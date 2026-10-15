@@ -13,6 +13,11 @@ nearby pitches for voice leading. It creates no harmony notes. A single-line
 part falls back to unison. Two different source notes that fold to the same
 performed pitch do not count as a duet.
 
+The common [FDD attack-rate pass](fdd-attack-rate.md) also applies after pairing:
+primary notes and unison copies cannot attack faster than once per 120 ms.
+Fast repeats can be coalesced and fast pitch runs simplified. The initial
+comparison below predates that shared pass; rerunning it includes the ceiling.
+
 The existing Instrument Roles allocator first schedules the orchestra. A
 small FDD-only revoicing pass then selects from FDD accompaniment notes and
 unallocated accompaniment, leaving assigned DVD, main/FX speaker and

@@ -38,4 +38,6 @@ def arrange(source, registry):
             plan.execution_articulation['extra:'+str(i)]=asdict(retarget(tonal[e.source_id],types[e.device_id],e.duration,e.velocity,e.start-sources[e.source_id].actual_start))
         elif e.source_id in plan.execution_articulation:
             plan.execution_articulation['extra:'+str(i)]=plan.execution_articulation[e.source_id]
+    from playback.fdd_attack_rate import apply as limit_fdd_attacks
+    limit_fdd_attacks(plan, registry)
     return plan

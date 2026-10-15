@@ -32,6 +32,7 @@ BALANCED = {
     'fddUnisonMaxVoices': 2,
     'fddUnisonMinVelocity': 90.,
     'fddUnisonMaxDurationMs': 800.,
+    'fddMinAttackIntervalMs': 120.,
     'preserveLead': True,
     'preserveBass': True,
     'maxMicroDelayMs': 30.0,
@@ -185,6 +186,7 @@ def parse_policy(payload: dict | None) -> dict:
                    'leadMaxMicroDelayMs', 'capacitySafety',
                    'dvdMaxBridgeMs', 'dvdBackgroundMaxBridgeMs', 'dvdSustainThresholdMs', 'mechanicalPhraseWindowMs', 'mechanicalPreferenceWeight',
                    'partContinuityWeight', 'sustainCompetitionTolerance', 'fddUnisonMinVelocity', 'fddUnisonMaxDurationMs',
+                   'fddMinAttackIntervalMs',
                    'minMechanicalSustainMs', 'preferredMechanicalSustainMs',
                    'releaseGapMs', 'maxSustainExtensionMs', 'sourceContinuityAmount'):
         policy[key] = float(policy[key])
@@ -201,6 +203,8 @@ def parse_policy(payload: dict | None) -> dict:
         raise ValueError('policy numbers must be finite')
     if policy['dvdSustainThresholdMs'] <= 0 or policy['mechanicalPhraseWindowMs'] <= 0:
         raise ValueError('mechanical thresholds must be positive')
+    if not 120 <= policy['fddMinAttackIntervalMs'] <= 1000:
+        raise ValueError('fddMinAttackIntervalMs must be between 120 and 1000')
     if isinstance(policy['fddUnisonMaxVoices'], bool) or not isinstance(policy['fddUnisonMaxVoices'], int) or policy['fddUnisonMaxVoices'] not in (1, 2):
         raise ValueError('fddUnisonMaxVoices must be 1 or 2')
     if not 0 <= policy['fddUnisonMinVelocity'] <= 127:

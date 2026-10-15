@@ -1,0 +1,127 @@
+{
+  "midi": "0032-01-radiohead_1997-airbag-[k].mid",
+  "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+  "scope": "same allocation, common FDD final pass; compiled REAL/VIRTUAL commands",
+  "presets": {
+    "balanced": {
+      "before": {
+        "wholeSong": {
+          "fddAttacks": 3149,
+          "minAttackIntervalMs": 29.761875,
+          "intervalsBelow120Ms": 1225,
+          "fddStops": 2853
+        },
+        "94To100Seconds": {
+          "fddAttacks": 175,
+          "minAttackIntervalMs": 29.761875,
+          "intervalsBelow120Ms": 108,
+          "fddStops": 154
+        }
+      },
+      "after": {
+        "wholeSong": {
+          "fddAttacks": 2329,
+          "minAttackIntervalMs": 133.928437,
+          "intervalsBelow120Ms": 0,
+          "fddStops": 2290
+        },
+        "94To100Seconds": {
+          "fddAttacks": 105,
+          "minAttackIntervalMs": 133.928437,
+          "intervalsBelow120Ms": 0,
+          "fddStops": 103
+        }
+      },
+      "nonFddCommandsUnchanged": true,
+      "physicalChronologyValid": true,
+      "report": {
+        "minAttackIntervalMs": 120.0,
+        "suppressedAttacks": 820,
+        "coalescedRepeats": 655,
+        "mechanicalVetoes": 0,
+        "devices": {
+          "fdd-1": {
+            "before": 1021,
+            "after": 811,
+            "mechanicalVetoes": 0
+          },
+          "fdd-2": {
+            "before": 641,
+            "after": 506,
+            "mechanicalVetoes": 0
+          },
+          "fdd-3": {
+            "before": 669,
+            "after": 511,
+            "mechanicalVetoes": 0
+          },
+          "fdd-4": {
+            "before": 818,
+            "after": 501,
+            "mechanicalVetoes": 0
+          }
+        }
+      }
+    },
+    "instrument_roles_duet": {
+      "before": {
+        "wholeSong": {
+          "fddAttacks": 4742,
+          "minAttackIntervalMs": 44.642812,
+          "intervalsBelow120Ms": 2314,
+          "fddStops": 4742
+        },
+        "94To100Seconds": {
+          "fddAttacks": 284,
+          "minAttackIntervalMs": 44.642812,
+          "intervalsBelow120Ms": 206,
+          "fddStops": 284
+        }
+      },
+      "after": {
+        "wholeSong": {
+          "fddAttacks": 3258,
+          "minAttackIntervalMs": 133.928437,
+          "intervalsBelow120Ms": 0,
+          "fddStops": 3258
+        },
+        "94To100Seconds": {
+          "fddAttacks": 152,
+          "minAttackIntervalMs": 133.928437,
+          "intervalsBelow120Ms": 0,
+          "fddStops": 152
+        }
+      },
+      "nonFddCommandsUnchanged": true,
+      "physicalChronologyValid": true,
+      "report": {
+        "minAttackIntervalMs": 120.0,
+        "suppressedAttacks": 1484,
+        "coalescedRepeats": 1301,
+        "mechanicalVetoes": 0,
+        "devices": {
+          "fdd-1": {
+            "before": 1493,
+            "after": 1008,
+            "mechanicalVetoes": 0
+          },
+          "fdd-2": {
+            "before": 1493,
+            "after": 1008,
+            "mechanicalVetoes": 0
+          },
+          "fdd-3": {
+            "before": 878,
+            "after": 621,
+            "mechanicalVetoes": 0
+          },
+          "fdd-4": {
+            "before": 878,
+            "after": 621,
+            "mechanicalVetoes": 0
+          }
+        }
+      }
+    }
+  }
+}
