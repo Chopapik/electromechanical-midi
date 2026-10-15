@@ -63,6 +63,11 @@ it('selects the FDD riffs and DVD background preset',()=>{
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles'})
 })
 
+it.each(['instrument_roles_unison','instrument_roles_duet'])('selects paired FDD arrangement %s',preset=>{
+ mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:preset}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset})
+})
+
 it.each(['/', '/settings'])('shows runtime errors only in the footer on %s',path=>{
  state.error='Błąd odczytu MIDI'
  mount(path)

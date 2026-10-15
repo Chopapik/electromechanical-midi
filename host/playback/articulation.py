@@ -29,6 +29,7 @@ import dataclasses
 import statistics
 
 from .capabilities import DeviceCapability
+from .instrument_roles import enabled as instrument_roles_enabled
 from .performance import PerformancePlan
 from .timeline import ARTICULATION_S
 
@@ -125,7 +126,7 @@ def apply(plan: PerformancePlan, capabilities: dict[str, DeviceCapability],
         if not event.played or event.device_id is None:
             continue
 
-        if plan.policy.get('arrangementPreset') in ('fdd_quality','dvd_lead_low_fdd','instrument_roles') and event.device_type=='FDD':
+        if event.device_type=='FDD' and (instrument_roles_enabled(plan.policy) or plan.policy.get('arrangementPreset') in ('fdd_quality','dvd_lead_low_fdd')):
             continue
         capability = capabilities.get(event.device_id)
 
@@ -189,7 +190,7 @@ def apply_source_continuity(plan: PerformancePlan,
     """
     lanes: dict[str, list[int]] = {}
     for i, event in enumerate(plan.events):
-        if plan.policy.get('arrangementPreset') in ('fdd_quality','dvd_lead_low_fdd','instrument_roles') and event.device_type=='FDD':
+        if event.device_type=='FDD' and (instrument_roles_enabled(plan.policy) or plan.policy.get('arrangementPreset') in ('fdd_quality','dvd_lead_low_fdd')):
             continue
         capability = capabilities.get(event.device_id)
         if event.played and capability is not None and capability.tonal:

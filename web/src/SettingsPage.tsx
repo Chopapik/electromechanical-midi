@@ -42,12 +42,16 @@ export function SettingsPage({app}:{app:Runtime}){
               <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>void app.send('arrangement_preset',{preset:e.target.value})}>
                 <option value="balanced">Balanced</option>
                 <option value="instrument_roles">FDD Riffs + DVD Tło</option>
+                <option value="instrument_roles_unison">FDD Riffs + DVD Tło · Pary Unisono</option>
+                <option value="instrument_roles_duet">FDD Riffs + DVD Tło · Pary Dwugłos</option>
                 <option value="fdd_quality">FDD Quality · eksperymentalny</option>
                 <option value="dvd_lead_low_fdd">DVD Lead + Low FDD · eksperymentalny</option>
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
             {s?.arrangementPreset==='instrument_roles'&&<small>FDD: krótkie nuty i zmiany wysokości. DVD: długie tło. PC Speaker: wokal, PC Speaker FX: ozdobniki. Perkusja bez zmian.</small>}
+            {s?.arrangementPreset==='instrument_roles_unison'&&<small>FDD1+2 i FDD3+4: dwie partie, każda grana wspólnie tą samą nutą. Pary utrzymują frazy i przejmują aktywne partie podczas pauz. DVD: długie tło.</small>}
+            {s?.arrangementPreset==='instrument_roles_duet'&&<small>FDD1+2 i FDD3+4: do dwóch różnych nut MIDI z jednej partii na parę. Pojedyncza linia: unisono. DVD: długie tło. Dwie niezależne partie FDD jednocześnie.</small>}
           </div>
           <ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>
         </section>

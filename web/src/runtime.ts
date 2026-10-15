@@ -3,7 +3,7 @@ import {VirtualOutput,type Command} from './virtualOutput'
 export interface Device {id:string;name:string;type:string;enabled:boolean;volume:number;bands:number[][];reason:string|null;continuousRotation?:boolean}
 export interface State {
   activity?:Record<string,Command>; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
-  arrangementPreset?:'balanced'|'fdd_quality'|'dvd_lead_low_fdd'|'instrument_roles';revision:number;error:string|null;audioOwner:string|null;devices:Device[];
+  arrangementPreset?:'balanced'|'fdd_quality'|'dvd_lead_low_fdd'|'instrument_roles'|'instrument_roles_unison'|'instrument_roles_duet';revision:number;error:string|null;audioOwner:string|null;devices:Device[];
   output:{mode:'REAL'|'VIRTUAL';connected:boolean;unknown:boolean;message:string;muted:string[]};
   service:{busy:boolean;error:string|null;reset:{available:boolean;reason:string};home:{available:boolean;reason:string};firmware:{available:boolean;reason:string|null;port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
 }

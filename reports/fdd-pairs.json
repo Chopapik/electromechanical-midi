@@ -1,0 +1,299 @@
+{
+  "scope": "same MIDI and device configuration; compiled REAL/VIRTUAL schedule; two FDD parts at once",
+  "songs": {
+    "0080-02-radiohead_2007-bodysnatchers-[k].mid": {
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "presets": {
+        "instrument_roles": {
+          "fddTones": 6137,
+          "fddTonesByDevice": {
+            "fdd-1": 1956,
+            "fdd-2": 1586,
+            "fdd-3": 1490,
+            "fdd-4": 1105
+          },
+          "fddWorkSeconds": 505.530722,
+          "representedFddParts": 8,
+          "dropped": 94,
+          "pairs": null,
+          "dvd": {
+            "dvdNotes": 949,
+            "dvdStops": 426,
+            "dvdWorkSeconds": 487.83621,
+            "dvdSilenceSeconds": 244.995364,
+            "dvdLongestContinuousSeconds": 17.136864,
+            "dropped": 94,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 504,
+              "addedSeconds": 33.357063,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 152,
+              "dynamicBridgesPreserved": 88
+            },
+            "dvdReinforcements": 0
+          }
+        },
+        "instrument_roles_unison": {
+          "fddTones": 3972,
+          "fddTonesByDevice": {
+            "fdd-1": 1069,
+            "fdd-2": 1069,
+            "fdd-3": 917,
+            "fdd-4": 917
+          },
+          "fddWorkSeconds": 369.4956,
+          "representedFddParts": 7,
+          "dropped": 4245,
+          "pairs": {
+            "mode": "unison",
+            "pairs": [
+              [
+                "fdd-1",
+                "fdd-2"
+              ],
+              [
+                "fdd-3",
+                "fdd-4"
+              ]
+            ],
+            "partChanges": {
+              "1": 152,
+              "2": 43
+            },
+            "primaryNotes": 1986,
+            "unisonCopies": 1986,
+            "notSelected": 4239,
+            "scope": "two accompaniment parts; original MIDI pitches only; planned, not measured"
+          },
+          "dvd": {
+            "dvdNotes": 949,
+            "dvdStops": 426,
+            "dvdWorkSeconds": 487.83621,
+            "dvdSilenceSeconds": 244.995364,
+            "dvdLongestContinuousSeconds": 17.136864,
+            "dropped": 4245,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 504,
+              "addedSeconds": 33.357063,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 152,
+              "dynamicBridgesPreserved": 88
+            },
+            "dvdReinforcements": 0
+          },
+          "nonFddCommandsIdentical": true,
+          "conflicts": 0,
+          "physicalChronologyValid": true
+        },
+        "instrument_roles_duet": {
+          "fddTones": 3972,
+          "fddTonesByDevice": {
+            "fdd-1": 1069,
+            "fdd-2": 1069,
+            "fdd-3": 917,
+            "fdd-4": 917
+          },
+          "fddWorkSeconds": 401.4688,
+          "representedFddParts": 7,
+          "dropped": 3167,
+          "pairs": {
+            "mode": "duet",
+            "pairs": [
+              [
+                "fdd-1",
+                "fdd-2"
+              ],
+              [
+                "fdd-3",
+                "fdd-4"
+              ]
+            ],
+            "partChanges": {
+              "1": 152,
+              "2": 43
+            },
+            "primaryNotes": 3064,
+            "unisonCopies": 908,
+            "notSelected": 3161,
+            "scope": "two accompaniment parts; original MIDI pitches only; planned, not measured"
+          },
+          "dvd": {
+            "dvdNotes": 949,
+            "dvdStops": 426,
+            "dvdWorkSeconds": 487.83621,
+            "dvdSilenceSeconds": 244.995364,
+            "dvdLongestContinuousSeconds": 17.136864,
+            "dropped": 3167,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 504,
+              "addedSeconds": 33.357063,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 152,
+              "dynamicBridgesPreserved": 88
+            },
+            "dvdReinforcements": 0
+          },
+          "nonFddCommandsIdentical": true,
+          "conflicts": 0,
+          "physicalChronologyValid": true
+        }
+      }
+    },
+    "Every breath you take.mid": {
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "presets": {
+        "instrument_roles": {
+          "fddTones": 1582,
+          "fddTonesByDevice": {
+            "fdd-1": 649,
+            "fdd-2": 480,
+            "fdd-3": 322,
+            "fdd-4": 131
+          },
+          "fddWorkSeconds": 294.655369,
+          "representedFddParts": 7,
+          "dropped": 0,
+          "pairs": null,
+          "dvd": {
+            "dvdNotes": 626,
+            "dvdStops": 284,
+            "dvdWorkSeconds": 698.458363,
+            "dvdSilenceSeconds": 150.408969,
+            "dvdLongestContinuousSeconds": 28.81427,
+            "dropped": 0,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 284,
+              "addedSeconds": 18.995339,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 217,
+              "dynamicBridgesPreserved": 0
+            },
+            "dvdReinforcements": 0
+          }
+        },
+        "instrument_roles_unison": {
+          "fddTones": 2522,
+          "fddTonesByDevice": {
+            "fdd-1": 801,
+            "fdd-2": 801,
+            "fdd-3": 460,
+            "fdd-4": 460
+          },
+          "fddWorkSeconds": 455.973434,
+          "representedFddParts": 7,
+          "dropped": 321,
+          "pairs": {
+            "mode": "unison",
+            "pairs": [
+              [
+                "fdd-1",
+                "fdd-2"
+              ],
+              [
+                "fdd-3",
+                "fdd-4"
+              ]
+            ],
+            "partChanges": {
+              "1": 2,
+              "2": 94
+            },
+            "primaryNotes": 1261,
+            "unisonCopies": 1261,
+            "notSelected": 321,
+            "scope": "two accompaniment parts; original MIDI pitches only; planned, not measured"
+          },
+          "dvd": {
+            "dvdNotes": 626,
+            "dvdStops": 284,
+            "dvdWorkSeconds": 698.458363,
+            "dvdSilenceSeconds": 150.408969,
+            "dvdLongestContinuousSeconds": 28.81427,
+            "dropped": 321,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 284,
+              "addedSeconds": 18.995339,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 217,
+              "dynamicBridgesPreserved": 0
+            },
+            "dvdReinforcements": 0
+          },
+          "nonFddCommandsIdentical": true,
+          "conflicts": 0,
+          "physicalChronologyValid": true
+        },
+        "instrument_roles_duet": {
+          "fddTones": 2512,
+          "fddTonesByDevice": {
+            "fdd-1": 801,
+            "fdd-2": 801,
+            "fdd-3": 455,
+            "fdd-4": 455
+          },
+          "fddWorkSeconds": 456.796696,
+          "representedFddParts": 7,
+          "dropped": 250,
+          "pairs": {
+            "mode": "duet",
+            "pairs": [
+              [
+                "fdd-1",
+                "fdd-2"
+              ],
+              [
+                "fdd-3",
+                "fdd-4"
+              ]
+            ],
+            "partChanges": {
+              "1": 2,
+              "2": 90
+            },
+            "primaryNotes": 1332,
+            "unisonCopies": 1180,
+            "notSelected": 250,
+            "scope": "two accompaniment parts; original MIDI pitches only; planned, not measured"
+          },
+          "dvd": {
+            "dvdNotes": 626,
+            "dvdStops": 284,
+            "dvdWorkSeconds": 698.458363,
+            "dvdSilenceSeconds": 150.408969,
+            "dvdLongestContinuousSeconds": 28.81427,
+            "dropped": 250,
+            "conflicts": 0,
+            "bridges": {
+              "enabled": true,
+              "bridged": 284,
+              "addedSeconds": 18.995339,
+              "maxBridgeMs": 350.0,
+              "mode": "background",
+              "repeatsBridged": 217,
+              "dynamicBridgesPreserved": 0
+            },
+            "dvdReinforcements": 0
+          },
+          "nonFddCommandsIdentical": true,
+          "conflicts": 0,
+          "physicalChronologyValid": true
+        }
+      }
+    }
+  }
+}

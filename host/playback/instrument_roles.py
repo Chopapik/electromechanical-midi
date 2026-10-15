@@ -3,13 +3,14 @@ import statistics
 from collections import defaultdict
 
 PRESET = 'instrument_roles'
+PRESETS = (PRESET, 'instrument_roles_unison', 'instrument_roles_duet')
 # Musical gate for a long note that must fall back to FDD; not a safety rating.
 FDD_MAX_HOLD_S = .4
 FDD_SHADOW_HOLD_S = .08
 
 
 def enabled(policy):
-    return policy.get('arrangementPreset') == PRESET
+    return policy.get('arrangementPreset') in PRESETS
 
 
 def contexts(notes, window):

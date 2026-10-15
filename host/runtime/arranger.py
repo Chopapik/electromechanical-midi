@@ -20,8 +20,10 @@ def arrange(source, registry):
     elif routing['mode']=='AUTO':
         plan=allocate(normalize(source), config, hardware_context=profiles)
     else: raise ValueError('Unknown routing mode')
+    preserved_articulation = plan.execution_articulation
     tonal,_=resolve(plan)
     plan.execution_articulation={key:asdict(art) for key,art in tonal.items()}
+    plan.execution_articulation.update(preserved_articulation)
     sources={e.id:e for e in plan.events}
     for e in plan.events:
         if e.played and e.device_type=='HDD_VCM':
@@ -30,6 +32,8 @@ def arrange(source, registry):
             plan.execution_articulation[e.id]=asdict(art)
     types={d['id']:d['type'] for d in plan.devices}
     for i,e in enumerate(plan.reinforcements):
+        if 'extra:'+str(i) in preserved_articulation:
+            continue
         if e.source_id in tonal:
             plan.execution_articulation['extra:'+str(i)]=asdict(retarget(tonal[e.source_id],types[e.device_id],e.duration,e.velocity,e.start-sources[e.source_id].actual_start))
         elif e.source_id in plan.execution_articulation:

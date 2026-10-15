@@ -61,7 +61,7 @@ class ContinuousDvdTests(unittest.TestCase):
         self.assertEqual(event.actual_start,0)
 
     def test_dvd_ceiling_all_auto_presets_and_multiple_octaves(self):
-        for preset in ('balanced','fdd_quality','dvd_lead_low_fdd','instrument_roles'):
+        for preset in ('balanced','fdd_quality','dvd_lead_low_fdd','instrument_roles','instrument_roles_unison','instrument_roles_duet'):
             with self.subTest(preset=preset):
                 registry=DeviceRegistry()
                 for d in registry.devices: d['enabled']=d['id']=='DVD_STEPPER_1'

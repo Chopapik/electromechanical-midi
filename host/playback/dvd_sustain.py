@@ -10,10 +10,11 @@ from dataclasses import replace
 from statistics import median
 
 from .mechanical_arrangement import _chronology
+from .instrument_roles import enabled as background_enabled
 
 
 def apply(plan, profiles, source):
-    background = plan.policy.get('arrangementPreset') == 'instrument_roles'
+    background = background_enabled(plan.policy)
     ceiling = plan.policy.get('dvdBackgroundMaxBridgeMs', 350.) if background else plan.policy.get('dvdMaxBridgeMs', 200.)
     report = {'enabled': bool(plan.policy.get('dvdContinuousSustain')), 'bridged': 0,
               'addedSeconds': 0., 'maxBridgeMs': ceiling,

@@ -64,6 +64,12 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .tonal_articulation import capture
 
     policy = parse_policy(config.policy)
+    from . import fdd_pairs
+    if fdd_pairs.enabled(policy):
+        base = dataclasses.replace(config, policy={**policy, 'arrangementPreset': 'instrument_roles'})
+        reference = allocate_hardware(source, base, context, midi_analysis=midi_analysis,
+                                      pins=pins, name=name, origin=origin)
+        return fdd_pairs.arrange(reference, config, context, pins)
     from . import instrument_roles
     role_mode = instrument_roles.enabled(policy)
     if role_mode:
