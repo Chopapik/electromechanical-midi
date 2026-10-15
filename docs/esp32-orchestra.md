@@ -5,6 +5,10 @@ Target: ESP32-WROOM-32, 38-pin Micro-USB/CP2102. Firmware lives in
 truth for GPIO/Q mapping** live in `firmware/controller/include/orchestra_core.h`
 (`orchestra::map`). Uno remains separately compiled from `src/main.cpp`.
 
+Current application/UI entry points: [project README](../README.md),
+[documentation index](README.md). Firmware symbols and profile JSON are the
+source of truth; historical verification reports are explicitly scoped.
+
 ## Software and physical verification
 
 **SOFTWARE VERIFIED** means compilation and native/host tests, not bench tests.
@@ -22,6 +26,22 @@ The software verification above does not establish physical calibration.
 Software sled interval validation is an implementation guard, **not** a measured
 safe motor Hz limit.
 
+## Power supplies and evidence
+
+| Load / circuit | Supply / connection | Evidence and limits |
+| --- | --- | --- |
+| FDD | Separate 5 V drive supply; STEP/DIR logic from the 3.3 V register chain | Current wiring choice; check the particular drive connector and logic compatibility. Not power from ESP32 GPIO. |
+| DVD stepper via DRV8833 | Proposed **3.3 V at VM**, separate from logic power | Excessive motor heating was observed at 5 V in this setup. 3.3 V is provisional, requiring temperature and current measurements under the intended duty; not a verified safe limit. |
+| HDD VCM | Historically tested at **5 V**, coil about **23.3 Ω** | Recorded in [the HDD hit sketch](../firmware/hdd_hit/hdd_hit.ino). A historical coil/bridge test, not a measured rating for all four VCMs or validation of the present DRV8833 drive. |
+| 74HC595 and ESP32 signals | 3.3 V logic; common GND | Register VCC and input pull-ups are logic supplies, distinct from motor VM. ESP32 inputs must not be pulled to 5 V. |
+| PC Speaker / PC Speaker FX | GPIO25/26 signal into separate S8050 speaker drivers | User reports passive speakers, probably 8 Ω; supply, base circuit, current and acoustic response remain uncharacterized. No direct low-impedance load on GPIO. |
+| Tray motors | VM must be established for the actual motor/driver | Disabled and without an approved runtime hardware profile; no supply recommendation inferred from DVD or HDD. |
+
+Common ground does not mean a single supply voltage for every load. No table
+entry establishes a continuous-duty rating, current limit or thermal protection
+for the motors. Keep the [theoretical reference data](research/orkiestra-model-teoretyczny.md)
+separate from measurements of these instances.
+
 ## GPIO wiring
 
 | ESP32 GPIO | Signal | Destination | Direction / notes |
@@ -34,7 +54,8 @@ safe motor Hz limit.
 | 18 | SRCLK/CLOCK | All five 595 pin 11 | SPI clock |
 | 22 | RCLK/LATCH | All five 595 pin 12 | Frame latch |
 | 21 | /OE | All five 595 pin 13 | Active LOW; **10 kΩ pull-up to 3.3 V** |
-| 25 | VHS ICTL | Existing VHS driver/control input | LEDC PWM / tone; common GND |
+| 25 | PC Speaker (`VHS`) | Main S8050 driver signal input | LEDC channel 0; common GND |
+| 26 | PC Speaker FX (`VHS2`) | Second S8050 driver signal input | LEDC channel 2, independent pitch timer; common GND |
 | 27 | TEST LED | 330 Ω → external LED anode; cathode → GND | Output, LOW at startup; independent of 595 Q27 |
 
 GPIO34/35/36/39 have no internal pull-ups. GPIO1/3 remain UART0/CP2102.
@@ -52,13 +73,10 @@ The 40 clock bits take 40 µs, plus software and latch overhead. This does not
 depend on an SPI default. Raise the clock only after verifying the physical chain.
 
 DRV8833 VM is a separate motor supply; logic/supply/FDD/ESP32 share GND.
-For the DVD stepper motors, **3.3 V is the currently considered motor supply at
-DRV8833 VM**, not only the logic voltage. Excessive DVD motor heating was
-observed at **5 V** in the current setup. The proposed **3.3 V is a provisional
-working value, not a verified safe limit**: confirm it by measuring motor/driver
-temperature and motor current under the intended load and continuous playback.
-Software checks do not establish thermal safety. This DVD supply proposal does
-not specify VM for HDD or tray motors; calibrate those separately.
+For DVD, the provisional **3.3 V is at VM**, not just logic power; see the
+[power/evidence table](#power-supplies-and-evidence) for the 5 V heating
+observation and required temperature/current measurements. Calibrate HDD/tray
+VM separately.
 VCM coil goes between OUT1/OUT2 of its assigned bridge; never to a GPIO.
 Sled coil A goes across AOUT1/AOUT2, coil B across BOUT1/BOUT2.
 Tray motor goes across its assigned bridge's two outputs.
@@ -127,7 +145,7 @@ Boot keeps /OE HIGH, initializes SPI, latches STEP=HIGH, DRV inputs=LOW,
 nSLEEP=LOW, then enables /OE. **Boot never homes or starts motors.**
 Only explicit commands or the host's configured homing start movement.
 `ALL STOP` coasts all bridges, stops HOME and playback, sets all STEP HIGH,
-stops VHS and deasserts nSLEEP. A 3-second host watchdog uses the same path.
+stops both PC Speakers and deasserts nSLEEP. A 3-second host watchdog uses the same path.
 
 FDD uses only TRACK0 and `awaySteps`. Away commands count up to 72, then
 reverse; toward commands never count down and have no distance budget.
@@ -137,26 +155,36 @@ Physical TRACK0 resets awaySteps and reverses to AWAY. HOME alone has a
 after the physical pulse edge; subsequent pulses wait a full current period.
 SPI work, status serialization and TX backpressure can make pulses late,
 never compress them. No blocking Serial print is used in the pulse path.
-FDD comfort stays 130–410 Hz; host folding is unchanged.
+All four FDD share the configured 2439 µs execution floor; the prior 410 Hz
+upper endpoint does not individually qualify every drive. Arrangement folding
+uses the active musical/preferred profile; see [current profile notes](hardware-first.md#fdd).
+The common runtime attack interval is 120 ms, a separate musical control from STEP Hz.
 
-HDD start profile for ESP32 is **40 ms Park / 40 ms Settle / 4 ms Strike**,
-then coast; this needs DRV8833 calibration. Uno's current physical profile is
-40/40/**2** ms and remains separate (`WD_CAVIAR_CURRENT`). ESP32 uses
-`DRV8833_HDD_START` in the bring-up preset so allocation sees its 84 ms cycle.
-Busy hits return `ERR BUSY`; no hidden queue changes the plan.
+ESP32 HDD defaults are **40 ms Park / 40 ms Settle / 4 ms Strike**, then
+coast. The generated header and per-instance profile are the execution source;
+this 84 ms cycle requires current, impact and thermal verification with DRV8833.
+Uno's separate `WD_CAVIAR_CURRENT` path retains 40/40/2 ms. Busy hits return
+`ERR BUSY`; there is no hidden hit queue. Runtime uses percussion, not HDD tones.
 
-SLED and tray are disabled by default. Sled uses four full-step two-coil
-phases; `DIR FWD|REV` selects direction. STOP coasts, with no guessed travel
-or homing model. Tray pulses are timed; STOP coasts immediately.
-VHS uses ESP32 LEDC channel 0 on GPIO25. AMP is PWM duty 0–255;
-FREQ selects tonal PWM frequency, FREQ=0 selects DC-mode carrier 20 kHz.
-STOP sets duty 0. No AVR register/ISR code is shared with this target.
+The current application enables four continuous-rotation DVD steppers and
+leaves both trays disabled. Sled uses full-step, two-coil phases and the existing
+acceleration ramp. `Sled::play()` can change target Hz without STOP. Firmware boot
+and runtime inventory are distinct: host configuration sends profiles and ENABLE
+before playback. Tray pulses are timed and STOP coasts immediately.
+
+PC Speaker and PC Speaker FX use GPIO25/26, LEDC channels 0/2. Pulse mode uses
+PWM at the note frequency, AMP 0–255 in the wire protocol (UI limits 0–128).
+AMP 50 means 50/256 duty, not 50% loudness. FREQ=0 selects a 20 kHz carrier;
+STOP sets duty 0. Sine/triangle/sawtooth use a 40 kHz PWM carrier with 20 kHz
+sample updates, rather than an analog DAC output. Both channels share the same
+STOP/watchdog path. [Waveform, gain, capability and wiring details](pc-speaker-fx.md).
+No AVR register/ISR code is shared with this target.
 
 ## Serial v2 and host
 
 115200, 8N1, ASCII, newline. Boot: `READY protocol=2 board=esp32` confirms
 controller startup, **not FDD homing**. `STATUS` emits BEGIN, CTRL, individual
-FDD/HDD/SLED/TRAY/VHS records, END. `track0=1` means normalized ACTIVE;
+FDD/HDD/SLED/TRAY/VHS/VHS2 records, END. `track0=1` means normalized ACTIVE;
 `raw=0` is the corresponding active-low GPIO read. Homing and playing are
 separate from USB connected status.
 
@@ -179,9 +207,13 @@ SLED 1 STOP
 TRAY 1 PULSE FWD 80
 TRAY 1 PULSE REV 80
 TRAY 1 STOP
-VHS AMP 200
+VHS AMP 50
 VHS FREQ 164.81
 VHS STOP
+VHS2 AMP 50
+VHS2 WAVE pulse
+VHS2 FREQ 830.61
+VHS2 STOP
 ```
 
 Each device also accepts `ENABLE 0|1`, e.g. `SLED 1 ENABLE 1` or
@@ -189,40 +221,32 @@ Each device also accepts `ENABLE 0|1`, e.g. `SLED 1 ENABLE 1` or
 Legacy PLAY/STOP/HOME address FDD1; HIT addresses HDD1;
 DRUM/DRUMF alias VHS AMP/FREQ. Legacy HDD 0 invokes all-stop.
 
-`host/orchestra_link.py` subclasses the original FloppyLink: nonblocking
-reads, protocol negotiation, individual ID methods, and atomic status parsing.
-Uno still uses original command generation and handshake. For v2, the
-playback engine binds lanes `fdd:1`…`fdd:4`, `sled:1`…`sled:4`, etc.
-ID = device's order within its family in configuration (including disabled
-and virtual entries); disabling device 1 never renumbers device 2. Keep that
-order aligned with wiring. Extra unsupported instances appear as unmapped.
-The UI Enabled switch is an output gate, not an allocator inventory change.
-All configured voices retain their original assignments, including muted voices;
-changing Enabled preserves the PerformancePlan, timeline, playhead and revision.
-Disabling sends only the target actuator STOP and suppresses subsequent commands.
-Re-enabling resumes its currently reserved sustained tone, without replaying hits.
-The switch updates optimistically; stale snapshots cannot undo a pending click.
-Firmware lanes remain enabled/homed independently of these output gates. After
-reconnect/upload/reset, the host configures the physical lanes and confirms HOME
-before playback. Device errors never disconnect USB. To actually change planning
-capacity, remove a device or change the declared hardware inventory.
+`host/orchestra_link.py` retains the shared protocol parser and atomic STATUS
+transactions. Current playback uses `host/runtime/outputs.py` and stable lanes
+from `config/devices.json`: `fdd:1`…`fdd:4`, `sled:1`…`sled:4`, `hdd:1`…`hdd:4`,
+`drum:1`/`drum:2` and `tray:1`/`tray:2`. Disabled entries keep their ordinals;
+removing or reordering entries must not silently renumber physical wiring.
 
-In **Orchestra → Load preset → ESP32 bring-up**, load the target inventory:
-4 FDD, 4 HDD, 1 VHS enabled in real mode; 4 sled and 2 tray disabled.
-For first single-FDD tests disable FDD2–4 and all other actuators first.
-Firmware upload UI has an explicit Uno / ESP32 target selector; it keeps
-Uno selected by default. Known Uno USB IDs are rejected for ESP32 upload.
-The CP2102 VID is rejected for Uno upload; it does not prove any particular
-ESP32 module identity, so verify the board physically.
+**Settings → Mute** gates execution without changing allocation, timeline,
+playhead or available voices; STOP still passes. Inventory `enabled` is a JSON
+planning/configuration setting, not the former UI Enabled switch. There is no
+current Add/Remove device panel or ESP32 bring-up inventory selector. See the
+[registry and profile guide](hardware-first.md).
+
+**Settings → Serwis → Wgraj firmware ESP32** always targets ESP32 through USB.
+There is no current Uno/ESP32 UI selector. PlatformIO defaults to Uno if no env
+is given, so command-line ESP32 builds/uploads must explicitly use `-e esp32`.
+CP2102 detection is an upload candidate, not proof of board identity or wiring.
+Homing is a separate explicit service action; boot/reconnection does not home.
 
 ## BLE UART bring-up (same controller, second command transport)
 
 BLE starts automatically in the **existing ESP32 firmware**, alongside USB
 Serial. There is no separate Bluetooth controller or test firmware. Both
 transports feed the same `CommandProtocol` dispatcher and existing
-`Controller::command`. Motor logic, GPIO23/18/22/21, GPIO25 and
-TRACK0 GPIO34/35/36/39 are unchanged. In desktop Settings, selecting
-ESP32-WROOM-32 uses BLE for normal runtime commands; Arduino Uno uses Serial.
+`Controller::command`. SPI uses GPIO23/18/22/21, speakers use GPIO25/26 and
+TRACK0 uses GPIO34/35/36/39. The current application uses ESP32 BLE for runtime;
+Uno Serial belongs to the retained legacy tools, not an alternate UI output.
 There is no automatic Serial/BLE fallback. Firmware flashing still uses USB.
 
 Device name: **Electromechanical-MIDI**. Nordic UART Service-compatible GATT:
@@ -328,7 +352,7 @@ with `-m pip install intelhex==2.3.0`; these are separate Python environments.
 
 The ESP32 environment alone pins `h2zero/NimBLE-Arduino@1.4.3`; one BLE
 connection, with the NimBLE host task on core 0. Uno does not link Bluetooth.
-To upload, select target explicitly, or:
+To upload from the current Settings service or explicitly from the CLI:
 
 ```sh
 ~/.platformio/penv/bin/pio run -d firmware/controller -e esp32 -t upload --upload-port /dev/cu.YOUR_CP2102
@@ -347,7 +371,7 @@ PING, STATUS, HOME or BLE connection. Opening a monitor on an already running
 board may show no READY; PING still returns PONG. Repeated READY must not be
 filtered out: capture the raw boot/reset log to diagnose it.
 
-## Tomorrow: connect and test
+## Physical bring-up sequence
 
 1. Before motor power, verify GPIO/Q wiring, /OE pull-up, /SRCLR and grounds.
 2. Boot ESP32 with actuators **disconnected**; check READY and PING→PONG.
@@ -364,8 +388,8 @@ filtered out: capture the raw boot/reset log to diagnose it.
 7. Add one DRV8833 bridge at a time with correct VM. Check HDD impulses,
    then explicitly enable and calibrate each sled/tray. Check coil order and
    travel, motor current and temperature before sustained sled PLAY; the proposed
-   DVD VM of 3.3 V still requires these measurements. Calibrate VHS GPIO25 input
-   response.
+   DVD VM of 3.3 V still requires these measurements. Verify both speaker drivers
+   on GPIO25/26 and measure their response.
 8. Connect via app, load target preset, verify enabled devices and physical
    IDs, upload ESP32 firmware if needed, wait for confirmed HOME and Play.
 
@@ -376,22 +400,19 @@ Primary references for electrical pin naming/API versions:
 
 ## Normal runtime over BLE
 
-In **Settings → Kontroler**, select **ESP32-WROOM-32 · BLE**. The selection is
-saved in `midi/.controller.json` and restored when the app restarts. It controls
-normal playback transport as well as the firmware upload target. Uno keeps
-its existing Serial transport. ESP32 discovers `Electromechanical-MIDI` by
-name and NUS service, subscribes to TX before sending commands to RX, and
-validates the session with PING/PONG (BLE does not receive USB boot READY).
-The existing OrchestraLink parser and hardware preflight/HOME remain in use.
-A complete STATUS transaction is awaited before issuing another BLE STATUS,
-so fragmented notifications do not flood the firmware response queue.
+The current application starts with REAL output and ESP32 BLE transport.
+`Settings → Output` changes REAL/VIRTUAL, not the controller target. No current
+controller selection is read from `midi/.controller.json`. ESP32 is discovered
+by name/NUS service, TX notifications are subscribed before RX commands, and
+PING/PONG plus a complete STATUS establish the session; BLE does not receive
+USB boot READY. STATUS transactions are serialized.
 
-The UI shows **ESP32 BLE connecting / connected / disconnected**, separately
-from FDD readiness. Failed discovery/connection and actual disconnections
-are retried indefinitely, with a two-second pause between attempts. Loss of
-the transport uses the existing playback pause behavior; reconnection does
-not replay old commands or automatically resume a paused song. Device errors
-such as HOME_FAILED leave BLE connected and do not trigger a reconnect.
+Discovery/connection failures are retried with a two-second pause. Reconnection
+establishes a confirmed STOP baseline and never replays a song or homes FDD.
+An active transport loss stops scheduling and exposes the hardware uncertainty;
+it is distinct from an actuator error such as HOME_FAILED. Missing STOP
+acknowledgement also does not by itself mean BLE disconnected. Readiness for
+PLAY requires configuration capabilities, ENABLE and FDD HOME confirmation.
 
 ### macOS + Docker
 
@@ -431,7 +452,7 @@ A backend running natively with that variable unset uses Bleak directly.
 
 Bring-up verification covers real discovery and Docker → gateway → ESP32
 PING/STATUS. Offline tests cover packet fragmentation, command order, common
-STATUS parsing, transport loss, retry, Uno isolation and UI selection/status.
+STATUS parsing, transport loss, retry, legacy Uno isolation and UI status.
 BLE playback timing and all physically wired devices require separate hardware
 validation; the gateway does not alter MIDI routing or firmware.
 
@@ -455,24 +476,22 @@ because of that missing acknowledgement. A broken connection still relies on
 the existing 3-second firmware watchdog.
 
 
-## Tonal modes on physical FDD
+## Articulation and physical FDD
 
-TONAL EXTREME 1.5 shapes the virtual audio envelope only. Physical STEP/DIR
-FDD keeps a continuous STEP train at the requested pitch in every tonal mode.
-An experiment using 20 ms burst gating was removed: skipping impulses
-creates lower-frequency components and destroys the perceived note, even
-when the minimum interval between the remaining STEP impulses is correct.
-
-SOURCE CONTINUITY / sustain in free gaps still applies to the shared
-PerformancePlan and the physical PLAY/STOP durations. No current/amplitude
-control exists in the current FDD wiring, so the PCM envelope cannot be
-reproduced physically by dropping STEP pulses.
-
+Physical STEP/DIR supplies a continuous STEP train at requested pitch; there is
+no amplitude control in this FDD wiring. Virtual tonal envelopes are acoustic
+approximations, not physical burst gating. Former RAW/EXTREME mode selectors
+are absent from the current UI; the retained articulation modules supply the
+runtime's execution sidecars. Source Continuity and preset gates affect the
+common plan. All presets and STRICT_TRACKS additionally apply the final
+[FDD attack-rate reduction](fdd-attack-rate.md). Skipping individual STEP pulses
+to mimic volume changes pitch and is not the articulation mechanism.
 
 ## DVD Stepper continuous rotation
 
 All four DVD steppers default to `continuousRotation=true`. Host configuration
-sends `SLED n PROFILE 0 5000 1` and `SLED n DIR FWD`: travel 0 explicitly means
+sends `SLED n PROFILE 0 5000 <pitchRatio>` and `SLED n DIR FWD`
+(ratio 0.5 for DVD1–3, 1.0 for DVD4): travel 0 explicitly means
 continuous rotation without automatic endpoint reversal. Positive travel values
 still select bounded motion; -1 remains unknown travel and rejects PLAY.
 
@@ -480,7 +499,11 @@ Measured DVD1 bands remain in the calibration metadata, but continuous mode
 does not block them or fold notes into those bands. Finite positive frequencies
 are accepted within the controller's timer representation: the 100 us minimum
 step period permits at most 10,000 steps/s at pitchRatio=1. Acceleration ramps,
-STOP, disable and the communication watchdog still apply.
+STOP, disable and the communication watchdog still apply. This timer bound is
+not the arrangement range: the hardware allocator folds DVD pitches above
+**600 acoustic Hz** down by octaves before converting through pitchRatio.
+Manual protocol/Laboratory tests do not run that musical folding policy and
+must still obey the effective hardware profile. Neither bound proves thermal safety.
 
 The relative `position` counter is telemetry, not a physical position sensor.
 It now saturates at signed 32-bit limits without stopping rotation or wrapping.
@@ -501,7 +524,8 @@ STATUS SLED 1 enabled=1 playing=1 hz=250.00 position=173 dir=fwd soft_min=0 soft
 ### Restored full physical inventory
 
 `config/hardware-profiles/instances.json` declares 4 FDD, 4 DVD sled,
-4 HDD VCM and VHS present. All four FDD retain the shared controller execution
+4 HDD VCM and the main legacy-named VHS/PC Speaker present. The application
+registry additionally declares PC Speaker FX on `drum:2`. All four FDD retain the shared controller execution
 settings: 72 away steps, 5 ms direction setup and 2439 us minimum step interval.
 This is a shared software configuration, not an individual calibration claim.
 DVD1–4 use continuous rotation by default. Their previous 140-step travel

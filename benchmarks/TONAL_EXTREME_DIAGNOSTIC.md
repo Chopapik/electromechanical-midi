@@ -1,5 +1,9 @@
 # TONAL EXTREME — diagnostyka końcowego toru audio
 
+> Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
+> dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
+> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+
 ## Zakres
 
 Trzeci, tymczasowy tryb TONAL EXTREME jest dostępny w ORCHESTRA → Tonal sound.

@@ -1,5 +1,9 @@
 # Vanilla HDD articulation — implementation and benchmark
 
+> Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
+> dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
+> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+
 ## Scope and prerequisite
 
 The active `main` checkout did not contain the global Idle Reinforcement feature

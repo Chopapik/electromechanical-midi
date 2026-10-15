@@ -1,5 +1,9 @@
 # SOURCE CONTINUITY — test Creep
 
+> Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
+> dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
+> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+
 ## Cel i przełącznik
 
 ORCHESTRA → Note length → SOURCE CONTINUITY · sustain in free gaps.

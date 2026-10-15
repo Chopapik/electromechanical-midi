@@ -1,5 +1,9 @@
 # TONAL EXTREME v2 — Creep, final PCM
 
+> Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
+> dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
+> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+
 ## Implementation and exact mapping
 
 The UI has four independent choices: RAW, ARTICULATED, EXTREME v1 and EXTREME v2.

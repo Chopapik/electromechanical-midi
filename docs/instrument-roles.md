@@ -1,5 +1,10 @@
 # FDD Riffs + DVD Tło
 
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
+
 Select **Settings → Aranżacja → Preset aranżacji → FDD Riffs + DVD Tło**.
 The internal preset ID is `instrument_roles`. Balanced remains the default.
 Switching stops playback and rebuilds the common REAL/VIRTUAL timeline.

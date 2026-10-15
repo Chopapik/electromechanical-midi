@@ -1,5 +1,9 @@
 # Tonal articulation — Creep source audit and A/B benchmark
 
+> Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
+> dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
+> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+
 ## 1. Scope and pipeline
 
 The allocator policy, semantic classification, duplicate normalization and existing mechanical sustain pass remain unchanged. The allocator adds only a timed expression sidecar after making its normal decisions. PerformanceEvent source start/duration/velocity, actual assignment/timing and physical reservations stay unchanged.

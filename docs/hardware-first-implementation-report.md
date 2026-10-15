@@ -1,5 +1,7 @@
 # Raport wdrożenia hardware-first
 
+> Historyczny raport wdrożenia, nie bieżąca instrukcja. Opisy starego runtime/preview, liczebności inventory, lista plików i wyniki testów zachowują kontekst tamtej zmiany. Aktualny stan: [profile](hardware-first.md), [README](../README.md).
+
 ## 1. Architektura przed / po
 
 Przed: allocator korzystał z profili preview, a komendy hardware powstawały ze

@@ -1,21 +1,26 @@
-# Mechanical-Aware Arrangement: pierwsza wersja
+# Balanced / Mechanical-Aware Arrangement
+
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
 
 ## Rzeczywista ścieżka wykonania
 
 `runtime.arranger.arrange → allocate(hardware_context) → allocate_hardware → PerformancePlan → compile_plan → Router → REAL/VIRTUAL`.
 
-Polityka znajduje się w istniejącym `OrchestraConfig.policy`, a zapisane ustawienia aplikacji w `config/devices.json` (`parameters`). Aktywne są cztery FDD i trzy DVD. Wpis DVD 4 zachowuje dotychczasowy identyfikator i lane, lecz jest wyłączony. VHS/HDD zachowują wcześniejsze pule i reguły.
+Polityka znajduje się w istniejącym `OrchestraConfig.policy`, a zapisane ustawienia aplikacji w `config/devices.json` (`parameters`). Aktualny registry włącza cztery FDD, cztery DVD, PC Speaker i PC Speaker FX oraz cztery HDD; dwie tacki pozostają wyłączone. Typ/protokół VHS oznacza teraz PC Speaker. Wybór: **Settings → Aranżacja → Preset aranżacji → Balanced**.
 
 ## Wybór głosu
 
 - DVD dostaje miękką premię za długość względem progu 500 ms, dłuższe sąsiednie nuty, powtarzanie wysokości i stabilny bas.
 - FDD dostaje premię za krótsze nuty i częste zmiany wysokości. Ocena nadal uwzględnia zakres, zawracanie głowicy, gotowość, ewentualne składanie oktaw i opóźnienie.
 - Kontekst liczy sąsiednie zdarzenia tej samej ścieżki i kanału. Równoczesne tony akordu nie są traktowane jako szybkie zmiany. Premia za poprzednie urządzenie ogranicza zbędne przerzucanie partii. Instrument nie jest przypisany na stałe do ścieżki.
-- Preferencja jest miękka: wolny DVD może przejąć krótką nutę, a FDD dłuższą. VHS nadal jest dedykowany leadowi.
+- Preferencja jest miękka: wolny DVD może przejąć krótką nutę, a FDD dłuższą. Główny PC Speaker (typ VHS) jest dedykowany leadowi; osobny FX dostaje tonalne ozdobniki.
 - DVD w trybie ciągłym zachowuje długość źródłową, nawet przy ustawionym `maxNoteSeconds` lub wyliczonym limicie adaptacyjnym.
 - Gdy wszystkie odpowiednie głosy są zajęte, sustain DVD może zostać skrócony do początku konkurującej partii. Porównujemy priorytety; lead i bas są chronione dotychczasowym `stealMargin`. Dla pozostałych partii tolerancja 8 punktów pozwala oddać głos porównywalnie ważnej krótkiej nucie. Nie odtwarzamy skróconej końcówki w późniejszym passie artykulacji.
 
-Nie dodano historycznych limitów drogi ani pasm DVD. Ograniczenia czasu kroku, ocena przyspieszenia i STOP pozostają aktywne. Wynik modelu nie potwierdza stabilności akustycznej konkretnego silnika.
+W ciągłym obrocie nie egzekwujemy historycznej drogi ani pasm DVD1; aktualny allocator składa tony powyżej 600 Hz akustycznych o oktawy. Ograniczenia czasu kroku, ocena przyspieszenia i STOP pozostają aktywne. Wynik modelu nie potwierdza stabilności akustycznej konkretnego silnika.
 
 ## Dynamiczny UNISON ×2
 
@@ -42,11 +47,14 @@ Parametry polityki:
 
 ## Podgląd i diagnostyka
 
-Na stronie orkiestry rozwiń **Arrangement · PerformancePlan**. Tabela pokazuje źródłową partię, nutę po transpozycji/foldingu, instrument, start, długość wykonania, parę UNISON i decyzję. Dane są pobierane po rozwinięciu widoku; tabela jest stronicowana po 100 nut.
+W **Settings (`/settings`) → Aranżacja** rozwiń **Arrangement · PerformancePlan**. Tabela pokazuje źródłową partię, nutę po transpozycji/foldingu, instrument, start, długość wykonania, parę UNISON i decyzję. Dane są pobierane po rozwinięciu widoku; tabela jest stronicowana po 100 nut.
 
 `GET /api/plan` udostępnia nuty, reinforcements i raport. `event.hardware.selection` opisuje kontekst i miękką ocenę muzyczną; `event.hardware.candidates` zawiera oceny kandydatów. `report.mechanicalArrangement` zawiera statystyki sustainu, wielosekundowych FDD i UNISON. Liczniki odrzuceń kandydatów w `hardware.counters` nie są liczbą odrzuconych nut utworu; właściwe odrzucenia są w `report.totals`.
 
-## Porównanie MIDI
+## Historyczne porównanie MIDI
+
+Wyniki poniżej zachowują ówczesne trzy DVD i starszą politykę; nie są aktualnym
+benchmarkiem czterech DVD z końcowym limitem ataków FDD.
 
 Baseline zapisano przed zmianą kodu, z commita `da1af20`. Oba przebiegi mają ten sam zestaw 4 FDD + 3 DVD oraz dotychczasowe VHS/HDD. Porównanie obejmuje całą rzeczywistą ścieżkę `arrange`, normalizację i końcową artykulację.
 

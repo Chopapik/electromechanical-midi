@@ -1,93 +1,172 @@
 # Orkiestra elektromechaniczna
 
-Python / FastAPI + React / TypeScript. Docelowy kontroler: ESP32 przez istniejący BLE.
+Lokalny odtwarzacz MIDI: Python/FastAPI, React/TypeScript i kontroler
+ESP32-WROOM-32. REAL steruje urządzeniami przez BLE; VIRTUAL wykonuje ten sam
+harmonogram przez Web Audio w przeglądarce. UNO pozostaje osobnym, starszym
+firmware i narzędziami CLI, a nie wyborem kontrolera w obecnym UI.
 
 ## Uruchamianie
 
 ```sh
-docker compose up --build
+docker compose up -d --build orchestra
+docker compose ps orchestra
 ```
 
-Aplikacja: http://localhost:5173. Zawsze startuje w **REAL**. Gdy ESP32 jest offline,
-import MIDI i planowanie działają, ale Play jest zablokowany. Połączenie BLE jest
-ponawiane bez wznowienia utworu i bez automatycznego homingu.
+Aplikacja i API: <http://localhost:5173>. MIDI są w `midi/` (bind mount).
+Ustawienia głośników przetrwają przebudowę dzięki wolumenowi `speaker-settings`.
+Kod i konfiguracja są kopiowane do obrazu: po ich zmianie przebuduj kontener.
 
-Uruchomienie lokalne bez prób połączenia ze sprzętem (nadal startuje REAL):
+Na macOS Docker wymaga natywnej bramki BLE:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r host/requirements.txt
+.venv/bin/python host/ble_gateway.py
+```
+
+Compose łączy się z `host.docker.internal:8766`; szczegóły uprawnień Bluetooth,
+instalacji usługi i USB są w [instrukcji ESP32](docs/esp32-orchestra.md#macos--docker).
+Bramka nie zastępuje BLE połączeniem Serial. Flashowanie wymaga USB/CP2102.
+
+Bez prób połączenia ze sprzętem:
+
+```sh
+ORCHESTRA_OFFLINE=1 docker compose up -d --build orchestra
+```
+
+Aplikacja zawsze startuje w REAL, również offline. W `/settings` → **Output**
+włącz **Virtual debug · Web Audio** do odsłuchu bez kontrolera. REAL offline
+pozwala importować i aranżować MIDI, ale blokuje Play. Po odzyskaniu BLE nie ma
+automatycznego wznowienia utworu ani homingu przy samym połączeniu.
+
+Uruchomienie natywne po instalacji zależności:
 
 ```sh
 .venv/bin/python -m host.web.server --offline --port 8000
+npm --prefix web ci
+npm --prefix web run dev
 ```
 
-Bez prób połączenia BLE w Dockerze: `ORCHESTRA_OFFLINE=1 docker compose up --build`.
-Start nadal jest REAL; wyłączenie zmiennej przy następnym uruchomieniu przywraca próby BLE.
+Vite przekazuje API/WS do portu 8000. Produkcyjny backend serwuje zbudowane
+`web/dist`. Interakcja z przeglądarką jest wymagana do uruchomienia Web Audio.
+FDD/DVD są proceduralnym modelem impulsów i rezonansów, HDD modelem transjentów.
+Velocity/CC nie sterują fizyczną amplitudą FDD/DVD; konfiguracja STEP jej nie
+przekazuje. Barwa i poziom VIRTUAL nie są pomiarem tych egzemplarzy.
 
-Virtual można włączyć ręcznie w Settings. Przeglądarka wykonuje te same komendy
-przez Web Audio; nie ma WAV, ffplay ani wyjścia audio kontenera. Play wymaga
-interakcji w przeglądarce. Zamknięcie karty lub utrata synchronizacji wycisza audio.
-FDD/DVD używają proceduralnych impulsów kroków i krótkich rezonansów obudowy;
-HDD używa transjentów kontaktu, ruchu ramienia i impulsów wybranej artykulacji.
-Egzemplarze jednej rodziny mają identyczny model i poziom wyjścia. FDD/DVD nie
-mają sztucznego sterowania głośnością przez MIDI velocity lub CC, ponieważ
-wykonanie STEP nie przekazuje sterowania amplitudą do silnika.
-Parametry akustyczne są przybliżeniem syntetycznym, nie pomiarem tych egzemplarzy.
-Dokładne dopasowanie barwy wymaga nagrań referencyjnych z fizycznych urządzeń.
+## Architektura i pipeline MIDI
 
-## Rdzeń
+```text
+MIDI → MidiSource → normalizacja duplikatów i klasyfikacja
+     → alokacja z profilami mechanicznymi → artykulacja / Source Continuity
+     → rezerwacje UNISON i reinforcement → DVD sustain / walidacja chronologii
+     → końcowe ograniczenie ataków FDD → PerformancePlan
+     → compile_plan → ExecutionTimeline → Player → Router → REAL lub VIRTUAL
+```
 
-`MIDI → MidiSource → arrange → PerformancePlan → compile_plan → ExecutionTimeline
-→ Player → Router → RealOutput / VirtualOutput`
+Dokładna kolejność refinements zależy od presetu: Adaptive i pary pracują na
+planie bazowym, zanim wspólny runtime ograniczy ataki FDD.
 
-- `host/runtime/arranger.py`: zachowane algorytmy allocatora, normalizacji,
-  STRICT_TRACKS, artykulacji i profili; planowanie nie zależy od połączenia ani wyjścia.
-- `compiler.py`: czyste uporządkowanie komend z czasem i stabilnym deviceId.
-- `player.py`: jeden zegar monotoniczny, stan i właściciel wykonania; odrzucanie
-  przeterminowanych nut, zatrzymanie i unieważnianie kolejek.
-- `router.py`: dokładnie jedno wyjście oraz mute. STOP przechodzi także dla mute.
-- `outputs.py`: adapter istniejącego protokołu BLE i pakiety Web Audio.
-- `web/src/virtualOutput.ts`: planowanie z wyprzedzeniem 150 ms i synchronizacja
-  zegara AudioContext z Playerem; unieważnianie epok i potwierdzane anulowanie.
-- `laboratory.py`: skończone testy przez ten sam Player/Router i te same profile.
-- `device_service.py`: wyłączny dostęp po STOP; firmware przez istniejący uploader
-  USB, homing `FDD ALL HOME`. Reset przez BLE nie jest obsługiwany i jest niedostępny.
+- `host/midi_source.py`: nuty, kanały, tempo, metrum, programy i tekst MIDI.
+- `host/playback/analysis.py`, `semantic.py`, `sound_roles.py`: role muzyczne,
+  wokal/lead, bas, perkusja i jawne efekty nietonalne; to heurystyki, nie odsłuch.
+- `host/playback/duplicates.py`: normalizacja double-trackingu z proweniencją.
+- `host/runtime/arranger.py` i `host/playback/hardware_arranger.py`: deterministyczny
+  plan z zadeklarowanego inventory, niezależny od połączenia i wyboru wyjścia.
+- `host/runtime/compiler.py`: uporządkowane komendy ze stabilnym `device_id`.
+  Stykające się tony nie potrzebują STOP; DVD ma tolerancję 1 ns na błąd float.
+- `player.py`, `router.py`, `outputs.py` w `host/runtime/`: jeden zegar i właściciel
+  wykonania, jedno aktywne wyjście, mute i unieważnianie starych kolejek.
+- `web/src/virtualOutput.ts`, `mechanicalAudio.ts`: Web Audio z wyprzedzeniem
+  150 ms, synchronizacją zegara i anulowaniem epok. Modele dźwięku są syntetyczne.
+- `host/runtime/device_service.py`: wyłączny serwis po STOP, upload USB i HOME.
+  Reset przez BLE jest niedostępny.
 
-Aktywny REAL wymaga rzeczywistego `ALL STOP <token>` / `STOPPED <token>`.
-Brak potwierdzenia lub utrata aktywnego połączenia oznacza nieznany stan sprzętu
-oraz błąd przełączenia. Offline bez wcześniejszego wykonania nie wymaga STOP.
-Zmiana wyjścia, właściciela i STOP nie wznawiają automatycznie odtwarzania.
-Seek podczas grania anuluje poprzednią kolejkę i kontynuuje od wybranego momentu;
-seek podczas pauzy pozostawia pauzę. Przewinięcie do końca kończy odtwarzanie.
+STOP REAL wymaga `ALL STOP <token>` / `STOPPED <token>`. Brak potwierdzenia lub
+utrata aktywnego transportu nie oznacza potwierdzonego zatrzymania sprzętu;
+firmware ma też watchdog 3 s. STOP przechodzi mimo mute. Zmiana wyjścia lub
+właściciela zatrzymuje wykonanie. Seek podczas gry kontynuuje od nowej pozycji,
+a podczas pauzy zachowuje pauzę. Zamknięcie karty/utrata synchronizacji wycisza
+Web Audio. Szczegóły: [ESP32](docs/esp32-orchestra.md), [profile](docs/hardware-first.md).
 
-## Skład i kalibracje
+## Skład i sterowanie
 
-Jedynym składem runtime jest `config/devices.json`: 4 FDD, 4 DVD, VHS, 4 HDD,
-2 tacki. Stabilne ID i kolejność istniejących linii są zachowane. Tacki bez
-potwierdzonej obecności pozostają widoczne i niedostępne. Kalibracje są odczytywane
-z niezmienionych `config/hardware-profiles/theoretical.json` i `instances.json`.
-Nie przenosimy wartości kalibracji do registry. Edycja składu i parametrów tylko
-w JSON, po czym restart aplikacji. Mute jest wyłącznie bramką wykonania i nie
-przepisuje planu. Zmiana JSON może zmienić plan.
+Źródłem inventory jest lista `devices` w `config/devices.json` (opisowe pole
+`name` może zawierać dawną liczebność). Profile są w
+`config/hardware-profiles/{theoretical,instances}.json`.
 
-`routing.mode` w JSON może mieć wartość `AUTO` lub `STRICT_TRACKS`; pole `tracks`
-to cztery indeksy ścieżek FDD. Zachowano algorytm eksperymentu, usunięto jego panel.
-Orkiestra i Laboratory używają tego samego registry również offline.
+| Rodzina | Liczba i stan | Rola / fizyczne wyjście |
+| --- | --- | --- |
+| FDD | 4 włączone | Riffy/harmonia; STEP/DIR przez 74HC595, TRACK0 do ESP32 |
+| DVD stepper | 4 włączone | Tonalne głosy/tło; DRV8833, ciągły obrót |
+| PC Speaker | 1 włączony | Wykryty wokal/lead, GPIO25, `vhs-1` / `drum:1` |
+| PC Speaker FX | 1 włączony | Tonalne ozdobniki, GPIO26, `pc-speaker-fx` / `drum:2` |
+| HDD VCM | 4 włączone | Perkusja przez DRV8833; brak wykonawcy tonalnego HDD |
+| DVD tray | 2 wyłączone | Zarejestrowane, bez zatwierdzonego profilu runtime |
 
-[Historyczne dane sprzętu, okablowania i kalibracji](docs/hardware-and-history.md).
+`VHS` jest zachowanym typem/protokołem obu PC Speakerów, nie aktualnym napędem VHS.
+Główny speaker ma w konfiguracji transpozycję +12; FX nie ma tej transpozycji.
+W **Settings → Brzmienie PC Speaker** ustawisz osobno gain VIRTUAL i wspólny
+kształt pulse/sine/triangle/sawtooth. W pulse parametr REAL reguluje wypełnienie
+w obu wyjściach; dla pozostałych fal poziom PWM REAL. Skala gain VIRTUAL 0–100%
+odpowiada 0–2,5. [Szczegóły i ograniczenia fizyczne](docs/pc-speaker-fx.md).
 
-## Weryfikacja
+Mute w `/settings` jest bramką wykonania i nie zwalnia miejsca w aranżacji.
+Zmiana inventory/profili wymaga edycji JSON i restartu/przebudowy aplikacji.
+`routing.mode: STRICT_TRACKS` w JSON kieruje cztery wybrane tracki wyłącznie na
+FDD; nie jest presetem UI. Lokalny eksperyment obniżenia FDD o oktawę pozostaje
+oddzielną, niezacomitowaną zmianą kodu/konfiguracji; nie jest nowym domyślnym
+ustawieniem zapisanym w tym commicie dokumentacji.
+
+## Presety aranżacji
+
+Wybór: **Settings (`/settings`) → Aranżacja → Preset aranżacji**.
+Zmiana potwierdza STOP, przebudowuje plan i nie wznawia gry. Wybór jest sesyjny;
+restart wczytuje `parameters.arrangementPreset` z JSON (obecnie `balanced`).
+
+| Preset / ID | Zachowanie |
+| --- | --- |
+| Balanced / `balanced` | Mechanical-Aware: miękka preferencja krótkich, zmiennych nut na FDD i sustainu na DVD; opcjonalny dynamiczny UNISON |
+| FDD Riffs + DVD Tło / `instrument_roles` | Krótkie riffy FDD, długie warstwy DVD, silniejszy sustain tła; bez dowolnego UNISON FDD |
+| Pary Unisono / `instrument_roles_unison` | Jak wyżej, FDD1+2 i FDD3+4 grają po jednej partii zdwojoną nutą |
+| Pary Dwugłos / `instrument_roles_duet` | Te same pary wybierają do dwóch istniejących nut jednej partii; pojedyncza linia przechodzi w unisono |
+| FDD Quality / `fdd_quality` | Ocenia koszt kroków/zawróceń, skraca długie FDD i ogranicza kosztowne opcjonalne nuty |
+| FDD Quality Adaptive / `fdd_quality_adaptive` | Na bazie Quality lokalna gęstość frazy steruje odzyskiwaniem ataków i krótkich gate'ów |
+| DVD Lead + Low FDD / `dvd_lead_low_fdd` | Preferuje tonalne DVD; FDD próbuje oktawy niżej z fallbackiem do dozwolonego zakresu |
+
+Wszystkie presety i STRICT_TRACKS dostają końcowy limit ataków FDD: domyślnie
+120 ms między NOTE_ON na stację. Szybkie przebiegi mogą celowo tracić nuty.
+W fizycznym allocatorze DVD obowiązuje sufit **600 Hz akustycznych**, przez
+składanie oktawowe przed przeliczeniem `pitchRatio`; to wybór muzyczny, nie
+zweryfikowana granica termiczna. Dynamiczny sustain DVD ma eksperymentalny
+limit mostkowania 200 ms, tło Instrument Roles i par 350 ms, z ochroną pauz,
+artykulacji, partii i rezerwacji. [Dokumentacja algorytmów](docs/README.md).
+
+## Testy i diagnostyka
 
 ```sh
 .venv/bin/python -m unittest discover -s host/tests -q
-cd web
-npm test
-npm run build
+npm --prefix web test
+npm --prefix web run build
 ```
 
-Testy nowego runtime używają atrap BLE i zegara. Zachowano regresje algorytmów,
-profili i protokołu; testy starego silnika/UI zastąpiono testami nowych kontraktów.
-`host/tests/reference_audio.py` jest wyłącznie testowym wzorcem dawnych obliczeń
-akustycznych, bez API odtwarzania. Nie jest importowany przez aplikację.
+Testy API wymagają również `httpx` w środowisku testowym. Testy produkcyjnego
+rdzenia C++ używają lokalnego kompilatora C++. Alternatywa z zależnościami w Dockerze:
 
-Diagnostyka: `/api/state`, `/api/plan`, `/api/timeline`, `/api/monitor/raw`.
-Wizualizacja pokazuje planowane wykonanie, nie pomiar dźwięku ani ruchu sprzętu.
-Komunikacja z fizycznym ESP32 BLE, homing i upload wymagają osobnej weryfikacji
-sprzętowej. Migracja nie zmienia firmware, sterowników ani ich limitów mechanicznych.
+```sh
+docker compose --profile test run --rm --build backend-tests
+docker compose --profile test run --rm --build frontend-tests
+```
+
+Firmware: `pio run -d firmware/controller -e esp32` (osobno `-e uno`).
+Zgodność generowanego nagłówka: `.venv/bin/python scripts/generate_hardware_profiles.py --check`.
+Nie generuj ponownie pliku przy samej edycji dokumentacji.
+
+Diagnostyka: `/api/state`, `/api/plan`, `/api/timeline`, `/api/monitor/raw`,
+`/api/firmware/events`; komendy aplikacji idą przez `/ws`. Podgląd
+**Arrangement · PerformancePlan** znajduje się w Settings → Aranżacja.
+**Settings → Laboratory → Laboratory · debug** otwiera skończone testy bez MIDI.
+Nie ma panelu ocen rezonansu, edytora piano roll ani drawerów dawnego UI.
+
+Metryki, symulacja i testy software nie mierzą dźwięku, temperatury, prądu ani
+rzeczywistego położenia. [Tabela zasilania i niepewności](docs/esp32-orchestra.md#power-supplies-and-evidence),
+[pełny indeks dokumentacji i historycznych benchmarków](docs/README.md).

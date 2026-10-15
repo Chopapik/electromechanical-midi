@@ -12,9 +12,9 @@ The app includes updated ESP32 firmware, but the controller must be flashed via
 the existing firmware screen before using FX in REAL. Capability `speaker_fx=1`
 and a `STATUS VHS2` record identify support. Old firmware can still play plans
 without FX; a plan requiring FX is refused with an update message. No automatic
-flash is performed. Main output keeps AMP 50; both virtual speakers keep the
-quiet square waveform and device volume controls. Existing VHS wire commands
-remain compatible.
+flash is performed. Main output defaults to AMP 50 unless persisted settings override it. Both
+speakers have independent VIRTUAL gain and shared REAL/VIRTUAL waveform controls
+as detailed below. Existing VHS wire commands remain compatible.
 
 Independent commands: `VHS2 ENABLE 1`, `VHS2 AMP 50`, `VHS2 FREQ 830.61`,
 `VHS2 STOP`. Both channels stop on ALL STOP, watchdog, disable and mode change.
@@ -34,12 +34,20 @@ main-voice preference; FX is separately available. Strict Tracks uses only FDD.
 
 Counting Stars supplied MIDI: lead channel 4 is recognized through lyrics; FX
 channel 8 plays 830.61, 987.77, 830.61, 739.99 Hz near 34.5..36.5 seconds.
-See reports/counting-stars-speakers.json for allocation results. Local MIDI is
-copied into the library but stays ignored by Git.
+See reports/counting-stars-speakers.json for allocation results. The recorded local import was
+copied into the library but stays ignored by Git. Availability depends on the checkout.
+
+Main speaker `vhs-1` has `transpose: 12` in `config/devices.json`: performed
+lead notes are one octave above their source before allowed-range folding.
+FX `pc-speaker-fx` has no such device transpose. Source MIDI is unchanged.
+User-reported S8050 drivers and probably 8 Ω speakers are not a verified schematic
+or load/current rating; waveform equality below refers to the selected generator,
+not measured identical acoustic output. See [power notes](esp32-orchestra.md#power-supplies-and-evidence).
 
 ## Shared pulse shape and volume settings
 
-Settings contains one shared PWM duty control per speaker, used by REAL and
+Settings (`/settings`) → **Brzmienie PC Speaker** contains one shared PWM duty
+control per speaker, used by REAL and
 VIRTUAL, plus independent VIRTUAL gain. REAL volume and pulse width were always
 the same LEDC PWM duty parameter; the former REAL volume slider is now labelled
 accurately as pulse width, rather than presenting two independent controls.
@@ -83,6 +91,10 @@ old sample from restoring output after STOP. Boot, disable, ALL STOP and watchdo
 set both outputs to zero. Ordinary pulse mode keeps the original LEDC tone path.
 The new shapes preserve the configured mean PWM duty with samples clamped to
 0..255, without claiming equal measured current or thermal safety.
+
+The firmware protocol allows pulse frequencies up to 20 kHz and other shapes
+up to 2 kHz; the host still uses the narrower effective musical profile. These
+protocol bounds are not verified acoustic or thermal ratings.
 
 New firmware advertises speaker_waves=1. Old firmware still supports pulse, but
 REAL playback of other shapes is refused with an update message. Selecting a

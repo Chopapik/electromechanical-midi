@@ -1,5 +1,7 @@
 # ESP32 offline verification — 2026-10-06
 
+> Raport historyczny z 2026-10-06. Liczby testów, wersja platformy i lista plików dotyczą tamtego wdrożenia; część plików starego UI/runtime została później usunięta. Aktualne instrukcje: [ESP32](esp32-orchestra.md), [README](../README.md).
+
 **SOFTWARE VERIFIED**, no ESP32 connected and no physical ESP32 calibration performed.
 
 | Check | Result |

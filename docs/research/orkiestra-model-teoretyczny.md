@@ -1,5 +1,9 @@
 # Orkiestra elektromechaniczna — model teoretyczny urządzeń
 
+> Model referencyjny i historia badań, nie aktualna instrukcja UI ani nastawy
+> wszystkich odzyskanych silników. [Aktualne profile](../hardware-first.md),
+> [zasilanie i obserwacje](../esp32-orchestra.md#power-supplies-and-evidence).
+
 Stan researchu: 7 października 2026. Zakres: FDD 3,5″, bipolarny krokowiec sled CD/DVD, HDD VCM jako perkusja oraz jako źródło tonu. Bez pomiarów sprzętu użytkownika, bez analizy jego firmware i bez implementacji.
 
 ## A. Executive summary

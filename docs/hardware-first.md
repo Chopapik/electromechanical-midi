@@ -1,313 +1,154 @@
-# Hardware-first planning (ESP32, offline implementation)
+# Hardware-first: profile i wykonanie
 
-## Pipeline and scope
+## Aktualna ścieżka
 
-Previously the allocator used preview profiles, and physical commands came from
-`VirtualOrchestra.events`. The ESP32 path now uses:
+`MidiSource → runtime.arranger → allocator.allocate → hardware_arranger →
+PerformancePlan → runtime.compiler → ExecutionTimeline → Player → Router`.
+REAL i VIRTUAL korzystają z tej samej fizycznej alokacji i harmonogramu;
+połączenie BLE nie zmienia dostępnej polifonii w planie. Brak połączenia blokuje
+REAL Play, a nie import MIDI. Dawny renderer PCM i wybór real/hybrid per-device
+nie są ścieżką obecnej aplikacji.
 
-MIDI → existing duplicate normalization / semantic analysis → physical allocator
-→ HardwareProfile evaluation → PerformancePlan → physical schedule → lane mapping
-→ existing Serial/BLE parser → ESP32 execution.
+[README](../README.md) zawiera skład, presety i uruchamianie;
+[ESP32](esp32-orchestra.md) jest źródłem opisu połączeń, zasilania i komend.
+Historyczne szczegóły migracji zachowuje
+[raport wdrożenia](hardware-first-implementation-report.md).
 
-`hardware_arranger.py` is the conservative physical branch of `allocator.allocate`;
-it shares semantic analysis, policy, manual pins, articulation and PerformancePlan.
-Virtual-only configurations keep the existing allocator and PCM renderer. Uno's
-original controller and protocol remain unchanged. No new physics audio renderer
-was implemented. The preview is a historical/demo approximation.
+## Źródła danych i inventory
 
-The ESP32 runtime selects physical planning when any configured instance is `real`
-or `hybrid`. A disconnected controller yields `NO_DEVICE`, not fictitious voices.
-On connection the plan is rebuilt. Even the old single-track ESP32 runtime cannot
-bypass physical profiles. Only actual command-capable v2 lanes are eligible.
+- `config/devices.json`: stabilne ID, kolejność/lane, enabled, typ, profil muzyczny,
+  transpozycja, preferencje i polityka. Lista obejmuje cztery FDD, cztery DVD,
+  dwa PC Speakery, cztery HDD oraz dwie wyłączone tacki.
+- `config/hardware-profiles/theoretical.json`: priory i przykłady referencyjne.
+- `config/hardware-profiles/instances.json`: kalibracje oraz konfiguracja instancji.
+- `firmware/controller/include/hardware_profiles_generated.h`: generowane domyślne
+  parametry wykonawcze ESP32, nie oddzielny ręcznie edytowany profil.
 
-The physical branch is intentionally conservative: it does not steal an active
-voice through an actuator transition, or synthesize unsupported tray/free-stepper
-profiles. It may drop more notes than the ideal preview. A delay must fit the
-existing role-specific micro-delay/arpeggio window. Source semantics, duplicate
-normalization and the existing sustain pass are retained. Final performed
-lengths are checked again after articulation.
+`runtime.registry.PlanningProfiles.present()` korzysta z zadeklarowanego
+`enabled` w registry. STATUS nie wykrywa fizycznie podłączonego silnika.
+`DeviceRegistry.profile()` scala profil teorii i dane instancji. Zachowane API
+planowania obsługuje też jawne hardware overrides; aktualny UI nie jest edytorem
+inventory/kalibracji. Mute z UI jest bramką Routera, nie zmianą profilu lub pojemności.
+Nie zmieniaj kolejności urządzeń w sposób przenumerowujący fizyczne lanes.
 
-## Sources of data
-
-- `config/hardware-profiles/theoretical.json`: reference/theoretical priors.
-- `config/hardware-profiles/instances.json`: declared physical inventory and
-  per-instance calibration/configuration, keyed by stable physical lane.
-- `docs/research/orkiestra-model-teoretyczny.md`: supplied research report.
-- `hardware_profiles_generated.h`: **generated** ESP32 execution defaults.
-
-Generate/check firmware defaults without hardware:
+Sprawdzenie nagłówka bez modyfikacji:
 
 ```sh
-.venv/bin/python scripts/generate_hardware_profiles.py
 .venv/bin/python scripts/generate_hardware_profiles.py --check
 ```
 
-Never edit the generated header directly. Docker includes `config/` so the host
-uses the same JSON data in a container. SPI remains 1 MHz and pin mapping is
-unchanged.
+Regeneracja po zamierzonej zmianie profili: to samo polecenie bez `--check`.
+Po zmianie kodu/config przebuduj obraz; aktualizacja firmware na kontrolerze
+wymaga osobnego jawnego uploadu USB. Sama dokumentacja nie zmienia profili.
 
-Every quantity stores `value`, `unit`, `source`, `evidenceType`, `confidence`,
-and optional `uncertainty`.
+## Dowody i niepewność
 
-| Evidence | Meaning |
-| --- | --- |
-| FACT | Existing code/configuration or cited reference specification; not automatically a fact about our motor |
-| DERIVED | Formula or range assembled from stated measurements/configuration |
-| HYPOTHESIS | Planning prior to be tested |
-| MEASURED | Measurement/working limit of this particular physical instance |
+Każda ilość może zawierać `value`, `unit`, `source`, `evidenceType`, `confidence`
+i `uncertainty`. FACT oznacza fakt o wskazanym źródle lub kodzie, DERIVED wynik
+obliczeń, HYPOTHESIS założenie, MEASURED pomiar określonej instancji/warunków.
+FACT z katalogu Minebea nie identyfikuje silnika z odzyskanego DVD. Wartość
+zapisana jako MEASURED nadal wymaga przeczytania źródła i warunków pomiaru.
+Confidence: HIGH/MEDIUM/LOW/UNKNOWN; null nie oznacza bezpiecznego braku limitu.
+Nie kopiujemy indywidualnej kalibracji DVD1 do pozostałych silników.
 
-Confidence is `HIGH`, `MEDIUM`, `LOW`, or `UNKNOWN`. Reference motor examples are
-explicitly named as references. A null requires UNKNOWN confidence. Numeric
-values must be finite; ranges/positive parameters are validated.
+Nieznane prąd, temperatura, wychylenie i energia uderzeń pozostają UNKNOWN.
+Autoryzacja w modelu oznacza wykonalność według dostępnych danych, a nie
+potwierdzenie bezpieczeństwa termicznego. Tabelę napięć i obserwacji utrzymujemy
+w jednym miejscu: [zasilanie](esp32-orchestra.md#power-supplies-and-evidence).
 
-Effective profile: theory → saved instance quantities → explicit device
-`hardwareOverrides` (also accepted as `hardware_overrides`). A measured value is
-not replaced by a non-measured guess. An explicit null revokes the value rather
-than silently falling back. An explicit newer measured override can replace an
-older measurement. Calibration of DVD1 is never propagated to DVD2–4.
-
-**UNKNOWN ≠ SAFE. UNKNOWN ≠ UNLIMITED.** Unknown current, excursion, impact or
-thermal ratings remain UNKNOWN in evaluation and telemetry. Nominal existing
-drive can be planned with UNKNOWN load, visibly labelled; aggressive operation
-cannot be authorized by missing safety data. These profiles are not proof of
-physical safety. They do not invent current limits or output power ratings.
-
-## Inventory and calibration overrides
-
-The saved declaration currently contains FDD1, SLED1 and HDD1, based on the
-previous bring-up. It does **not** claim the controller detects connected
-peripherals: ESP32 `enabled=1` reports firmware state, not the presence of a
-motor. Other lanes must be explicitly declared by the operator. Disabled
-instances keep their ordinal: disabling FDD1 cannot remap FDD2 to its wiring.
-
-Override an orchestra's physical inventory in JSON/API:
-
-```json
-{"hardware":{"inventory":{"fdd:1":true,"sled:1":true,"hdd:1":true}}}
-```
-
-This explicit inventory replaces the saved declaration. Absent entries are
-absent, not implicitly present. Virtual-only instances never receive hardware
-commands. Mute/solo also filter physical allocation.
-
-On an existing DVD device, add quantities without replacing its legacy preview
-profile or changing the arrangement schema:
-
-```json
-{
-  "hardwareOverrides": {
-    "travelSteps": {
-      "value": 140,
-      "unit": "steps",
-      "evidenceType": "MEASURED",
-      "confidence": "MEDIUM",
-      "source": "DVD1 working software travel; manually placed at start"
-    },
-    "pitchRatio": {
-      "value": 1.0,
-      "evidenceType": "MEASURED",
-      "confidence": "HIGH",
-      "source": "replace with your measurement record before claiming measured"
-    }
-  }
-}
-```
-
-The second entry is a **schema example**, not a measurement of our DVD. Until
-measured, the shipped pitchRatio remains HYPOTHESIS/LOW. Old arrangement JSON
-without these fields keeps valid defaults. HDD instances can declare
-`hardwareRole: "HDD_PERCUSSION"` or `"HDD_TONAL"`; the physical actuator remains
-`type: "HDD_VCM"`. This does not add a new virtual instrument.
-
-## Device models
+## Modele urządzeń
 
 ### FDD
 
-The report supplies preferred 100–300 Hz, stable prior 65–330 Hz, musical
-exploration 65–500 Hz, reference minimum STEP interval 3 ms (~333.333 steps/s),
-reversal prior 18 ms (4–18), travel prior 60 (40–75). Reversal overhead is
-`max(0, reversalIntervalMs - 1000 / fStep)`, not disk settling on each note.
+Wszystkie cztery współdzielą konfigurację: 72 kroki od TRACK0, 5 ms dla kierunku,
+2439 µs minimalnego odstępu STEP, impuls LOW 30 µs. TRACK0 jest fizycznym
+punktem odniesienia; `awaySteps` i projekcja hosta nie są pomiarem położenia.
+HOME ma timeout 2 s. Brak HOME blokuje REAL Play FDD; połączenie nie uruchamia
+homingu automatycznie. Spóźnione impulsy nie są nadrabiane w skompresowanej serii.
 
-FDD1 retains the existing 72-away-step guard, 5 ms DIR timing, and calibrated
-upper comfort endpoint 410 Hz. Its lower 130 Hz is **retained configuration**,
-not a measured musical minimum. The aggregate [130,410] range is DERIVED;
-410 Hz itself was measured 38/40. The 5 Hz mechanical minimum is not substituted
-for a musical lower bound. The existing calibration overrides the 3 ms reference
-prior for this instance. Other FDD instances use the reference execution floor.
+Przed lokalnym eksperymentem oktawy zakres muzyczny instancji wynosił 200–410 Hz;
+410 Hz ma historyczne dane odsłuchu jednego napędu, nie indywidualne potwierdzenie
+czterech urządzeń. Lokalna niezacomitowana próba używa transpose -12, preferencji
+100–205 Hz i okna profilu 100–410 Hz. To ustawienie odsłuchowe, nie nowy pomiar
+minimalnej częstotliwości mechanicznej; nie wchodzi do tego commita.
 
-TRACK0 stays the physical source of truth. Firmware still uses only awaySteps,
-not precise head position, negative position, delta compensation or POS_LOST.
-DIR toward TRACK0 remains HIGH, away remains LOW. The STEP timestamp still comes
-from the physical latch edge. Direction-ready time and the execution STEP floor
-must both expire before a pulse. Startup HOME and watchdog remain intact.
-
-Host travel/reversal rates (`fStep/travel`, `fStep/(2*travel)`) and the projected
-away counter are approximate planning diagnostics, never position feedback.
-The actual firmware counters and TRACK0 come from STATUS.
+Częstotliwość tonu/STEP i częstość nowych nut są różnymi parametrami.
+Wspólny [pass ataków](fdd-attack-rate.md) dopuszcza domyślnie jeden NOTE_ON na
+120 ms na stację; upraszcza szybkie ozdobniki i ponownie ocenia chronologię.
+Koszt kroków/zawróceń w presetach jest estymacją, nie sensorem zużycia.
 
 ### DVD SLED
 
-Only DVD1 has measured working **software** travel 140 and bring-up stable
-250–300 steps/s. DVD2–4 have travel UNKNOWN (`soft_max=-1` in firmware) and PLAY
-is rejected until configured. The 140 counter is not an absolute physical
-position; boot zero requires manual placement at the starting end.
+Cztery instancje działają jako `continuousRotation=true`, travel 0. Nie ma
+wtedy automatycznego odbijania na końcu drogi. Dodatni travel nadal wybiera
+ruch ograniczony, a -1 oznacza nieznaną drogę i odrzuca PLAY. Historyczne 140
+kroków i sweep DVD1 pozostają metadanymi; nie są egzekwowane w trybie ciągłym.
+Wyniki sweepu dotyczą kroków/s i warunków z ratio=1, a nie wszystkich napędów.
 
-Audio frequency and step rate are separate (`stepRate = audioFrequency /
-pitchRatio`). Default ratio 1 is LOW confidence; alternate priors .5, .25, 2
-remain in the data. Reference Minebea specs are not our motor's ratings.
+`stepRate = acousticHz / pitchRatio`. DVD1–3 mają hipotezę ratio 0.5 (LOW), DVD4
+1.0. [Obserwacje tunera i przeliczenie](dvd-pitch-calibration.md) nie zastępują
+pomiaru widma każdego silnika. Hostowy sufit muzyczny 600 Hz składa wyższe tony
+o oktawy, również w DVD Lead i dla manualnych pins. Nie jest granicą termiczną.
+Firmware ma dodatkowo minimalny okres 100 µs i istniejącą rampę 5000 kroków/s².
+Model ocenia czas zmiany `abs(target-current)/acceleration`, a w trybie
+ograniczonej drogi także hamowanie `v²/(2a)` i rezerwę drogi.
 
-The host evaluates signed transition time `abs(target-current)/acceleration`
-and braking distance `v²/(2a)`. Firmware executes the signed ramp (prior 5000
-steps/s²), reverses the target before the limit using braking distance plus a
-small two-command guard, retains the Q8–Q23/full-step phase sequence, and clamps
-at the software boundary as a final guard. STOP de-energizes immediately and
-retains the relative counter. DIR still sets the requested direction; velocity
-changes gradually. Delayed loop servicing never produces catch-up phase bursts.
+`Sled::play()` zmienia cel bez STOP; DVD sustain wydłuża wyłącznie gate'y,
+sprawdzając pełną chronologię z rezerwacjami. STOP natychmiast wyłącza mostek,
+nie wykonuje rampy hamowania. Licznik względny pozycji to telemetria, nie czujnik.
+Ciągły obrót nie oznacza dopuszczenia nieograniczonej pracy termicznej.
 
-### HDD percussion
+### Historyczny sweep DVD1
 
-The planner uses priors 5 continuous hits/s, 10 burst hits/s, a 500 ms window,
-and 200 ms nominal start-to-start. These are **not safe current/thermal ratings**.
-The existing ESP32 drive baseline is retained: 40 ms reset/park, 40 ms settle,
-4 ms strike. The theoretical 1 ms pulse prior is stored separately and does
-not silently change the physical HIT command. Measured `strikeMs` overrides can
-configure that instance; increasing the baseline pulse without known safety data
-is considered aggressive and is not authorized.
+Wcześniejszy test DVD1 obejmował 50–500 Hz co 10 Hz, przy pitchRatio=1,
+rampie i automatycznym zawracaniu z limitem 140 kroków. Zapisane pasma bez
+wykluczonych rezonansów: **50–120, 180–190, 270–300, 340–470 kroków/s**.
+W dawnej konfiguracji ograniczonej drogi whitelist odrzucała pozostałe
+częstotliwości; envelope wynosił 50–470 kroków/s. Są to obserwacje DVD1
+w tamtych warunkach, nie kalibracja czterech silników ani obecnego ciągłego
+obrotu. Metadane sweepu pozostają w `instances.json`; obecny nagłówek ma
+zerowe liczby aktywnych allowed bands dla ciągłego obrotu.
 
-Readiness separates mechanical, thermal-budget and impact-budget times. The
-latter two are UNKNOWN until calibrated. Event diagnostics expose planned HIT,
-RESET, SETTLE, CONTACT/STRIKE and READY phases. CONTACT is a label for the strike
-command, not a detected mechanical contact. The old bridge state machine and
-HIT/STOP commands remain operational.
+### HDD percussion i tonal
 
-### HDD tonal
+Obecny wykonawca to perkusja: Park 40 ms, Settle 40 ms, Strike 4 ms, potem coast.
+Gotowość, nominalny odstęp i okno burst pochodzą z profilu. Teoria oraz historyczny
+Uno 2 ms nie mogą zastąpić wartości ESP32. Nieznane budżety prądu, temperatury
+i uderzeń nie stają się bezpiecznymi limitami przez poprawne planowanie.
 
-There is a separate profile/role/state-continuity scoring branch: exploration
-100–1500 Hz, preferred 200–800, stable UNKNOWN, transition=max(3/f,10 ms) after
-a frequency change. The risk score checks odd square-wave harmonics against
-reference resonance candidates. Unknown avoidBands never become hardcoded
-measured exclusions; measured avoidBands can block candidates.
+Profile/research HDD tonal istnieją, ale fizyczny wykonawca tonalny nie jest
+włączony. Brakuje zweryfikowanego centrowania, pomiaru wychylenia i sterowania
+prądem; `HDD_TONAL_EXECUTOR_UNAVAILABLE` nie jest zastępowane przypadkowym HIT.
 
-**Physical HDD tonal execution is not enabled.** The current firmware only has
-percussion drive, without centering, excursion sensing/current limiting or a
-validated tonal oscillator. These notes carry `PHYSICAL_UNKNOWN` and
-`HDD_TONAL_EXECUTOR_UNAVAILABLE`; no HIT command is substituted for a tonal note.
-This is deliberate architecture for later measured work, not a claim that a
-safe tonal driver now exists.
+### PC Speaker, FX i tray
 
-VHS retains existing protocol range/drive; physical limits remain UNKNOWN.
-Tray and unprofiled actuator families are excluded from the new physical
-arranger pending suitable profiles. Their existing firmware commands and the
-legacy preview remain unchanged.
+Typ VHS i komendy VHS/VHS2 pozostają ze względu na kompatybilność. Aktualne
+urządzenia to dwa PC Speakery przez S8050 na GPIO25/26, z niezależnymi timerami
+wysokości. Gain VIRTUAL i wspólny kształt/pulse duty mają osobne ustawienia;
+[pełny opis](pc-speaker-fx.md). Nie ma pomiaru odpowiedzi akustycznej ani prądu.
+Tray ma komendy firmware, ale brak zatwierdzonego profilu obu pozycji registry
+wyklucza je z bieżącego planowania i Laboratory.
 
-## Evaluation and telemetry
+## Ocena kandydatów i diagnostyka
 
-Each physical candidate reports TIMING, QUALITY, PHYSICAL_LOAD independently as
-PASS / DEGRADED / UNKNOWN / BLOCKED, plus `authorized`, `qualityReasons`,
-`readyAt`, transition/braking/reversal estimates and harmonic risk.
+Oceny TIMING, QUALITY i PHYSICAL_LOAD są niezależne: PASS/DEGRADED/UNKNOWN/BLOCKED.
+`authorized`, `readyAt`, przyspieszenie, zawracanie, krótki gate i zakres decydują
+o dopuszczeniu i koszcie. Krótka wykonalna nuta może być DEGRADED zamiast DROP.
+Polityka muzyczna i priorytet lead/bass wybierają dopuszczalnego kandydata;
+wynik jest deterministyczny. Sustain nie może przywrócić skradzionego gate'u,
+zająć obcej rezerwacji ani pominąć mechanicznej gotowości. UNISON i reinforcement
+rezerwują pełne przedziały; walidowane są także przyszłe nuty.
 
-Duration minimum is `max(floorMs, 1000 * minCycles / audioFrequency)`:
-FDD 20 ms / 4 cycles; DVD 30 ms / 4; HDD tonal 20 ms / 4. Preferred duration,
-change rate, preferred/stable range and transient cost affect quality. A short
-but executable note can be DEGRADED instead of categorically rejected.
+`PerformanceEvent.hardware` pokazuje wybór i kandydatów; `plan.hardware` i raport
+zawierają mapowanie oraz estymowane stany. Liczniki candidate requested/dropped
+nie są liczbą odrzuconych źródłowych nut: jedna nuta może próbować wielu urządzeń.
+Właściwe source drops są w `report.totals`, z osobnym opisem efektów nietonalnych
+i redukcji ataków FDD. Ruch, zawrócenia i obciążenie to **PLANNED**, nie pomiar.
 
-Rejected/unauthorized candidates cannot be selected. Eligible candidates must
-fit the role's allowed delay, then are ordered by quality, transition cost,
-braking/reversal cost, physical confidence, stable device id. Selection is
-deterministic. The final sustain pass cannot reserve overlapping primary notes
-or override mechanical/budget readiness.
-
-Reasons include NO_DEVICE, PROFILE_UNKNOWN, TRAVEL_LIMIT_UNKNOWN,
-PITCH_RATIO_UNKNOWN, STEP_INTERVAL_LIMIT, OUTSIDE_MUSICAL_RANGE,
-TIMING_CONFLICT, DEVICE_BUSY, BURST_WINDOW, CONTINUOUS_HIT_RATE,
-PHYSICAL_UNKNOWN, PHYSICAL_LIMIT, HDD_TONAL_EXECUTOR_UNAVAILABLE.
-Quality reasons include NOTE_TOO_SHORT, SHORTER_THAN_PREFERRED,
-OUTSIDE_PREFERRED_RANGE, OUTSIDE_STABLE_RANGE, ACCELERATION_LIMIT,
-TRAVEL_REVERSAL, NOTE_CHANGE_RATE, HARMONIC_RESONANCE_CANDIDATE.
-
-`PerformanceEvent.hardware` contains the selected evaluation and all candidate
-evaluations. `PerformancePlan.hardware`, its report, and snapshot
-`hardwarePlanning` expose effective metadata, lane mapping, projected end states
-and per-device requestedNotes, acceptedNotes, playedNotes, droppedNotes,
-degradedNotes, dropReasons, transitions/reversals/travelReversals,
-accelerationLimited, tooShort, outsidePreferredRange, outsideStableRange and
-physicalUnknown.
-
-**Counters are labelled PLANNED, not measured playback.** requestedNotes and
-droppedNotes count per-device candidate assessments/denials (one MIDI note may
-be evaluated on several devices). dropReasons can have several reasons for one
-denial. accepted/played describe selected command-plan events; no acoustic or
-movement sensor verifies them. Reversals/travelReversals count projected travel reversals (not sensor-confirmed
-mechanical reversals). Source-level drops remain the existing plan
-report totals. Projected states are end-of-plan estimates, not live sensors.
-
-STATUS adds FDD reversal/profile, DVD signed rate/target and LOW position
-confidence/ramp, HDD logical state/readiness and UNKNOWN safety. STATUS remains
-explicitly requested, never generated each tick. Lines/whole transactions are
-bounded by the existing BLE packet/Serial queue sizes, covered by native tests.
-
-New firmware advertises `hardware_profiles=1`. Runtime sends bounded FDD/SLED/HDD PROFILE
-execution parameters while stopped (HDD uses reset/settle/strike milliseconds); an old firmware cannot silently execute a
-physical plan assuming new ramps/timing overrides it does not have. No protocol parser duplication, BLE
-callback hardware execution, auto-flash or automatic motor tests were added.
-
-Optional reinforcement is filtered against real inventory/profiles and primary
-reservations. Unknown-travel/unsafe/non-tonal dubs are removed. DVD dubs currently
-only use terminal free gaps, because changing its software trajectory must not
-invalidate a later primary event. FDD dubs reserve a direction-settling margin
-before a following primary. Uncalibrated tray accents are removed on this path.
-
-## First physical tests — checklist ONLY, not executed
-
-1. Check wiring, manual DVD start position and declared inventory before enabling
-   any lane. Keep uncalibrated DVD2–4 disabled.
-2. Read STATUS; check protocol/profile capability, FDD DIR polarity and TRACK0
-   raw/active. Confirm STOP and watchdog with a controlled low-rate test.
-3. FDD1: verify existing 130–410 range, reversal timing and TRACK0 return at
-   several frequencies; record failures per position/orientation.
-4. DVD1: low-rate ramp, signed reversal and early braking; check actual travel
-   against the software estimate, then measure pitchRatio. Do not infer motor
-   temperature/current safety from successful movement.
-5. HDD1: verify the unchanged 4 ms strike, reset/settle readiness and enforced
-   hit-rate scheduling; measure peak current, temperature and impact before
-   attempting stronger drive.
-6. Record each instance's measured ranges/timing/travel in metadata overrides.
-   Do not copy DVD1 measurements to other motors.
-7. Compare a sparse MIDI and a dense arrangement with per-note reasons, measured
-   STEP intervals and observed movement. Planned playedNotes alone are not proof.
-8. HDD tonal requires separate electrical/centering/excursion characterization
-   and an execution design before any oscillator test; it remains blocked here.
-
-No steps above were performed during implementation. No USB/BLE was opened,
-firmware was not flashed, motors were not commanded, and the running application
-was not restarted because that could auto-connect/home hardware.
-
-### Individual DVD1 resonance calibration
-
-`config/hardware-profiles/instances.json`, `SLED:1.quantities.allowedBandsHz`,
-records a physical sweep from 50 to 500 Hz in 10 Hz increments using the existing
-Sled ramps and automatic reversal, with the existing `pitchRatio=1`.
-Only these inclusive bands are qualified: **50–120, 180–190, 270–300,
-340–470 Hz**. All intervening gaps and frequencies outside those bands are
-unqualified and rejected. This measurement applies only to DVD1.
-
-The values describe the physical STEP rate in Hz (equal to PLAY Hz during the
-sweep). Host and ESP32 both compare `PLAY Hz / pitchRatio` with these bands;
-changing the acoustic pitch mapping therefore cannot bypass the resonance
-restriction. `musicalStepRate` and `stableStepRate` record the outer measured
-envelope, 50–470 steps/s; the holes remain forbidden by `allowedBandsHz`.
-The earlier 250–300 Hz bring-up observation is superseded for DVD1.
-
-The hardware arranger searches only octave equivalents of the original MIDI
-pitch. In automatic fold mode, A3/220 Hz can use A4/440 Hz. If no permitted
-octave exists within the remaining constraints, another instrument is tried
-before DROP. Manual routing without octave folding and final reinforcement
-validation enforce the same measured bands. Measured bands cannot be erased or
-widened by runtime profile overrides.
-
-`scripts/generate_hardware_profiles.py` emits the per-instance whitelist in
-`firmware/controller/include/hardware_profiles_generated.h`. Direct
-`SLED 1 PLAY` commands outside the whitelist return `ERR VALUE`; STOP first
-when testing successive values, because a rejected PLAY does not cancel an
-already running valid note. DVD2–4 have no new whitelist. Travel limit 140,
-phase sequence, acceleration, braking and reversal code are unchanged.
+`GET /api/plan`, `GET /api/timeline`, `GET /api/state` i `/api/monitor/raw` służą
+do diagnostyki. PerformancePlan jest w `/settings` → Aranżacja.
+Sprzęt zgłasza capabilities (`hardware_profiles`, `dvd_continuous`, `speaker_fx`,
+`speaker_waves`, `stop_ack`); host wymaga odpowiednich funkcji, konfiguruje profile
+po STOP i nie flashuje automatycznie. Weryfikację fizyczną zaczynaj od połączeń,
+STOP/watchdoga i skończonych testów [Laboratory](instrument-lab.md), z pomiarami
+prądu, temperatury i odpowiedzi akustycznej.

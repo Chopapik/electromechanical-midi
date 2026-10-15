@@ -1,5 +1,7 @@
 # Production mechanical playback drift fix
 
+> Historyczny raport poprawki wcześniejszego silnika. Pomiary i lista plików dotyczą tamtej wersji; obecny wspólny Player/Router i Web Audio opisuje [README](../../../README.md).
+
 Branch: `fix/mechanical-playback-drift`. Baseline: `b9a9a7e`.
 Classification **E: BLE backlog (B), plus scheduler deadline failure under overload (A)**.
 Firmware, wiring, mechanical calibration, arranger and frontend source are unchanged.

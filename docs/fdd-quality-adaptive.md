@@ -1,7 +1,12 @@
 # FDD Quality Adaptive
 
-Fourth independent AUTO preset. Balanced, FDD Quality and DVD Lead + Low FDD
-retain their previous behavior. Choose it explicitly in Arrangement; startup
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
+
+An independent AUTO preset, alongside the six other current choices.
+Choose it explicitly in Settings → Aranżacja; startup
 and Docker restart retain the existing Balanced default. Selection remains
 session-only. Application.set_preset confirms STOP / virtual cancellation before
 planning, increments the revision, and never automatically resumes playback.

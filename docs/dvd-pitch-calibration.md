@@ -21,7 +21,7 @@ Przepływ:
 4. ESP32 `Sled::play()` wykonuje jedno dzielenie przez `pitchRatio`. Rampa dochodzi do docelowych 400 lub 1000 kroków/s.
 5. Ocena hardware hosta używa tego samego dzielenia; symulacja ruchu odtwarza akustyczne Hz jako `abs(currentStepRate) * pitchRatio`. Wyjście Web Audio otrzymuje żądane akustyczne Hz, nie częstotliwość kroków.
 
-Nie zmieniono kodu aranżacji muzycznej, alokacji, UNISON, transpozycji, UI ani GPIO. Limit 100 µs / 10 000 kroków/s nadal obowiązuje; dla ratio 0.5 odpowiada maksymalnym 5000 Hz akustycznych. Historyczne 140 kroków i pasma nie są aktywowane. STOP, watchdog i rampa pozostają bez zmian.
+Nie zmieniono kodu aranżacji muzycznej, alokacji, UNISON, transpozycji, UI ani GPIO. Limit 100 µs / 10 000 kroków/s nadal obowiązuje; dla ratio 0.5 odpowiada maksymalnym 5000 Hz akustycznych w reprezentacji timera. Aktualny allocator ma niezależny, znacznie niższy sufit muzyczny 600 Hz akustycznych i składa wyższe tony o oktawy. Żaden z tych limitów nie jest pomiarem termicznym. Historyczne 140 kroków i pasma nie są aktywowane. STOP, watchdog i rampa pozostają bez zmian.
 
 ## Zastosowanie
 

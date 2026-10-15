@@ -1,8 +1,13 @@
 # FDD QUALITY — eksperymentalny preset aranżacji
 
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
+
 ## Wybór i bezpieczeństwo
 
-W istniejącym widoku **Arrangement · PerformancePlan** można wybrać **Balanced** albo **FDD Quality · eksperymentalny**. Domyślnie aplikacja startuje w Balanced. Wybór obowiązuje dla kolejnych plików w bieżącej sesji backendu; nie zapisuje konfiguracji użytkownika na dysku.
+W **Settings → Aranżacja → Preset aranżacji** wybierz **FDD Quality · eksperymentalny**; podgląd **Arrangement · PerformancePlan** jest w tej samej sekcji. Domyślnie aplikacja startuje w Balanced. Wybór obowiązuje dla kolejnych plików w bieżącej sesji backendu; nie zapisuje konfiguracji użytkownika na dysku.
 
 Zmiana przechodzi przez akcję WebSocket `arrangement_preset`. `Application.set_preset` sprawdza nazwę i zajętość DeviceService, zatrzymuje Player oraz potwierdza STOP REAL / anulowanie Web Audio, a dopiero potem generuje plan. Zwiększa revision i nie wznawia odtwarzania. Błąd STOP blokuje zmianę; błąd planowania przywraca wcześniejszy preset, pozostawiając wykonanie zatrzymane.
 

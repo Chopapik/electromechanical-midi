@@ -1,5 +1,10 @@
 # DVD Continuous Sustain
 
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
+
 Optional policy: `dvdContinuousSustain` (library default false, local device
 configuration true), `dvdDynamicAware` (true), `dvdMaxBridgeMs` (200).
 The 200 ms ceiling is experimental, not a calibrated optimum.
@@ -29,8 +34,11 @@ Notes longer than two beats are preserved. Repeated pitches keep rearticulation.
 Disabling dynamic-awareness removes the fast-cadence requirement, but preserves
 all phrase, reservation and repeat safeguards.
 
-This is deliberately conservative: routing across devices or independent parts
-can still produce gaps. No new allocation or motor driver is introduced.
+This describes the dynamic pass shared by AUTO physical plans. Instrument Roles
+and its paired variants additionally use the [background/grace sustain pass](instrument-roles.md#stronger-dvd-background-sustain),
+with an experimental 350 ms ceiling and guarded repeated-note/handoff bridges.
+STRICT_TRACKS uses only FDD. Routing across devices or independent parts can
+still produce gaps. No new motor driver is introduced.
 
 Run ` .venv/bin/python scripts/compare_dvd_sustain.py` to regenerate
 `reports/dvd-sustain-comparison.json` for Bodysnatchers and Every Breath You Take.

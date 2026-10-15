@@ -1,6 +1,11 @@
 # DVD Lead + Low FDD — experimental arrangement
 
-Third independent AUTO preset, selected in Arrangement · PerformancePlan.
+> Aktualna aplikacja: wybór presetu w **Settings → Aranżacja**; cztery aktywne DVD,
+> dwa PC Speakery. Wszystkie presety mają wspólny [limit ataków FDD](fdd-attack-rate.md).
+> Tabele benchmarków i liczby testów poniżej są zapisami wersji wskazanej przy
+> pomiarze, nie gwarancją bieżących wyników. [Pełny indeks](README.md).
+
+An independent AUTO preset, selected in Settings → Aranżacja → Preset aranżacji.
 Balanced remains the startup default. Preset selection is session-only and uses
 Application.set_preset: confirmed STOP / virtual audio cancellation precedes
 replanning; failure retains the previous preset and plan. Playback never resumes
@@ -13,28 +18,33 @@ hardware_arranger.allocate_hardware → physical validation → optional UNISON 
 runtime.compiler.compile_plan → the same timeline for REAL and VIRTUAL.
 There is no additional allocator or playback engine.
 
-DVD1–3 receive a strong score preference for all tonal parts, with additional
+All enabled DVD voices (currently DVD1–4) receive a strong score preference
+for all tonal parts, with additional
 musical salience, sustain and same-track/channel continuity bonuses. Availability,
 transition time, pitch-dependent acceleration and timing conflicts are evaluated
 by the existing hardware model. No lane is permanently assigned to melody, bass
 or harmony. Optional sustains crossing an upcoming melody/bass attack yield space
 rather than reserve a DVD. Existing priority-based DVD sustain competition and
-lead/bass protection remain in effect. Three monophonic lanes give at most three
-simultaneous DVD voices. Their current pitchRatio calibration and continuous
+lead/bass protection remain in effect. The four current monophonic lanes give
+at most four simultaneous DVD voices (the original benchmark used three).
+Their current pitchRatio calibration and continuous
 rotation profiles remain unchanged.
 
 FDD candidates try exactly one octave below the source pitch plus any explicit
 device/manual transpose. If this is outside the configured profile range, the
 original candidate pitch is evaluated. Neither candidate is clamped or folded a
 second time. A note requiring two octaves of folding can consequently be omitted
-when no DVD is free. No global FDD range is enlarged. The current 200 Hz lower
-musical bound is a working profile choice, not a precise measured acoustic limit.
+when no DVD is free. No global FDD range is enlarged. The lower
+musical bound comes from the active profile/preferences, not a precise measured
+acoustic limit; the original benchmark used 200 Hz. A separate local octave
+experiment changes those preferences and is not part of this documentation commit.
 
 PerformanceEvent.note/start/duration/velocity/track/channel retain MIDI provenance;
 played_note/played_hz/actual_start/actual_duration record execution. Selection.lowFdd
 records the explicit octave decision and range fallback. DVD retain their original
-register (plus explicit user/device transpose), without automatic folding in this
-preset. MIDI files, tempo and classification are unchanged.
+register (plus explicit user/device transpose) except for the common **600 Hz
+acoustic ceiling**, which folds higher tones down by octaves even in this preset.
+MIDI files, tempo and classification are unchanged.
 
 The existing FDD cost model evaluates steps = performed Hz / pitchRatio × gate,
 head phase, projected reversals, recent density, continuous activity, rests and
