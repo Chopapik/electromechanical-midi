@@ -164,6 +164,16 @@ Sugerowany limit ciągu nowych nut: nominalnie 15/s, zakres założeń 8–25/s,
 
 ## C2. DVD/CD sled: silnik, obciążenie i dźwięk
 
+### Aktualny kontekst zasilania w projekcie
+
+Poniższe 5 V z karty Minebea i obliczeń modelowych nie jest zaleceniem zasilania
+silników odzyskanych w tym projekcie. W aktualnym układzie przy 5 V zaobserwowano
+nadmierne nagrzewanie silników DVD. Obecnie rozważane **3,3 V dotyczy zasilania
+silników na VM sterownika DRV8833**, a nie wyłącznie logiki. Jest to wartość
+robocza wymagająca potwierdzenia pomiarami temperatury silnika/sterownika i prądu
+silnika w docelowych warunkach pracy, **nie zweryfikowany bezpieczny limit**.
+Zobacz [opis zasilania ESP32 orchestra](../esp32-orchestra.md#gpio-wiring).
+
 ### Potwierdzony silnik i analogi
 
 | Parametr | Minebea PL15S-020 [S8] | Status / niepewność |

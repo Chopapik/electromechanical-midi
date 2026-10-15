@@ -43,5 +43,10 @@ including optional tones. Work and between-note silence sum across DVD motors;
 longest continuous duration refers to one motor, excluding leading/trailing idle.
 
 Software checks do not establish thermal safety. Measure motor/driver temperature
-and mechanical behavior on physical hardware before judging continuous duty.
+and motor current and mechanical behavior on physical hardware before judging
+continuous duty. In the current setup, excessive DVD motor heating was observed
+at 5 V. The currently considered 3.3 V is the **motor supply at DRV8833 VM**,
+not just logic voltage, and remains a provisional working value requiring those
+measurements, not a verified safe limit. See the
+[ESP32 wiring and supply notes](esp32-orchestra.md#gpio-wiring).
 The report explicitly records the longest uninterrupted run for each comparison.

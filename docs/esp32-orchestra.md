@@ -16,10 +16,11 @@ tray timeout, disabled devices and ASCII command parsing. Serial status is
 parsed only when a complete BEGIN/END transaction arrives.
 
 **REQUIRES PHYSICAL CALIBRATION:** STEP/DIR input compatibility at 3.3 V for each
-FDD; TRACK0 voltage and active-low behavior; DVD coil order, direction and travel;
-HDD VM and impulse durations; tray VM/pulse duration; printer motor parameters.
-No ESP32 hardware test has been performed. Software sled interval validation is
-an implementation guard, **not** a measured safe motor Hz limit.
+FDD; TRACK0 voltage and active-low behavior; DVD motor VM, current, temperature,
+coil order, direction and travel; HDD VM and impulse durations; tray VM/pulse duration; printer motor parameters.
+The software verification above does not establish physical calibration.
+Software sled interval validation is an implementation guard, **not** a measured
+safe motor Hz limit.
 
 ## GPIO wiring
 
@@ -51,6 +52,13 @@ The 40 clock bits take 40 µs, plus software and latch overhead. This does not
 depend on an SPI default. Raise the clock only after verifying the physical chain.
 
 DRV8833 VM is a separate motor supply; logic/supply/FDD/ESP32 share GND.
+For the DVD stepper motors, **3.3 V is the currently considered motor supply at
+DRV8833 VM**, not only the logic voltage. Excessive DVD motor heating was
+observed at **5 V** in the current setup. The proposed **3.3 V is a provisional
+working value, not a verified safe limit**: confirm it by measuring motor/driver
+temperature and motor current under the intended load and continuous playback.
+Software checks do not establish thermal safety. This DVD supply proposal does
+not specify VM for HDD or tray motors; calibrate those separately.
 VCM coil goes between OUT1/OUT2 of its assigned bridge; never to a GPIO.
 Sled coil A goes across AOUT1/AOUT2, coil B across BOUT1/BOUT2.
 Tray motor goes across its assigned bridge's two outputs.
@@ -355,7 +363,9 @@ filtered out: capture the raw boot/reset log to diagnose it.
    compensate drift: TRACK0 alone reverses the return travel.
 7. Add one DRV8833 bridge at a time with correct VM. Check HDD impulses,
    then explicitly enable and calibrate each sled/tray. Check coil order and
-   travel before sustained sled PLAY. Calibrate VHS GPIO25 input response.
+   travel, motor current and temperature before sustained sled PLAY; the proposed
+   DVD VM of 3.3 V still requires these measurements. Calibrate VHS GPIO25 input
+   response.
 8. Connect via app, load target preset, verify enabled devices and physical
    IDs, upload ESP32 firmware if needed, wait for confirmed HOME and Play.
 
