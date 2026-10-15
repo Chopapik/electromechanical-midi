@@ -97,7 +97,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                                                 position_confidence='LOW' if profile.name == 'DVD_SLED' else 'UNKNOWN')
         lanes[device.id] = lane
     midi_analysis = midi_analysis or analysis_module.analyze(source)
-    notes = _source_notes(source, midi_analysis, policy); pins = pins or {}
+    from .allocator import _partition_effects
+    pins = pins or {}
+    notes, effect_events = _partition_effects(_source_notes(source, midi_analysis, policy), pins)
     lead = [s for s in slots.values() if profiles[s.device.id].name == 'VHS']
     accompaniment = [s for s in slots.values() if profiles[s.device.id].name not in ('VHS', 'HDD_PERCUSSION')]
     if policy.get('tonalOverflow') == 'adaptive':
@@ -115,7 +117,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     quality_history={ident:[] for ident in profiles}
     protected_starts=sorted(n['span'].start for n in notes if n['role'] in (LEAD,BASS)) if low_mode else []
     last_part = {}; decisions = {}; priorities = {i['id']: i['priority'] for i in notes}
-    events = []; attempts = {}; requested = Counter(); denied = Counter(); rejected = {d: Counter() for d in slots}
+    events = effect_events; attempts = {}; requested = Counter(); denied = Counter(); rejected = {d: Counter() for d in slots}
     for item in notes:
         span = item['span']; role = item['role']; pin = pins.get(item['id'])
         if pin is not None and pin.device_id is None:

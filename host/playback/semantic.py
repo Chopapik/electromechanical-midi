@@ -10,9 +10,10 @@ import bisect
 import dataclasses
 import re
 from collections import Counter
+from .sound_roles import source_effects
 
 ROLES = ('VOCAL', 'BACKING_VOCAL', 'BASS', 'GUITAR', 'KEYS', 'STRINGS',
-         'PAD_SYNTH', 'PERCUSSION', 'OTHER')
+         'PAD_SYNTH', 'PERCUSSION', 'UNPITCHED_EFFECT', 'OTHER')
 ROLE_THRESHOLD = .55
 VOCAL_LEAD_THRESHOLD = .75
 VOCAL_MARGIN = .12
@@ -92,6 +93,7 @@ class TrackClassification:
 def classify(source, profiles) -> tuple[TrackClassification, ...]:
     """Classify logical tracks; metadata is read from their original MIDI tracks."""
     raw = getattr(source, 'source', source)
+    effects = source_effects(source)
     lyric_times = sorted(event.time for event in raw.text_events()
                          if _lyric_text(event.text))
     by_index = {track.index: track for track in source.tracks}
@@ -102,7 +104,8 @@ def classify(source, profiles) -> tuple[TrackClassification, ...]:
         original_indices = getattr(track, 'source_tracks', (track.index,))
         programs = [program for index in original_indices for program in raw.programs(index)]
         family = gm_family(Counter(programs).most_common(1)[0][0]) if programs else None
-        notes = source.notes(profile.index)
+        all_notes = source.notes(profile.index)
+        notes = [span for span in all_notes if f'{profile.index}:{span.order}' not in effects]
         alignment = _lyric_alignment(notes, lyric_times)
         scores = {role: 0.0 for role in ROLES}
         scores['OTHER'] = .25
@@ -159,6 +162,12 @@ def classify(source, profiles) -> tuple[TrackClassification, ...]:
                     f'lyrics alignment: {alignment:.0%}')
 
         ranked = sorted(ROLES, key=lambda role: (-scores[role], ROLES.index(role)))
+        if all_notes and not notes:
+            # Hard program semantics take precedence over names and lyrics.
+            scores = {role: float(role == 'UNPITCHED_EFFECT') for role in ROLES}
+            reasons['UNPITCHED_EFFECT'] = sorted({
+                'GM noise: ' + effects[f'{profile.index}:{span.order}'] for span in all_notes})
+            ranked = ['UNPITCHED_EFFECT']
         winner = ranked[0]
         if scores[winner] < ROLE_THRESHOLD:
             winner = 'OTHER'
@@ -168,7 +177,8 @@ def classify(source, profiles) -> tuple[TrackClassification, ...]:
             1 if reason.startswith('lyrics alignment:') else
             2 if reason.startswith('GM family:') else 3))) or ('insufficient specific evidence',)
         results.append(TrackClassification(
-            index=profile.index, name=profile.name, note_count=profile.note_count,
+            index=profile.index, name=profile.name,
+            note_count=len(all_notes) if all_notes and not notes else profile.note_count,
             final_role=winner, confidence=confidence,
             role_scores={role: round(min(1.0, scores[role]), 3) for role in ROLES},
             evidence=evidence, gm_family=family,

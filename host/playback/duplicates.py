@@ -14,8 +14,9 @@ zrodlowej (skad pochodzily, jakie byly offsety, jaka confidence).
                -> normalize() -> NormalizedSource (partie logiczne)
                -> analysis / allocator
 
-Detekcja NIE opiera sie na nazwach ani numerach trackow - liczy sie wylacznie
-struktura nut: sekwencja pitchy, timing, dlugosci i velocity. Nazwa tracku
+Detekcja NIE opiera sie na nazwach ani numerach trackow - porownuje
+strukture nut: sekwencje pitchy, timing, dlugosci i velocity. Warstwy
+nieintonowanych efektow GM sa wykluczone z porownan tonalnych. Nazwa tracku
 sluzy tylko do czytelnosci raportu.
 
 Zasada bezpieczenstwa: wolimy NIE polaczyc prawdziwego dubla niz zle skleic
@@ -28,6 +29,7 @@ import dataclasses
 import statistics
 
 from midi_source import MidiSource, NoteSpan, TrackInfo
+from .sound_roles import source_effects
 
 # --- progi detekcji -------------------------------------------------------
 MIN_NOTES = 8                 # krotszych trackow nie porownujemy
@@ -335,8 +337,12 @@ def compare_tracks(notes_a: list[NoteSpan], notes_b: list[NoteSpan],
 
 def _candidates(source: MidiSource) -> list[TrackInfo]:
     """Tylko tonalne tracki. Perkusji nie deduplikujemy (v1)."""
+    effects = source_effects(source)
+    effect_tracks = {int(ident.split(':')[0]) for ident in effects}
+    # Matching trigger notes do not make a noise layer a tonal duplicate.
     return [track for track in source.tracks
-            if not track.is_drums and track.note_count >= MIN_NOTES]
+            if not track.is_drums and track.note_count >= MIN_NOTES
+            and track.index not in effect_tracks]
 
 
 def detect(source: MidiSource) -> DuplicateReport:

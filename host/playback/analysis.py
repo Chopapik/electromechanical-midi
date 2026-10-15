@@ -15,6 +15,7 @@ import statistics
 
 from midi_source import MidiSource, NoteSpan
 from . import semantic
+from .sound_roles import UNPITCHED_EFFECT, source_effects
 
 # Role muzyczne nut. Allocator tlumaczy je na priorytety i preferencje sprzetu.
 LEAD = 'lead'
@@ -71,6 +72,7 @@ class MidiAnalysis:
     lead_notes: tuple[str, ...] = ()      # nuty wybrane jako linia lead
     classifications: tuple[semantic.TrackClassification, ...] = ()
     lead_source: str = 'heuristic'
+    unpitched_effects: dict[str, str] = dataclasses.field(default_factory=dict)
 
     def as_dict(self) -> dict:
         return {
@@ -82,6 +84,8 @@ class MidiAnalysis:
             'leadNotes': len(self.lead_notes),
             'leadSelection': self.lead_source,
             'trackClassification': [item.as_dict() for item in self.classifications],
+            'unpitchedEffects': dict(sorted(self.unpitched_effects.items())),
+            'unsupportedEffectCount': len(self.unpitched_effects),
         }
 
 
@@ -140,11 +144,11 @@ def _step_ratio(notes: list[NoteSpan]) -> float:
     return steps / (len(ordered) - 1)
 
 
-def _profile(source, track) -> TrackProfile:
+def _profile(source, track, effects=()) -> TrackProfile:
     """Profil jednego tracku. ``track`` moze pochodzic z MidiSource albo
     z NormalizedSource (partia logiczna po sklejeniu dubli)."""
     index = track.index
-    notes = source.notes(index)
+    notes = [span for span in source.notes(index) if f'{index}:{span.order}' not in effects]
 
     if not notes:
         return TrackProfile(index, track.name, 0, track.is_drums, track.channels,
@@ -280,13 +284,14 @@ def _pick_bass(profiles: list[TrackProfile], classifications=()) -> tuple[int | 
     return winner.index, round(min(best, 1.0), 3)
 
 
-def _lead_line(source: MidiSource, profile: TrackProfile) -> set[str]:
+def _lead_line(source: MidiSource, profile: TrackProfile, effects=()) -> set[str]:
     """Ktore nuty leadowego tracku naprawde niosa melodie.
 
     Przy monofonicznym tracku - wszystkie. Przy polifonicznym (np. pianie)
     melodia to gorny glos, wiec bierzemy najwyzsza nuta z kazdego uderzenia.
     """
-    notes = source.notes(profile.index)
+    notes = [span for span in source.notes(profile.index)
+             if f'{profile.index}:{span.order}' not in effects]
 
     if profile.overlap_ratio <= 0.15:
         return {f'{profile.index}:{span.order}' for span in notes}
@@ -304,7 +309,8 @@ def _lead_line(source: MidiSource, profile: TrackProfile) -> set[str]:
 
 def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysis:
     """Profiluje tracki i wyznacza role nut. Czysta funkcja - brak stanu."""
-    profiles = [_profile(source, track) for track in source.tracks]
+    effects = source_effects(source)
+    profiles = [_profile(source, track, effects) for track in source.tracks]
     classifications = semantic.classify(source, profiles)
     confident_vocals = [item for item in classifications
                         if item.final_role == 'VOCAL'
@@ -331,9 +337,9 @@ def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysi
     by_index = {profile.index: profile for profile in profiles}
 
     if detected_lead is not None and detected_lead in by_index:
-        lead_notes = _lead_line(source, by_index[detected_lead])
+        lead_notes = _lead_line(source, by_index[detected_lead], effects)
 
-    roles: dict[str, str] = {}
+    roles: dict[str, str] = {ident: UNPITCHED_EFFECT for ident in effects}
     by_classification = {item.index: item for item in classifications}
 
     for profile in profiles:
@@ -342,6 +348,8 @@ def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysi
 
         for span in source.notes(profile.index):
             note_id = f'{profile.index}:{span.order}'
+            if note_id in effects:
+                continue
 
             classification = by_classification[profile.index]
             if profile.is_drums or classification.final_role == 'PERCUSSION':
@@ -364,4 +372,5 @@ def analyze(source: MidiSource, *, lead_track: int | None = None) -> MidiAnalysi
         lead_notes=tuple(sorted(lead_notes)),
         classifications=classifications,
         lead_source=lead_source,
+        unpitched_effects=effects,
     )

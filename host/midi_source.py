@@ -462,6 +462,35 @@ class MidiSource:
         return tuple(message.program for message in self._tracks[track_index]
                      if message.type == 'program_change' and message.channel in channels)
 
+    def note_programs(self) -> dict[tuple[int, int], int | None]:
+        """Program latched at each NOTE_ON, keyed by (track, NoteSpan.order).
+
+        MIDI programs are channel-wide, including changes in other tracks.
+        Preserve message order at equal ticks. Unknown/non-GM banks return None
+        rather than assuming their program numbers have GM sound semantics.
+        """
+        events = []
+        for track, messages in enumerate(self._tracks):
+            tick = 0
+            for position, message in enumerate(messages):
+                tick += message.time
+                if message.type in ('program_change', 'control_change', 'note_on'):
+                    events.append((tick, track, position, message))
+        banks = [[0, 0] for _ in range(16)]
+        programs = [0] * 16
+        orders = [0] * len(self._tracks)
+        result = {}
+        for _, track, _, message in sorted(events, key=lambda item: item[:3]):
+            channel = message.channel
+            if message.type == 'control_change' and message.control in (0, 32):
+                banks[channel][int(message.control == 32)] = message.value
+            elif message.type == 'program_change':
+                programs[channel] = message.program if banks[channel] == [0, 0] else None
+            elif message.type == 'note_on' and message.velocity > 0:
+                result[track, orders[track]] = programs[channel]
+                orders[track] += 1
+        return result
+
     def expression_events(self) -> tuple[dict, ...]:
         """Timed expression in seconds; channel scope crosses track boundaries."""
         events = []

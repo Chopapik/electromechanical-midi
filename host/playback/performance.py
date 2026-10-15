@@ -370,7 +370,7 @@ def continuity(plan: PerformancePlan, *, tonal_only: bool = False) -> dict:
     fdd = [event for event in plan.events
            if event.played and event.device_type == 'FDD']
     accompaniment = [event for event in plan.events
-                     if event.role not in ('lead', 'percussion')]
+                     if event.role not in ('lead', 'percussion', 'unpitched_effect')]
     intended_accompaniment = _merge([(event.start, event.start + event.duration)
                                      for event in accompaniment])
     played_fdd = _merge([(event.actual_start, event.end) for event in fdd])
@@ -418,7 +418,7 @@ def continuity(plan: PerformancePlan, *, tonal_only: bool = False) -> dict:
 def build_report(plan: PerformancePlan) -> dict:
     """Metryki, ktore mowia czy plan jest dobry - bez zgadywania."""
     duration = plan.duration
-    kinds = {'tonal': _blank('tonal'), 'percussion': _blank('percussion')}
+    kinds = {kind: _blank(kind) for kind in ('tonal', 'percussion', 'unpitched_effect')}
     per_device: dict[str, dict] = {}
     activity: dict[str, float] = {}
     device_kind: dict[str, str] = {}
@@ -426,7 +426,7 @@ def build_report(plan: PerformancePlan) -> dict:
     types = {device['id']: device.get('type', '') for device in plan.devices}
 
     for event in plan.events:
-        kind = 'percussion' if event.role == 'percussion' else 'tonal'
+        kind = event.role if event.role in ('percussion', 'unpitched_effect') else 'tonal'
         bucket = kinds[kind]
         bucket['requested'] += 1
 
@@ -539,6 +539,11 @@ def build_report(plan: PerformancePlan) -> dict:
         },
         'tonal': _summary(kinds['tonal'], duration, len(tonal_devices), tonal_activity),
         'percussion': _summary(kinds['percussion'], duration, len(perc_devices), perc_activity),
+        'unpitchedEffects': {
+            'requested': kinds['unpitched_effect']['requested'],
+            'omitted': kinds['unpitched_effect']['dropped'],
+            'reason': 'UNPITCHED_EFFECT_UNSUPPORTED',
+        },
         'devices': sorted(per_device.values(), key=lambda item: item['deviceId']),
         'totals': {
             'requested': total_requested,

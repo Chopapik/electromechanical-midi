@@ -1,0 +1,177 @@
+{
+  "scope": "identical registry and policy; baseline disables GM noise classification; planned, not measured",
+  "benchmark": {
+    "file": "Avicii_Levels.mid",
+    "sha256": "fde6af0fc7c14e52d01bd034d139f1acf939edb2c5076e56fadade5ab3737fdd",
+    "sourceNoiseTriggers": 581,
+    "baseline": {
+      "noiseTriggersPlayedAsTones": 80,
+      "noiseToneCommands": 80,
+      "noiseTriggersExplicitlyOmitted": 0,
+      "tonalNotesPlayed": 3310,
+      "tonalNotesDropped": 40,
+      "percussionHitsPlayed": 1050,
+      "noiseRouting": {
+        "DVD_SLED": 24,
+        "FDD": 56
+      },
+      "overlapConflicts": 0,
+      "highlightedEvents": {
+        "10:1": {
+          "start": 34.28568,
+          "deviceId": "DVD_STEPPER_2",
+          "playedHz": 261.626,
+          "outcome": "ACCEPTED",
+          "reason": null
+        },
+        "8:1": {
+          "start": 40.47615,
+          "deviceId": "DVD_STEPPER_1",
+          "playedHz": 130.813,
+          "outcome": "ACCEPTED",
+          "reason": null
+        },
+        "15:2": {
+          "start": 41.90472,
+          "deviceId": "DVD_STEPPER_1",
+          "playedHz": 130.813,
+          "outcome": "ACCEPTED",
+          "reason": null
+        }
+      }
+    },
+    "experiment": {
+      "noiseTriggersPlayedAsTones": 0,
+      "noiseToneCommands": 0,
+      "noiseTriggersExplicitlyOmitted": 581,
+      "tonalNotesPlayed": 3312,
+      "tonalNotesDropped": 38,
+      "percussionHitsPlayed": 1050,
+      "noiseRouting": {},
+      "overlapConflicts": 0,
+      "highlightedEvents": {
+        "10:1": {
+          "start": 34.28568,
+          "deviceId": null,
+          "playedHz": null,
+          "outcome": "DROPPED",
+          "reason": "UNPITCHED_EFFECT_UNSUPPORTED"
+        },
+        "8:1": {
+          "start": 40.47615,
+          "deviceId": null,
+          "playedHz": null,
+          "outcome": "DROPPED",
+          "reason": "UNPITCHED_EFFECT_UNSUPPORTED"
+        },
+        "15:2": {
+          "start": 41.90472,
+          "deviceId": null,
+          "playedHz": null,
+          "outcome": "DROPPED",
+          "reason": "UNPITCHED_EFFECT_UNSUPPORTED"
+        }
+      }
+    },
+    "tonalDropDelta": -2,
+    "newlyDroppedTonalNotes": []
+  },
+  "controls": [
+    {
+      "file": "Every breath you take.mid",
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "sourceNoiseTriggers": 0,
+      "baseline": {
+        "noiseTriggersPlayedAsTones": 0,
+        "noiseToneCommands": 0,
+        "noiseTriggersExplicitlyOmitted": 0,
+        "tonalNotesPlayed": 2427,
+        "tonalNotesDropped": 0,
+        "percussionHitsPlayed": 1111,
+        "noiseRouting": {},
+        "overlapConflicts": 0,
+        "highlightedEvents": {}
+      },
+      "experiment": {
+        "noiseTriggersPlayedAsTones": 0,
+        "noiseToneCommands": 0,
+        "noiseTriggersExplicitlyOmitted": 0,
+        "tonalNotesPlayed": 2427,
+        "tonalNotesDropped": 0,
+        "percussionHitsPlayed": 1111,
+        "noiseRouting": {},
+        "overlapConflicts": 0,
+        "highlightedEvents": {}
+      },
+      "tonalDropDelta": 0,
+      "newlyDroppedTonalNotes": []
+    },
+    {
+      "file": "One_Republic_Counting_stars.mid",
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "sourceNoiseTriggers": 14,
+      "baseline": {
+        "noiseTriggersPlayedAsTones": 14,
+        "noiseToneCommands": 14,
+        "noiseTriggersExplicitlyOmitted": 0,
+        "tonalNotesPlayed": 4923,
+        "tonalNotesDropped": 165,
+        "percussionHitsPlayed": 2418,
+        "noiseRouting": {
+          "DVD_SLED": 6,
+          "FDD": 8
+        },
+        "overlapConflicts": 0,
+        "highlightedEvents": {
+          "10:1": {
+            "start": 33.51931,
+            "deviceId": "fdd-1",
+            "playedHz": 220.0,
+            "outcome": "FOLDED",
+            "reason": null
+          }
+        }
+      },
+      "experiment": {
+        "noiseTriggersPlayedAsTones": 0,
+        "noiseToneCommands": 0,
+        "noiseTriggersExplicitlyOmitted": 14,
+        "tonalNotesPlayed": 4922,
+        "tonalNotesDropped": 166,
+        "percussionHitsPlayed": 2418,
+        "noiseRouting": {},
+        "overlapConflicts": 0,
+        "highlightedEvents": {
+          "10:1": {
+            "start": 33.51931,
+            "deviceId": null,
+            "playedHz": null,
+            "outcome": "DROPPED",
+            "reason": "UNPITCHED_EFFECT_UNSUPPORTED"
+          }
+        }
+      },
+      "tonalDropDelta": 1,
+      "newlyDroppedTonalNotes": [
+        {
+          "id": "0:526",
+          "time": 252.371645,
+          "reason": "DEVICE_BUSY",
+          "previousDevice": "DVD_STEPPER_3"
+        },
+        {
+          "id": "2:2120",
+          "time": 252.371645,
+          "reason": "DEVICE_BUSY",
+          "previousDevice": "DVD_STEPPER_2"
+        },
+        {
+          "id": "12:259",
+          "time": 255.199513,
+          "reason": "DEVICE_BUSY",
+          "previousDevice": "DVD_STEPPER_2"
+        }
+      ]
+    }
+  ]
+}

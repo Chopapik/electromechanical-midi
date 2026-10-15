@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import dataclasses
+import bisect
 from collections import Counter
 
 from midi_source import MidiSource
@@ -12,6 +13,7 @@ from .hardware import bind_devices
 from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, advance_state, evaluate
 from .orchestra import OrchestraConfig, parse_policy
 from .performance import PerformanceEvent, PerformancePlan
+from .sound_roles import UNPITCHED_EFFECT, UNSUPPORTED_EFFECT
 
 
 def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[int | None],
@@ -59,6 +61,9 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
             else:
                 groups.append((span.start, [(index, span)]))
         profile = profiles.get(d.id)
+        tonal_starts = [start for start, group in groups
+                        if any(f'{track_index}:{span.order}' not in analysis.unpitched_effects
+                               for _, span in group)]
         cap = caps[d.id]
         low, high = cap.min_hz, cap.max_hz
         if profile is not None:
@@ -76,7 +81,8 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
         chord_rejected = 0
         output_disabled = not d.enabled or d.mute or (solo and not d.solo)
         for position, (start, group) in enumerate(groups):
-            next_start = groups[position + 1][0] if position + 1 < len(groups) else float('inf')
+            next_index = bisect.bisect_right(tonal_starts, start)
+            next_start = tonal_starts[next_index] if next_index < len(tonal_starts) else float('inf')
             options = []
             for index, span in group:
                 folded = fold_note(span.note, low, high, policy['foldMode'])
@@ -89,7 +95,9 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
                 duration = max(0., duration)
                 reason = None
                 evaluation = None
-                if output_disabled:
+                if f'{track_index}:{span.order}' in analysis.unpitched_effects:
+                    reason = UNSUPPORTED_EFFECT
+                elif output_disabled:
                     reason = 'OUTPUT_DISABLED'
                 elif not folded.in_range:
                     reason = 'OUT_OF_RANGE'
@@ -111,7 +119,7 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
             for index, span, pitch, hz, duration, reason, evaluation in options:
                 selected = winner is not None and index == winner[0]
                 if not selected:
-                    reason = 'CHORD_REJECTED' if winner is not None else reason or 'DEVICE_BUSY'
+                    reason = reason or ('CHORD_REJECTED' if winner is not None else 'DEVICE_BUSY')
                     chord_rejected += int(reason == 'CHORD_REJECTED')
                     denied[d.id] += 1
                     rejected[d.id][reason] += 1
@@ -124,7 +132,8 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
                     played_note=pitch if selected else None, played_hz=hz if selected else None,
                     actual_start=span.start, actual_duration=duration if selected else 0.,
                     outcome=('FOLDED' if pitch != span.note else 'ACCEPTED') if selected else 'DROPPED',
-                    role='lead' if track_index == analysis.lead_track else 'harmony',
+                    role=(UNPITCHED_EFFECT if reason == UNSUPPORTED_EFFECT else
+                          'lead' if track_index == analysis.lead_track else 'harmony'),
                     preferred_device=d.id, reason=None if selected else reason,
                     source_tracks=(track_index,))
                 events.append(event)

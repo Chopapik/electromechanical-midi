@@ -39,6 +39,7 @@ from .orchestra import OrchestraConfig, parse_policy
 from .performance import PerformanceEvent, PerformancePlan, ReinforcementEvent
 from .virtual import VirtualDeviceInstance
 from .reinforcement import apply_reinforcement
+from .sound_roles import UNPITCHED_EFFECT, UNSUPPORTED_EFFECT, source_effects
 
 EPS = 1e-9
 
@@ -63,7 +64,7 @@ _MIN_HIT_S = 0.05
 
 # Kolejnosc obslugi nut o tym samym czasie startu. Lead i bas dostaja glosy
 # przed harmonia; harmonia wewnatrz sortowana po dlugosci (najkrotsze pierwsze).
-_BAND = {LEAD: 0, BASS: 1, PERCUSSION: 1, HARMONY: 2}
+_BAND = {LEAD: 0, BASS: 1, PERCUSSION: 1, HARMONY: 2, UNPITCHED_EFFECT: 3}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -208,16 +209,17 @@ def _source_notes(source: MidiSource, midi_analysis: MidiAnalysis, policy: dict)
     na 4 glosach, decydowalaby przypadkowa kolejnosc trackow.
     """
     result = []
+    effects = source_effects(source)
 
     for track in source.tracks:
         for span in source.notes(track.index):
             note_id = f'{track.index}:{span.order}'
-            role = midi_analysis.roles.get(note_id, HARMONY)
+            role = UNPITCHED_EFFECT if note_id in effects else midi_analysis.roles.get(note_id, HARMONY)
             result.append({
                 'id': note_id, 'span': span, 'track': track.index,
                 'track_name': track.name, 'role': role, 'order': span.order,
                 'priority': _priority(role, span.velocity, span.duration, policy),
-                'name': drum_name(span.note) if track.is_drums else note_name(span.note),
+                'name': effects.get(note_id) or (drum_name(span.note) if track.is_drums else note_name(span.note)),
                 'source_tracks': tuple(getattr(track, 'source_tracks', (track.index,))),
                 'group_id': getattr(track, 'group_id', None),
                 'duplicate_confidence': getattr(track, 'duplicate_confidence', None),
@@ -230,6 +232,13 @@ def _source_notes(source: MidiSource, midi_analysis: MidiAnalysis, policy: dict)
                                   item['span'].duration, item['track'], item['order']))
 
     return result
+
+
+def _partition_effects(notes, pins):
+    """Keep unsupported triggers out of allocation, density and phrase budgets."""
+    return ([note for note in notes if note['role'] != UNPITCHED_EFFECT],
+            [_dropped(note, UNSUPPORTED_EFFECT, UNPITCHED_EFFECT, None, pins.get(note['id']))
+             for note in notes if note['role'] == UNPITCHED_EFFECT])
 
 
 def _classify_slots(devices: list[VirtualDeviceInstance]):
@@ -713,8 +722,7 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     midi_analysis = midi_analysis or analysis_module.analyze(source)
     pins = pins or {}
     lead_slots, accompaniment_slots, percussion = _classify_slots(devices)
-    events: list[PerformanceEvent] = []
-    notes = _source_notes(source, midi_analysis, policy)
+    notes, events = _partition_effects(_source_notes(source, midi_analysis, policy), pins)
 
     # Kazda pula ma wlasny budzet dlugosci nut. Akompaniament nie zjada
     # pojemnosci zarezerwowanej dla melodii i odwrotnie.
