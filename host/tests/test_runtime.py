@@ -127,7 +127,7 @@ class RuntimeTests(unittest.TestCase):
     def test_registry_is_shared_and_calibration_references_are_retained(self):
         self.assertIs(self.app.lab.registry,self.app.registry)
         self.assertEqual(len(self.app.registry.catalog()),16)
-        self.assertEqual(self.app.registry.profile('fdd-1').get('musicalHz'),[200,410])
+        self.assertEqual(self.app.registry.profile('fdd-1').get('musicalHz'),[100,410])
         self.assertEqual(self.app.registry.profile('DVD_STEPPER_1').get('allowedBandsHz'),[[50.0,120.0],[180.0,190.0],[270.0,300.0],[340.0,470.0]])
     def test_compilation_is_deterministic_and_contains_only_device_ids(self):
         plan=arrange(MidiSource(ROOT/'midi/test.mid'),self.app.registry)

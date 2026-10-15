@@ -105,7 +105,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
             minimum_us = profile.get('executionMinStepUs') or (step_ms*1000 if step_ms is not None else None)
             if minimum_us is None:
                 excluded[device.id]='STEP_INTERVAL_UNKNOWN';continue
-            musical = [musical[0], min(musical[1],1000000./minimum_us)]
+            musical = [max(musical[0], cap.min_hz), min(musical[1], cap.max_hz,1000000./minimum_us)]
         cap = dataclasses.replace(cap, min_hz=musical[0] if musical else None,
                                   max_hz=musical[1] if musical else None, retrigger_s=0.)
         slots[device.id] = _Slot(device, cap)
@@ -448,7 +448,7 @@ def adapt_quality_plan(source, config, context, reference, *, midi_analysis=None
     plan.reinforcements=[e for e in plan.reinforcements if e.kind!='UNISON']
     for ident,p in fdds.items():
         interval=p.get('musicalHz');step_us=p.get('executionMinStepUs') or p.get('datasheetMinStepMs')*1000
-        caps[ident]=dataclasses.replace(caps[ident],min_hz=interval[0],max_hz=min(interval[1],1e6/step_us),retrigger_s=0.)
+        caps[ident]=dataclasses.replace(caps[ident],min_hz=max(interval[0],caps[ident].min_hz),max_hz=min(interval[1],caps[ident].max_hz,1e6/step_us),retrigger_s=0.)
     def lane(ident):return [e for e in plan.events if e.played and e.device_id==ident]
     def extras(ident):return [e for e in plan.reinforcements if e.device_id==ident]
     def state_before(ident,start):

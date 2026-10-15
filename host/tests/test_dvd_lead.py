@@ -16,7 +16,12 @@ class DvdLeadTests(unittest.TestCase):
     plan=helpers.MechanicalArrangementTests.plan
     assert_feasible=helpers.MechanicalArrangementTests.assert_feasible
     def experimental(self, **counts):
-        r=self.registry(**counts);r.document['parameters']['arrangementPreset']=PRESET;return r
+        r=self.registry(**counts)
+        # Isolate this strategy's own octave from the global listening test.
+        for d in r.devices:
+            if d['type']=='FDD': d.update(transpose=0, overrides={})
+        r.document['parameters']['arrangementPreset']=PRESET
+        return r
     def test_dvd_main_roles_and_original_register(self):
         r=self.experimental()
         p=self.plan([('Melody',0,[(0,.2,69)]),('Bass',1,[(0,1,48)]),('Pad',2,[(0,1,60)])],r,{'Melody':'lead','Bass':'bass'})

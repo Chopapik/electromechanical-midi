@@ -85,7 +85,7 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
             next_start = tonal_starts[next_index] if next_index < len(tonal_starts) else float('inf')
             options = []
             for index, span in group:
-                folded = fold_note(span.note, low, high, policy['foldMode'])
+                folded = fold_note(span.note+d.transpose, low, high, policy['foldMode'])
                 pitch = folded.midi_note + 12 * folded.octave_shift
                 duration = span.duration * d.gate
                 if next_start >= span.end - 1e-7:

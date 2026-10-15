@@ -87,6 +87,7 @@ def arrange(plan, config, context, pins=None):
     def playable(event, ident):
         profile = profiles[ident]
         low, high = profile.get('musicalHz')
+        low, high = max(low, caps[ident].min_hz), min(high, caps[ident].max_hz)
         step_us = profile.get('executionMinStepUs') or profile.get('datasheetMinStepMs')*1000
         high = min(high, 1e6/step_us)
         fold = fold_for_profile(event.note+devices[ident].transpose, low, high,

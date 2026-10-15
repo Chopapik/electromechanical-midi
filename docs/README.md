@@ -26,6 +26,7 @@ STRICT_TRACKS to osobny tryb JSON, a nie ósmy preset.
 - [FDD Quality Adaptive](fdd-quality-adaptive.md)
 - [DVD Lead + Low FDD](dvd-lead-low-fdd.md)
 - [Wspólne ograniczenie szybkich ataków FDD, regresja Airbag](fdd-attack-rate.md)
+- [Zapisany eksperyment FDD o oktawę niżej](fdd-octave-experiment.md)
 - [DVD Continuous Sustain](dvd-continuous-sustain.md)
 - [Efekty nietonalne, regresja Levels](unpitched-effects.md)
 
@@ -63,9 +64,8 @@ polifonia urządzenia. Końcowy pass FDD może usunąć ataki także tych kopii.
 
 Surowe wyniki są w `reports/` i `benchmarks/`; polecenia odtwarzania są przy
 konkretnych algorytmach. Wyniki zachowują ówczesny inventory (czasem trzy DVD),
-politykę i hash MIDI. Obecny wspólny limit ataków, czwarty DVD oraz lokalne
-niezacomitowane eksperymenty mogą zmienić rezultat ponownego uruchomienia.
+politykę i hash MIDI. Obecny wspólny limit ataków, czwarty DVD oraz eksperyment
+oktawy FDD mogą zmienić rezultat ponownego uruchomienia.
 Nie regenerujemy dawnych raportów pod nową konfigurację podczas porządkowania
-dokumentacji. Lokalny eksperyment oktawy FDD jest opisany w pliku
-`docs/fdd-octave-experiment.md`, jeśli jest obecny w danym checkout; pozostaje
-poza zakresem tego commita dokumentacji wraz z jego kodem i konfiguracją.
+dokumentacji. Eksperyment oktawy FDD jest zapisany razem z jego konfiguracją
+i testami; opis zawiera sposób powrotu do poprzedniego rejestru.

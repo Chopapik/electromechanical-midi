@@ -16,7 +16,13 @@ from fastapi.testclient import TestClient
 class QualityTests(unittest.TestCase):
     setUp=helper_module.MechanicalArrangementTests.setUp;source=helper_module.MechanicalArrangementTests.source;registry=helper_module.MechanicalArrangementTests.registry;plan=helper_module.MechanicalArrangementTests.plan;assert_feasible=helper_module.MechanicalArrangementTests.assert_feasible
     def quality_registry(self,**counts):
-        r=self.registry(**counts);r.document['parameters']['arrangementPreset']='fdd_quality';return r
+        r=self.registry(**counts)
+        # Keep cost-strategy fixtures in their original register; the global
+        # octave experiment has separate end-to-end coverage.
+        for d in r.devices:
+            if d['type']=='FDD': d.update(transpose=0, overrides={})
+        r.document['parameters']['arrangementPreset']='fdd_quality'
+        return r
     def test_steps_reversal_and_short_note_at_endpoint(self):
         r=self.registry();p=r.profile('fdd-1');policy=r.configuration().policy
         for hz,duration in ((200,.36),(300,.24),(400,.18)):

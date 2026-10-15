@@ -68,9 +68,9 @@ homingu automatycznie. Spóźnione impulsy nie są nadrabiane w skompresowanej s
 
 Przed lokalnym eksperymentem oktawy zakres muzyczny instancji wynosił 200–410 Hz;
 410 Hz ma historyczne dane odsłuchu jednego napędu, nie indywidualne potwierdzenie
-czterech urządzeń. Lokalna niezacomitowana próba używa transpose -12, preferencji
+czterech urządzeń. Zapisany eksperyment odsłuchowy używa transpose -12, preferencji
 100–205 Hz i okna profilu 100–410 Hz. To ustawienie odsłuchowe, nie nowy pomiar
-minimalnej częstotliwości mechanicznej; nie wchodzi do tego commita.
+minimalnej częstotliwości mechanicznej. [Opis i wycofanie eksperymentu](fdd-octave-experiment.md).
 
 Częstotliwość tonu/STEP i częstość nowych nut są różnymi parametrami.
 Wspólny [pass ataków](fdd-attack-rate.md) dopuszcza domyślnie jeden NOTE_ON na

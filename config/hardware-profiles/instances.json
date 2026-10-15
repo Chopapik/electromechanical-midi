@@ -18,12 +18,12 @@
         },
         "musicalHz": {
           "value": [
-            200,
+            100,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
           "evidenceType": "FACT",
           "confidence": "LOW"
         },
@@ -163,12 +163,12 @@
         },
         "musicalHz": {
           "value": [
-            200,
+            100,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -209,12 +209,12 @@
         },
         "musicalHz": {
           "value": [
-            200,
+            100,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -255,12 +255,12 @@
         },
         "musicalHz": {
           "value": [
-            200,
+            100,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "user-selected working musical range for low-frequency micro-motion experiment; 200 Hz is NOT a measured mechanical minimum; upper 410 Hz retained",
+          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }

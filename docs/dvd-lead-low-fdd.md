@@ -36,8 +36,9 @@ original candidate pitch is evaluated. Neither candidate is clamped or folded a
 second time. A note requiring two octaves of folding can consequently be omitted
 when no DVD is free. No global FDD range is enlarged. The lower
 musical bound comes from the active profile/preferences, not a precise measured
-acoustic limit; the original benchmark used 200 Hz. A separate local octave
-experiment changes those preferences and is not part of this documentation commit.
+acoustic limit; the original benchmark used 200 Hz. The committed [octave-down experiment](fdd-octave-experiment.md)
+changes those preferences and applies its device transpose before this preset
+tries its own lower-octave candidate and range fallback.
 
 PerformanceEvent.note/start/duration/velocity/track/channel retain MIDI provenance;
 played_note/played_hz/actual_start/actual_duration record execution. Selection.lowFdd

@@ -113,9 +113,9 @@ odpowiada 0–2,5. [Szczegóły i ograniczenia fizyczne](docs/pc-speaker-fx.md).
 Mute w `/settings` jest bramką wykonania i nie zwalnia miejsca w aranżacji.
 Zmiana inventory/profili wymaga edycji JSON i restartu/przebudowy aplikacji.
 `routing.mode: STRICT_TRACKS` w JSON kieruje cztery wybrane tracki wyłącznie na
-FDD; nie jest presetem UI. Lokalny eksperyment obniżenia FDD o oktawę pozostaje
-oddzielną, niezacomitowaną zmianą kodu/konfiguracji; nie jest nowym domyślnym
-ustawieniem zapisanym w tym commicie dokumentacji.
+FDD; nie jest presetem UI. Zapisany [eksperyment obniżenia FDD o oktawę](docs/fdd-octave-experiment.md)
+ustawia cztery FDD na transpose -12 i preferowane 100–205 Hz we wszystkich
+presetach. To bieżąca konfiguracja odsłuchowa, nie nowa kalibracja mechaniczna.
 
 ## Presety aranżacji
 
