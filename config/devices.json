@@ -99,7 +99,8 @@
       "hardwareProfile": "VHS",
       "enabled": true,
       "volume": 0.6,
-      "pan": 0.0
+      "pan": 0.0,
+      "transpose": 12
     },
     {
       "id": "hdd_vcm-1",
