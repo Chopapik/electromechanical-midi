@@ -2,7 +2,7 @@ import {pulseCoefficients,type SpeakerWaveform} from './pulseWave'
 import {mechanicalSamples,type MechanicalArticulation} from './mechanicalAudio'
 /** Web Audio executes Player timestamps. It owns audio nodes, never song time. */
 export interface Command {
-  time:number; device_id:string; kind:'tone'|'hit'|'pulse'|'stop'; duration:number;
+  time:number; device_id:string; kind:'tone'|'hit'|'stop'; duration:number;
   hz:number; velocity:number; articulation?:MechanicalArticulation & {attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
     gain?:{times:number[];values:number[]}; frequency?:{times:number[];values:number[]}}
 }
@@ -94,7 +94,7 @@ export class VirtualOutput {
         continue
       }
       const end=when+c.duration
-      if(end<=ctx.currentTime || ((c.kind==='hit'||c.kind==='pulse')&&ctx.currentTime-when>.1))continue
+      if(end<=ctx.currentTime || (c.kind==='hit'&&ctx.currentTime-when>.1))continue
       const start=Math.max(ctx.currentTime,when)
       for(const v of this.voices)if(v.device===c.device_id && v.end>start && v.start<=start){
         v.gain.gain.cancelScheduledValues(start);v.gain.gain.setValueAtTime(0,start)

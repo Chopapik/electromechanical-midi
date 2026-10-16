@@ -18,7 +18,7 @@ Historyczne szczegóły migracji zachowuje
 
 - `config/devices.json`: stabilne ID, kolejność/lane, enabled, typ, profil muzyczny,
   transpozycja, preferencje i polityka. Lista obejmuje cztery FDD, cztery DVD,
-  dwa PC Speakery, cztery HDD oraz dwie wyłączone tacki.
+  dwa PC Speakery, cztery HDD.
 - `config/hardware-profiles/theoretical.json`: priory i przykłady referencyjne.
 - `config/hardware-profiles/instances.json`: kalibracje oraz konfiguracja instancji.
 - `firmware/controller/include/hardware_profiles_generated.h`: generowane domyślne
@@ -120,14 +120,12 @@ Profile/research HDD tonal istnieją, ale fizyczny wykonawca tonalny nie jest
 włączony. Brakuje zweryfikowanego centrowania, pomiaru wychylenia i sterowania
 prądem; `HDD_TONAL_EXECUTOR_UNAVAILABLE` nie jest zastępowane przypadkowym HIT.
 
-### PC Speaker, FX i tray
+### PC Speaker i FX
 
 Typ VHS i komendy VHS/VHS2 pozostają ze względu na kompatybilność. Aktualne
 urządzenia to dwa PC Speakery przez S8050 na GPIO25/26, z niezależnymi timerami
 wysokości. Gain VIRTUAL i wspólny kształt/pulse duty mają osobne ustawienia;
 [pełny opis](pc-speaker-fx.md). Nie ma pomiaru odpowiedzi akustycznej ani prądu.
-Tray ma komendy firmware, ale brak zatwierdzonego profilu obu pozycji registry
-wyklucza je z bieżącego planowania i Laboratory.
 
 ## Ocena kandydatów i diagnostyka
 

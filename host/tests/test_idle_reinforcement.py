@@ -12,7 +12,6 @@ from playback.allocator import allocate, ManualPin, _priority
 from playback.analysis import MidiAnalysis
 from playback.orchestra import default_orchestra, parse_idle, parse_orchestra
 from playback.reinforcement import apply_reinforcement, legacy_dvd
-from playback.tray import add_reinforcement
 from playback.virtual import VirtualOrchestra
 from reference_audio import WavePreview
 from test_allocator import write_tracks, write_drums
@@ -54,7 +53,7 @@ class IdleTest(unittest.TestCase):
                                     or extra.start >= primary.end - 1e-8)
         for source in plan.events:
             points = []
-            for extra in [*plan.reinforcements, *plan.tray_events]:
+            for extra in plan.reinforcements:
                 if extra.source_id == source.id:
                     points.extend([(extra.start, 1), (extra.start+extra.duration, -1)])
             count = 0
@@ -103,7 +102,7 @@ class IdleTest(unittest.TestCase):
         self.assert_safe(plan)
         self.assertFalse(self.tonal(settings={'maxCopiesPerEvent': 0}).reinforcements)
         drums = self.percussion([(0, .05, 49)])
-        self.assertEqual(len(drums.reinforcements) + len(drums.tray_events), 1)
+        self.assertEqual(len(drums.reinforcements), 1)
         self.assert_safe(drums)
 
     def test_g_low_score_stays_idle(self):
@@ -124,33 +123,20 @@ class IdleTest(unittest.TestCase):
     def test_i_dense_hats_stay_idle(self):
         plan = self.percussion([(i*.1, i*.1+.03, 42) for i in range(30)])
         self.assertFalse(plan.reinforcements)
-        self.assertFalse(plan.tray_events)
 
-    def test_j_tray_busy_and_cooldown(self):
-        plan = self.percussion([(i*.12, i*.12+.04, 49) for i in range(20)])
-        self.assertTrue(plan.tray_events)
-        for device in ('DVD_TRAY_1', 'DVD_TRAY_2'):
-            events = [e for e in plan.tray_events if e.device_id == device]
-            for a, b in zip(events, events[1:]):
-                self.assertGreaterEqual(b.start + 1e-8, a.start+a.duration+a.cooldown)
-        self.assert_safe(plan)
 
-    def test_k_l_legacy_dvd_and_tray_preserved_when_disabled(self):
+    def test_legacy_dvd_preserved_when_disabled(self):
         plan = self.tonal()
         plan.idle_reinforcement = parse_idle({'enabled': False})
         priority = lambda e: _priority(e.role, e.velocity, e.duration, plan.policy)
         expected = legacy_dvd(plan, priority)
-        add_reinforcement(plan)
-        trays = plan.tray_events[:]
         apply_reinforcement(plan, priority)
         self.assertEqual(plan.reinforcements, expected)
-        self.assertEqual(plan.tray_events, trays)
 
 
-    def test_global_threshold_applies_to_trays_and_hdd(self):
+    def test_global_threshold_applies_to_hdd(self):
         plan = self.percussion([(0, .05, 49)], {'minScore': 1000})
         self.assertFalse(plan.reinforcements)
-        self.assertFalse(plan.tray_events)
 
     def test_semantic_mismatch_is_rejected(self):
         plan = self.tonal(notes=((0, .5, 60), (.6, 1.4, 64)), target='FDD',
@@ -174,5 +160,4 @@ class IdleTest(unittest.TestCase):
                 parse_idle(settings)
         plan = self.tonal(settings={'deviceTypes': []})
         self.assertFalse(plan.reinforcements)
-        self.assertFalse(plan.tray_events)
         self.assertGreater(plan.idle_report['devices']['DVD_STEPPER_2']['idleSeconds'], 0)

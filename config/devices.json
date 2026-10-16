@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "Balanced 4FDD + 3DVD + PC Speaker + 4HDD + 2Tray",
+  "name": "4 FDD + 4 DVD + PC Speaker + PC Speaker FX + 4 HDD",
   "devices": [
     {
       "id": "fdd-1",
@@ -209,28 +209,6 @@
       "enabled": true,
       "volume": 0.6,
       "pan": 0.0
-    },
-    {
-      "id": "DVD_TRAY_1",
-      "name": "DVD Tray 1",
-      "type": "DVD_TRAY",
-      "lane": "tray:1",
-      "profile": "DVD_TRAY_REFERENCE",
-      "hardwareProfile": null,
-      "enabled": false,
-      "volume": 0.35,
-      "pan": 0.0
-    },
-    {
-      "id": "DVD_TRAY_2",
-      "name": "DVD Tray 2",
-      "type": "DVD_TRAY",
-      "lane": "tray:2",
-      "profile": "DVD_TRAY_REFERENCE",
-      "hardwareProfile": null,
-      "enabled": false,
-      "volume": 0.35,
-      "pan": 0.0
     }
   ],
   "parameters": {
@@ -253,8 +231,7 @@
     "deviceTypes": [
       "FDD",
       "DVD_SLED",
-      "HDD_VCM",
-      "DVD_TRAY"
+      "HDD_VCM"
     ],
     "minScore": 75.0,
     "minDurationMs": 40.0,

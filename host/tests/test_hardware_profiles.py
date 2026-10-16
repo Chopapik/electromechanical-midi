@@ -200,7 +200,7 @@ class PhysicalArrangerTests(unittest.TestCase):
     def source(self,notes=None):
         return MidiSource(write_tracks(Path(self.tmp.name)/'g.mid',[('Guitar',0,notes or [(0,.2,57),(.4,.6,60)])]))
     def config(self):
-        config=default_orchestra(fdd_count=2,dvd_count=2,hdd_count=0,tray_count=0)
+        config=default_orchestra(fdd_count=2,dvd_count=2,hdd_count=0)
         for d in config.devices:d['mode']='real'
         config.policy.update(mechanicalSustain=False,sourceContinuity=False)
         return config
@@ -248,7 +248,7 @@ class PhysicalArrangerTests(unittest.TestCase):
         d=dict(id='hdd',type='HDD_VCM',mode='real',hardwareRole='HDD_TONAL')
         self.assertEqual(VirtualDeviceInstance.parse(d).hardware_role,'HDD_TONAL')
     def test_unknown_hdd_reset_does_not_crash_or_play(self):
-        c=default_orchestra(fdd_count=0,dvd_count=0,hdd_count=1,tray_count=0)
+        c=default_orchestra(fdd_count=0,dvd_count=0,hdd_count=1)
         for d in c.devices:
             d['mode']='real'
             if d['type']=='HDD_VCM':d['hardwareOverrides']={'parkMs':quantity(None)}
@@ -256,7 +256,7 @@ class PhysicalArrangerTests(unittest.TestCase):
         p=allocate(source,c,hardware_context=HardwareContext(True))
         self.assertFalse(p.events[0].played);self.assertIn('PROFILE_PARAMETER_UNKNOWN',p.events[0].reason)
     def test_sparse_hdd_reset_schedule(self):
-        c=default_orchestra(fdd_count=0,dvd_count=0,hdd_count=1,tray_count=0)
+        c=default_orchestra(fdd_count=0,dvd_count=0,hdd_count=1)
         for d in c.devices:d['mode']='real'
         source=MidiSource(write_tracks(Path(self.tmp.name)/'drums.mid',[('Drums',9,[(0,.05,36),(.05,.1,36),(.25,.3,36)])]))
         p=allocate(source,c,hardware_context=HardwareContext(True))

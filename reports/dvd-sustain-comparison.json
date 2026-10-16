@@ -142,28 +142,6 @@
       "enabled": true,
       "volume": 0.6,
       "pan": 0.0
-    },
-    {
-      "id": "DVD_TRAY_1",
-      "name": "DVD Tray 1",
-      "type": "DVD_TRAY",
-      "lane": "tray:1",
-      "profile": "DVD_TRAY_REFERENCE",
-      "hardwareProfile": null,
-      "enabled": false,
-      "volume": 0.35,
-      "pan": 0.0
-    },
-    {
-      "id": "DVD_TRAY_2",
-      "name": "DVD Tray 2",
-      "type": "DVD_TRAY",
-      "lane": "tray:2",
-      "profile": "DVD_TRAY_REFERENCE",
-      "hardwareProfile": null,
-      "enabled": false,
-      "volume": 0.35,
-      "pan": 0.0
     }
   ],
   "parameters": {
@@ -255,5 +233,6 @@
       "otherDevicesAndExtrasUnchanged": true,
       "physicalChronologyValid": true
     }
-  }
+  },
+  "archiveProjection": "Inactive-device schema fields omitted; historical measurements and fingerprints retained."
 }

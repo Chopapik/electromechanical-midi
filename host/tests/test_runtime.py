@@ -126,7 +126,10 @@ class RuntimeTests(unittest.TestCase):
         self.assertTrue(any(e['outcome']!='DROPPED' for e in before['events']))
     def test_registry_is_shared_and_calibration_references_are_retained(self):
         self.assertIs(self.app.lab.registry,self.app.registry)
-        self.assertEqual(len(self.app.registry.catalog()),16)
+        self.assertEqual(len(self.app.registry.catalog()),14)
+        self.assertEqual(set(self.app.registry.by_id),
+            {f'fdd-{i}' for i in range(1,5)}|{f'DVD_STEPPER_{i}' for i in range(1,5)}|
+            {f'hdd_vcm-{i}' for i in range(1,5)}|{'vhs-1','pc-speaker-fx'})
         self.assertEqual(self.app.registry.profile('fdd-1').get('musicalHz'),[100,410])
         self.assertEqual(self.app.registry.profile('DVD_STEPPER_1').get('allowedBandsHz'),[[50.0,120.0],[180.0,190.0],[270.0,300.0],[340.0,470.0]])
     def test_compilation_is_deterministic_and_contains_only_device_ids(self):
@@ -134,6 +137,7 @@ class RuntimeTests(unittest.TestCase):
         before=copy.deepcopy(plan.as_dict());a=compile_plan(plan);b=compile_plan(plan)
         self.assertEqual(a,b);self.assertEqual(before,plan.as_dict())
         self.assertTrue(all(c.device_id in self.app.registry.by_id for c in a.commands))
+        self.assertTrue(all(c.kind in ('tone','hit','stop') for c in a.commands))
         self.assertEqual([c.time for c in a.commands],sorted(c.time for c in a.commands))
     def test_virtual_never_writes_ble_even_connected(self):
         self.real();self.virtual();before=list(self.link.sent)

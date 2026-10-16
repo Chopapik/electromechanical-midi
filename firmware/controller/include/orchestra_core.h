@@ -15,7 +15,6 @@ constexpr uint8_t track0[4]={34,35,36,39};
 constexpr uint8_t step[4]={0,2,4,6}, dir[4]={1,3,5,7};
 constexpr uint8_t sled[4][4]={{8,9,10,11},{12,13,14,15},{16,17,18,19},{20,21,22,23}};
 constexpr uint8_t hdd[4][2]={{24,25},{26,27},{28,29},{30,31}};
-constexpr uint8_t tray[2][2]={{32,33},{34,35}};
 constexpr uint8_t sleep=36;
 }
 struct IO {
@@ -128,14 +127,8 @@ struct Sled {
   if(stepForward){if(position<INT32_MAX)++position;}else if(position>INT32_MIN)--position;
  }
 };
-struct Tray:Bridge {
- bool busy=false;uint32_t deadline=0; Tray(uint8_t i):Bridge(map::tray[i][0],map::tray[i][1],false){}
- void stop(ShiftRegisterBus& bus){busy=false;drive(bus,0);}
- bool pulse(ShiftRegisterBus& bus,int direction,uint32_t ms){if(!enabled||!ms||ms>60000)return false;busy=true;drive(bus,direction);deadline=bus.io.us()+ms*1000;return true;}
- void tick(ShiftRegisterBus& bus){if(busy&&due(bus.io.us(),deadline))stop(bus);}
-};
 struct Controller {
- IO& io;ShiftRegisterBus bus;FloppyDrive fdd[4]={{0},{1},{2},{3}};Hdd hdd[4]={{0},{1},{2},{3}};Sled sled[4]={{0},{1},{2},{3}};Tray tray[2]={{0},{1}};
+ IO& io;ShiftRegisterBus bus;FloppyDrive fdd[4]={{0},{1},{2},{3}};Hdd hdd[4]={{0},{1},{2},{3}};Sled sled[4]={{0},{1},{2},{3}};
  uint8_t vhsWave=Pulse,fxWave=Pulse;
  bool fxEnabled=false;uint8_t fxAmp=0;float fxFrequency=0;
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
@@ -143,10 +136,10 @@ struct Controller {
  explicit Controller(IO& value):io(value),bus(value){}
  void begin(){bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
  void wake(){bus.setBit(map::sleep,true);bus.flush();}
- void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);for(auto& d:tray)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.setBit(map::sleep,false);bus.flush();}
+ void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.setBit(map::sleep,false);bus.flush();}
  void tick(){
   if(uint32_t(io.us()-lastCommand)>physical::hostWatchdogUs){if(!watchdogStopped){allStop();watchdogStopped=true;}return;}
-  for(auto& d:hdd)d.tick(bus);for(auto& d:sled)d.tick(bus);for(auto& d:tray)d.tick(bus);
+  for(auto& d:hdd)d.tick(bus);for(auto& d:sled)d.tick(bus);
   bus.flush();
   bool step[4]={};bool any=false;
   for(int i=0;i<4;++i){step[i]=fdd[i].wantsStep(bus);any|=step[i];}
@@ -208,18 +201,17 @@ struct Controller {
   }
   if(!strcmp(text,"FDD ALL HOME")){wake();for(auto& d:fdd)if(d.enabled)d.home(bus);return "OK";}
   if(n<3)return "ERR COMMAND";char* end;long id=strtol(args[1],&end,10);if(*end||id<1)return "ERR ID";--id;
-  bool isFdd=!strcmp(args[0],"FDD"),isHdd=!strcmp(args[0],"HDD"),isSled=!strcmp(args[0],"SLED"),isTray=!strcmp(args[0],"TRAY");
-  if((!isFdd&&!isHdd&&!isSled&&!isTray)||id>=(isTray?2:4))return "ERR ID";
+  bool isFdd=!strcmp(args[0],"FDD"),isHdd=!strcmp(args[0],"HDD"),isSled=!strcmp(args[0],"SLED");
+  if((!isFdd&&!isHdd&&!isSled)||id>=4)return "ERR ID";
   if(strictTracks&&isFdd&&n>=4&&!strcmp(args[2],"PLAY")){
    if(n!=6||strcmp(args[4],"TRACK"))return "ERR TRACK_REQUIRED";
    char* trackEnd;long track=strtol(args[5],&trackEnd,10);
    if(*trackEnd||track<0||track>32767||strictTrack[id]!=track)return "ERR TRACK";
   }
   if(strictTracks&&((isHdd&&n==3&&!strcmp(args[2],"HIT"))||
-      (isSled&&n>=3&&!strcmp(args[2],"PLAY"))||
-      (isTray&&n>=3&&!strcmp(args[2],"PULSE"))))return "ERR STRICT_OUTPUT";
-  bool* enabled=isFdd?&fdd[id].enabled:isHdd?&hdd[id].enabled:isSled?&sled[id].enabled:&tray[id].enabled;
-  if(n==3&&!strcmp(args[2],"STOP")){if(isFdd)fdd[id].stop();else if(isHdd)hdd[id].stop(bus);else if(isSled)sled[id].stop(bus);else tray[id].stop(bus);bus.flush();return "OK";}
+      (isSled&&n>=3&&!strcmp(args[2],"PLAY"))))return "ERR STRICT_OUTPUT";
+  bool* enabled=isFdd?&fdd[id].enabled:isHdd?&hdd[id].enabled:&sled[id].enabled;
+  if(n==3&&!strcmp(args[2],"STOP")){if(isFdd)fdd[id].stop();else if(isHdd)hdd[id].stop(bus);else sled[id].stop(bus);bus.flush();return "OK";}
   if(n==4&&!strcmp(args[2],"ENABLE")&&(!strcmp(args[3],"0")||!strcmp(args[3],"1"))){snprintf(expanded,96,"%s %ld STOP",args[0],id+1);command(expanded);*enabled=args[3][0]=='1';return "OK";}
   // Execution parameters only while stopped. SLED travel 0 explicitly selects
   // continuous rotation; unknown travel stays -1. PROFILE never moves outputs.
@@ -246,7 +238,6 @@ struct Controller {
   if(isHdd&&n==3&&!strcmp(args[2],"HIT")){wake();bool ok=hdd[id].hit(bus);bus.flush();return ok?"OK":"ERR BUSY";}
   if((isFdd||isSled)&&(n==4||(strictTracks&&isFdd&&n==6))&&!strcmp(args[2],"PLAY")){float value=strtof(args[3],&end);if(*end||!isfinite(value))return "ERR VALUE";bool ok=isFdd?fdd[id].play(value,io):sled[id].play(value);if(ok)wake();if(isSled&&sled[id].softMax<0)return "ERR TRAVEL_UNKNOWN";return ok?"OK":isFdd&&!fdd[id].homed?"ERR NOT_HOMED":"ERR VALUE";}
   if(isSled&&n==4&&!strcmp(args[2],"DIR")&&(!strcmp(args[3],"FWD")||!strcmp(args[3],"REV"))){sled[id].forward=!strcmp(args[3],"FWD");return "OK";}
-  if(isTray&&n==5&&!strcmp(args[2],"PULSE")&&(!strcmp(args[3],"FWD")||!strcmp(args[3],"REV"))){long ms=strtol(args[4],&end,10);if(*end||ms<1||ms>60000)return "ERR VALUE";wake();tray[id].pulse(bus,!strcmp(args[3],"FWD")?1:-1,ms);bus.flush();return "OK";}
   return "ERR COMMAND";
  }
 };

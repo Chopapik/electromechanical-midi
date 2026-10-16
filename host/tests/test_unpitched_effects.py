@@ -57,7 +57,6 @@ class UnpitchedEffectsTests(unittest.TestCase):
                 self.assertTrue(all(e.reason == UNSUPPORTED_EFFECT and not e.played for e in plan.events))
                 self.assertFalse(compile_plan(plan).commands)
                 self.assertFalse(plan.reinforcements)
-                self.assertFalse(plan.tray_events)
                 self.assertEqual(plan.report()['tonal']['requested'], 0)
                 self.assertEqual(plan.report()['unpitchedEffects']['omitted'], 24)
 

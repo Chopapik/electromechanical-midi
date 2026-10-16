@@ -69,7 +69,7 @@ _POLICY_KEYS = frozenset(BALANCED)
 
 IDLE_DEFAULTS = {
     'enabled': False, 'maxCopiesPerEvent': 1, 'lookAheadMs': 80.0,
-    'deviceTypes': ['FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY'],
+    'deviceTypes': ['FDD', 'DVD_SLED', 'HDD_VCM'],
     'minScore': 75.0, 'minDurationMs': 40.0, 'percussionCooldownMs': 250.0, 'vhsEnabled': False,
 }
 
@@ -88,7 +88,7 @@ def parse_idle(payload=None):
         if not 0 <= config[key] <= 10000:
             raise ValueError(f'invalid idleReinforcement {key}')
     if (not isinstance(config['deviceTypes'], list)
-            or any(kind not in ('FDD', 'DVD_SLED', 'HDD_VCM', 'DVD_TRAY', 'VHS') for kind in config['deviceTypes'])):
+            or any(kind not in ('FDD', 'DVD_SLED', 'HDD_VCM', 'VHS') for kind in config['deviceTypes'])):
         raise ValueError('invalid idleReinforcement deviceTypes')
     for key in ('enabled', 'vhsEnabled'):
         if not isinstance(config[key], bool):
@@ -100,11 +100,10 @@ def parse_idle(payload=None):
 class OrchestraConfig:
     """Dostepne urzadzenia + polityka wykonania."""
 
-    name: str = 'Balanced 4FDD + 4DVD + VHS + 4HDD + 2Tray'
+    name: str = 'Balanced 4FDD + 4DVD + VHS + 4HDD'
     devices: list[dict] = dataclasses.field(default_factory=list)
     policy: dict = dataclasses.field(default_factory=lambda: dict(BALANCED))
     dvd_mode: str = 'independent'
-    tray_enabled: bool = True
     idle_reinforcement: dict = dataclasses.field(default_factory=parse_idle)
 
     hardware: dict = dataclasses.field(default_factory=dict)
@@ -114,7 +113,7 @@ class OrchestraConfig:
 
     def as_dict(self) -> dict:
         return {'name': self.name, 'devices': self.devices, 'policy': self.policy,
-                'hardware': self.hardware, 'dvdMode': self.dvd_mode, 'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement}
+                'hardware': self.hardware, 'dvdMode': self.dvd_mode, 'idleReinforcement': self.idle_reinforcement}
 
     def allocation_devices(self) -> tuple[list[VirtualDeviceInstance], dict[str, list[dict]]]:
         """Reinforcement never changes the configured normal voice inventory."""
@@ -126,17 +125,16 @@ class OrchestraConfig:
 
 def _device(ident: str, kind: str, profile: str, name: str, mode: str = 'virtual') -> dict:
     return {'id': ident, 'type': kind, 'name': name, 'track': None, 'role': '',
-            'volume': 0.2 if kind == 'DVD_SLED' else (0.35 if kind == 'DVD_TRAY' else 0.6),
+            'volume': 0.2 if kind == 'DVD_SLED' else 0.6,
             'pan': 0.0, 'mute': False, 'solo': False,
             'transpose': 0, 'gate': 1.0, 'profile': profile, 'mode': mode,
             'overrides': {}, 'enabled': True, 'hardware_role': '', 'hardware_overrides': {}}
 
 
 def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',
-                      fdd_count: int = 4, hdd_count: int = 4, tray_count: int = 2,
-                      tray_enabled: bool = True) -> OrchestraConfig:
+                      fdd_count: int = 4, hdd_count: int = 4) -> OrchestraConfig:
     """Configurable software inventory; saved explicit device lists stay intact."""
-    counts = (fdd_count, dvd_count, hdd_count, tray_count)
+    counts = (fdd_count, dvd_count, hdd_count)
     if any(not isinstance(count, int) or count < 0 for count in counts) or sum(counts) + 1 > 64:
         raise ValueError('device counts must be nonnegative integers; maximum 64 devices')
     if dvd_mode not in ('independent', 'reinforcement'):
@@ -145,8 +143,7 @@ def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',
     counters: dict[str, int] = {}
 
     inventory = (('FDD', fdd_count, 'FDD_CURRENT'), ('DVD_SLED', dvd_count, 'DVD_REFERENCE'),
-                 ('VHS', 1, 'VHS_CURRENT'), ('HDD_VCM', hdd_count, 'WD_CAVIAR_CURRENT'),
-                 ('DVD_TRAY', tray_count, 'DVD_TRAY_REFERENCE'))
+                 ('VHS', 1, 'VHS_CURRENT'), ('HDD_VCM', hdd_count, 'WD_CAVIAR_CURRENT'))
     for kind, count, profile in inventory:
         if profile not in PROFILES:
             raise ValueError(f'brak profilu {profile} dla {kind}')
@@ -154,14 +151,13 @@ def default_orchestra(*, dvd_count: int = 4, dvd_mode: str = 'independent',
         for _ in range(count):
             counters[kind] = counters.get(kind, 0) + 1
             number = counters[kind]
-            ident = (f'DVD_STEPPER_{number}' if kind == 'DVD_SLED' else
-                     f'DVD_TRAY_{number}' if kind == 'DVD_TRAY' else f'{kind.lower()}-{number}')
-            label = 'DVD Stepper' if kind == 'DVD_SLED' else 'DVD Tray' if kind == 'DVD_TRAY' else kind
+            ident = f'DVD_STEPPER_{number}' if kind == 'DVD_SLED' else f'{kind.lower()}-{number}'
+            label = 'DVD Stepper' if kind == 'DVD_SLED' else kind
             devices.append(_device(ident, kind, profile, f'{label} {number}' if kind.startswith('DVD') else f'{label} #{number}'))
 
     return OrchestraConfig(
-        name=f'Balanced {fdd_count}FDD + {dvd_count}DVD + VHS + {hdd_count}HDD + {tray_count}Tray',
-        devices=devices, policy=dict(BALANCED), dvd_mode=dvd_mode, tray_enabled=tray_enabled)
+        name=f'Balanced {fdd_count}FDD + {dvd_count}DVD + VHS + {hdd_count}HDD',
+        devices=devices, policy=dict(BALANCED), dvd_mode=dvd_mode)
 
 
 def parse_policy(payload: dict | None) -> dict:
@@ -225,7 +221,7 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
     if not isinstance(hardware, dict) or set(hardware)-{'inventory'}:
         raise ValueError('invalid hardware configuration')
     inventory = hardware.get('inventory')
-    if inventory is not None and (not isinstance(inventory, dict) or any(not isinstance(v, bool) or k.split(':')[0] not in ('fdd','sled','hdd','tray','drum') or len(k.split(':'))!=2 or not k.split(':')[1].isdigit() for k,v in inventory.items())):
+    if inventory is not None and (not isinstance(inventory, dict) or any(not isinstance(v, bool) or k.split(':')[0] not in ('fdd','sled','hdd','drum') or len(k.split(':'))!=2 or not k.split(':')[1].isdigit() for k,v in inventory.items())):
         raise ValueError('hardware inventory requires physical lane booleans')
     dvd_mode = str(payload.get('dvdMode') or 'independent')
     if dvd_mode not in ('independent', 'reinforcement'):
@@ -236,7 +232,6 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         config.policy = parse_policy(payload.get('policy'))
         config.name = str(payload.get('name') or config.name)
         config.dvd_mode = dvd_mode
-        config.tray_enabled = bool(payload.get('trayEnabled', True))
         config.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
         config.hardware = hardware
         config.allocation_devices()
@@ -253,7 +248,6 @@ def parse_orchestra(payload: dict | None) -> OrchestraConfig:
         devices=[dataclasses.asdict(device) for device in devices],
         policy=parse_policy(payload.get('policy')),
         dvd_mode=dvd_mode,
-        tray_enabled=bool(payload.get('trayEnabled', True)),
         idle_reinforcement=parse_idle(payload.get('idleReinforcement')),
         hardware=hardware,
     )
@@ -267,16 +261,16 @@ def web_startup_config() -> dict:
     return {'name': orchestra.name, 'devices': orchestra.devices, 'enabled': True,
             'masterVolume': 19.5, 'tonalMode': 'extreme_v15', 'hddMode': 'articulated',
             'sourceContinuity': True, 'sourceContinuityAmount': 1.,
-            'dvdMode': 'reinforcement', 'trayEnabled': True,
+            'dvdMode': 'reinforcement',
             'idleReinforcement': parse_idle({'enabled': False})}
 
 
 def esp32_startup_config() -> dict:
-    """Explicit target preset. Uncalibrated sleds/trays start disabled."""
+    """Explicit target preset. Uncalibrated sleds start disabled."""
     config = web_startup_config()
-    config.update(name='ESP32 bring-up', dvdMode='independent', trayEnabled=False)
+    config.update(name='ESP32 bring-up', dvdMode='independent')
     for device in config['devices']:
         device['mode'] = 'real'
-        device['enabled'] = device['type'] not in ('DVD_SLED', 'DVD_TRAY')
+        device['enabled'] = device['type'] != 'DVD_SLED'
         if device['type'] == 'HDD_VCM': device['profile'] = 'DRV8833_HDD_START'
     return config

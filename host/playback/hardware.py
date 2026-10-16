@@ -10,7 +10,7 @@ jednoczesnie wirtualizacje i realny sprzet - nie ma drugiego modelu
 mechaniki, ktory moglby sie rozjechac z podgladem.
 
 Uno ma jedna linie kazdego rodzaju. Protokol v2 ESP32 adresuje niezalezne
-instancje: 4 FDD, 4 SLED, 4 HDD, 2 TRAY, 1 VHS. Kolejnosc w konfiguracji
+instancje: 4 FDD, 4 SLED, 4 HDD, 2 PC Speakery. Kolejnosc w konfiguracji
 (wlacznie z disabled) wyznacza stabilne ID sprzetowe. Nadmiarowe instancje
 trafiaja do listy unmapped.
 """
@@ -58,7 +58,7 @@ def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1
     ordinal: dict[str, int] = {}
     for device in devices:
         family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
-                  'HDD_VCM': 'hdd', 'DVD_TRAY': 'tray'}.get(device.type)
+                  'HDD_VCM': 'hdd'}.get(device.type)
         ordinal[family] = ordinal.get(family, 0) + 1
         if not device.drives_hardware:
             continue
@@ -66,8 +66,8 @@ def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1
         lane = LANE_FOR_TYPE.get(device.type)
         if protocol_version == 2:
             family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
-                      'HDD_VCM': 'hdd', 'DVD_TRAY': 'tray'}.get(device.type)
-            capacity = {'fdd': 4, 'sled': 4, 'hdd': 4, 'tray': 2, 'drum': 2}
+                      'HDD_VCM': 'hdd'}.get(device.type)
+            capacity = {'fdd': 4, 'sled': 4, 'hdd': 4, 'drum': 2}
             lane = f'{family}:{ordinal[family]}' if ordinal[family] <= capacity.get(family, 0) else None
 
 
@@ -197,8 +197,6 @@ def build_commands(orchestra: VirtualOrchestra,
 
         if lane == LANE_HDD or lane.startswith('hdd:'):
             commands.extend(_hit_commands(events, lane))
-        elif lane.startswith('tray:'):
-            commands.extend(Command(e.time, 'tray_pulse', hz=max(1, min(60000, e.duration * 1000)), lane=lane) for e in events)
         elif lane == LANE_DRUM or lane.startswith('drum:'):
             commands.extend(dataclasses.replace(c, lane=lane) for c in _drum_commands(events))
         else:

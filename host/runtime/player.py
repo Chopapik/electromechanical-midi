@@ -109,7 +109,7 @@ class Player:
                         lag=position-c.time; self.max_lag=max(self.max_lag,lag)
                         # Preserve STOP even if stale or muted. Never replay expired notes.
                         stale=c.kind!='stop' and (c.time+c.duration<=position or
-                              (c.kind in ('hit','pulse') and lag>.1))
+                              (c.kind=='hit' and lag>.1))
                         if stale: self.dropped+=1
                         else: batch.append(c)
                     self.router.dispatch(batch,epoch=self.epoch,origin=self.origin,serverTime=self.clock())

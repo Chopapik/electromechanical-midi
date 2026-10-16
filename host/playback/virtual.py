@@ -26,7 +26,7 @@ from .timeline import Command, Timeline
 from .tonal_articulation import Curve, TonalArticulation, resolve as resolve_tonal, render as render_tonal, retarget as retarget_tonal, apply_mode as apply_tonal_mode
 from .hdd_articulation import HDDArticulation, classify as classify_hdd, adapt as adapt_hdd, sample as sample_hdd
 
-KINDS = ('FDD', 'DVD_SLED', 'DVD_TRAY', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
+KINDS = ('FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
 TONAL = {'FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS'}
 
 # Tryb instancji decyduje, dokad trafiaja jej zaakceptowane nuty:
@@ -75,23 +75,6 @@ def _p(value, provenance='UNKNOWN', source=''):
     return Parameter(value, provenance, source)
 
 PROFILES = {
-    'DVD_TRAY_REFERENCE': DeviceProfile('DVD_TRAY_REFERENCE', 'DVD_TRAY', {
-        'polyphony': _p(1, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'shortMinMs': _p(80, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'shortMaxMs': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'mediumMinMs': _p(140, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'mediumMaxMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'strongMinMs': _p(200, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'strongMaxMs': _p(300, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'cooldownMs': _p(150, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'rideGapMs': _p(800, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'openHatGapMs': _p(1200, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'openHatMinVelocity': _p(100, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'rideMinVelocity': _p(75, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'motorHz': _p(120, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'resonanceHz': _p(1050, 'ESTIMATED', 'software experiment; needs physical calibration'),
-        'gearHz': _p(57, 'ESTIMATED', 'software experiment; needs physical calibration'),
-    }),
     'FDD_CURRENT': DeviceProfile('FDD_CURRENT', 'FDD', {
         'polyphony': _p(1, 'RESEARCHED', 'single FDD head and firmware PLAY state'),
         'minPosition': _p(4, 'RESEARCHED', 'firmware/controller/src/main.cpp MIN_TRACK'),
@@ -237,7 +220,6 @@ class AcousticEvent:
     hz: float = 0.0
     duration: float = 0.0
     velocity: int = 100
-    direction: int = 1
     hdd_articulation: HDDArticulation | None = None
     source_id: str | None = None
     reinforcement: bool = False
@@ -267,9 +249,7 @@ class VirtualOrchestra:
         self.tonal_mode = 'articulated'
         self.source_continuity = False
         self.source_continuity_amount = 1.
-        self.tray_enabled = True
         self.idle_reinforcement = {}
-        self.tray_movements = []
         self.devices = devices or []
         self.report: dict = {}
         self.events: list[AcousticEvent] = []
@@ -302,10 +282,8 @@ class VirtualOrchestra:
         self.tonal_mode = tonal_mode
         self.source_continuity = bool(payload.get('sourceContinuity', False))
         self.source_continuity_amount = amount
-        self.tray_enabled = bool(payload.get("trayEnabled", True))
         from .orchestra import parse_idle
         self.idle_reinforcement = parse_idle(payload.get('idleReinforcement'))
-        self.tray_movements = []
         self.devices = devices
         self.report = {}
         self.events = []
@@ -314,7 +292,7 @@ class VirtualOrchestra:
 
     def config(self) -> dict:
         return {'name': self.name, 'dvdMode': self.dvd_mode, 'masterVolume': self.master_volume, 'hddMode': self.hdd_mode, 'tonalMode': self.tonal_mode, 'sourceContinuity': self.source_continuity, 'sourceContinuityAmount': self.source_continuity_amount,
-                'trayEnabled': self.tray_enabled, 'idleReinforcement': self.idle_reinforcement,
+                'idleReinforcement': self.idle_reinforcement,
                 'devices': [dataclasses.asdict(d) for d in self.devices]}
 
     def load_plan(self, plan) -> 'VirtualOrchestra':
@@ -323,9 +301,7 @@ class VirtualOrchestra:
         self.source_continuity_amount = float(plan.policy.get('sourceContinuityAmount', 1.))
         self.name = plan.name
         self.dvd_mode = plan.dvd_mode
-        self.tray_enabled = plan.tray_enabled
         self.idle_reinforcement = plan.idle_reinforcement
-        self.tray_movements = [e for e in plan.tray_events if any(d['id'] == e.device_id and d.get('enabled', True) for d in plan.devices)]
         self.devices = [VirtualDeviceInstance.parse(device) for device in plan.devices if device.get('enabled', True)]
         self.report = {}
         self.events = []
@@ -498,23 +474,13 @@ class VirtualOrchestra:
                         device.type, extra.duration, extra.velocity,
                         extra.start-sources[extra.source_id].actual_start)
                         if extra.kind in ("tone", "UNISON") and extra.source_id in self.tonal_decisions else None)))
-        for extra in plan.tray_events:
-            if extra.device_id not in by_id:
-                continue
-            report = self.report[extra.device_id]
-            report['reinforcementEvents'] += 1
-            report['reinforcementTime'] += extra.duration
-            self.activity[extra.device_id].append((extra.start, extra.start + extra.duration))
-            self.events.append(AcousticEvent(extra.start, 'tray', extra.device_id,
-                                             duration=extra.duration, velocity=extra.velocity,
-                                             direction=extra.direction))
         for intervals in self.activity.values():
             intervals.sort()
 
         end = max(float(getattr(plan, 'duration', 0.0)),
                   max((e.time + e.tonal_articulation.gate + e.tonal_articulation.release
                        for e in self.events if e.tonal_articulation is not None and not e.reinforcement), default=0.0),
-                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12)
+                  max((e.time + (e.duration if e.kind == 'tone' else .12)
                        for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values()
                        for interval in intervals), default=0.0))
@@ -528,13 +494,6 @@ class VirtualOrchestra:
 
         return Timeline.from_commands(commands)
 
-    def tray_state_at(self, position: float) -> dict:
-        result = {device.id: {'phase': 'idle'} for device in self.devices if device.type == 'DVD_TRAY'}
-        for event in self.tray_movements:
-            if event.start <= position < event.start + event.duration + event.cooldown:
-                result[event.device_id] = {**event.as_dict(), 'phase':
-                    'moving' if position < event.start + event.duration else 'recovery'}
-        return result
 
     def simulate(self, source: MidiSource, routes_by_device: dict | None = None) -> Timeline:
         self.events = []
@@ -556,7 +515,7 @@ class VirtualOrchestra:
             phases: list[dict] = []
             def reason(code):
                 reasons[code] = reasons.get(code, 0) + 1
-            if device.type == 'DVD_TRAY' or (device.track is None and routes_by_device is None):
+            if (device.track is None and routes_by_device is None):
                 report[device.id] = {'name': device.name, 'type': device.type, **counts,
                                      'reasons': reasons, 'state': vars(state).copy(), 'phases': phases}
                 continue
@@ -697,7 +656,7 @@ class VirtualOrchestra:
         # Scheduler remains the PlaybackEngine worker; virtual commands are its clock markers.
         commands = [Command(e.time, 'virtual', lane='virtual') for e in self.events]
         end = max(float(getattr(source, 'duration', 0)),
-                  max((e.time + (e.duration if e.kind in ('tone', 'tray') else .12) for e in self.events), default=0.0),
+                  max((e.time + (e.duration if e.kind == 'tone' else .12) for e in self.events), default=0.0),
                   max((interval[1] for intervals in self.activity.values() for interval in intervals), default=0.0))
         if end:
             if not commands:

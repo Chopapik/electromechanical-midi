@@ -141,7 +141,6 @@ class RealOutput:
             d=self.registry.by_id[c.device_id]
             if c.kind=='stop': lines.append(prefix+' STOP')
             elif c.kind=='hit': lines.append(prefix+' HIT')
-            elif c.kind=='pulse': lines.append(f'{prefix} PULSE {c.direction} {round(c.duration*1000)}')
             elif d['type']=='VHS':
                 if self.link.controller_status.get('speaker_waves')=='1':
                     lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")

@@ -61,7 +61,6 @@ def compare():
             assert replace(b, actual_duration=a.actual_duration, sustain_added=a.sustain_added) == a, a.id
             if a.device_type != 'DVD_SLED': assert a == b
         assert baseline.reinforcements == experiment.reinforcements
-        assert baseline.tray_events == experiment.tray_events
         after = metrics(experiment)
         assert after['conflicts'] == 0
         for d in registry.devices:

@@ -70,3 +70,13 @@ oktawy FDD mogą zmienić rezultat ponownego uruchomienia.
 Nie regenerujemy dawnych raportów pod nową konfigurację podczas porządkowania
 dokumentacji. Eksperyment oktawy FDD jest zapisany razem z jego konfiguracją
 i testami; opis zawiera sposób powrotu do poprzedniego rejestru.
+
+Archiwalne raporty zachowują wyniki i skróty pierwotnych przebiegów. Pola
+nieużywanych urządzeń usunięto z ich prezentowanego schematu; nie oznacza to
+ponownego przeliczenia historycznych pomiarów.
+
+Porównania wykonania między wersjami używają wspólnych pól komend: czasu,
+urządzenia, typu, długości, Hz, velocity, track, źródłowego ID i artykulacji.
+Zapisane wcześniej skróty archiwalnych przebiegów pozostają historyczne.
+Porównanie konfiguracji dotyczy aktywnego inventory i ustawień wykonania,
+z pominięciem nazwy całego zestawu i nieobecnych rodzin urządzeń.

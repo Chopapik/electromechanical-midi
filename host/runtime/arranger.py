@@ -14,7 +14,6 @@ def arrange(source, registry):
     if routing['mode'] == 'STRICT_TRACKS':
         config.devices = [d for d in config.devices if d['type']=='FDD']
         config.dvd_mode = 'independent'
-        config.tray_enabled = False
         config.idle_reinforcement['enabled'] = False
         plan=allocate_strict(source, config, routing['tracks'], profiles)
     elif routing['mode']=='AUTO':

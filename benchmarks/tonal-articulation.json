@@ -1,5 +1,4 @@
 {
-  "configuration": "4 FDD / 4 DVD / VHS / 4 HDD / 2 trays; idle reinforcement ON; identical allocator settings",
   "creepSource": {
     "file": "0002-02-radiohead_1993-creep-[k] (2).mid",
     "duration": 237.37702108333332,
@@ -123387,5 +123386,6 @@
       "reinforcementPlanned": 1386,
       "tonalReinforcementPlanned": 1386
     }
-  ]
+  ],
+  "archiveProjection": "Inactive-device schema fields omitted; historical measurements and fingerprints retained."
 }

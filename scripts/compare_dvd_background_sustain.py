@@ -44,7 +44,6 @@ def compare():
         before, after = compile_plan(baseline), compile_plan(experiment)
         assert [c for c in before.commands if c.device_id not in ids] == [c for c in after.commands if c.device_id not in ids]
         assert baseline.reinforcements == experiment.reinforcements
-        assert baseline.tray_events == experiment.tray_events
         result = {'baseline': metrics(baseline), 'background': metrics(experiment),
                   'allocationAndNonDvdCommandsUnchanged': True,
                   'afterTwoMinutes': {

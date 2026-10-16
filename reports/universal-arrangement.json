@@ -21,7 +21,6 @@
     "overlaps": 0,
     "mechanicalConflicts": 0,
     "fddAttackViolations": 0,
-    "trayCommands": 0,
     "meanSongDurationCoverageBaseline": 0.6992051935483871,
     "meanSongDurationCoverageUniversal": 0.8019566774193548,
     "longestDvdRun": {
@@ -935,8 +934,7 @@
           "FDD": 1953,
           "DVD_SLED": 1466,
           "VHS": 107,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 439,
         "dvdWorkSeconds": 719.674,
@@ -946,7 +944,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.081782,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "f92c9bc06d8ab2e02607bb1afeaccc98b3a542f3cc27208464a25a1d6b79dd6c",
         "timelineFingerprint": "e3780db326c2188bc63a29fada36d45eeefff94d8b176320423280765e1fca6d",
         "planningSeconds": 18.169,
@@ -1638,8 +1635,7 @@
           "FDD": 1892,
           "DVD_SLED": 1593,
           "VHS": 534,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 471,
         "dvdWorkSeconds": 723.402,
@@ -1649,7 +1645,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.027273,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "f92c9bc06d8ab2e02607bb1afeaccc98b3a542f3cc27208464a25a1d6b79dd6c",
         "timelineFingerprint": "ae0a61ab91325003dba3090c0d4b6d80c66bb8b90c6c49722c5908403b551de6",
         "planningSeconds": 43.328,
@@ -2356,8 +2351,7 @@
           "FDD": 1442,
           "DVD_SLED": 589,
           "VHS": 243,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 277,
         "dvdWorkSeconds": 714.745,
@@ -2367,7 +2361,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.086956,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "14dbd68429368e8e39f50b2d3936b14326484a4f56791f0f1a40d2fef1f9186b",
         "timelineFingerprint": "7cb7408aa0ef4492b5490941427011af0a73e0dcdcf2764819a7e5d5ca8ee0ca",
         "planningSeconds": 7.754,
@@ -3074,8 +3067,7 @@
           "FDD": 1830,
           "DVD_SLED": 944,
           "VHS": 446,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 286,
         "dvdWorkSeconds": 806.86,
@@ -3085,7 +3077,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089899,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "14dbd68429368e8e39f50b2d3936b14326484a4f56791f0f1a40d2fef1f9186b",
         "timelineFingerprint": "649cbadd9052dc48935955d671c2db314093c785f01db71a57929a9b072b46a3",
         "planningSeconds": 25.201,
@@ -3900,8 +3891,7 @@
           "FDD": 2875,
           "DVD_SLED": 2381,
           "VHS": 208,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 581,
         "dvdWorkSeconds": 603.777,
@@ -3911,7 +3901,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.083738,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "782bd75f1cfa6fa04341a6c2706a36ca3090d66014a1f2a0621bc43663a4672b",
         "planningSeconds": 29.951,
@@ -4726,8 +4715,7 @@
           "FDD": 2700,
           "DVD_SLED": 2493,
           "VHS": 1039,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 295,
         "dvdWorkSeconds": 610.253,
@@ -4737,7 +4725,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.074519,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "5fecf53dd055aa5dfd729ade2afa251934ff5610f88e7fbe0d2d8540d431b9e1",
         "planningSeconds": 77.469,
@@ -5563,8 +5550,7 @@
           "FDD": 3431,
           "DVD_SLED": 1559,
           "VHS": 241,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 502,
         "dvdWorkSeconds": 731.064,
@@ -5574,7 +5560,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.082846,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "3c260378cb47c7b7695c0fd032272460eac1e5128e58947b150679cbc8e60f43",
         "timelineFingerprint": "f26ba30af749597fa56860f0e393fee3ac1f503bd07ad38c10e88170b1605793",
         "planningSeconds": 21.003,
@@ -6399,8 +6384,7 @@
           "FDD": 3264,
           "DVD_SLED": 2180,
           "VHS": 556,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 430,
         "dvdWorkSeconds": 794.322,
@@ -6410,7 +6394,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.088057,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "3c260378cb47c7b7695c0fd032272460eac1e5128e58947b150679cbc8e60f43",
         "timelineFingerprint": "bab85816b1db320b7af5b5e28652d16afd425e0efeac00b18ced0ac61e9ec101",
         "planningSeconds": 72.901,
@@ -6913,8 +6896,7 @@
           "FDD": 2758,
           "DVD_SLED": 786,
           "VHS": 213,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 450,
         "dvdWorkSeconds": 688.739,
@@ -6924,7 +6906,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.059609,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "25215b756800f079eb4aac1c6ccc13ecabb687c57f9ad72b227c536e14db54f8",
         "timelineFingerprint": "f732ad890be5bfa3d9168aa62a8a2c9859264030384c08157ed8359fec1332e6",
         "planningSeconds": 6.909,
@@ -7426,8 +7407,7 @@
           "FDD": 2691,
           "DVD_SLED": 816,
           "VHS": 362,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 333,
         "dvdWorkSeconds": 711.496,
@@ -7437,7 +7417,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.013594,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "25215b756800f079eb4aac1c6ccc13ecabb687c57f9ad72b227c536e14db54f8",
         "timelineFingerprint": "3ae38c06b13208a4aaa1a80f31bf584a8c1a4e77a6f9d3014c721d308c84997a",
         "planningSeconds": 19.571,
@@ -8048,8 +8027,7 @@
           "FDD": 1084,
           "DVD_SLED": 503,
           "VHS": 134,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 288,
         "dvdWorkSeconds": 462.394,
@@ -8059,7 +8037,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "7ee19d27cb1b9a13825b02c032b4365f12ab158fb52aaa3a35d1ec8b561c4795",
         "timelineFingerprint": "20df3530e9b27a8532f277ed4e7ae65753bc8fb42aebbd5153a1bfa20087f3c3",
         "planningSeconds": 3.459,
@@ -8670,8 +8647,7 @@
           "FDD": 1065,
           "DVD_SLED": 517,
           "VHS": 185,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 241,
         "dvdWorkSeconds": 467.204,
@@ -8681,7 +8657,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "7ee19d27cb1b9a13825b02c032b4365f12ab158fb52aaa3a35d1ec8b561c4795",
         "timelineFingerprint": "edf7b2de57de2e470de15641ac380bc9d42c0653b02ef30e1024d894e4a6117a",
         "planningSeconds": 8.383,
@@ -9220,8 +9195,7 @@
           "FDD": 4243,
           "DVD_SLED": 2452,
           "VHS": 129,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 860,
         "dvdWorkSeconds": 716.76,
@@ -9231,7 +9205,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.08,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "df2d309d8b17c18827f2380f59e9197ced5cc907342cc3dd5bbdcafaf8032a3f",
         "timelineFingerprint": "b4f32adafd26d660c076798a7fa3ddfdf8201094b0015acaebc93ac0b24e3475",
         "planningSeconds": 32.112,
@@ -9771,8 +9744,7 @@
           "FDD": 3963,
           "DVD_SLED": 2359,
           "VHS": 1120,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 592,
         "dvdWorkSeconds": 687.674,
@@ -9782,7 +9754,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.080816,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "df2d309d8b17c18827f2380f59e9197ced5cc907342cc3dd5bbdcafaf8032a3f",
         "timelineFingerprint": "a9b8a22a08c6073b9962e55dbf6c0dc7db71f19c5976ebd0dab58ab6747ed44c",
         "planningSeconds": 72.279,
@@ -10559,8 +10530,7 @@
           "FDD": 3310,
           "DVD_SLED": 1693,
           "VHS": 223,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 785,
         "dvdWorkSeconds": 735.165,
@@ -10570,7 +10540,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.08,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "44f514be9942543856005e077aff8a9a132e14be8c7467acb6655fc7f8c5839b",
         "timelineFingerprint": "8b49341266b306662b157794573637d53040af2ea1e61a2eb6349016b25e1e19",
         "planningSeconds": 18.08,
@@ -11375,8 +11344,7 @@
           "FDD": 3338,
           "DVD_SLED": 2170,
           "VHS": 907,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 722,
         "dvdWorkSeconds": 725.975,
@@ -11386,7 +11354,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089901,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "44f514be9942543856005e077aff8a9a132e14be8c7467acb6655fc7f8c5839b",
         "timelineFingerprint": "87c5be8be80f82804be88b211035adf86f83d8f0e3e62eed708af19133548a9b",
         "planningSeconds": 50.347,
@@ -11986,8 +11953,7 @@
           "FDD": 2091,
           "DVD_SLED": 549,
           "VHS": 191,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 302,
         "dvdWorkSeconds": 686.334,
@@ -11997,7 +11963,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.074414,
         "noiseOmitted": 16,
-        "trayCommands": 0,
         "drumFingerprint": "ca78d5f79ae450ee5e6f28743844f3aeadfb01bdcb4a511ac5e751c10365c4da",
         "timelineFingerprint": "065062510ed746aa1b6ad36721830684e1f37a25cad0b5e1a12ad6870184d0a5",
         "planningSeconds": 8.86,
@@ -12599,8 +12564,7 @@
           "FDD": 2298,
           "DVD_SLED": 701,
           "VHS": 622,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 298,
         "dvdWorkSeconds": 792.484,
@@ -12610,7 +12574,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.082977,
         "noiseOmitted": 16,
-        "trayCommands": 0,
         "drumFingerprint": "ca78d5f79ae450ee5e6f28743844f3aeadfb01bdcb4a511ac5e751c10365c4da",
         "timelineFingerprint": "f3a86f95b9544909be4e84e88f078637883ef7294be150e43041c431cf008bf7",
         "planningSeconds": 26.284,
@@ -13526,8 +13489,7 @@
           "FDD": 5410,
           "DVD_SLED": 1898,
           "VHS": 227,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 922,
         "dvdWorkSeconds": 982.178,
@@ -13537,7 +13499,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089436,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "612ea7b2691fea324fff674a485341110374928980b7f6fe62681a3e978b3d9f",
         "timelineFingerprint": "675bd45e60c36882f1c313e3466800140880a1afbcf6d2b96814dc6c2d0e27e8",
         "planningSeconds": 28.107,
@@ -14460,8 +14421,7 @@
           "FDD": 5055,
           "DVD_SLED": 2143,
           "VHS": 1236,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 937,
         "dvdWorkSeconds": 967.914,
@@ -14471,7 +14431,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089705,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "612ea7b2691fea324fff674a485341110374928980b7f6fe62681a3e978b3d9f",
         "timelineFingerprint": "e8db2a2568edb05b122bd4c549593da608425db10509deb368316b0d5934ba32",
         "planningSeconds": 73.002,
@@ -14914,8 +14873,7 @@
           "FDD": 2550,
           "DVD_SLED": 1401,
           "VHS": 183,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 644,
         "dvdWorkSeconds": 874.818,
@@ -14925,7 +14883,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.083489,
         "noiseOmitted": 111,
-        "trayCommands": 0,
         "drumFingerprint": "c487f6de0967b5e75bac298e44229e09e7ed80014c211d7c5383129da3e30338",
         "timelineFingerprint": "693100db119bffff445e2b578ac3cc0f227a8a64900c31a9463ce4a5f205329d",
         "planningSeconds": 14.934,
@@ -15367,8 +15324,7 @@
           "FDD": 2516,
           "DVD_SLED": 1394,
           "VHS": 452,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 543,
         "dvdWorkSeconds": 898.224,
@@ -15378,7 +15334,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.074925,
         "noiseOmitted": 111,
-        "trayCommands": 0,
         "drumFingerprint": "c487f6de0967b5e75bac298e44229e09e7ed80014c211d7c5383129da3e30338",
         "timelineFingerprint": "fa148525dc7a852eb90947e3deb40c8eb6156211072f2bb935f9c81671cb6191",
         "planningSeconds": 33.224,
@@ -15525,8 +15480,7 @@
           "FDD": 9,
           "DVD_SLED": 31,
           "VHS": 96,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 21,
         "dvdWorkSeconds": 180.927,
@@ -15536,7 +15490,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "1d9797595ca252dee611c19a50d0d150fe6357883623b6df945c0db66653efd6",
         "planningSeconds": 0.112,
@@ -15716,8 +15669,7 @@
           "FDD": 5,
           "DVD_SLED": 35,
           "VHS": 133,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 23,
         "dvdWorkSeconds": 192.062,
@@ -15727,7 +15679,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "2d7a516e0e1da845c48829a9981cd89d8bbf70188207da3c8ad7a3499d6432ee",
         "planningSeconds": 0.303,
@@ -16614,8 +16565,7 @@
           "FDD": 2359,
           "DVD_SLED": 1620,
           "VHS": 161,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 493,
         "dvdWorkSeconds": 855.334,
@@ -16625,7 +16575,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.082078,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4491d80dd288e0b2face47a18777cbd2b7df82f7b9dd6accbfa406537ce37e45",
         "timelineFingerprint": "619734f017ec3d89edea959e9573aed47e942548c989c92357607a449b678396",
         "planningSeconds": 18.232,
@@ -17524,8 +17473,7 @@
           "FDD": 2300,
           "DVD_SLED": 1516,
           "VHS": 676,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 436,
         "dvdWorkSeconds": 858.937,
@@ -17535,7 +17483,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.086946,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4491d80dd288e0b2face47a18777cbd2b7df82f7b9dd6accbfa406537ce37e45",
         "timelineFingerprint": "f80ac236ed4761a0cbe0c42904a0482190c3fbbf831b63a265ea49fc50f60da0",
         "planningSeconds": 39.478,
@@ -18090,8 +18037,7 @@
           "FDD": 1833,
           "DVD_SLED": 1020,
           "VHS": 144,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 422,
         "dvdWorkSeconds": 766.518,
@@ -18101,7 +18047,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.078054,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "414d1e81c5c353da8e767e198b6e75ee6156e1aab9bd9ba368d912b5a8d7b8f6",
         "timelineFingerprint": "44b039ca333db164e06f2d63f099d4b971639f5b3de564d6258fdfe67d8f24bd",
         "planningSeconds": 11.934,
@@ -18655,8 +18600,7 @@
           "FDD": 1838,
           "DVD_SLED": 1159,
           "VHS": 274,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 372,
         "dvdWorkSeconds": 769.434,
@@ -18666,7 +18610,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.025675,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "414d1e81c5c353da8e767e198b6e75ee6156e1aab9bd9ba368d912b5a8d7b8f6",
         "timelineFingerprint": "9532ae7ac9b76f86fe351aabd4ac0ffe7a3dadd8efbcc81f9fe252d0420a9668",
         "planningSeconds": 37.265,
@@ -18973,8 +18916,7 @@
           "FDD": 624,
           "DVD_SLED": 718,
           "VHS": 111,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 166,
         "dvdWorkSeconds": 854.239,
@@ -18984,7 +18926,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.059734,
         "noiseOmitted": 157,
-        "trayCommands": 0,
         "drumFingerprint": "559d5e63238fb9454d7e6a30284a4103aacd8b966ae86f6534d4d753daa1635e",
         "timelineFingerprint": "0c2ff860ca9aa0677e14fc5ee9c0d221bcb0d2509084f56f4cf333c2284789e4",
         "planningSeconds": 10.349,
@@ -19290,8 +19231,7 @@
           "FDD": 669,
           "DVD_SLED": 651,
           "VHS": 147,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 167,
         "dvdWorkSeconds": 861.05,
@@ -19301,7 +19241,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.059734,
         "noiseOmitted": 157,
-        "trayCommands": 0,
         "drumFingerprint": "559d5e63238fb9454d7e6a30284a4103aacd8b966ae86f6534d4d753daa1635e",
         "timelineFingerprint": "53482bf136a59b420d13abc74e7918c85cf774f8d2c22c2e88145771603c6ab3",
         "planningSeconds": 23.378,
@@ -20484,8 +20423,7 @@
           "FDD": 1100,
           "DVD_SLED": 341,
           "VHS": 85,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 258,
         "dvdWorkSeconds": 707.884,
@@ -20495,7 +20433,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 1,
-        "trayCommands": 0,
         "drumFingerprint": "70479f5400c7808d2711a819e71f481efe495c2c958b79b45b8eb30499dcd8ee",
         "timelineFingerprint": "78346e173f3741873e6a9801cb221c6badda14f85287fe4bb3b03e65888afbc3",
         "planningSeconds": 3.697,
@@ -21676,8 +21613,7 @@
           "FDD": 1104,
           "DVD_SLED": 337,
           "VHS": 87,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 256,
         "dvdWorkSeconds": 710.524,
@@ -21687,7 +21623,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 1,
-        "trayCommands": 0,
         "drumFingerprint": "70479f5400c7808d2711a819e71f481efe495c2c958b79b45b8eb30499dcd8ee",
         "timelineFingerprint": "a02bd0c2aba9e26304d910e4318cd4c75ac6d331b3b397a3752fe3c84b26c370",
         "planningSeconds": 10.224,
@@ -22160,8 +22095,7 @@
           "FDD": 1111,
           "DVD_SLED": 765,
           "VHS": 213,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 276,
         "dvdWorkSeconds": 907.668,
@@ -22171,7 +22105,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.06422,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "912e38842abdbaaf2ea11e53365123417b8b24abe1759280f7c960df3245d8e1",
         "timelineFingerprint": "5f481dcd3a37943685567785405f6ec7309c12c62c17c5e3660701ea76acf72d",
         "planningSeconds": 9.509,
@@ -22640,8 +22573,7 @@
           "FDD": 1224,
           "DVD_SLED": 748,
           "VHS": 271,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 231,
         "dvdWorkSeconds": 902.149,
@@ -22651,7 +22583,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.087273,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "912e38842abdbaaf2ea11e53365123417b8b24abe1759280f7c960df3245d8e1",
         "timelineFingerprint": "6385d27dde21aa587f966d1335a7bceac6c16c4602481747d01bef2883e9cc1e",
         "planningSeconds": 23.658,
@@ -27225,8 +27156,7 @@
           "FDD": 4842,
           "DVD_SLED": 2938,
           "VHS": 89,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 2057,
         "dvdWorkSeconds": 1031.586,
@@ -27236,7 +27166,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.069063,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "d03f9a32b3c60dfc0c4c1f19bbe477842d3d5e60cb9295a4a23e5dbf867c9e01",
         "planningSeconds": 25.971,
@@ -32178,8 +32107,7 @@
           "FDD": 4605,
           "DVD_SLED": 2822,
           "VHS": 1258,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 1398,
         "dvdWorkSeconds": 1038.922,
@@ -32189,7 +32117,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.065625,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "d360aaedc833e8d9a667854220853cf2729c5ac28175b3bef2158f1a68e09a14",
         "planningSeconds": 76.887,
@@ -32870,8 +32797,7 @@
           "FDD": 2234,
           "DVD_SLED": 1267,
           "VHS": 291,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 510,
         "dvdWorkSeconds": 542.967,
@@ -32881,7 +32807,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089952,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "b1e2ba88f1f4c8022fc4c635f7169123b70bbe042602ccf86722ec40c489b3c6",
         "timelineFingerprint": "f77c36141782d5f751dd801390384a87db6df776b45145cf321e3f27f8578f52",
         "planningSeconds": 12.259,
@@ -33565,8 +33490,7 @@
           "FDD": 2104,
           "DVD_SLED": 1603,
           "VHS": 709,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 513,
         "dvdWorkSeconds": 537.916,
@@ -33576,7 +33500,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089872,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "b1e2ba88f1f4c8022fc4c635f7169123b70bbe042602ccf86722ec40c489b3c6",
         "timelineFingerprint": "521ba528bab914250e012ae2b59c3b8fbbb40fa574ab115983408d45965b5ed5",
         "planningSeconds": 32.93,
@@ -34832,8 +34755,7 @@
           "FDD": 1646,
           "DVD_SLED": 684,
           "VHS": 752,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 296,
         "dvdWorkSeconds": 697.21,
@@ -34843,7 +34765,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.064462,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "fdb5ec9a1548ad821e9887a66f762f9a04d3662ad6303cd3d1338349366b3218",
         "timelineFingerprint": "25e88e9a1afc4ef0e5140f0f79afa09c484bae2a40f1afbd6540a0a75639891e",
         "planningSeconds": 12.659,
@@ -36098,8 +36019,7 @@
           "FDD": 1552,
           "DVD_SLED": 778,
           "VHS": 937,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 269,
         "dvdWorkSeconds": 749.078,
@@ -36109,7 +36029,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.065177,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "fdb5ec9a1548ad821e9887a66f762f9a04d3662ad6303cd3d1338349366b3218",
         "timelineFingerprint": "6a38feddc3debbf06f8639f71ee65914c85be55200c29de759f6c259106dc82b",
         "planningSeconds": 28.361,
@@ -37319,8 +37238,7 @@
           "FDD": 2442,
           "DVD_SLED": 342,
           "VHS": 285,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 89,
         "dvdWorkSeconds": 831.738,
@@ -37330,7 +37248,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.08,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "e8a5d698151ee16bd74a36f1fd819915b694cfbd614f40aa7fc3341e91a49db7",
         "timelineFingerprint": "43b11323a89a6945e4977d22fd2665ad79fdf7718d3dd6423f3fe5aa397e153d",
         "planningSeconds": 12.26,
@@ -38658,8 +38575,7 @@
           "FDD": 3586,
           "DVD_SLED": 467,
           "VHS": 416,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 118,
         "dvdWorkSeconds": 880.408,
@@ -38669,7 +38585,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.059,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "e8a5d698151ee16bd74a36f1fd819915b694cfbd614f40aa7fc3341e91a49db7",
         "timelineFingerprint": "831c1f68b4ca90e3447a8121e786b87df35bd7cd1a0ddea6586c78cc61b0c84d",
         "planningSeconds": 26.619,
@@ -39548,8 +39463,7 @@
           "FDD": 2366,
           "DVD_SLED": 1179,
           "VHS": 153,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 505,
         "dvdWorkSeconds": 870.52,
@@ -39559,7 +39473,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.055428,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "b6deef192f19aafd3263805176a05596ffe1e420630dbe3e8fd38be186c8864f",
         "timelineFingerprint": "d9f592454ad7d9cee473201c9f82424b40a71a3e339e47bac2dbae8c4dc373a4",
         "planningSeconds": 20.845,
@@ -40437,8 +40350,7 @@
           "FDD": 2229,
           "DVD_SLED": 1415,
           "VHS": 204,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 597,
         "dvdWorkSeconds": 975.199,
@@ -40448,7 +40360,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.006928,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "b6deef192f19aafd3263805176a05596ffe1e420630dbe3e8fd38be186c8864f",
         "timelineFingerprint": "6ea06c94acd6a09e69ebda149fb066f1c2f9c6dc026677a256accead545b757e",
         "planningSeconds": 49.677,
@@ -40575,8 +40486,7 @@
           "FDD": 203,
           "DVD_SLED": 285,
           "VHS": 96,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 94,
         "dvdWorkSeconds": 444.073,
@@ -40586,7 +40496,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.036789,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "5cf8f2ce206db29a6a060b6694557961f836455f04815157ecc27bb0f145f51e",
         "planningSeconds": 1.686,
@@ -40713,8 +40622,7 @@
           "FDD": 222,
           "DVD_SLED": 266,
           "VHS": 96,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 72,
         "dvdWorkSeconds": 456.672,
@@ -40724,7 +40632,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.036789,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "timelineFingerprint": "782c955fdff5be6ea2073b11cac538d6b653952ec5b5177566590679de83c5ed",
         "planningSeconds": 5.055,
@@ -41252,8 +41159,7 @@
           "FDD": 744,
           "DVD_SLED": 151,
           "VHS": 199,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 89,
         "dvdWorkSeconds": 432.906,
@@ -41263,7 +41169,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.0,
         "noiseOmitted": 16,
-        "trayCommands": 0,
         "drumFingerprint": "de7ef495eb2d9831396597382e58da4d49f1bd6d92c107c95f1ad48b1714859d",
         "timelineFingerprint": "14950952f7fc1e5951a6fc8648e9654fcd0d4a0cfc53bd6e1cec9ab53bbbbc4d",
         "planningSeconds": 3.438,
@@ -41787,8 +41692,7 @@
           "FDD": 738,
           "DVD_SLED": 149,
           "VHS": 235,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 86,
         "dvdWorkSeconds": 430.233,
@@ -41798,7 +41702,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.080856,
         "noiseOmitted": 16,
-        "trayCommands": 0,
         "drumFingerprint": "de7ef495eb2d9831396597382e58da4d49f1bd6d92c107c95f1ad48b1714859d",
         "timelineFingerprint": "3ff048cbd2f5863cf3fafe2105f919968cb624370de5254bf95339ec32ecccd3",
         "planningSeconds": 7.787,
@@ -43003,8 +42906,7 @@
           "FDD": 3549,
           "DVD_SLED": 956,
           "VHS": 310,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 424,
         "dvdWorkSeconds": 490.527,
@@ -43014,7 +42916,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.074029,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "228d1d03b17e376d8933fd3ea74b518148e71f7aea9c85271d996fdd4a26e650",
         "timelineFingerprint": "122673d97a860ff448be7c8a79162e55ef4ba3ce0fc511e55a5c74a625ef3340",
         "planningSeconds": 13.564,
@@ -44223,8 +44124,7 @@
           "FDD": 3814,
           "DVD_SLED": 2942,
           "VHS": 631,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 1282,
         "dvdWorkSeconds": 507.783,
@@ -44234,7 +44134,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.07,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "228d1d03b17e376d8933fd3ea74b518148e71f7aea9c85271d996fdd4a26e650",
         "timelineFingerprint": "80e05934ffd3d45572a057278ca147fc2e3459fc416bfcae447b892ac221624a",
         "planningSeconds": 36.844,
@@ -44766,8 +44665,7 @@
           "FDD": 1135,
           "DVD_SLED": 718,
           "VHS": 19,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 216,
         "dvdWorkSeconds": 672.779,
@@ -44777,7 +44675,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.077421,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "35717af7204f1666415bc7056e403db47a7d800f0edcf3bb9e54dc96080abe68",
         "timelineFingerprint": "43d03e1edd8fe97d69733a96491a55f38984277dc4f79a9edb0aac6ae20622d0",
         "planningSeconds": 6.9,
@@ -45316,8 +45213,7 @@
           "FDD": 1072,
           "DVD_SLED": 656,
           "VHS": 282,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 230,
         "dvdWorkSeconds": 668.942,
@@ -45327,7 +45223,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.077421,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "35717af7204f1666415bc7056e403db47a7d800f0edcf3bb9e54dc96080abe68",
         "timelineFingerprint": "4a354ba8788079c2e1d4f031291d6b512b65aa49f942f33f399924f910806c8f",
         "planningSeconds": 10.875,
@@ -46160,8 +46055,7 @@
           "FDD": 2991,
           "DVD_SLED": 134,
           "VHS": 468,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 13,
         "dvdWorkSeconds": 49.196,
@@ -46171,7 +46065,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.05921,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "e594789145e66da52904915e7e08c952b69d971f588d17c5079cd00350f0f1c5",
         "timelineFingerprint": "0157dce8ebc019002d91c8e04e458615f3599959d57381c3cef27551df99d21f",
         "planningSeconds": 4.737,
@@ -47004,8 +46897,7 @@
           "FDD": 2989,
           "DVD_SLED": 9,
           "VHS": 595,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 9,
         "dvdWorkSeconds": 23.827,
@@ -47015,7 +46907,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.05921,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "e594789145e66da52904915e7e08c952b69d971f588d17c5079cd00350f0f1c5",
         "timelineFingerprint": "47a33c2504b8e7df4452ae9db8155a7df6c7f92d10c823133c767c8b902736d3",
         "planningSeconds": 10.261,
@@ -47580,8 +47471,7 @@
           "FDD": 565,
           "DVD_SLED": 336,
           "VHS": 137,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 271,
         "dvdWorkSeconds": 635.34,
@@ -47591,7 +47481,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.068889,
         "noiseOmitted": 7,
-        "trayCommands": 0,
         "drumFingerprint": "71e9d4f6e6217e77faa7266d5e3ffac094420d1d39db9c27025a61a3a7a3d80b",
         "timelineFingerprint": "c1f96d1952cbd04adb8f027c689024e7d9778db237f1c58f79427bee60a4c4e0",
         "planningSeconds": 2.66,
@@ -48156,8 +48045,7 @@
           "FDD": 567,
           "DVD_SLED": 347,
           "VHS": 138,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 257,
         "dvdWorkSeconds": 641.521,
@@ -48167,7 +48055,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.066668,
         "noiseOmitted": 7,
-        "trayCommands": 0,
         "drumFingerprint": "71e9d4f6e6217e77faa7266d5e3ffac094420d1d39db9c27025a61a3a7a3d80b",
         "timelineFingerprint": "a79a00dcf46ac8402dda74538745795efa5f09cb706ed842ae761475fbddccb5",
         "planningSeconds": 7.604,
@@ -49191,8 +49078,7 @@
           "FDD": 2922,
           "DVD_SLED": 1753,
           "VHS": 310,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 667,
         "dvdWorkSeconds": 764.976,
@@ -49202,7 +49088,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.086765,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "39474f4e998a76d2e73d17c8e9e93853ea4c7e4382d67e5fc67de77933717e73",
         "timelineFingerprint": "058c25581487bd50a1179a558f4046e24ed7002ce718a16ff14f0fea62d6f4bf",
         "planningSeconds": 19.481,
@@ -50226,8 +50111,7 @@
           "FDD": 2789,
           "DVD_SLED": 1789,
           "VHS": 664,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 699,
         "dvdWorkSeconds": 762.583,
@@ -50237,7 +50121,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089706,
         "noiseOmitted": 0,
-        "trayCommands": 0,
         "drumFingerprint": "39474f4e998a76d2e73d17c8e9e93853ea4c7e4382d67e5fc67de77933717e73",
         "timelineFingerprint": "1fb7d3074e6d4685cd1b77f3378f698115c7b09903375e97c50cfcb35ac33394",
         "planningSeconds": 42.602,
@@ -50459,8 +50342,7 @@
           "FDD": 2127,
           "DVD_SLED": 579,
           "VHS": 92,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 311,
         "dvdWorkSeconds": 358.992,
@@ -50470,7 +50352,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.059524,
         "noiseOmitted": 581,
-        "trayCommands": 0,
         "drumFingerprint": "e410c13321f2fe6a74ca8c901c6e5800bafe29add9bf3a7861531b879de67593",
         "timelineFingerprint": "882030691edbe571244ab7194d32f76e6b00fc4db5d38b4ecbebc841293ced3c",
         "planningSeconds": 4.632,
@@ -50692,8 +50573,7 @@
           "FDD": 2525,
           "DVD_SLED": 423,
           "VHS": 382,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 116,
         "dvdWorkSeconds": 380.678,
@@ -50703,7 +50583,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089535,
         "noiseOmitted": 581,
-        "trayCommands": 0,
         "drumFingerprint": "e410c13321f2fe6a74ca8c901c6e5800bafe29add9bf3a7861531b879de67593",
         "timelineFingerprint": "5f928b98257825cd5d7b2c3994d97e8875aa3e1ef089496fd33a6d1b0e1bcd6f",
         "planningSeconds": 13.984,
@@ -51806,8 +51685,7 @@
           "FDD": 3111,
           "DVD_SLED": 723,
           "VHS": 806,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 244,
         "dvdWorkSeconds": 851.666,
@@ -51817,7 +51695,6 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.09,
         "noiseOmitted": 14,
-        "trayCommands": 0,
         "drumFingerprint": "bece5c07d4946309e77b7c988bc2d0df170f8a4127f43e84a7e753001bd82fa0",
         "timelineFingerprint": "ed17ec38e7dd7352f8b4095a42bd97c966b70c84feb8041073ededd983dc3301",
         "planningSeconds": 12.795,
@@ -52926,8 +52803,7 @@
           "FDD": 2695,
           "DVD_SLED": 1329,
           "VHS": 914,
-          "HDD_VCM": 0,
-          "DVD_TRAY": 0
+          "HDD_VCM": 0
         },
         "dvdStops": 566,
         "dvdWorkSeconds": 727.575,
@@ -52937,12 +52813,12 @@
         "mechanicalConflicts": 0,
         "maxDelaySeconds": 0.089672,
         "noiseOmitted": 14,
-        "trayCommands": 0,
         "drumFingerprint": "bece5c07d4946309e77b7c988bc2d0df170f8a4127f43e84a7e753001bd82fa0",
         "timelineFingerprint": "08b0a59b4b0efdb895cd81a1216341c8300ca0be0821616dcb3f3c3ada422784",
         "planningSeconds": 35.875,
         "configurationFingerprint": "10b4ffee173808f5449adac23968870a9e0a80946b6ca3496d5b42440045d44c"
       }
     }
-  ]
+  ],
+  "archiveProjection": "Inactive-device schema fields omitted; historical measurements and fingerprints retained."
 }

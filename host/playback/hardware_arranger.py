@@ -90,8 +90,6 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     solo = any(d.solo for d in devices if d.enabled)
     for lane, device in bound.items():
         profile = context.profile_for(device, lane)
-        if universal_mode and device.type=='DVD_TRAY':
-            excluded[device.id]='UNIVERSAL_TRAY_EXCLUDED'; continue
         if not context.present(lane) or device.mute or (solo and not device.solo):
             excluded[device.id] = 'NO_DEVICE'; continue
         if profile is None:
@@ -338,10 +336,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     duplicate_report = getattr(source, 'duplicate_report', None)
     plan = PerformancePlan(name or source.path.stem, events, [dataclasses.asdict(d) for d in devices], policy,
                            analysis=midi_analysis.as_dict(), origin=origin, lead_devices=tuple(s.device.id for s in lead),
-                           dvd_mode=config.dvd_mode, tray_enabled=config.tray_enabled,
+                           dvd_mode=config.dvd_mode,
                            idle_reinforcement=dict(config.idle_reinforcement),
                            duplicates=_duplicate_kpis(source, notes, accompaniment, duplicate_report) if duplicate_report else {})
-    if orchestration: plan.tray_enabled=False
     plan.analysis['fxTracks'] = sorted(fx_tracks) if fx else []
     plan.articulation = apply(plan, caps, params_from_policy(policy))
     if policy.get('sourceContinuity'):
@@ -443,9 +440,8 @@ def validate_reinforcement(plan, profiles, lanes):
             if future[0].actual_start-dub.start-dub.duration<reserve: continue
         if any(e.device_id==dub.device_id and e.start+e.duration>dub.start for e in accepted): continue
         accepted.append(dub)
-    plan.hardware['reinforcementRejected'] = len(plan.reinforcements)-len(accepted)+len(plan.tray_events)
+    plan.hardware['reinforcementRejected'] = len(plan.reinforcements)-len(accepted)
     plan.reinforcements = accepted
-    plan.tray_events = []  # No measured travel/current profile for trays yet.
 
 
 def adapt_quality_plan(source, config, context, reference, *, midi_analysis=None, pins=None):

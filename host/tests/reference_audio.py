@@ -65,7 +65,7 @@ class WavePreview:
                 hdd.setdefault(d.id, []).append(event)
             else:
                 start = int(event.time * self.RATE)
-                length = min(n - start, int((event.duration if event.kind in ('tone', 'tray') else .12) * self.RATE))
+                length = min(n - start, int((event.duration if event.kind == 'tone' else .12) * self.RATE))
                 if length > 0:
                     ordinary.append((d, effective_profile(d), event, start, length))
         for ident, tones in tonal.items():
@@ -165,7 +165,6 @@ class WavePreview:
 
     def _render_python(self, plan: list[tuple], n: int, mix_count: int) -> tuple:
         """Wersja bez zaleznosci: ~2-4 mln probek/s, wiec dlugi utwor trwa."""
-        from playback.tray import tray_sound
         left = array('f', [0]) * n
         right = array('f', [0]) * n
         for d, profile, event, start, length in plan:
@@ -173,9 +172,7 @@ class WavePreview:
             gl, gr = gain * (1 - max(0, d.pan)), gain * (1 + min(0, d.pan))
             for i in range(length):
                 t = i / self.RATE
-                if event.kind == 'tray':
-                    sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction)
-                elif event.kind == 'reversal':
+                if event.kind == 'reversal':
                     sample = math.exp(-t * 85) * math.sin(2 * math.pi * 1700 * t)
                 elif d.type == 'HDD_VCM' and event.kind == 'hit':
                     sample = sample_hdd(t, event.hdd_articulation, d.id)
@@ -210,10 +207,7 @@ class WavePreview:
         right = np.zeros(n, dtype=np.float32)
         for d, profile, event, start, length in plan:
             t = np.arange(length, dtype=np.float32) / self.RATE
-            if event.kind == 'tray':
-                from playback.tray import tray_sound
-                sample = tray_sound(t, event.duration, event.velocity, profile, d.id, event.direction, np)
-            elif event.kind == 'reversal':
+            if event.kind == 'reversal':
                 sample = np.exp(-t * 85) * np.sin(2 * np.pi * 1700 * t)
             elif d.type == 'HDD_VCM' and event.kind == 'hit':
                 sample = sample_hdd(t, event.hdd_articulation, d.id, np)
@@ -261,7 +255,7 @@ class WavePreview:
         n = int((duration + .25) * self.RATE)
         # Dodatkowe ciche DVD nie obnizaja poziomu dotychczasowych FDD/VHS/HDD.
         mix_count = max(1, len([d for d in orchestra.devices
-                                if d.mode in ('virtual', 'hybrid') and d.type not in ('DVD_SLED', 'DVD_TRAY')]))
+                                if d.mode in ('virtual', 'hybrid') and d.type != 'DVD_SLED']))
         plan = self._plan(orchestra, n)
         # Exact audible intervals, including tails, chokes and suppressed extras.
         self.audio_events = [dataclasses.replace(row[2], duration=row[4] / self.RATE) for row in plan]

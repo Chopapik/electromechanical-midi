@@ -143,7 +143,7 @@ Fizyczne ratingi prądu/energii/temperatury, rzeczywisty pitchRatio DVD,
 trajektoria bez czujnika, rzeczywiste rezonanse/centrowanie HDD i psychoakustyczna
 trafność score. Teoretyczna rampa nie dowodzi, że konkretny motor utrzyma kroki.
 HDD tonal wymaga osobnego wykonawczego projektu i pomiarów; nie dodano
-niezweryfikowanego oscylatora. Tray/free-stepper nie mają fizycznego profilu w
+niezweryfikowanego oscylatora. Free-stepper nie mają fizycznego profilu w
 raporcie, więc nowy planner ich nie autoryzuje; istniejące komendy pozostają.
 
 ## 13. Pierwsze testy fizyczne — tylko lista

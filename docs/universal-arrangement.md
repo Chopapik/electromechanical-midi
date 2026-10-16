@@ -5,7 +5,7 @@ Wybór: **Settings → Aranżacja → Preset aranżacji → Universal · adaptac
 bez autoplay. Domyślne `balanced` w JSON i dotychczasowe presety są zachowane.
 
 Preset używa czterech FDD, czterech DVD, PC Speaker, PC Speaker FX i perkusyjnych
-HDD zgodnie z zadeklarowaną dostępnością. Obie tacki są jawnie wykluczone.
+HDD zgodnie z zadeklarowaną dostępnością.
 Nie ma specjalnych reguł dla nazw utworów ani generowanych nut harmonii.
 
 ## Status weryfikacji: wyłącznie VIRTUAL i testy software
@@ -98,7 +98,7 @@ Zachowano **107793 → 122498** źródłowych nut tonalnych.
 Poprawa liczby ataków dotyczy 29 utworów; pozostałe 2 zachowują tę samą liczbę.
 Nie utracono żadnego wcześniej granego ID leadu/basu. Wszystkie 31 porównań
 ma identyczne komendy perkusji, zero konfliktów, overlapów, naruszeń odstępu FDD
-i komend tacek. Wszystkie 31 osi baseline zgadza się z kopią kodu sprzed zmiany.
+. Wszystkie 31 osi baseline zgadza się z kopią kodu sprzed zmiany.
 
 | MIDI | Pominięte tonalne przed | Universal | Pokrycie długości przed → po | Najdłuższy DVD po (s) |
 | --- | ---: | ---: | ---: | ---: |
@@ -254,7 +254,7 @@ test wszystkich możliwych plików MIDI.
 | Komendy DVD STOP | 40937 | 41546 |
 | Łączny planowany czas DVD (s) | 93458,301 | 94097,483 |
 | Najdłuższy ciągły odcinek DVD (s) | 366,997 | 366,997 |
-| Konflikty / overlapy / naruszenia odstępu FDD / komendy tacek | 0 | 0 |
+| Konflikty / overlapy / naruszenia odstępu FDD | 0 | 0 |
 
 **To poprawa przyrostowa, nie kolejny skok jak w porównaniu pierwszego Universal
 z Instrument Roles.** 82 MIDI zyskały pokrycie długości; pozostałe 67 zachowały

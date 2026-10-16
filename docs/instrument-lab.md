@@ -22,8 +22,7 @@ rampy i pitchRatio; historyczny limit drogi 140 kroków ani whitelist sweepu
 DVD1 nie obowiązują w tym trybie. Sufit 600 Hz to polityka automatycznej
 aranżacji, nie folding ręcznego testu. PC Speaker/FX korzystają z ustawień
 fali oraz gain/duty. HDD test to pojedynczy HIT, nie ton: historię hitów i
-odstęp sprawdza profil, czas impulsów wyznacza firmware. Tacki są zarejestrowane,
-ale wyłączone i bez profilu, więc pozostają niedostępne.
+odstęp sprawdza profil, czas impulsów wyznacza firmware.
 
 Lab nie otwiera drugiego transportu. Tylko aktualna sesja WebSocket może
 uruchomić test; heartbeat `sync` odnawia lease 3 s (przeglądarka wysyła go co

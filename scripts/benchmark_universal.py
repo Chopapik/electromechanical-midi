@@ -17,6 +17,26 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def execution_fingerprint(timeline):
+    """Compare active command semantics across archived schema revisions."""
+    keys=('time','device_id','kind','duration','hz','velocity','track','source_id','articulation')
+    commands=[]
+    for command in timeline.commands:
+        data=command.as_dict()
+        commands.append({k:data[k] for k in keys})
+    return digest({'duration':timeline.duration,'commands':commands})
+
+
+def configuration_fingerprint(document):
+    """Execution settings, excluding labels and unavailable inventory entries."""
+    active=[d for d in document['devices'] if d.get('enabled',True)]
+    families={d['type'] for d in active}
+    idle=deepcopy(document.get('idleReinforcement',{}))
+    if 'deviceTypes' in idle:idle['deviceTypes']=[k for k in idle['deviceTypes'] if k in families]
+    return digest({'devices':active,'parameters':document.get('parameters',{}),
+                   'idleReinforcement':idle})
+
+
 def metrics(plan, registry):
     from runtime.compiler import compile_plan
     from playback.mechanical_arrangement import _chronology
@@ -82,9 +102,8 @@ def metrics(plan, registry):
         'fddAttackViolations':attack_violations,'overlaps':overlaps,'mechanicalConflicts':conflicts,
         'maxDelaySeconds':round(max((e.delay for e in played),default=0.),6),
         'noiseOmitted':sum(e.role=='unpitched_effect' and not e.played for e in plan.events),
-        'trayCommands':sum(registry.by_id[c.device_id]['type']=='DVD_TRAY' for c in timeline.commands),
         'drumFingerprint':digest([c.as_dict() for c in timeline.commands if c.kind=='hit']),
-        'timelineFingerprint':digest(timeline.as_dict())}
+        'timelineFingerprint':execution_fingerprint(timeline)}
     recovery=plan.hardware.get('universal',{}).get('recovery')
     if recovery is not None:
         result['recovery']=recovery
@@ -99,8 +118,6 @@ def run_job(code_root, path, preset):
     from runtime.arranger import arrange
     registry = DeviceRegistry(volume_path=Path('/tmp/universal-benchmark-no-speaker-settings.json'))
     registry.document['parameters']['arrangementPreset'] = preset
-    for d in registry.devices:
-        if d['type']=='DVD_TRAY': d['enabled']=False
     started=time.monotonic()
     protected={}
     try:
@@ -110,23 +127,26 @@ def run_job(code_root, path, preset):
     if preset=='universal' and universal_recovery is not None:
         original=universal_recovery.recover
         def audited(plan, *args):
+            from runtime.compiler import compile_plan
             protected.update(events={e.id:e for e in plan.events if e.played},
-                extras=list(plan.reinforcements),sidecars=deepcopy(plan.execution_articulation))
+                extras=list(plan.reinforcements),sidecars=deepcopy(plan.execution_articulation),
+                timeline=execution_fingerprint(compile_plan(plan)))
             return original(plan,*args)
         with patch.object(universal_recovery,'recover',audited):
             plan=arrange(MidiSource(Path(path)),registry)
     else:plan=arrange(MidiSource(Path(path)),registry)
     values=metrics(plan,registry)
     if protected:
+        values['backboneTimelineFingerprint']=protected['timeline']
         after={e.id:e for e in plan.events}
         values['originalPlayedEventsIdentical']=all(after[k]==v for k,v in protected['events'].items())
         values['originalReinforcementsIdentical']=plan.reinforcements[:len(protected['extras'])]==protected['extras']
         values['originalArticulationIdentical']=all(plan.execution_articulation.get(k)==v for k,v in protected['sidecars'].items())
         assert all(values[k] for k in ('originalPlayedEventsIdentical','originalReinforcementsIdentical','originalArticulationIdentical'))
     if preset=='universal':
-        assert not any(values[k] for k in ('fddAttackViolations','overlaps','mechanicalConflicts','trayCommands')), values
+        assert not any(values[k] for k in ('fddAttackViolations','overlaps','mechanicalConflicts')), values
     values['planningSeconds']=round(time.monotonic()-started,3)
-    values['configurationFingerprint']=digest(registry.document)
+    values['configurationFingerprint']=configuration_fingerprint(registry.document)
     return {'file':Path(path).name,'sha256':hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             'preset':preset,'metrics':values}
 

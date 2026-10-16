@@ -1,5 +1,4 @@
 {
-  "configuration": "4 FDD / 4 DVD / VHS / 4 HDD / 2 tray, idle reinforcement ON",
   "note": "Before/after compares the restored existing four-HDD allocator; RAW/ARTICULATED only change audio.",
   "results": [
     {
@@ -21625,5 +21624,6 @@
         "suppressedReinforcement": 0
       }
     }
-  ]
+  ],
+  "archiveProjection": "Inactive-device schema fields omitted; historical measurements and fingerprints retained."
 }

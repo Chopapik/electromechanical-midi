@@ -19,7 +19,7 @@ from test_allocator import write_drums, write_tracks  # noqa: E402
 
 
 def default_orchestra(**kwargs):
-    return current_orchestra(fdd_count=3, hdd_count=3, tray_count=0, **kwargs)
+    return current_orchestra(fdd_count=3, hdd_count=3, **kwargs)
 
 
 class DvdExperimentTest(unittest.TestCase):

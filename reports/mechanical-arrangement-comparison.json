@@ -53,22 +53,6 @@
             "utilization": 0.0
           },
           {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
             "deviceId": "fdd-1",
             "type": "FDD",
             "notes": 569,
@@ -396,22 +380,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -749,22 +717,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -1175,22 +1127,6 @@
             "utilization": 0.0
           },
           {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
             "deviceId": "fdd-1",
             "type": "FDD",
             "notes": 827,
@@ -1520,22 +1456,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -1875,22 +1795,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -2303,22 +2207,6 @@
             "utilization": 0.0
           },
           {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
             "deviceId": "fdd-1",
             "type": "FDD",
             "notes": 2907,
@@ -2648,22 +2536,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -3003,22 +2875,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -3431,22 +3287,6 @@
             "utilization": 0.0
           },
           {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
             "deviceId": "fdd-1",
             "type": "FDD",
             "notes": 878,
@@ -3774,22 +3614,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -4127,22 +3951,6 @@
           {
             "deviceId": "DVD_STEPPER_4",
             "type": "DVD_SLED",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_1",
-            "type": "DVD_TRAY",
-            "notes": 0,
-            "dropped": 0,
-            "activeTime": 0.0,
-            "utilization": 0.0
-          },
-          {
-            "deviceId": "DVD_TRAY_2",
-            "type": "DVD_TRAY",
             "notes": 0,
             "dropped": 0,
             "activeTime": 0.0,
@@ -4506,5 +4314,6 @@
       "unisonPrimaryDecisionsIdentical": true,
       "unisonDropsAdded": 0
     }
-  }
+  },
+  "archiveProjection": "Inactive-device schema fields omitted; historical measurements and fingerprints retained."
 }

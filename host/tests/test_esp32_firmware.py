@@ -39,13 +39,14 @@ int main(int argc,char** argv){
   std::vector<int> used;for(auto b:map::step)used.push_back(b);for(auto b:map::dir)used.push_back(b);
   for(auto& group:map::sled)for(auto b:group)used.push_back(b);
   for(auto& group:map::hdd)for(auto b:group)used.push_back(b);
-  for(auto& group:map::tray)for(auto b:group)used.push_back(b);used.push_back(map::sleep);
+  used.push_back(map::sleep);
+  for(int b=32;b<=35;++b)assert(!d.bus.getBit(b));
   bool seen[40]={};for(int b:used){assert(b<40&&!seen[b]);seen[b]=true;}
   for(int bit=0;bit<40;++bit){for(int b=0;b<40;++b)d.bus.setBit(b,b==bit);d.bus.flush();assert(io.previous==(uint64_t(1)<<bit));for(int b=0;b<40;++b)assert(d.bus.getBit(b)==(b==bit));}
  }else if(c=="boot"){
   assert(io.boot[0]=="off"&&io.boot[1]=="spi"&&io.boot[2]=="frame"&&io.boot[3]=="on");
   assert(io.previous==0x55&&io.outputs);for(auto& f:d.fdd)assert(!f.playing&&!f.homing&&!f.homed);
-  for(auto& s:d.sled)assert(!s.enabled);for(auto& t:d.tray)assert(!t.enabled);
+  for(auto& s:d.sled)assert(!s.enabled);
  }else if(c=="home"){
   d.command("FDD 1 HOME");assert(d.fdd[0].homing&&!d.fdd[1].homing);
   io.now+=6000;d.tick();assert(!d.fdd[0].homed);
@@ -156,8 +157,6 @@ int main(int argc,char** argv){
   d.command("SLED 1 ENABLE 1");d.command("SLED 1 PROFILE 140 5000 0.5");d.command("SLED 1 PLAY 140");runFor(100000);
   assert(d.sled[0].hz==140&&fabsf(d.sled[0].targetStepRate)==280);
   assert(!strcmp(d.command("SLED 1 PROFILE 140 5000 1"),"ERR BUSY"));
- }else if(c=="tray"){
-  assert(!strcmp(d.command("TRAY 1 PULSE FWD 80"),"ERR DISABLED"));d.command("TRAY 1 ENABLE 1");d.command("TRAY 1 PULSE REV 80");assert((io.previous>>32&3)==2);io.now+=80000;d.tick();assert(!d.tray[0].busy&&(io.previous>>32&3)==0);
  }else if(c=="speaker_waves"){
   assert(!strcmp(d.command("VHS WAVE sine"),"OK")&&d.vhsWave==Sine);
   assert(!strcmp(d.command("VHS2 WAVE triangle"),"OK")&&d.fxWave==Triangle);
@@ -278,7 +277,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','tray','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
+for case in ('map','boot','home','home_timeout','parallel','independent','away','timing','hdd','sled','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

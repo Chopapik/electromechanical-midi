@@ -117,11 +117,9 @@ class UniversalTests(unittest.TestCase):
         self.assertTrue(all(e.device_id!='vhs-1' for e in p.events if e.track_name=='Guitar'))
         self.assert_feasible(p,r)
 
-    def test_noise_and_trays_cannot_receive_tonal_voices(self):
+    def test_noise_cannot_receive_tonal_voices(self):
         import mido
         r=self.registry(speakers=True)
-        for d in r.devices:
-            if d['type']=='DVD_TRAY':d['enabled']=True
         source=self.source([('Noise',0,[(0,1,60)]),('Pad',1,[(0,1,65)])])
         midi=mido.MidiFile(source.path)
         midi.tracks[1].insert(1,mido.Message('program_change',channel=0,program=122,time=0))
@@ -130,10 +128,6 @@ class UniversalTests(unittest.TestCase):
         p=arrange(MidiSource(source.path),r)
         noise=next(e for e in p.events if e.track_name=='Noise')
         self.assertFalse(noise.played);self.assertEqual(noise.reason,'UNPITCHED_EFFECT_UNSUPPORTED')
-        self.assertFalse(p.tray_events)
-        self.assertTrue(all(p.hardware['excludedDevices'][d['id']]=='UNIVERSAL_TRAY_EXCLUDED'
-            for d in r.devices if d['type']=='DVD_TRAY'))
-        self.assertFalse(any(e.device_type=='DVD_TRAY' for e in p.events if e.played))
 
     def test_upcoming_dedicated_fx_is_reserved_before_its_source_attack(self):
         import mido

@@ -25,7 +25,7 @@ def compare(corpus, baseline, experiment):
             'noNewDroppedTonalNotes':b['droppedTonal']<=a['droppedTonal'],
             'coverageNondecreasing':b['sourceVoiceDurationCoverage']+1e-6>=a['sourceDurationCoverage'],
             'physicalChecksPass':not any(b[k] for k in
-                ('fddAttackViolations','overlaps','mechanicalConflicts','trayCommands'))}
+                ('fddAttackViolations','overlaps','mechanicalConflicts'))}
         if not all(checks.values()):raise AssertionError((song['file'],checks))
         keys=('playedTonal','droppedTonal','sourceDurationCoverage','weightedOnsetCoverage',
             'unrepresentedPartWindows','dvdStops','dvdWorkSeconds','dvdLongestContinuousSeconds','planningSeconds')

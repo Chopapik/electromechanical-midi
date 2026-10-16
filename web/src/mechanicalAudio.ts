@@ -13,7 +13,7 @@ export function mechanicalSamples(type:string,_id:string,hz:number,duration:numb
   const seed=seedFor(type),variation=0
   let random=seed||1
   const noise=()=>{random^=random<<13;random^=random>>>17;random^=random<<5;return (random>>>0)/2147483648-1}
-  if(type==='HDD_VCM'||type==='DVD_TRAY'){
+  if(type==='HDD_VCM'){
     const decay=Math.max(.001,art.decay??.017),resonance=(art.resonance??290)*(1+variation)
     const impulses=art.impulses??[0],phase=(seed%97)*.065
     for(let n=0;n<out.length;n++){

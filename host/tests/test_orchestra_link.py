@@ -24,15 +24,13 @@ class ProtocolTests(unittest.TestCase):
         l = self.link()
         l.fdd_play(4,220); l.fdd_home(3); l.fdd_stop(2)
         l.hdd_hit(4); l.hdd_stop(2); l.sled_play(3,196); l.sled_stop(1)
-        l.tray_pulse(2,'REV',80); l.tray_stop(1)
         l.vhs_amp(200); l.vhs_freq(164.81); l.vhs_stop(); l.ping(); l.status(); l.all_stop()
         self.assertEqual([c.args[0] for c in l.send.call_args_list], [
             'FDD 4 PLAY 220.00','FDD 3 HOME','FDD 2 STOP','HDD 4 HIT','HDD 2 STOP',
-            'SLED 3 PLAY 196.00','SLED 1 STOP','TRAY 2 PULSE REV 80','TRAY 1 STOP',
+            'SLED 3 PLAY 196.00','SLED 1 STOP',
             'VHS AMP 200','VHS FREQ 164.81','VHS STOP','PING','STATUS','ALL STOP'])
         for id in (0,5,True,'1'):
             with self.assertRaises(ValueError): l.fdd_home(id)
-        with self.assertRaises(ValueError): l.tray_pulse(1,'oops',10)
 
     def test_stop_waits_for_matching_execution_ack(self):
         l = self.link()
@@ -67,9 +65,9 @@ class ProtocolTests(unittest.TestCase):
 
     def test_preset_and_stable_ids(self):
         config=esp32_startup_config()
-        self.assertEqual(len(config['devices']),15)
+        self.assertEqual(len(config['devices']),13)
         devices=[VirtualDeviceInstance.parse(d) for d in config['devices']]
-        self.assertTrue(all(not d.enabled for d in devices if d.type in ('DVD_SLED','DVD_TRAY')))
+        self.assertTrue(all(not d.enabled for d in devices if d.type == 'DVD_SLED'))
         devices[0].enabled=False
         bound,unmapped=bind_devices(devices,2)
         self.assertNotIn('fdd:1',bound)

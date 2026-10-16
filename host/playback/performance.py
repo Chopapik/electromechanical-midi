@@ -161,39 +161,6 @@ class ReinforcementEvent:
                 'semanticCompatibility': self.semantic_compatibility, 'role': self.role,
                 'gmFamily': self.gm_family, 'gmProgram': self.gm_program, 'kind': self.kind}
 
-
-@dataclasses.dataclass(frozen=True)
-class TrayEvent:
-    source_id: str
-    device_id: str
-    track: int
-    note: int
-    velocity: int
-    start: float
-    duration: float
-    cooldown: float
-    priority: int
-    strength: str
-    direction: int
-    source_device: str | None = None
-    score: float = 0.0
-    reason: str = 'GM mechanical accent; idle tray'
-    semantic_compatibility: str = 'PERCUSSION'
-    source_track_name: str = ''
-
-    def as_dict(self) -> dict:
-        return {'sourceId': self.source_id, 'deviceId': self.device_id, 'track': self.track,
-                'note': self.note, 'velocity': self.velocity, 'channel': 9,
-                'start': round(self.start, 6), 'duration': round(self.duration, 6),
-                'cooldown': round(self.cooldown, 6), 'priority': self.priority,
-                'strength': self.strength, 'direction': self.direction, 'reinforcement': True,
-                'eventKind': 'reinforcement', 'sourceEventId': self.source_id,
-                'sourceDevice': self.source_device, 'targetDevice': self.device_id,
-                'sourceTrackName': self.source_track_name,
-                'reason': self.reason, 'score': self.score,
-                'semanticCompatibility': self.semantic_compatibility}
-
-
 @dataclasses.dataclass
 class PerformancePlan:
     """Caly plan wykonania: zdarzenia + orkiestra + polityka + raport."""
@@ -210,9 +177,6 @@ class PerformancePlan:
     articulation: dict = dataclasses.field(default_factory=dict)
     dvd_mode: str = 'independent'
     reinforcements: list[ReinforcementEvent] = dataclasses.field(default_factory=list)
-    tray_enabled: bool = True
-    tray_events: list[TrayEvent] = dataclasses.field(default_factory=list)
-    tray_report: dict = dataclasses.field(default_factory=dict)
     idle_reinforcement: dict = dataclasses.field(default_factory=dict)
     idle_report: dict = dataclasses.field(default_factory=dict)
     # Audio expression sidecar; never changes allocator events/reservations.
@@ -223,8 +187,7 @@ class PerformancePlan:
 
     @property
     def duration(self) -> float:
-        return max(max((event.end for event in self.events), default=0.0),
-                   max((event.start + event.duration for event in self.tray_events), default=0.0))
+        return max((event.end for event in self.events), default=0.0)
 
     def by_device(self) -> dict[str, list[PerformanceEvent]]:
         result: dict[str, list[PerformanceEvent]] = {device['id']: [] for device in self.devices}
@@ -263,8 +226,6 @@ class PerformancePlan:
             'idleReinforcement': self.idle_reinforcement,
             'dvdMode': self.dvd_mode,
             'reinforcements': [event.as_dict() for event in self.reinforcements],
-            'trayEnabled': self.tray_enabled,
-            'trayReinforcements': [event.as_dict() for event in self.tray_events],
             'events': [event.as_dict() for event in self.events],
             'report': self.report(),
         }
@@ -494,7 +455,7 @@ def build_report(plan: PerformancePlan) -> dict:
         if event.outcome == 'DROPPED' and event.preferred_device in per_device:
             per_device[event.preferred_device]['dropped'] += 1
 
-    normal_devices = [d for d in plan.devices if d['type'] != 'DVD_TRAY']
+    normal_devices = plan.devices
     tonal_devices = [d for d in normal_devices if device_kind.get(d['id'], 'tonal') == 'tonal']
     perc_devices = [d for d in normal_devices if device_kind.get(d['id']) == 'percussion']
     normal_ids = {d['id'] for d in normal_devices}
@@ -521,7 +482,6 @@ def build_report(plan: PerformancePlan) -> dict:
             'events': len(plan.reinforcements),
             'totalSeconds': round(sum(event.duration for event in plan.reinforcements), 3),
         },
-        'tray': plan.tray_report,
         'idleReinforcement': plan.idle_report,
         'trackClassification': plan.analysis.get('trackClassification', []),
         'lead': {

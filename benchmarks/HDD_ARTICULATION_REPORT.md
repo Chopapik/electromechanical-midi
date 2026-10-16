@@ -7,7 +7,7 @@
 ## Scope and prerequisite
 
 The active `main` checkout did not contain the global Idle Reinforcement feature
-or the earlier four-HDD/tray inventory. Their existing implementation was ported
+or the earlier four-HDD inventory. Their existing implementation was ported
 from `migrate` into the flat directory layout, preserving Master Volume. This is
 why allocator/configuration/older test files appear in the diff. No new allocation
 policy, classification, duplicate normalization or timing changes were introduced
@@ -15,7 +15,7 @@ for this sound experiment. The mechanical debugger remains on its separate branc
 
 **The before/after comparison below uses the restored existing four-HDD pool.**
 It does not claim identical assignments to the older three-HDD `main` inventory.
-All seven songs use the same default 4 FDD / 4 DVD / VHS / 4 HDD / 2 tray
+All seven songs use the same default 4 FDD / 4 DVD / VHS / 4 HDD
 configuration and global Idle Reinforcement enabled, without song-specific overrides.
 
 ## Implementation
@@ -72,7 +72,7 @@ available. Ordinary allocation continues while the replacement audio is prepared
 ## Seven-song benchmark
 
 Two independently allocated plans have identical full primary event decisions,
-reinforcement decisions and tray decisions. Rendering each mode also checks that
+reinforcement decisions. Rendering each mode also checks that
 no primary event dictionary changed. Aggregate PRIMARY totals: **39,867 played,
 1,717 dropped in both modes**. These are normal allocator losses already present
 in the common baseline, not renderer losses.
@@ -182,8 +182,8 @@ New HDD work:
 
 Existing feature restoration from `migrate`:
 - `host/playback/allocator.py`, `capabilities.py`, `orchestra.py`, `performance.py`,
-  `reinforcement.py`, `tray.py`, plus the corresponding existing virtual/engine integration.
-- `host/tests/test_auto_arranger.py`, `test_dvd_experiment.py`, `test_idle_reinforcement.py`, `test_tray.py`.
+  `reinforcement.py`, plus the corresponding existing virtual/engine integration.
+- `host/tests/test_auto_arranger.py`, `test_dvd_experiment.py`, `test_idle_reinforcement.py`.
 - `web/src/App.test.tsx`, `components/ArrangementEditor.tsx`, `components/PianoRoll.tsx`,
   and corresponding existing Orchestra/types integration.
 

@@ -82,7 +82,7 @@ Creep still has the existing 47 ARPEGGIATED allocator rescue events, with 62.5 m
 
 ## 7. Eight-song benchmark
 
-Configuration: 4 FDD / 4 DVD / VHS / 4 HDD / 2 trays; idle reinforcement ON; identical allocator settings. No song-specific tuning. BEFORE/AFTER metrics below mean TONAL RAW / TONAL ARTICULATED. All normal assignments and statistics match; the older renderer is additionally exported for listening.
+Configuration: 4 FDD / 4 DVD / VHS / 4 HDD; idle reinforcement ON; identical allocator settings. No song-specific tuning. BEFORE/AFTER metrics below mean TONAL RAW / TONAL ARTICULATED. All normal assignments and statistics match; the older renderer is additionally exported for listening.
 
 | MIDI | PRIMARY played A=B | dropped A=B | drop rate | ART mean attack / decay / release ms | legato | staccato | strum groups |
 |---|---:|---:|---:|---|---:|---:|---:|

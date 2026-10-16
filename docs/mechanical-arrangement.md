@@ -9,7 +9,7 @@
 
 `runtime.arranger.arrange → allocate(hardware_context) → allocate_hardware → PerformancePlan → compile_plan → Router → REAL/VIRTUAL`.
 
-Polityka znajduje się w istniejącym `OrchestraConfig.policy`, a zapisane ustawienia aplikacji w `config/devices.json` (`parameters`). Aktualny registry włącza cztery FDD, cztery DVD, PC Speaker i PC Speaker FX oraz cztery HDD; dwie tacki pozostają wyłączone. Typ/protokół VHS oznacza teraz PC Speaker. Wybór: **Settings → Aranżacja → Preset aranżacji → Balanced**.
+Polityka znajduje się w istniejącym `OrchestraConfig.policy`, a zapisane ustawienia aplikacji w `config/devices.json` (`parameters`). Aktualny registry włącza cztery FDD, cztery DVD, PC Speaker i PC Speaker FX oraz cztery HDD. Typ/protokół VHS oznacza teraz PC Speaker. Wybór: **Settings → Aranżacja → Preset aranżacji → Balanced**.
 
 ## Wybór głosu
 

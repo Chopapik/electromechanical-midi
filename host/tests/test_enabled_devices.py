@@ -28,7 +28,7 @@ class EnabledDevicesTest(unittest.TestCase):
         config = default_orchestra(dvd_mode='reinforcement')
         for device in config.devices:
             device['enabled'] = device['id'] in ('fdd-1', 'hdd_vcm-1')
-            device['mode'] = mode if device['type'] != 'DVD_TRAY' else 'virtual'
+            device['mode'] = mode
         config.idle_reinforcement['enabled'] = True
         config.idle_reinforcement['minScore'] = 0
         return config
@@ -48,7 +48,7 @@ class EnabledDevicesTest(unittest.TestCase):
         self.assertEqual({d['id'] for d in plan.devices}, expected)
         self.assertTrue(any(e.played for e in plan.events))
         self.assertTrue(all(e.device_id in expected for e in plan.events if e.played))
-        self.assertTrue(all(e.device_id in expected for e in plan.reinforcements + plan.tray_events))
+        self.assertTrue(all(e.device_id in expected for e in plan.reinforcements))
         orchestra = VirtualOrchestra()
         orchestra.render_plan(plan)
         self.assertTrue(all(e.device in expected for e in orchestra.events))

@@ -39,7 +39,6 @@ class StrictTracksTest(unittest.TestCase):
             self.assertTrue(all((e.played_note - e.note) % 12 == 0 for e in notes))
             self.assertTrue(all(a.end <= b.actual_start + 1e-8 for a, b in zip(notes, notes[1:])))
         self.assertFalse(plan.reinforcements)
-        self.assertFalse(plan.tray_events)
         self.assertTrue(all(e.outcome not in ('ARPEGGIATED', 'REASSIGNED') for e in plan.events))
         self.assertGreater(plan.strict_report['fdd-3']['chordRejected'], 0)
 

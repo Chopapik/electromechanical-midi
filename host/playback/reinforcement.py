@@ -1,4 +1,4 @@
-"""One acoustic post-plan pass, with tonal / strike / tray compatibility policies.
+"""One acoustic post-plan pass, with tonal / strike compatibility policies.
 
 PRIMARY events are immutable. Reservations use performed intervals (after FDD
 sustain), never source MIDI durations. No serial commands are emitted here.
@@ -13,7 +13,6 @@ from .capabilities import capabilities_for
 from .performance import PerformancePlan, ReinforcementEvent
 from .orchestra import parse_idle
 from .virtual import VirtualDeviceInstance, effective_profile
-from .tray import add_reinforcement as tray_accents
 
 EPS = 1e-9
 REJECTIONS = ('deviceBusy', 'deviceNeededSoon', 'incompatibleRole', 'outOfRange',
@@ -78,24 +77,16 @@ def _compatible(source, target, capability, identity, affinity):
 
 
 def apply_reinforcement(plan, priority):
-    """Single entry point; disabled mode preserves the previous DVD/tray policy."""
+    """Single entry point; disabled mode preserves the previous DVD policy."""
     config = parse_idle(plan.idle_reinforcement)
     if not config['enabled']:
         plan.reinforcements = legacy_dvd(plan, priority) if plan.dvd_mode == 'reinforcement' else []
-        tray_accents(plan)
         plan.idle_report = {'enabled': False}
         return
     plan.reinforcements = []
     rejects = Counter({key: 0 for key in REJECTIONS})
     copies = Counter()
     theoretical = defaultdict(list)
-    original_tray_enabled = plan.tray_enabled
-    plan.tray_enabled = original_tray_enabled and 'DVD_TRAY' in config['deviceTypes']
-    tray_accents(plan, copies, config['maxCopiesPerEvent'], config['minScore'], theoretical)
-    plan.tray_enabled = original_tray_enabled
-    rejects['cooldown'] += plan.tray_report['skippedBusyCooldown']
-    rejects['scoreTooLow'] += plan.tray_report['skippedSampled'] + plan.tray_report['skippedScore']
-    rejects['maxCopiesReached'] += plan.tray_report['skippedMaxCopies']
     instances = [VirtualDeviceInstance.parse(d) for d in plan.devices if d.get('enabled', True)]
     by_id = {d.id: d for d in instances}
     solo = any(d.solo and not d.mute for d in instances)
@@ -136,8 +127,7 @@ def apply_reinforcement(plan, priority):
             return 'deviceNeededSoon'
         return None
 
-    # Mechanical accents: existing tray policy runs first so a crash is not
-    # multiplied across HDD and trays. Only selected strong strikes may use HDD.
+    # Only selected strong strikes may use idle HDD.
     hits = [e for e in played if e.role == 'percussion' and e.channel == 9]
     hits.sort(key=lambda e: (e.actual_start, -e.velocity, e.id))
     busy = defaultdict(lambda: float('-inf'))
@@ -254,7 +244,7 @@ def apply_reinforcement(plan, priority):
     minimum = config['minDurationMs'] / 1000
     rejects['fragmentTooShort'] += sum(e.kind == 'tone' and e.duration + EPS < minimum for e in plan.reinforcements)
     plan.reinforcements = [e for e in plan.reinforcements if e.kind != 'tone' or e.duration + EPS >= minimum]
-    all_extras = [*plan.reinforcements, *plan.tray_events]
+    all_extras = plan.reinforcements
     actual = defaultdict(list)
     role_counts, family_counts, program_counts, type_counts = Counter(), Counter(), Counter(), Counter()
     sources = {e.id: e for e in played}
@@ -294,7 +284,7 @@ def apply_reinforcement(plan, priority):
         'rejected': dict(rejects), 'devices': metrics,
         'rejectionUnit': 'candidate-target interval evaluations; percussion candidate-target hits',
         'copiesDefinition': 'simultaneous tonal copies; total mechanical strike copies per source event',
-        'potentialDefinition': 'compatible score-qualified idle tonal intervals before copy quota; free HDD accent cycles; compatible tray motion ignoring extra copy/cooldown/sample quotas'}
+        'potentialDefinition': 'compatible score-qualified idle tonal intervals before copy quota; free HDD accent cycles'}
 def legacy_dvd(plan: PerformancePlan, priority) -> list[ReinforcementEvent]:
     """Fill idle DVD intervals after normal allocation and articulation finish."""
     dvd = [device for device in plan.devices if device.get('enabled', True) and device['type'] == 'DVD_SLED'

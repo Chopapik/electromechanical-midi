@@ -101,7 +101,8 @@ Web Audio. Szczegóły: [ESP32](docs/esp32-orchestra.md), [profile](docs/hardwar
 | PC Speaker | 1 włączony | Wykryty wokal/lead, GPIO25, `vhs-1` / `drum:1` |
 | PC Speaker FX | 1 włączony | Tonalne ozdobniki, GPIO26, `pc-speaker-fx` / `drum:2` |
 | HDD VCM | 4 włączone | Perkusja przez DRV8833; brak wykonawcy tonalnego HDD |
-| DVD tray | 2 wyłączone | Zarejestrowane, bez zatwierdzonego profilu runtime |
+
+Aktualny registry zawiera łącznie **14 urządzeń**.
 
 `VHS` jest zachowanym typem/protokołem obu PC Speakerów, nie aktualnym napędem VHS.
 Główny speaker ma w konfiguracji transpozycję +12; FX nie ma tej transpozycji.

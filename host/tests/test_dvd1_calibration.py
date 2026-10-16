@@ -53,7 +53,7 @@ class Dvd1CalibrationTests(unittest.TestCase):
         self.assertIn('STEP_INTERVAL_LIMIT',evaluate(fast,HardwareNote(100,.5,0)).reasons)
 
     def config(self):
-        config=default_orchestra(fdd_count=1,dvd_count=1,hdd_count=0,tray_count=0)
+        config=default_orchestra(fdd_count=1,dvd_count=1,hdd_count=0)
         for d in config.devices:
             d['mode']='real'
             if d['type']=='DVD_SLED':d['hardware_overrides']={'pitchRatio':quantity(1.),'continuousRotation':quantity(False)}
@@ -88,6 +88,6 @@ class Dvd1CalibrationTests(unittest.TestCase):
 
     def test_reinforcement_cannot_use_forbidden_frequency(self):
         from types import SimpleNamespace
-        plan=SimpleNamespace(events=[],reinforcements=[SimpleNamespace(device_id='dvd',start=0,duration=.5,hz=220)],tray_events=[],hardware={})
+        plan=SimpleNamespace(events=[],reinforcements=[SimpleNamespace(device_id='dvd',start=0,duration=.5,hz=220)],hardware={})
         validate_reinforcement(plan,{'dvd':self.profile},{'dvd':'sled:1'})
         self.assertEqual(plan.reinforcements,[])

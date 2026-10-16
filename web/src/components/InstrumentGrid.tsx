@@ -8,7 +8,7 @@ export function InstrumentGrid({devices,activity,muted}:{devices:Device[];activi
    const e=activity[d.id],isMuted=muted.includes(d.id),active=!!e&&!isMuted&&d.enabled
    const tonal=['FDD','DVD_SLED','VHS'].includes(d.type)
    const pitch=active&&e.hz>0?Math.max(0,Math.min(127,Math.round(69+12*Math.log2(e.hz/440)))):null
-   const name=d.name.replace(/^DVD Stepper /,'DVD ').replace(/^HDD_VCM #/,'HDD ').replace(/^FDD #/,'FDD ').replace(/^DVD Tray /,'TRAY ')
+   const name=d.name.replace(/^DVD Stepper /,'DVD ').replace(/^HDD_VCM #/,'HDD ').replace(/^FDD #/,'FDD ')
    return <article key={d.id} aria-label={d.name} className={`instrument-tile${active?' is-active':''}${isMuted?' is-muted':''}`}>
     <h2><span className="instrument-name">{name}</span><span className={`instrument-led ${active?'lit':''}`} /></h2>
     {tonal?<><div className="instrument-staff"><StaffNote midiNote={pitch}/></div>

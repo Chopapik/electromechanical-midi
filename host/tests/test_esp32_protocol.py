@@ -33,7 +33,7 @@ int main(int argc,char** argv){
   assert(sink.replies[0].text=="PONG"&&sink.replies[1].text=="PONG");
   assert(sink.replies[0].session==0&&sink.replies[1].session==1);
  }else if(c=="status"){
-  p.execute(Transport::Usb,"STATUS");size_t n=sink.replies.size();assert(n==19);
+  p.execute(Transport::Usb,"STATUS");size_t n=sink.replies.size();assert(n==17);
   p.execute(Transport::Ble,"STATUS");assert(sink.replies.size()==2*n);
   for(size_t i=0;i<n;++i){assert(sink.replies[i].origin==Transport::Usb&&sink.replies[i+n].origin==Transport::Ble);assert(sink.replies[i].text==sink.replies[i+n].text);}
   assert(sink.replies[n].text=="STATUS BEGIN"&&sink.replies.back().text=="STATUS END");

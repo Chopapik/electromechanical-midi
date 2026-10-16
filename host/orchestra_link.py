@@ -18,7 +18,7 @@ def parse_status(lines):
             raise ValueError('invalid STATUS record')
         kind = parts[1]
         start = 2 if kind in ('CTRL', 'VHS', 'VHS2') else 3
-        if kind not in ('CTRL', 'VHS', 'VHS2', 'FDD', 'HDD', 'SLED', 'TRAY'):
+        if kind not in ('CTRL', 'VHS', 'VHS2', 'FDD', 'HDD', 'SLED'):
             raise ValueError('unknown device kind')
         if start == 3 and (len(parts) < 4 or not parts[2].isdigit()):
             raise ValueError('invalid device ID')
@@ -86,11 +86,6 @@ class OrchestraLink(FloppyLink):
     def hdd_stop(self, id): self._device('HDD', id, 'STOP')
     def sled_play(self, id, hz): self._device('SLED', id, f'PLAY {hz:.2f}')
     def sled_stop(self, id): self._device('SLED', id, 'STOP')
-    def tray_pulse(self, id, direction, ms):
-        if direction not in ('FWD', 'REV') or not isinstance(ms, int) or not 1 <= ms <= 60000:
-            raise ValueError('invalid tray pulse')
-        self._device('TRAY', id, f'PULSE {direction} {ms}', 2)
-    def tray_stop(self, id): self._device('TRAY', id, 'STOP', 2)
     def vhs_amp(self, value): self.send(f'VHS AMP {value}')
     def vhs_freq(self, hz): self.send(f'VHS FREQ {hz:.2f}')
     def vhs_stop(self): self.send('VHS STOP')

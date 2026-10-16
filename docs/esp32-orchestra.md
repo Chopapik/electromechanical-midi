@@ -16,12 +16,12 @@ The offline tests run the production core with fake clock, sensor and latch
 edges: safe boot, all 40 bits and byte order, four independent FDDs, simultaneous
 STEP frames, minimum pulse spacing, DIR settle, STOP→PLAY, TRACK0 reversal,
 initial HOME and timeout, watchdog/all-stop, HDD phases, sled phases/reverse,
-tray timeout, disabled devices and ASCII command parsing. Serial status is
+disabled devices and ASCII command parsing. Serial status is
 parsed only when a complete BEGIN/END transaction arrives.
 
 **REQUIRES PHYSICAL CALIBRATION:** STEP/DIR input compatibility at 3.3 V for each
 FDD; TRACK0 voltage and active-low behavior; DVD motor VM, current, temperature,
-coil order, direction and travel; HDD VM and impulse durations; tray VM/pulse duration; printer motor parameters.
+coil order, direction and travel; HDD VM and impulse durations; printer motor parameters.
 The software verification above does not establish physical calibration.
 Software sled interval validation is an implementation guard, **not** a measured
 safe motor Hz limit.
@@ -35,7 +35,6 @@ safe motor Hz limit.
 | HDD VCM | Historically tested at **5 V**, coil about **23.3 Ω** | Recorded in [the HDD hit sketch](../firmware/hdd_hit/hdd_hit.ino). A historical coil/bridge test, not a measured rating for all four VCMs or validation of the present DRV8833 drive. |
 | 74HC595 and ESP32 signals | 3.3 V logic; common GND | Register VCC and input pull-ups are logic supplies, distinct from motor VM. ESP32 inputs must not be pulled to 5 V. |
 | PC Speaker / PC Speaker FX | GPIO25/26 signal into separate S8050 speaker drivers | User reports passive speakers, probably 8 Ω; supply, base circuit, current and acoustic response remain uncharacterized. No direct low-impedance load on GPIO. |
-| Tray motors | VM must be established for the actual motor/driver | Disabled and without an approved runtime hardware profile; no supply recommendation inferred from DVD or HDD. |
 
 Common ground does not mean a single supply voltage for every load. No table
 entry establishes a continuous-duty rating, current limit or thermal protection
@@ -75,11 +74,10 @@ depend on an SPI default. Raise the clock only after verifying the physical chai
 DRV8833 VM is a separate motor supply; logic/supply/FDD/ESP32 share GND.
 For DVD, the provisional **3.3 V is at VM**, not just logic power; see the
 [power/evidence table](#power-supplies-and-evidence) for the 5 V heating
-observation and required temperature/current measurements. Calibrate HDD/tray
+observation and required temperature/current measurements. Calibrate HDD
 VM separately.
 VCM coil goes between OUT1/OUT2 of its assigned bridge; never to a GPIO.
 Sled coil A goes across AOUT1/AOUT2, coil B across BOUT1/BOUT2.
-Tray motor goes across its assigned bridge's two outputs.
 Q36 can drive all available nSLEEP inputs; keep asleep during bring-up.
 Add appropriate input pull-downs where tri-state 595 outputs could otherwise
 float during reset; FDD /STEP must remain inactive HIGH while /OE is HIGH.
@@ -128,16 +126,16 @@ supply GND join ESP32 GND.
 | Q29 | 4 | DRV6 AIN2 |
 | Q30 | 4 | DRV6 BIN1 — HDD4 |
 | Q31 | 4 | DRV6 BIN2 |
-| Q32 | 5 | DRV7 AIN1 — tray1 |
-| Q33 | 5 | DRV7 AIN2 |
-| Q34 | 5 | DRV7 BIN1 — tray2 |
-| Q35 | 5 | DRV7 BIN2 |
+| Q32 | 5 | Spare, held LOW |
+| Q33 | 5 | Spare, held LOW |
+| Q34 | 5 | Spare, held LOW |
+| Q35 | 5 | Spare, held LOW |
 | Q36 | 5 | Global DRV8833 nSLEEP, if exposed |
 | Q37 | 5 | Spare |
 | Q38 | 5 | Spare |
 | Q39 | 5 | Spare |
 
-DRV8 is spare. Both halves of DRV1–4 serve the bipolar sled motors.
+DRV7–8 are spare. Both halves of DRV1–4 serve the bipolar sled motors.
 
 ## Startup and device behavior
 
@@ -166,11 +164,10 @@ this 84 ms cycle requires current, impact and thermal verification with DRV8833.
 Uno's separate `WD_CAVIAR_CURRENT` path retains 40/40/2 ms. Busy hits return
 `ERR BUSY`; there is no hidden hit queue. Runtime uses percussion, not HDD tones.
 
-The current application enables four continuous-rotation DVD steppers and
-leaves both trays disabled. Sled uses full-step, two-coil phases and the existing
+The current application enables four continuous-rotation DVD steppers. Sled uses full-step, two-coil phases and the existing
 acceleration ramp. `Sled::play()` can change target Hz without STOP. Firmware boot
 and runtime inventory are distinct: host configuration sends profiles and ENABLE
-before playback. Tray pulses are timed and STOP coasts immediately.
+before playback.
 
 PC Speaker and PC Speaker FX use GPIO25/26, LEDC channels 0/2. Pulse mode uses
 PWM at the note frequency, AMP 0–255 in the wire protocol (UI limits 0–128).
@@ -184,7 +181,7 @@ No AVR register/ISR code is shared with this target.
 
 115200, 8N1, ASCII, newline. Boot: `READY protocol=2 board=esp32` confirms
 controller startup, **not FDD homing**. `STATUS` emits BEGIN, CTRL, individual
-FDD/HDD/SLED/TRAY/VHS/VHS2 records, END. `track0=1` means normalized ACTIVE;
+FDD/HDD/SLED/VHS/VHS2 records, END. `track0=1` means normalized ACTIVE;
 `raw=0` is the corresponding active-low GPIO read. Homing and playing are
 separate from USB connected status.
 
@@ -204,9 +201,6 @@ SLED 1 PLAY 220.00
 SLED 1 DIR FWD
 SLED 1 DIR REV
 SLED 1 STOP
-TRAY 1 PULSE FWD 80
-TRAY 1 PULSE REV 80
-TRAY 1 STOP
 VHS AMP 50
 VHS FREQ 164.81
 VHS STOP
@@ -217,14 +211,14 @@ VHS2 STOP
 ```
 
 Each device also accepts `ENABLE 0|1`, e.g. `SLED 1 ENABLE 1` or
-`VHS ENABLE 0`. FDD/HDD IDs are 1–4, SLED 1–4, tray 1–2.
+`VHS ENABLE 0`. FDD/HDD IDs are 1–4, SLED 1–4.
 Legacy PLAY/STOP/HOME address FDD1; HIT addresses HDD1;
 DRUM/DRUMF alias VHS AMP/FREQ. Legacy HDD 0 invokes all-stop.
 
 `host/orchestra_link.py` retains the shared protocol parser and atomic STATUS
 transactions. Current playback uses `host/runtime/outputs.py` and stable lanes
 from `config/devices.json`: `fdd:1`…`fdd:4`, `sled:1`…`sled:4`, `hdd:1`…`hdd:4`,
-`drum:1`/`drum:2` and `tray:1`/`tray:2`. Disabled entries keep their ordinals;
+`drum:1`/`drum:2`. Disabled entries keep their ordinals;
 removing or reordering entries must not silently renumber physical wiring.
 
 **Settings → Mute** gates execution without changing allocation, timeline,
@@ -386,7 +380,7 @@ filtered out: capture the raw boot/reset log to diagnose it.
 6. Repeat for FDD2–4; then FDD ALL HOME. Never use a position estimate to
    compensate drift: TRACK0 alone reverses the return travel.
 7. Add one DRV8833 bridge at a time with correct VM. Check HDD impulses,
-   then explicitly enable and calibrate each sled/tray. Check coil order and
+   then explicitly enable and calibrate each sled. Check coil order and
    travel, motor current and temperature before sustained sled PLAY; the proposed
    DVD VM of 3.3 V still requires these measurements. Verify both speaker drivers
    on GPIO25/26 and measure their response.
@@ -530,4 +524,4 @@ settings: 72 away steps, 5 ms direction setup and 2439 us minimum step interval.
 This is a shared software configuration, not an individual calibration claim.
 DVD1–4 use continuous rotation by default. Their previous 140-step travel
 settings and DVD1 frequency measurements remain historical calibration data;
-continuous mode does not enforce them. Tray configuration is unchanged.
+continuous mode does not enforce them.

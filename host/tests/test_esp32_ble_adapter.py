@@ -187,7 +187,7 @@ int main(int argc,char** argv){
   auto text=drainBle();assert(text.find("STATUS BEGIN\n")==0&&text.substr(text.size()-11)=="STATUS END\n");
   assert(writes.size()==n); // TX never drives GPIO, even on retry.
  }else if(c=="stop_ack_priority"){
-  writeBle("STATUS\n");drainInput();assert(uxQueueMessagesWaiting(bleTxQueue)==19);
+  writeBle("STATUS\n");drainInput();assert(uxQueueMessagesWaiting(bleTxQueue)==17);
   ctrl.fdd[0].homed=true;ctrl.fdd[0].play(220,io);
   writeBle("ALL STOP 42\n");drainInput();
   assert(!ctrl.fdd[0].playing&&uxQueueMessagesWaiting(bleTxQueue)==1);

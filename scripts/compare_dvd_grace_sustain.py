@@ -38,7 +38,6 @@ def compare():
                 assert a == b
         assert len(before.events) == len(after.events)
         assert before.reinforcements == after.reinforcements
-        assert before.tray_events == after.tray_events
         ids = {d['id'] for d in after.devices if d['type'] == 'DVD_SLED'}
         timelines = [compile_plan(p) for p in (before, after)]
         assert [c for c in timelines[0].commands if c.device_id not in ids] == [c for c in timelines[1].commands if c.device_id not in ids]

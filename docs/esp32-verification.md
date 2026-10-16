@@ -49,7 +49,6 @@ UI:
 Tests:
 - `host/tests/test_esp32_firmware.py` (new)
 - `host/tests/test_orchestra_link.py` (new)
-- `host/tests/test_tray.py`
 - `host/tests/test_virtual.py` (previous HDD 2 ms expectation)
 - `host/tests/test_web.py`
 - `web/src/components/FirmwarePanel.test.tsx`

@@ -795,7 +795,6 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
         lead_devices=tuple(slot.device.id for slot in lead_slots),
         duplicates=duplicates,
         dvd_mode=config.dvd_mode,
-        tray_enabled=config.tray_enabled,
         idle_reinforcement=dict(config.idle_reinforcement),
     )
 

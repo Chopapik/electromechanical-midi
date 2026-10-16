@@ -129,7 +129,7 @@ synchronization is made.
 - **LATE_SUPERSEDED:** a later same-lane state already became due; skip the old
   PLAY. Annotate it BACKLOG_COLLAPSED as well. The latest still-current state runs.
 - **LATE_EXPIRED:** the note interval ended (its following same-lane STOP is due),
-  or a one-shot HIT/TRAY pulse is over 100 ms old. Do not emit historical bursts.
+  or a one-shot HIT pulse is over 100 ms old. Do not emit historical bursts.
 - **STOP:** retained during catch-up. An overdue PLAY...STOP sequence sends STOP,
   not the obsolete notes. STOP before a fresh same-timestamp PLAY remains ordered.
 - **End:** at `position >= timeline.duration`, replace unfinished history with

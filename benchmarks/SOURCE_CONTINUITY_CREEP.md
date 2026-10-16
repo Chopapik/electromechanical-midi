@@ -79,7 +79,7 @@ po 50% pomiędzy v1 i v2. Renderer używa jednej pośredniej obwiedni z mieszani
 Zgodnie z zatwierdzonym zrzutem ekranu domyślny start webowej aplikacji używa:
 masterVolume=19.5, tonalMode=extreme_v15, sourceContinuity=true,
 sourceContinuityAmount=1, hddMode=articulated, dvdMode=reinforcement,
-trayEnabled=true, idleReinforcement.enabled=false, enabled=true.
+idleReinforcement.enabled=false, enabled=true.
 To pełna ciągłość oraz brzmienie 1.5; skrócona ciągłość 1.5 jest opcją ręczną.
 Domyślne wartości pochodzą z web_startup_config i są aplikowane w server.main;
 jawne presety oraz ręczne zmiany pozostają możliwe. Testy końcowe:

@@ -157,7 +157,7 @@ def allocate_strict(source: MidiSource, config: OrchestraConfig, tracks: list[in
     events.sort(key=lambda e: (e.actual_start, e.track, e.id))
     plan = PerformancePlan(source.path.stem, events, [dataclasses.asdict(d) for d in devices],
                            policy, analysis=analysis.as_dict(), origin='strict_tracks',
-                           strict_report=report, dvd_mode='independent', tray_enabled=False)
+                           strict_report=report, dvd_mode='independent')
     if hardware_context is not None and profiles:
         from .hardware_arranger import validate_plan
         validate_plan(plan, profiles, {d: lanes[d] for d in profiles}, attempts,
