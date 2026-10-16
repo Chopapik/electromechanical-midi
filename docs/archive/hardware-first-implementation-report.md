@@ -1,6 +1,10 @@
+> **ARCHIWUM — nie buduj układu według tego pliku.** Opis zachowuje dawną wersję,
+> także nieaktualne połączenia, interfejsy, parametry i ścieżki kodu.
+> Aktualne instrukcje: [indeks dokumentacji](../README.md).
+
 # Raport wdrożenia hardware-first
 
-> Historyczny raport wdrożenia, nie bieżąca instrukcja. Opisy starego runtime/preview, liczebności inventory, lista plików i wyniki testów zachowują kontekst tamtej zmiany. Aktualny stan: [profile](hardware-first.md), [README](../README.md).
+> Historyczny raport wdrożenia, nie bieżąca instrukcja. Opisy starego runtime/preview, liczebności inventory, lista plików i wyniki testów zachowują kontekst tamtej zmiany. Aktualny stan: [profile](../HARDWARE_DEVICES.md), [README](../../README.md).
 
 ## 1. Architektura przed / po
 

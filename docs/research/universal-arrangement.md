@@ -1,12 +1,9 @@
-# Universal — adaptacyjna aranżacja fraz
+> **Zapis badania, nie aktualna instrukcja.** Wyniki, liczby testów, UI,
+> ścieżki i parametry dotyczą opisanego przebiegu. Polecenia mogą wymagać
+> wskazanego commita i lokalnych MIDI; pliki w `/tmp` nie są trwałymi artefaktami.
+> Obecne zasady: [indeks dokumentacji](../README.md).
 
-Wybór: **Settings → Aranżacja → Preset aranżacji → Universal · adaptacyjny**
-(`universal`). Zmiana potwierdza STOP i przebudowuje wspólny ExecutionTimeline,
-bez autoplay. Domyślne `balanced` w JSON i dotychczasowe presety są zachowane.
-
-Preset używa czterech FDD, czterech DVD, PC Speaker, PC Speaker FX i perkusyjnych
-HDD zgodnie z zadeklarowaną dostępnością.
-Nie ma specjalnych reguł dla nazw utworów ani generowanych nut harmonii.
+# Universal — wyniki i odtwarzanie benchmarków
 
 ## Status weryfikacji: wyłącznie VIRTUAL i testy software
 
@@ -21,51 +18,6 @@ tej zmiany. Wspólny ExecutionTimeline nie potwierdza zgodności akustycznej,
 wykonania fizycznego ani bezpieczeństwa pracy. Przed uznaniem presetu za
 zweryfikowany w REAL potrzebne są osobne testy sprzętowe.
 
-## Decyzje muzyczne
-
-- Lokalny kontekst śledzi niepokrywające się głosy w obrębie track/channel.
-  Ruchomy riff nie zmienia stabilnego dolnego głosu w „szybki riff”.
-- Na wspólnym ataku lead i bas mają priorytet. W obrębie roli pierwsze tony
-  poszczególnych partii poprzedzają kolejne tony ich akordów. Preferowane są
-  skrajne głosy, dłuższe warstwy i velocity; nie wszystkie dźwięki jednego
-  wielkiego akordu muszą wypchnąć inną partię.
-- Przed wyborem FDD kandydat uwzględnia najwcześniejszy dozwolony kolejny atak
-  (domyślnie 120 ms). Zajęta stacja nie wygrywa nuty, którą dopiero końcowy pass
-  musiałby usunąć. Inny FDD, DVD lub dozwolony speaker może przejąć źródłowy atak.
-  Pozostają istniejące okna mikroopóźnień; nuty nie trafiają do bezterminowej kolejki.
-- FDD zachowuje eksperyment oktawy w dół, gate do 400 ms oraz ograniczenie przed
-  kolejnym atakiem tego samego głosu. DVD preferuje długi sustain; jego gate nie
-  jest ograniczany globalnym budżetem krótkich akompaniamentów.
-- Wokal preferuje główny speaker. Nakładające się gate'y legato kończą się na
-  następnym ataku źródłowej partii, zamiast powodować pominięcie kolejnej sylaby.
-  Dodatkowy równoczesny głos może użyć FX lub silników.
-- Źródłowe ataki wokalu i rozpoznanych FX rezerwują oba speakery także przed
-  przyszłym wejściem. Krótkie, wyższe partie melodyczne mogą korzystać z wolnego
-  speakera poza rezerwacjami; nie dotyczy to niskiego basu ani długich padów.
-  Jeśli track sklasyfikowany jako bas zawiera równoczesne głosy akordu, górny
-  ton co najmniej oktawę ponad aktywnym dolnym głosem może użyć FX (od MIDI 55).
-  Sama sekwencyjna zmiana rejestru monofonicznego basu nie spełnia tej reguły.
-- Preferencja ostatniego urządzenia dla głosu i koszt przesunięcia oktawowego
-  ograniczają przerzucanie barwy oraz niepotrzebne składanie rejestru. Koszt
-  oktawy liczy się po jawnej transpozycji urządzenia (główny speaker +12,
-  FDD −12). Zmiany oktaw wynikające z zakresów nadal są możliwe.
-
-Klasyfikacja GM/lyrics i normalizacja duplikatów są wspólne. Jawne efekty szumowe
-pozostają pominięte. Perkusja zachowuje dotychczasową kolejność i komendy HIT.
-Opcjonalny dowolny UNISON FDD jest wyłączony na rzecz niezależnych głosów.
-
-## Artykulacja i wykonanie
-
-Universal korzysta z istniejącego sustainu tła Instrument Roles: chronione
-mostkowanie DVD do 350 ms, po dynamicznym passie do 200 ms. Pauzy, niezależne
-partie, akcenty powtórzeń, skrócone gate'y i obce rezerwacje mogą je zablokować.
-Każda zmiana przechodzi pełną chronologię mechaniczną.
-
-Sufit DVD 600 Hz akustycznych, pitchRatio, przyspieszenie firmware, limity STEP,
-TRACK0, potwierdzany STOP i watchdog są zachowane. Końcowy wspólny pass FDD jest
-nadal aktywny jako zabezpieczenie planu. REAL i VIRTUAL nie aranżują oddzielnie.
-`plan.hardware.universal` opisuje trasy, odroczonych kandydatów ataku FDD i
-fallbacki; są to decyzje planowania, nie pomiar ruchu lub dźwięku.
 
 ## Benchmark
 
@@ -74,8 +26,8 @@ Rozszerzenie o pełną bibliotekę i późniejszy etap odzyskiwania opisano dale
 historycznego raportu nie nadpisujemy.
 
 Zestaw obejmuje wszystkie 31 wskazanych MIDI. Manifest z nazwami i SHA-256:
-[universal-corpus.json](../reports/universal-corpus.json). Pełne metryki:
-[universal-arrangement.json](../reports/universal-arrangement.json).
+[universal-corpus.json](../../reports/universal-corpus.json). Pełne metryki:
+[universal-arrangement.json](../../reports/universal-arrangement.json).
 
 ```sh
 .venv/bin/python scripts/benchmark_universal.py \
@@ -142,55 +94,12 @@ maskowała utratę 16 wcześniejszych ID. Testy obejmują oba przypadki.
 Najdłuższy ciągły okres DVD w zestawie to **136.195 s**
 (0023-04-radiohead_1995-fake_plastic_trees-[k].mid). Jest to plan, nie zmierzony czas bezpiecznej pracy silnika.
 
-## Rozszerzenie na pełną bibliotekę MIDI
 
-Istniejący preset `universal` otrzymał końcowy etap
-`host/playback/universal_recovery.py`, po wspólnym ograniczeniu ataków FDD.
-Wcześniej zagrane zdarzenia, ich urządzenia, wysokości, gate'y, artykulacje
-i istniejące reinforcement pozostają identyczne. Pozostałe presety nie używają
-tego etapu. Firmware i konfiguracja sprzętu pozostają bez zmian.
-
-Etap działa wyłącznie w rzeczywiście wolnych rezerwacjach:
-
-- Pominięta nuta tonalna może odzyskać oryginalny atak, jeśli cały przebieg
-  urządzenia pozostaje wykonalny. Używa tego samego doboru ról i rezerwacji
-  wokalu/FX co pierwsza alokacja. Nie przesuwa wcześniejszych nut.
-- Pominięte, długie tło harmoniczne może wejść później na DVD: najwyżej
-  pół beatu i nie więcej niż 350 ms od źródłowego ataku, przy dodatniej
-  lokalnej skłonności do sustainu. Koniec nadal ogranicza oryginalny NOTE_OFF.
-  Krótkie riffy i pominięte ataki basu/wokalu nie trafiają do takiej kolejki.
-- Długi źródłowy bas lub harmonia, którego FDD wykonuje tylko krótki początek,
-  może kontynuować na wolnym DVD. Źródłowy gate musi trwać co najmniej 800 ms
-  i dwa beaty; kontynuacja co najmniej 250 ms. Ma to samo ID źródła i dokładnie
-  tę samą wykonaną częstotliwość, bez dodatkowej harmonii lub transpozycji.
-  Dopuszczalna przerwa w przejęciu wynosi najwyżej pół beatu / 350 ms.
-  Koniec ogranicza źródłowy NOTE_OFF, następny atak śledzonego głosu i przyszła
-  rezerwacja DVD. Już brzmiący na DVD ten sam ton blokuje zbędne zdwojenie.
-- Jawne reguły, artykulacje, ręczne pominięcia i celowo skrócone/skradzione
-  nuty nie są przywracane przez kontynuację. Efekty nietonalne i perkusja nie
-  są kandydatami. Nie ma nut generowanych według tonacji ani nazwy utworu.
-
-Każdy zaakceptowany dodatek przechodzi pełną chronologię razem z wcześniejszymi
-i późniejszymi rezerwacjami. DVD musi mieć również czas na istniejącą rampę
-oraz minimalny odcinek docelowej częstotliwości; sam wolny moment ataku nie
-wystarcza. FDD zachowuje odstęp 120 ms w obie strony. Nie dodajemy sterownika
-silników ani osobnego planu VIRTUAL. Ekspresja CC/pitch bend w kontynuacji
-pochodzi z całego oryginalnego gate'u, również z czasu po zakończeniu FDD.
-
-Kontynuacje są jawnymi `ReinforcementEvent(kind='CONTINUATION')` i trafiają
-do tego samego kompilatora co pierwotne nuty. Diagnostyka
-`plan.hardware.universal.recovery` rozróżnia odzyskane zdarzenia, późne wejścia,
-kontynuacje i weta mechaniczne. Nie są to pomiary fizycznego wykonania.
-
-Kompromis: przejęcie FDD → DVD zmienia barwę i może mieć słyszalny nowy atak
-lub krótką przerwę. Nie obiecujemy bezstratnego odtworzenia każdej polifonii.
-Odzyskany późno pad nie jest zachowanym oryginalnym atakiem. Liczbę takich wejść
-raportujemy osobno; większa liczba nut ani dłuższa praca DVD nie dowodzą
-lepszego odsłuchu.
+## Pełna biblioteka — druga wersja
 
 ### Odtworzenie benchmarku biblioteki
 
-Manifest [universal-library-corpus.json](../reports/universal-library-corpus.json)
+Manifest [universal-library-corpus.json](../../reports/universal-library-corpus.json)
 opisuje snapshot 316 ścieżek, 149 unikalnych plików i 659053 źródłowych nut.
 Wszystkie pliki zostały poprawnie odczytane. Dodatkowe identyczne kopie nie
 zwiększają liczby przykładów. Nie kopiujemy biblioteki MIDI do raportu.
@@ -201,7 +110,7 @@ Grupowanie nazw służy tylko organizacji eksperymentu, nie aranżacji utworu.
 
 Baseline to Universal z `98bad14`, a nie starszy Instrument Roles. Oba przebiegi
 mają identyczną konfigurację. Raport
-[universal-library-arrangement.json](../reports/universal-library-arrangement.json)
+[universal-library-arrangement.json](../../reports/universal-library-arrangement.json)
 zawiera osobne wyniki każdego MIDI oraz obu części korpusu. Kontrola obejmuje
 hash całej osi przed nowym etapem, niezmienność wcześniejszych zagranych
 zdarzeń i ich sidecarów, reinforcement, perkusji i konfiguracji, brak utraty

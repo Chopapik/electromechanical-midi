@@ -1,6 +1,11 @@
+> **Zapis badania, nie aktualna instrukcja.** Wyniki, liczby testów, UI,
+> ścieżki i parametry dotyczą opisanego przebiegu. Polecenia mogą wymagać
+> wskazanego commita i lokalnych MIDI; pliki w `/tmp` nie są trwałymi artefaktami.
+> Obecne zasady: [indeks dokumentacji](../../../README.md).
+
 # Mechanical playback drift — audit BEFORE the fix
 
-> Historyczny audyt wcześniejszego silnika przed poprawką. Ścieżki kodu i wyniki dotyczą audytowanej wersji; bieżący scheduler to `host/runtime/player.py`, opisany w [README](../../../README.md).
+> Historyczny audyt wcześniejszego silnika przed poprawką. Ścieżki kodu i wyniki dotyczą audytowanej wersji; bieżący scheduler to `host/runtime/player.py`, opisany w [README](../../../../README.md).
 
 Branch: `fix/mechanical-playback-drift`, baseline `b9a9a7e`.
 No ESP32 flash, wiring, motor-range, routing or UI changes. Physical BLE tests

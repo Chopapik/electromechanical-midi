@@ -1,82 +1,88 @@
 # Dokumentacja projektu
 
-Aktualny punkt wejścia: [README projektu](../README.md). Kod i konfiguracja są
-źródłem prawdy. Instrukcje poniżej opisują bieżący runtime; raporty pomiarowe,
-benchmarki i archiwalne UI zachowujemy z kontekstem ich powstania. Liczebności
-testów i wyniki tabel w starszych raportach nie opisują automatycznie tej wersji.
+[README projektu](../README.md) jest krótkim punktem wejścia.
+Poniższe pięć dokumentów wraz z tym indeksem stanowią bieżącą dokumentację.
+Audyt obejmuje wszystkie 31 śledzonych wcześniej plików Markdown, w tym AGENTS,
+raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
+Stan zweryfikowany względem lokalnego `main` po `cf51be4`, z uwzględnieniem
+`8b6724f`, `98bad14`, `bc03c79`; nie tylko kodu dostępnego na GitHubie.
 
-## Urządzenia i wykonanie
+## Bieżące instrukcje
 
-- [ESP32, GPIO, Q0–Q39, zasilanie, USB i BLE](esp32-orchestra.md)
-- [Profile fizyczne, walidacja i niepewności](hardware-first.md)
-- [Laboratory: aktualna obsługa](instrument-lab.md)
-- [PC Speaker i PC Speaker FX: routing, głośność, wypełnienie, fale](pc-speaker-fx.md)
-- [DVD pitchRatio: hipoteza i obserwacje tunera](dvd-pitch-calibration.md)
+| Dokument | Właściciel informacji |
+| --- | --- |
+| [HARDWARE_WIRING.md](HARDWARE_WIRING.md) | Połączenia ESP32, 74HC595, pełne Q0–Q39, DRV8833, napędy, dwa S8050 i zasilanie |
+| [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md) | Inventory, profile, zakresy, kalibracja, mechanika i ograniczenia dowodów |
+| [HARDWARE_TESTING.md](HARDWARE_TESTING.md) | Kontrola przewodów, boot, BLE, HOME, lab, STOP i diagnostyka awarii |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Jeden runtime MIDI → REAL/VIRTUAL, obsługa UI/API, uruchamianie i testy |
+| [ARRANGEMENT.md](ARRANGEMENT.md) | Wspólna klasyfikacja, osiem presetów, Source Continuity, UNISON, sustain i recovery |
 
-## Aranżacja i analiza MIDI
+Czytaj schemat → urządzenia → testy przy budowie układu. Nie zastępuj brakujących
+wartości zasilania/rezystorów parametrami znalezionymi w archiwum. Topologia jest
+opisana od ESP32 do obciążeń, ale identyfikacja modeli FDD/modułów i elementów
+mocy speakerów pozostaje konieczna do bezpiecznego uruchomienia całości.
 
-Wybór wszystkich ośmiu presetów: `/settings` → **Aranżacja → Preset aranżacji**.
-AUTO ma wspólną normalizację i klasyfikację oraz jeden plan dla REAL/VIRTUAL.
-STRICT_TRACKS to osobny tryb JSON, a nie dziewiąty preset.
+## Źródła prawdy i rozstrzygnięte sprzeczności
 
-- [Universal: frazy, odzyskiwanie głosów i benchmarki biblioteki MIDI](universal-arrangement.md)
-- [Balanced / Mechanical-Aware oraz dynamiczny UNISON](mechanical-arrangement.md)
-- [FDD Riffs + DVD Tło i sustain tła](instrument-roles.md)
-- [Pary FDD: Unisono i Dwugłos](fdd-pairs.md)
-- [FDD Quality](fdd-quality.md)
-- [FDD Quality Adaptive](fdd-quality-adaptive.md)
-- [DVD Lead + Low FDD](dvd-lead-low-fdd.md)
-- [Wspólne ograniczenie szybkich ataków FDD, regresja Airbag](fdd-attack-rate.md)
-- [Zapisany eksperyment FDD o oktawę niżej](fdd-octave-experiment.md)
-- [DVD Continuous Sustain](dvd-continuous-sustain.md)
-- [Efekty nietonalne, regresja Levels](unpitched-effects.md)
+Kod i aktywna konfiguracja mają pierwszeństwo przed opisem i historycznym raportem.
+Nie zmieniono ich podczas refaktoryzacji dokumentacji.
 
-Klasyfikacja (`host/playback/semantic.py`, `analysis.py`) korzysta z nazw,
-programów GM, lyrics, rejestru, monofonii i zachowania nut. Role semantyczne to
-VOCAL, BACKING_VOCAL, BASS, GUITAR, KEYS, STRINGS, PAD_SYNTH, PERCUSSION,
-UNPITCHED_EFFECT i OTHER. Wagi dowodów nie są prawdopodobieństwami.
-VOCAL może zastąpić heurystyczny lead dopiero przy wyniku ≥0,75 i przewadze ≥0,12;
-sam napis „vocal” nie gwarantuje przydziału. Ozdobniki tonalne FX nie są szumem.
-[Opis speakerów](pc-speaker-fx.md) wyjaśnia lyrics i dodatkową pulę FX;
-[efekty nietonalne](unpitched-effects.md) opisują interpretację programów/banków.
+| Temat | Wynik audytu | Źródło implementacji |
+| --- | --- | --- |
+| Skład | 14 aktywnych urządzeń, w tym cztery DVD i dwa speakery | [devices.json](../config/devices.json) |
+| FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
+| DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
+| Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
+| HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |
+| UI i wyjście | `/` i `/settings`, ESP32 BLE, wspólny ExecutionTimeline, VIRTUAL Web Audio | [runtime](../host/runtime/application.py), [UI](../web/src/App.tsx) |
+| DIAG BIT | Wyłącznie bez podłączonych urządzeń; reset logiki przy odłączonej mocy przywraca także wolne Q | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
 
-Normalizacja double-trackingu jest w `host/playback/duplicates.py`; zachowuje
-proweniencję źródłowych nut. Zdarzenia pominięte i ich powody zostają w planie.
-Source Continuity (`articulation.py`) wypełnia dopuszczalne wolne fragmenty;
-nie może odtworzyć skradzionej końcówki ani zająć rezerwacji innej nuty.
-Presety Quality i Instrument Roles chronią własne krótkie gate'y FDD.
-UNISON oraz idle reinforcement to jawne dodatkowe rezerwacje, a nie ukryta
-polifonia urządzenia. Końcowy pass FDD może usunąć ataki także tych kopii.
+Wycofano powtarzane instrukcje z `esp32-orchestra.md`, `hardware-first.md`,
+`pc-speaker-fx.md`, `instrument-lab.md` i osobnych opisów presetów.
+Ich aktualne treści są w pięciu dokumentach powyżej. Zachowane wyniki i hipotezy
+mają osobne miejsce poniżej. AGENTS.md pozostaje instrukcją pracy w repozytorium.
 
-## Benchmarki, badania i historia
+## Badania i zachowane wyniki
 
-- [Dane sprzętu, wcześniejsze UI/CLI i eksperymenty](hardware-and-history.md)
+- [Pomiary FDD, obserwacja grzania DVD, hipoteza pitchRatio, HDD i speakery](research/hardware-measurements.md)
+- [Eksperyment FDD o oktawę niżej](research/fdd-octave-experiment.md)
+- [Porównania presetów, sustain Bodysnatchers, Airbag i Levels](research/arrangement-benchmarks.md)
+- [Universal: 31 MIDI oraz pełna biblioteka 149 unikalnych plików](research/universal-arrangement.md)
 - [Model teoretyczny i źródła producentów](research/orkiestra-model-teoretyczny.md)
-- [Historyczny raport wdrożenia hardware-first](hardware-first-implementation-report.md)
-- [Historyczna weryfikacja ESP32 z 2026-10-06](esp32-verification.md)
-- [Historyczny redesign workstation](workstation-redesign.md)
-- [Audyt dryfu przed poprawką](diagnostics/mechanical-drift/REPORT.md)
-- [Raport poprawki dryfu](diagnostics/mechanical-drift/FIX_REPORT.md)
-- [Benchmark Source Continuity](../benchmarks/SOURCE_CONTINUITY_CREEP.md)
-- [Artykulacja tonalna](../benchmarks/TONAL_ARTICULATION_REPORT.md),
-  [Extreme](../benchmarks/TONAL_EXTREME_DIAGNOSTIC.md),
-  [Extreme v2](../benchmarks/TONAL_EXTREME_V2_DIAGNOSTIC.md),
-  [artykulacja HDD](../benchmarks/HDD_ARTICULATION_REPORT.md)
+- [Dryf wykonania: diagnoza](research/diagnostics/mechanical-drift/REPORT.md)
+  i [raport poprawki](research/diagnostics/mechanical-drift/FIX_REPORT.md)
+- [Source Continuity / Creep](research/benchmarks/SOURCE_CONTINUITY_CREEP.md)
+- [Artykulacja tonalna](research/benchmarks/TONAL_ARTICULATION_REPORT.md),
+  [Extreme](research/benchmarks/TONAL_EXTREME_DIAGNOSTIC.md),
+  [Extreme v2](research/benchmarks/TONAL_EXTREME_V2_DIAGNOSTIC.md)
+- [Artykulacja HDD](research/benchmarks/HDD_ARTICULATION_REPORT.md)
 
-Surowe wyniki są w `reports/` i `benchmarks/`; polecenia odtwarzania są przy
-konkretnych algorytmach. Wyniki zachowują ówczesny inventory (czasem trzy DVD),
-politykę i hash MIDI. Obecny wspólny limit ataków, czwarty DVD oraz eksperyment
-oktawy FDD mogą zmienić rezultat ponownego uruchomienia.
-Nie regenerujemy dawnych raportów pod nową konfigurację podczas porządkowania
-dokumentacji. Eksperyment oktawy FDD jest zapisany razem z jego konfiguracją
-i testami; opis zawiera sposób powrotu do poprzedniego rejestru.
+Surowe JSON/PNG pozostają pod dotychczasowymi ścieżkami `reports/`, `benchmarks/`
+i `docs/diagnostics/`, używanymi przez generatory. Nie duplikujemy ani nie
+regenerujemy danych w ramach porządkowania Markdown. Raporty mają poprawione
+odnośniki do tych artefaktów. Hash starego przebiegu i dawna liczba testów opisują
+snapshot; ponowne uruchomienie na nowym inventory nie jest tym samym pomiarem.
+Pliki audio `/tmp` i lokalne biblioteki MIDI mogą być niedostępne w innym checkout.
 
-Archiwalne raporty zachowują wyniki i skróty pierwotnych przebiegów. Pola
-nieużywanych urządzeń usunięto z ich prezentowanego schematu; nie oznacza to
-ponownego przeliczenia historycznych pomiarów.
+## Archiwum
 
-Porównania wykonania między wersjami używają wspólnych pól komend: czasu,
-urządzenia, typu, długości, Hz, velocity, track, źródłowego ID i artykulacji.
-Zapisane wcześniej skróty archiwalnych przebiegów pozostają historyczne.
-Porównanie konfiguracji dotyczy aktywnego inventory i ustawień wykonania,
-z pominięciem nazwy całego zestawu i nieobecnych rodzin urządzeń.
+- [Dawny monolityczny README: Arduino UNO, dawne GPIO, UI/CLI i eksperymenty](archive/hardware-and-history.md)
+- [Wdrożenie hardware-first](archive/hardware-first-implementation-report.md)
+- [Weryfikacja ESP32 z 2026-10-06](archive/esp32-verification.md)
+- [Historyczny redesign workstation](archive/workstation-redesign.md)
+
+Archiwum zachowuje kontekst, wyniki i wcześniejsze decyzje. Nie jest instrukcją
+montażu ani opisem bieżącego API. Informacje o wcześniejszym zasilaniu występują
+wyłącznie jako kontekst badań/archiwum, nie zalecenia w głównym schemacie.
+
+## Kontrola odnośników
+
+Sprawdzono lokalne cele Markdown, kotwice i odnośniki do kodu/artefaktów oraz
+podjęto próbę otwarcia wszystkich 32 unikalnych URL zewnętrznych. Aktualne karty
+TI/Espressif są dostępne. Nie potwierdzono automatycznie sześciu historycznych
+adresów: repozytorium PlayfulCreations/react-piano-roll, dwóch pakietów npm
+(@tonejs/midi, @minagishl/react-piano-roll), projektu HDD na Hackaday i patentów
+US8451564B2 / 6567232. Narzędzie zwróciło błąd pobrania, co nie dowodzi 404.
+Załącznik Minebea na Parallax nie udostępnił czytelnego PDF w tej kontroli.
+Zachowano te cytowania w badaniach/archiwum z tym zastrzeżeniem; nie są podstawą
+bieżących nastaw ani instrukcji montażu.

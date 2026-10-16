@@ -1,8 +1,12 @@
+> **BADANIE TEORETYCZNE — nie instrukcja budowy.** Parametry modeli referencyjnych
+> i snapshot konfiguracji nie są pomiarami wszystkich urządzeń ani aktualnymi
+> limitami. Obowiązują [profile i ograniczenia](../HARDWARE_DEVICES.md).
+
 # Orkiestra elektromechaniczna — model teoretyczny urządzeń
 
 > Model referencyjny i historia badań, nie aktualna instrukcja UI ani nastawy
-> wszystkich odzyskanych silników. [Aktualne profile](../hardware-first.md),
-> [zasilanie i obserwacje](../esp32-orchestra.md#power-supplies-and-evidence).
+> wszystkich odzyskanych silników. [Aktualne profile](../HARDWARE_DEVICES.md),
+> [zasilanie i obserwacje](../HARDWARE_WIRING.md).
 
 Stan researchu: 7 października 2026. Zakres: FDD 3,5″, bipolarny krokowiec sled CD/DVD, HDD VCM jako perkusja oraz jako źródło tonu. Bez pomiarów sprzętu użytkownika, bez analizy jego firmware i bez implementacji.
 
@@ -168,15 +172,11 @@ Sugerowany limit ciągu nowych nut: nominalnie 15/s, zakres założeń 8–25/s,
 
 ## C2. DVD/CD sled: silnik, obciążenie i dźwięk
 
-### Aktualny kontekst zasilania w projekcie
+### Kontekst danych referencyjnych
 
-Poniższe 5 V z karty Minebea i obliczeń modelowych nie jest zaleceniem zasilania
-silników odzyskanych w tym projekcie. W aktualnym układzie przy 5 V zaobserwowano
-nadmierne nagrzewanie silników DVD. Obecnie rozważane **3,3 V dotyczy zasilania
-silników na VM sterownika DRV8833**, a nie wyłącznie logiki. Jest to wartość
-robocza wymagająca potwierdzenia pomiarami temperatury silnika/sterownika i prądu
-silnika w docelowych warunkach pracy, **nie zweryfikowany bezpieczny limit**.
-Zobacz [opis zasilania ESP32 orchestra](../esp32-orchestra.md#gpio-wiring).
+Wartości Minebea opisują wskazany model referencyjny, nie identyfikację
+odzyskanych silników. [Obserwacje z projektu](hardware-measurements.md#dvd)
+i [bieżące zasilanie](../HARDWARE_WIRING.md#zasilanie) są opisane osobno.
 
 ### Potwierdzony silnik i analogi
 

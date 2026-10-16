@@ -1,6 +1,10 @@
+> **ARCHIWUM — nie buduj układu według tego pliku.** Opis zachowuje dawną wersję,
+> także nieaktualne połączenia, interfejsy, parametry i ścieżki kodu.
+> Aktualne instrukcje: [indeks dokumentacji](../README.md).
+
 # ESP32 offline verification — 2026-10-06
 
-> Raport historyczny z 2026-10-06. Liczby testów, wersja platformy i lista plików dotyczą tamtego wdrożenia; część plików starego UI/runtime została później usunięta. Aktualne instrukcje: [ESP32](esp32-orchestra.md), [README](../README.md).
+> Raport historyczny z 2026-10-06. Liczby testów, wersja platformy i lista plików dotyczą tamtego wdrożenia; część plików starego UI/runtime została później usunięta. Aktualne instrukcje: [ESP32](../HARDWARE_WIRING.md), [README](../../README.md).
 
 **SOFTWARE VERIFIED**, no ESP32 connected and no physical ESP32 calibration performed.
 

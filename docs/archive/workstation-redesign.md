@@ -1,6 +1,10 @@
+> **ARCHIWUM — nie buduj układu według tego pliku.** Opis zachowuje dawną wersję,
+> także nieaktualne połączenia, interfejsy, parametry i ścieżki kodu.
+> Aktualne instrukcje: [indeks dokumentacji](../README.md).
+
 # Redesign workstation — raport
 
-> Raport historyczny poprzedniego UI i renderera PCM/ffplay. Drawer, stare panele, endpoint telemetry i podane pliki nie opisują obecnej aplikacji. Obecnie są strony `/` i `/settings`, wspólny runtime oraz Web Audio: [README](../README.md).
+> Raport historyczny poprzedniego UI i renderera PCM/ffplay. Drawer, stare panele, endpoint telemetry i podane pliki nie opisują obecnej aplikacji. Obecnie są strony `/` i `/settings`, wspólny runtime oraz Web Audio: [README](../../README.md).
 
 Zmiany lokalne na `main`, bez commita. Aplikacja uruchomiona pod http://127.0.0.1:5173/; backend pod http://127.0.0.1:8000/.
 

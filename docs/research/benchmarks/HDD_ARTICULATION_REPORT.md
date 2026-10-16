@@ -1,8 +1,13 @@
+> **Zapis badania, nie aktualna instrukcja.** Wyniki, liczby testów, UI,
+> ścieżki i parametry dotyczą opisanego przebiegu. Polecenia mogą wymagać
+> wskazanego commita i lokalnych MIDI; pliki w `/tmp` nie są trwałymi artefaktami.
+> Obecne zasady: [indeks dokumentacji](../../README.md).
+
 # Vanilla HDD articulation — implementation and benchmark
 
 > Historyczny benchmark dawnego UI/rendererów. Wyniki, przełączniki i ścieżki
 > dotyczą opisanej wersji; aktualna aplikacja używa wspólnego ExecutionTimeline
-> i Web Audio. [Bieżące algorytmy i indeks](../docs/README.md).
+> i Web Audio. [Bieżące algorytmy i indeks](../../README.md).
 
 ## Scope and prerequisite
 

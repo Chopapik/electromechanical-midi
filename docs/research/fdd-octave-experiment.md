@@ -1,3 +1,8 @@
+> **Zapis badania, nie aktualna instrukcja.** Wyniki, liczby testów, UI,
+> ścieżki i parametry dotyczą opisanego przebiegu. Polecenia mogą wymagać
+> wskazanego commita i lokalnych MIDI; pliki w `/tmp` nie są trwałymi artefaktami.
+> Obecne zasady: [indeks dokumentacji](../README.md).
+
 # FDD octave-down listening experiment
 
 All four configured FDD devices now use `transpose: -12` and a preferred

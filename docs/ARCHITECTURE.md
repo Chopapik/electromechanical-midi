@@ -1,0 +1,182 @@
+# Architektura i obsługa aplikacji
+
+## Jeden harmonogram wykonawczy
+
+```text
+MIDI → MidiSource → Arranger → PerformancePlan → compiler → ExecutionTimeline
+                                                        ↓
+                                                     Player
+                                                        ↓
+                                                     Router
+                                                   ↙        ↘
+                                          REAL / BLE     VIRTUAL / Web Audio
+```
+
+[MidiSource](../host/midi_source.py) parsuje nuty, tempo, metrum, programy,
+kontrolery i lyrics. [Runtime Arranger](../host/runtime/arranger.py) przekazuje
+AUTO do [alokatora sprzętowego](../host/playback/hardware_arranger.py):
+normalizacja duplikatów, role i kandydaci, zajętość oraz profile, artykulacja,
+rezerwacje dodatkowe i walidacja. Kolejność refinements wewnątrz alokatora
+zależy od presetu; [algorytmy](ARRANGEMENT.md) są opisane w jednym miejscu.
+
+Runtime dodaje ekspresję tonalną i artykulację HDD, po czym wykonuje wspólny
+pass ograniczania ataków FDD. Universal ma po nim dodatkowe odzyskiwanie głosów,
+sprawdzające pełną chronologię każdej nowej rezerwacji. `PerformancePlan` zawiera
+źródłowe dane, wykonane zdarzenia, pominięcia z powodami, extras i sidecary ekspresji.
+Nie jest jeszcze kolejką transportową.
+
+[compile_plan](../host/runtime/compiler.py) tworzy uporządkowany
+`ExecutionTimeline`: tone/hit/stop ze stabilnym `device_id`. Stykające się tony
+nie mają pośredniego STOP; dla DVD tolerancja błędu float granicy wynosi 1 ns.
+Rzeczywiste przerwy nadal generują STOP. Liczenie STOP i ciągłych odcinków pracy
+musi korzystać z tej warstwy, obejmując również dodatkowe głosy.
+
+[Player](../host/runtime/player.py) ma jeden zegar, epokę i właściciela
+(orchestra, lab albo service). [Router](../host/runtime/router.py) przekazuje
+wykonanie do jednego aktywnego wyjścia. Mute filtruje wykonanie, bez zmiany
+alokacji lub zwalniania głosów; STOP zawsze przechodzi. Seek podczas gry ustawia
+nową pozycję i odtwarza trwające tam nuty, podczas pauzy zachowuje pauzę;
+seek ze STOP nie uruchamia gry. Zmiana wyjścia/właściciela anuluje stare kolejki
+i zatrzymuje wykonanie, bez automatycznego wznowienia.
+
+## Wyjścia i serwis
+
+[REAL](../host/runtime/outputs.py) używa ESP32 BLE, bez automatycznego fallbacku
+na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
+Wymaga `board=esp32`, protocol 2, `ready=1`, `stop_ack=1`, `hardware_profiles=1`
+oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
+`speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
+STATUS. FDD wymagają jawnego HOME. USB służy flashowaniu i diagnostyce.
+
+VIRTUAL odbiera ten sam timeline, z wyprzedzeniem 150 ms względem czasu
+wykonania (REAL bez takiego lookahead). [virtualOutput.ts](../web/src/virtualOutput.ts)
+synchronizuje zegar i epoki; [mechanicalAudio.ts](../web/src/mechanicalAudio.ts)
+syntezuje dźwięk proceduralnie. Nie parsuje MIDI i nie układa drugiej aranżacji.
+Velocity/CC i obwiednia modelu audio nie są fizyczną regulacją amplitudy FDD/DVD.
+Utrata synchronizacji wycisza audio; brzmienie, poziom i rezonanse wymagają
+osobnej kalibracji wobec urządzeń.
+
+[DeviceService](../host/runtime/device_service.py) po potwierdzonym STOP
+przejmuje wyłączne sterowanie na czas USB uploadu lub homingu.
+Nie ma resetowania kontrolera przez BLE. STOP/ACK, watchdog i postępowanie
+przy niepewnym stanie opisuje [procedura awarii](HARDWARE_TESTING.md#awarie).
+
+## Obsługa i konfiguracja
+
+| Miejsce | Funkcja |
+| --- | --- |
+| `/` | Import/wybór MIDI, transport i karty urządzeń; również sesja lab |
+| `/settings` → Output | REAL albo Virtual debug · Web Audio |
+| `/settings` → Aranżacja | Preset oraz Arrangement · PerformancePlan |
+| `/settings` → Brzmienie PC Speaker | Gain VIRTUAL, fala i duty/poziom REAL osobno dla dwóch speakerów |
+| `/settings` → Serwis | Wgraj firmware ESP32, Homing |
+| `/settings` → Laboratory | Laboratory · debug, skończony test bez MIDI |
+
+Aplikacja zawsze startuje w REAL, nawet offline. Wybór presetu jest sesyjny:
+restart odczytuje `parameters.arrangementPreset` z JSON (obecnie `balanced`).
+Zmiana presetu potwierdza STOP, przebudowuje plan i zwiększa rewizję,
+bez autoplay. Inventory/profil zmieniasz w JSON, potem przebudowujesz aplikację;
+nie ma panelu dodawania urządzeń ani wyboru kontrolera. Mute nie zmienia inventory.
+
+[devices.json](../config/devices.json) definiuje fizyczne lanes, transpozycje,
+preferencje i politykę; [profile](HARDWARE_DEVICES.md) określają ich interpretację.
+`routing.mode: STRICT_TRACKS` jest trybem JSON przypisującym cztery tracki tylko
+na FDD; nie dziewiątym presetem. Nie włącza DVD/speakerów/perkusji.
+
+Ustawienia speakerów zapisują się atomowo, osobno od obrazu aplikacji:
+Docker volume `speaker-settings`, plik `/app/settings/speaker-volumes.json`.
+Natywnie domyślnie `config/.runtime/speaker-volumes.json`; override przez
+`ORCHESTRA_SPEAKER_SETTINGS`. Restart/rebuild nie resetuje zapisanych ustawień.
+
+## Uruchamianie
+
+W katalogu repozytorium:
+
+```sh
+docker compose up -d --build orchestra
+docker compose ps orchestra
+```
+
+[Compose](../compose.yaml) publikuje `127.0.0.1:5173` (override `APP_PORT`),
+backend słucha w kontenerze na 8000. Healthcheck odczytuje `/api/state`.
+MIDI są w bind mount `./midi:/app/midi`. Kod, firmware i konfiguracja są kopiowane
+do obrazu: ich zmianę wdraża rebuild/restart, sama dokumentacja go nie wymaga.
+
+Na macOS Docker korzysta z natywnej bramki Bleak, uruchomionej poza kontenerem:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r host/requirements.txt
+.venv/bin/python host/ble_gateway.py
+```
+
+Pozwól używać Bluetooth procesowi uruchamiającemu bramkę w ustawieniach macOS.
+Domyślny TCP port to 8766; Compose wskazuje `host.docker.internal:8766` przez
+`ORCHESTRA_BLE_GATEWAY`. Dostęp hosta do kontenera/USB zależy od środowiska;
+konfiguracja Compose uwzględnia OrbStack i porty CP2102 w `/host-dev`.
+Bramka nie zamienia BLE na Serial. Można zainstalować LaunchAgent:
+`.venv/bin/python host/ble_gateway.py --install-macos-service`.
+Plik usługi i logi wskazuje instalator; nie uruchamiaj drugiej instancji na tym
+samym porcie. Kod instalatora: [ble_gateway.py](../host/ble_gateway.py).
+
+Bez prób łączenia ze sprzętem:
+
+```sh
+ORCHESTRA_OFFLINE=1 docker compose up -d --build orchestra
+```
+
+Następnie wybierz VIRTUAL w Settings i uruchom audio gestem w przeglądarce.
+REAL offline pozwala importować i aranżować, ale blokuje Play.
+
+Natywny backend i frontend developerski (dwa terminale, po instalacji zależności):
+
+```sh
+.venv/bin/python -m host.web.server --offline --port 8000
+npm --prefix web ci
+npm --prefix web run dev
+```
+
+Vite proxy kieruje API/WS na port 8000. Produkcyjny backend serwuje zbudowany
+`web/dist`; użyj `npm --prefix web run build`, jeżeli uruchamiasz go bez Vite.
+
+## API i diagnoza
+
+| Endpoint | Dane |
+| --- | --- |
+| GET `/api/state` | Transport, wyjście, połączenie, stan/rewizja aplikacji |
+| GET `/api/plan` | Zdarzenia, pominięcia, dodatkowe rezerwacje i raport artykulacji |
+| GET `/api/timeline` | Skompilowany harmonogram wykonawczy |
+| GET `/api/files`, `/api/files/{name}` | Biblioteka i plik MIDI |
+| POST `/api/files` | Import pliku |
+| GET `/api/monitor/raw`, `/api/firmware/events` | Surowy ruch i zdarzenia kontrolera |
+| WebSocket `/ws` | Komendy aplikacji, stan i synchronizacja |
+
+Kontrakt implementuje [server.py](../host/web/server.py). Nie należy wyciągać
+obecnych ścieżek UI ani protokołu aplikacji z raportów starego renderera.
+
+## Testy
+
+```sh
+.venv/bin/python -m unittest discover -s host/tests -q
+npm --prefix web test
+npm --prefix web run build
+.venv/bin/python scripts/generate_hardware_profiles.py --check
+pio run -d firmware/controller -e esp32
+```
+
+Zainstaluj `httpx` w środowisku testowym dla testów API; testy natywnego rdzenia
+C++ potrzebują lokalnego kompilatora. `npm ci` instaluje frontendowe zależności.
+Generator z `--check` sprawdza zgodność bez zapisywania konfiguracji/nagłówka.
+Firmware ma przypięte zależności w [platformio.ini](../firmware/controller/platformio.ini);
+zmiana wersji Arduino/LEDC wymaga oddzielnej weryfikacji, nie automatycznej migracji.
+
+Alternatywnie gotowe środowiska testowe:
+
+```sh
+docker compose --profile test run --rm --build backend-tests
+docker compose --profile test run --rm --build frontend-tests
+```
+
+Benchmarki uruchamiaj według zapisu konkretnego badania, z tym samym inventory,
+MIDI hash i polityką. Testy deterministyczności, chronologii i wspólnego timeline
+nie dowodzą poprawności akustycznej ani termicznej na REAL.

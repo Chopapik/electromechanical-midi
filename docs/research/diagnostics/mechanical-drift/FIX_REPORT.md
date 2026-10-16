@@ -1,6 +1,11 @@
+> **Zapis badania, nie aktualna instrukcja.** Wyniki, liczby testów, UI,
+> ścieżki i parametry dotyczą opisanego przebiegu. Polecenia mogą wymagać
+> wskazanego commita i lokalnych MIDI; pliki w `/tmp` nie są trwałymi artefaktami.
+> Obecne zasady: [indeks dokumentacji](../../../README.md).
+
 # Production mechanical playback drift fix
 
-> Historyczny raport poprawki wcześniejszego silnika. Pomiary i lista plików dotyczą tamtej wersji; obecny wspólny Player/Router i Web Audio opisuje [README](../../../README.md).
+> Historyczny raport poprawki wcześniejszego silnika. Pomiary i lista plików dotyczą tamtej wersji; obecny wspólny Player/Router i Web Audio opisuje [README](../../../../README.md).
 
 Branch: `fix/mechanical-playback-drift`. Baseline: `b9a9a7e`.
 Classification **E: BLE backlog (B), plus scheduler deadline failure under overload (A)**.

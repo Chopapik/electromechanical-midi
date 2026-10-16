@@ -1,0 +1,81 @@
+# Obserwacje, pomiary i hipotezy sprzętowe
+
+Rejestr dowodów, oddzielony od [bieżących parametrów](../HARDWARE_DEVICES.md)
+i [połączeń](../HARDWARE_WIRING.md). Nie wykonywano nowych pomiarów podczas
+porządkowania dokumentacji. „Nieznane” oznacza brak danych, nie potwierdzenie
+bezpieczeństwa. Przy kolejnych testach zapisuj instancję, model, napięcie,
+prąd, czas, temperaturę, metodę, orientację, firmware i konfigurację.
+
+## FDD
+
+Zachowany test **jednej fizycznej stacji**, w normalnej/docelowej orientacji,
+z różnymi pozycjami głowicy. Po próbie powrót do TRACK0; delta kroków wykrywała
+utratę pozycji. Dokładne pozycje i kolejność stress-testu nie zostały zapisane.
+Źródło pierwotnego zapisu: [archiwum](../archive/hardware-and-history.md#fizyczna-kalibracja-fdd).
+
+| Częstotliwość | Poprawne próby | Co można wnioskować |
+| --- | --- | --- |
+| 410 Hz | 38/40 (95%) | Roboczy górny punkt; 2 próby nie przeszły, nie pełna bezbłędność |
+| 411–423 Hz | Brak liczbowego wyniku | Opisana strefa graniczna/niestabilna |
+| 424 Hz | 0/40 | Brak poprawnych prób w tym teście |
+| 425 Hz | 0/40 | Brak poprawnych prób w tym teście |
+| 5 Hz | 5/5 bez utraty kroków | Mechaniczne minimum ≤5 Hz w tych warunkach, nie dolna granica muzyczna |
+
+`stableHz=[130,410]` FDD1 zachowuje dolne 130 Hz jako metadane, **nie zmierzony
+próg minimum**. Nie przenosi to wyniku 410 Hz na każdą z czterech stacji.
+100 Hz i −12 są eksperymentem odsłuchowym:
+[zapis eksperymentu](fdd-octave-experiment.md). Dawne 200–410 Hz w archiwum
+opisuje wcześniejszą politykę, nie bieżący efektywny zakres.
+
+## DVD
+
+| Dowód | Wynik | Ograniczenie |
+| --- | --- | --- |
+| Obserwacja użytkownika przy VM 5 V | Nadmierne nagrzewanie silników DVD | Bez zapisanej temperatury, prądu i czasu; nie wyznacza liczbowego limitu |
+| Proponowane VM 3,3 V | Robocza propozycja zasilania **silników przez DRV8833** | Brak kwalifikacji termicznej/prądowej, także dla sustainu |
+| Sweep DVD1 50–500 Hz co 10 Hz, pitchRatio=1 | Pasma 50–120, 180–190, 270–300, 340–470 kroków/s | Jeden silnik, poprzedni tryb z limitem drogi 140 kroków i automatycznym nawrotem; nie aktualna whitelist ciągłego obrotu |
+| Tuner gitarowy, 2026-10-11 | Komenda 200 Hz odczyt ~100 Hz; 500 Hz odczyt ~250 Hz | Możliwa detekcja oktawy/harmonicznej, brak pomiaru widmowego i indywidualnej kwalifikacji DVD1–3 |
+
+Ostatnia obserwacja uzasadnia **hipotezę** `pitchRatio=0,5`, LOW confidence,
+zapisaną dla DVD1–3. DVD4 pozostaje przy 1,0. `steps/s=acousticHz/pitchRatio`:
+żądane 200 Hz przy ratio 0,5 oznacza 400 kroków/s, 500 Hz oznacza 1000 kroków/s.
+Nie jest to pomiar momentu, temperatury ani bezpieczeństwa tych częstotliwości.
+Źródło metadanych sweepu i tunera: [instances.json](../../config/hardware-profiles/instances.json).
+Ciągły tryb korzysta z innej interpretacji profilu niż ten sweep; oryginalne dane
+pozostają zachowane, ale nie aktywują historycznych pasm ani 140 kroków.
+
+Najdłuższy ciągły odcinek DVD w software benchmarku Universal pełnej biblioteki:
+**366,997 s (Ful Stop)**. W pierwszym korpusie 31 MIDI: **136,195 s (Fake Plastic Trees)**.
+Źródło i definicja: [Universal](universal-arrangement.md).
+To długości komend na jednej lane, **nie fizyczne próby ciągłego grzania**.
+
+## HDD VCM
+
+[Historyczny szkic HDD HIT](../../firmware/hdd_hit/hdd_hit.ino) zapisuje zasilanie
+5 V i rezystancję cewki około 23,3 Ω. Nie ma identyfikacji i kompletnych pomiarów
+prądu/temperatury dla wszystkich czterech obecnych VCM. Nie należy przenosić tego
+napięcia na cały zestaw jako zweryfikowanej specyfikacji.
+Czas fizycznego cyklu i zakres modelu opisują [urządzenia](../HARDWARE_DEVICES.md#hdd-vcm).
+Referencyjne modele rezonansów w [badaniu teoretycznym](orkiestra-model-teoretyczny.md)
+nie są widmem zmierzonym na odzyskanych dyskach.
+
+## Speakery
+
+Użytkownik potwierdził dwa S8050, każdy z jednym rezystorem między GPIO a bazą,
+i głośnik w obwodzie kolektora. Głośniki prawdopodobnie 8 Ω; brak producenta,
+potwierdzonej impedancji/mocy, wartości R_B i napięcia V_SPK. GPIO25/26 wynikają
+z firmware, nie z pomiaru fizycznego połączenia. Topologia funkcjonalna jest w
+[schemacie](../HARDWARE_WIRING.md#dwa-pc-speakery).
+Nie zarejestrowano prądu tranzystorów, temperatur ani kształtu sygnału na głośniku
+przy PWM 40 kHz. Wybór sinusa nie dowodzi uzyskania sinusa akustycznego.
+
+## Laboratory
+
+Zapis próby kontrolera ESP32 z **2026-10-08**, przez ówczesny runtime BLE:
+DVD1 392 Hz / 3 s, automatyczny i wcześniejszy STOP, odmowa 220 Hz,
+pojedynczy HDD1 HIT, zamknięcie sesji podczas pracy i ponowne wejście bez autoplay.
+Kontroler potwierdził uruchomienie i tokenowy ALL STOP. Stan końcowy przez WS
+pojawił się po około 3,25 s od kliknięcia testu 3 s (z transportem i publikacją UI).
+Nie flashowano firmware. To test komend/statusu kontrolera, nie pomiar akustyczny,
+prądowy lub termiczny. Odmowa 220 Hz dotyczyła dawnych pasm DVD1,
+nie obecnego trybu ciągłego. Obecna procedura: [testy](../HARDWARE_TESTING.md#laboratory).

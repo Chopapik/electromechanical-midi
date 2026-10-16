@@ -1,9 +1,13 @@
+> **ARCHIWUM — nie buduj układu według tego pliku.** Opis zachowuje dawną wersję,
+> także nieaktualne połączenia, interfejsy, parametry i ścieżki kodu.
+> Aktualne instrukcje: [indeks dokumentacji](../README.md).
+
 > Archiwum sprzętu Uno, kalibracji, wcześniejszych algorytmów i UI. Zachowane
 > instrukcje, ścieżki źródłowe i API opisują dawne wersje, nie obecną aplikację.
-> Aktualny runtime: [README](../README.md); [indeks dokumentacji](README.md);
-> obecne GPIO/DRV8833 i zasilanie: [ESP32](esp32-orchestra.md).
+> Aktualny runtime: [README](../../README.md); [indeks dokumentacji](../README.md);
+> obecne GPIO/DRV8833 i zasilanie: [ESP32](../HARDWARE_WIRING.md).
 > Nie stosuj pinoutu Uno ani dawnych napięć VHS do obecnych PC Speakerów.
-> Historyczny test HDD: [szkic HDD HIT](../firmware/hdd_hit/hdd_hit.ino) zapisuje
+> Historyczny test HDD: [szkic HDD HIT](../../firmware/hdd_hit/hdd_hit.ino) zapisuje
 > 5 V i cewkę około 23,3 Ω; nie jest to kwalifikacja czterech dzisiejszych VCM.
 
 # electromechanical-midi
@@ -187,7 +191,7 @@ stan OFF na ten czas musi zapewniać sam obwód mostka.
 
 ESP32 obsługuje też BLE UART `Electromechanical-MIDI` w głównym firmware,
 równolegle z USB. Opis UUID i test z telefonu (PING oraz LED GPIO27):
-[ESP32 BLE bring-up](esp32-orchestra.md#ble-uart-bring-up-same-controller-second-command-transport).
+[ESP32 BLE bring-up](../HARDWARE_WIRING.md).
 
 Wymagany Docker Compose. Na tym Macu używamy **OrbStack 2.2.3**, który
 przekazuje porty Serial oraz kartę dźwiękową ALSA do kontenerów.
@@ -1440,7 +1444,7 @@ Reguły obsługują `track`/`tracks`, `channel`/`channels`, `includeNotes`, `exc
 Sprzęt ma dokładnie jedną linię FDD, jedną bębna VHS i jedną HDD, więc dla każdej linii wybierana jest **pierwsza** instancja `real`/`hybrid` (kolejność w `devices`). Pozostałe trafiają do sekcji *Hardware lanes* w zakładce **ORCHESTRA** jako `LANE_TAKEN` — zamiast być po cichu zignorowane. Komendy sprzętowe (`PLAY`/`STOP`, `DRUM`/`DRUMF`, `HIT`) powstają z tych samych zaakceptowanych zdarzeń, które widzi symulacja (`host/playback/hardware.py`), więc sprzęt nie zagra niczego, czego piano roll nie pokazuje jako `ACCEPTED`/`FOLDED`/`DELAYED`. `mute` i `solo` wyciszają także sprzęt. Gdy Arduino nie jest podłączone, `GET /api/state` zwraca `arrangementHardware.active` (aranżacja kieruje na linie) i `.connected: false`; linie czekają w planie i ruszają po podłączeniu.
 
 
-Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json`](../midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json). Wybierz odpowiadający mu MIDI bez dopisku `(2)` lub `(3)`, a potem otwórz **ARRANGEMENT**. Przykład przypisuje wokal i gitarę do dwóch FDD, bas do VHS, stopę/werbel do HDD, talerze do solenoidu i smyczki do steppera; hi-hat 42 pozostaje nieprzypisany. To demonstracja routingu, nie skalibrowana recepta dla fizycznych urządzeń.
+Przykład do odsłuchu: [`midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json`](../../midi/0087-09-radiohead_2007-jigsaw_falling_into_place.orchestra.json). Wybierz odpowiadający mu MIDI bez dopisku `(2)` lub `(3)`, a potem otwórz **ARRANGEMENT**. Przykład przypisuje wokal i gitarę do dwóch FDD, bas do VHS, stopę/werbel do HDD, talerze do solenoidu i smyczki do steppera; hi-hat 42 pozostaje nieprzypisany. To demonstracja routingu, nie skalibrowana recepta dla fizycznych urządzeń.
 
 ```json
 {
@@ -1480,7 +1484,7 @@ Porównanie 7 urządzeń (bez DVD) z 11 urządzeniami na tych samych znormalizow
 .venv/bin/python scripts/benchmark_dvd.py
 ```
 
-Wyniki z dostępnych lokalnie utworów są w [`benchmarks/dvd-7-vs-11.json`](../benchmarks/dvd-7-vs-11.json). Zawierają drop rate, ciągłość, ciszę tonalną oraz liczbę nut i wykorzystanie każdego DVD. Istniejący zapisany JSON Jigsaw jest ręcznym override po wczytaniu tego konkretnego pliku; benchmark celowo mierzy czysty Auto Arranger bez tego override.
+Wyniki z dostępnych lokalnie utworów są w [`benchmarks/dvd-7-vs-11.json`](../../benchmarks/dvd-7-vs-11.json). Zawierają drop rate, ciągłość, ciszę tonalną oraz liczbę nut i wykorzystanie każdego DVD. Istniejący zapisany JSON Jigsaw jest ręcznym override po wczytaniu tego konkretnego pliku; benchmark celowo mierzy czysty Auto Arranger bez tego override.
 
 ### Eksperyment A/B: dynamiczne reinforcement DVD
 
@@ -1494,7 +1498,7 @@ Benchmark unikalnych MIDI można powtórzyć komendą:
 .venv/bin/python scripts/benchmark_dvd_reinforcement.py --midi-dir /ścieżka/do/katalogu/midi
 ```
 
-Wynik: [`benchmarks/dvd-reinforcement.json`](../benchmarks/dvd-reinforcement.json). Z 26 dostępnych plików wybrano 15 unikalnych według SHA-256. Każdy z nich został znormalizowany tylko raz. Skrypt wymaga identycznych zwykłych zdarzeń, urządzeń, polityki i metryk alokacji w obu wariantach; rozbieżność kończy benchmark błędem. `dvdDoublingPercentOfNormalWork` to czas pracy dodatkowych napędów podzielony przez zwykły czas pracy DVD, a wykorzystanie pojedynczego DVD uwzględnia zwykłe nuty i duble.
+Wynik: [`benchmarks/dvd-reinforcement.json`](../../benchmarks/dvd-reinforcement.json). Z 26 dostępnych plików wybrano 15 unikalnych według SHA-256. Każdy z nich został znormalizowany tylko raz. Skrypt wymaga identycznych zwykłych zdarzeń, urządzeń, polityki i metryk alokacji w obu wariantach; rozbieżność kończy benchmark błędem. `dvdDoublingPercentOfNormalWork` to czas pracy dodatkowych napędów podzielony przez zwykły czas pracy DVD, a wykorzystanie pojedynczego DVD uwzględnia zwykłe nuty i duble.
 
 | 15 unikalnych MIDI | 4 DVD independent | 4 DVD + reinforcement |
 | --- | ---: | ---: |
@@ -1535,7 +1539,7 @@ Reset/banner/nowe `READY` uruchamiają ponowną weryfikację przez HOME.
 ### Docelowy ESP32
 
 Firmware ESP32-WROOM-32, protokół Serial v2 z ID urządzeń i instrukcja
-podłączenia 5×595 / DRV8833: [ESP32 orchestra bring-up](esp32-orchestra.md).
+podłączenia 5×595 / DRV8833: [ESP32 orchestra bring-up](../HARDWARE_WIRING.md).
 W UI wybierz odpowiedni target firmware oraz preset **ESP32 bring-up**.
 Uno pozostaje oddzielnym targetem i rollbackiem; ESP32 wymaga fizycznej kalibracji.
 
@@ -1546,8 +1550,8 @@ W Settings wybierz **ESP32-WROOM-32 · BLE**: normalny runtime używa BLE NUS,
 wyszukuje `Electromechanical-MIDI` i ponawia połączenie po utracie linku.
 Uno pozostaje na Serial, bez automatycznego fallbacku. Dla Dockera na macOS
 wymagany jest natywny most Bluetooth; instrukcja uruchomienia i instalacji
-usługi: [BLE runtime](esp32-orchestra.md#normal-runtime-over-ble).
+usługi: [BLE runtime](../HARDWARE_WIRING.md).
 
 ## Hardware-first profiles (ESP32)
 
-Physical planning, calibration metadata and UNKNOWN handling: [hardware-first guide](hardware-first.md). Virtual preview remains a legacy/demo model.
+Physical planning, calibration metadata and UNKNOWN handling: [hardware-first guide](../HARDWARE_DEVICES.md). Virtual preview remains a legacy/demo model.
