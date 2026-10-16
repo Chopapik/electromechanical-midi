@@ -125,7 +125,7 @@ restart wczytuje `parameters.arrangementPreset` z JSON (obecnie `balanced`).
 
 | Preset / ID | Zachowanie |
 | --- | --- |
-| Universal / `universal` | Frazy i rezerwacje wokalu/FX, elastyczny fallback tonalny, dobór FDD z odstępem ataków już podczas alokacji |
+| Universal / `universal` | Frazy i rezerwacje wokalu/FX, dobór FDD z odstępem ataków, odzyskiwanie pominiętych głosów i kontynuacja długich FDD na wolnym DVD |
 | Balanced / `balanced` | Mechanical-Aware: miękka preferencja krótkich, zmiennych nut na FDD i sustainu na DVD; opcjonalny dynamiczny UNISON |
 | FDD Riffs + DVD Tło / `instrument_roles` | Krótkie riffy FDD, długie warstwy DVD, silniejszy sustain tła; bez dowolnego UNISON FDD |
 | Pary Unisono / `instrument_roles_unison` | Jak wyżej, FDD1+2 i FDD3+4 grają po jednej partii zdwojoną nutą |

@@ -19,7 +19,7 @@ Wybór wszystkich ośmiu presetów: `/settings` → **Aranżacja → Preset aran
 AUTO ma wspólną normalizację i klasyfikację oraz jeden plan dla REAL/VIRTUAL.
 STRICT_TRACKS to osobny tryb JSON, a nie dziewiąty preset.
 
-- [Universal: frazy, fallback i benchmark 31 MIDI](universal-arrangement.md)
+- [Universal: frazy, odzyskiwanie głosów i benchmarki biblioteki MIDI](universal-arrangement.md)
 - [Balanced / Mechanical-Aware oraz dynamiczny UNISON](mechanical-arrangement.md)
 - [FDD Riffs + DVD Tło i sustain tła](instrument-roles.md)
 - [Pary FDD: Unisono i Dwugłos](fdd-pairs.md)

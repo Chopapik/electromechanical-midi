@@ -69,6 +69,10 @@ fallbacki; są to decyzje planowania, nie pomiar ruchu lub dźwięku.
 
 ## Benchmark
 
+Poniższe porównanie 31 MIDI opisuje pierwszą wersję Universal (`98bad14`).
+Rozszerzenie o pełną bibliotekę i późniejszy etap odzyskiwania opisano dalej;
+historycznego raportu nie nadpisujemy.
+
 Zestaw obejmuje wszystkie 31 wskazanych MIDI. Manifest z nazwami i SHA-256:
 [universal-corpus.json](../reports/universal-corpus.json). Pełne metryki:
 [universal-arrangement.json](../reports/universal-arrangement.json).
@@ -137,6 +141,154 @@ maskowała utratę 16 wcześniejszych ID. Testy obejmują oba przypadki.
 
 Najdłuższy ciągły okres DVD w zestawie to **136.195 s**
 (0023-04-radiohead_1995-fake_plastic_trees-[k].mid). Jest to plan, nie zmierzony czas bezpiecznej pracy silnika.
+
+## Rozszerzenie na pełną bibliotekę MIDI
+
+Istniejący preset `universal` otrzymał końcowy etap
+`host/playback/universal_recovery.py`, po wspólnym ograniczeniu ataków FDD.
+Wcześniej zagrane zdarzenia, ich urządzenia, wysokości, gate'y, artykulacje
+i istniejące reinforcement pozostają identyczne. Pozostałe presety nie używają
+tego etapu. Firmware i konfiguracja sprzętu pozostają bez zmian.
+
+Etap działa wyłącznie w rzeczywiście wolnych rezerwacjach:
+
+- Pominięta nuta tonalna może odzyskać oryginalny atak, jeśli cały przebieg
+  urządzenia pozostaje wykonalny. Używa tego samego doboru ról i rezerwacji
+  wokalu/FX co pierwsza alokacja. Nie przesuwa wcześniejszych nut.
+- Pominięte, długie tło harmoniczne może wejść później na DVD: najwyżej
+  pół beatu i nie więcej niż 350 ms od źródłowego ataku, przy dodatniej
+  lokalnej skłonności do sustainu. Koniec nadal ogranicza oryginalny NOTE_OFF.
+  Krótkie riffy i pominięte ataki basu/wokalu nie trafiają do takiej kolejki.
+- Długi źródłowy bas lub harmonia, którego FDD wykonuje tylko krótki początek,
+  może kontynuować na wolnym DVD. Źródłowy gate musi trwać co najmniej 800 ms
+  i dwa beaty; kontynuacja co najmniej 250 ms. Ma to samo ID źródła i dokładnie
+  tę samą wykonaną częstotliwość, bez dodatkowej harmonii lub transpozycji.
+  Dopuszczalna przerwa w przejęciu wynosi najwyżej pół beatu / 350 ms.
+  Koniec ogranicza źródłowy NOTE_OFF, następny atak śledzonego głosu i przyszła
+  rezerwacja DVD. Już brzmiący na DVD ten sam ton blokuje zbędne zdwojenie.
+- Jawne reguły, artykulacje, ręczne pominięcia i celowo skrócone/skradzione
+  nuty nie są przywracane przez kontynuację. Efekty nietonalne i perkusja nie
+  są kandydatami. Nie ma nut generowanych według tonacji ani nazwy utworu.
+
+Każdy zaakceptowany dodatek przechodzi pełną chronologię razem z wcześniejszymi
+i późniejszymi rezerwacjami. DVD musi mieć również czas na istniejącą rampę
+oraz minimalny odcinek docelowej częstotliwości; sam wolny moment ataku nie
+wystarcza. FDD zachowuje odstęp 120 ms w obie strony. Nie dodajemy sterownika
+silników ani osobnego planu VIRTUAL. Ekspresja CC/pitch bend w kontynuacji
+pochodzi z całego oryginalnego gate'u, również z czasu po zakończeniu FDD.
+
+Kontynuacje są jawnymi `ReinforcementEvent(kind='CONTINUATION')` i trafiają
+do tego samego kompilatora co pierwotne nuty. Diagnostyka
+`plan.hardware.universal.recovery` rozróżnia odzyskane zdarzenia, późne wejścia,
+kontynuacje i weta mechaniczne. Nie są to pomiary fizycznego wykonania.
+
+Kompromis: przejęcie FDD → DVD zmienia barwę i może mieć słyszalny nowy atak
+lub krótką przerwę. Nie obiecujemy bezstratnego odtworzenia każdej polifonii.
+Odzyskany późno pad nie jest zachowanym oryginalnym atakiem. Liczbę takich wejść
+raportujemy osobno; większa liczba nut ani dłuższa praca DVD nie dowodzą
+lepszego odsłuchu.
+
+### Odtworzenie benchmarku biblioteki
+
+Manifest [universal-library-corpus.json](../reports/universal-library-corpus.json)
+opisuje snapshot 316 ścieżek, 149 unikalnych plików i 659053 źródłowych nut.
+Wszystkie pliki zostały poprawnie odczytane. Dodatkowe identyczne kopie nie
+zwiększają liczby przykładów. Nie kopiujemy biblioteki MIDI do raportu.
+Podział to 120 plików rozwojowych i 29 odłożonych do końcowej kontroli.
+Znane wersje tej samej kompozycji i warianty o identycznej reprezentacji nut
+trafiają do jednej grupy; wcześniejszy korpus 31 MIDI pozostaje rozwojowy.
+Grupowanie nazw służy tylko organizacji eksperymentu, nie aranżacji utworu.
+
+Baseline to Universal z `98bad14`, a nie starszy Instrument Roles. Oba przebiegi
+mają identyczną konfigurację. Raport
+[universal-library-arrangement.json](../reports/universal-library-arrangement.json)
+zawiera osobne wyniki każdego MIDI oraz obu części korpusu. Kontrola obejmuje
+hash całej osi przed nowym etapem, niezmienność wcześniejszych zagranych
+zdarzeń i ich sidecarów, reinforcement, perkusji i konfiguracji, brak utraty
+wcześniej zachowanych ID basu/wokalu oraz końcową chronologię wszystkich urządzeń.
+
+Nowa miara długości liczy sumę przedziałów primary + CONTINUATION w obrębie
+oryginalnego gate'u każdego ID, bez podwójnego liczenia. Stara miara primary
+pozostaje w raporcie. Średnie pokrycia są średnimi po utworach. STOP i ciągłą
+pracę DVD liczymy ze skompilowanego ExecutionTimeline. Czasy planowania pochodzą
+z równoległych przebiegów i nie są kontrolowanym pomiarem wydajności aplikacji.
+
+```sh
+# Inwentaryzacja lokalnej biblioteki; niczego nie modyfikuje w MIDI.
+.venv/bin/python scripts/build_midi_corpus.py /path/to/Music/MIDI midi \
+  --output /tmp/universal-inventory.json
+
+# Zamrożony kod baseline, bez zmiany bieżącej gałęzi.
+mkdir -p /tmp/orchestra-universal-before
+git archive 98bad14 host config | tar -x -C /tmp/orchestra-universal-before
+
+.venv/bin/python scripts/benchmark_universal.py \
+  --manifest reports/universal-library-corpus.json \
+  --midi-dir /path/to/Music/MIDI --midi-dir midi --presets universal \
+  --code-root /tmp/orchestra-universal-before --workers 3 \
+  --output /tmp/universal-library-before.json
+.venv/bin/python scripts/benchmark_universal.py \
+  --manifest reports/universal-library-corpus.json \
+  --midi-dir /path/to/Music/MIDI --midi-dir midi --presets universal \
+  --workers 3 --output /tmp/universal-library-after.json
+.venv/bin/python scripts/compare_universal_library.py \
+  --corpus reports/universal-library-corpus.json \
+  --baseline /tmp/universal-library-before.json \
+  --experiment /tmp/universal-library-after.json \
+  --output /tmp/universal-library-comparison.json
+```
+
+Wyszukiwanie jest rekurencyjne i sprawdza SHA-256; kilka identycznych kopii
+nie powoduje niejednoznaczności. Inny plik o tej samej nazwie nie zastąpi
+przykładu z manifestu. Warianty przebadane na części odłożonej nie były potem
+używane do strojenia tych heurystyk. Nadal nie jest to odsłuch ani niezależny
+test wszystkich możliwych plików MIDI.
+
+### Wyniki pełnego korpusu
+
+| Metryka, 149 MIDI | Universal `98bad14` | Universal z odzyskiwaniem |
+| --- | ---: | ---: |
+| Zagrane źródłowe nuty tonalne | 428599 | 428620 |
+| Pominięte źródłowe nuty tonalne | 17339 | 17318 |
+| Średnie pokrycie źródłowych długości | 84,4084% | 84,6813% |
+| Komendy DVD STOP | 40937 | 41546 |
+| Łączny planowany czas DVD (s) | 93458,301 | 94097,483 |
+| Najdłuższy ciągły odcinek DVD (s) | 366,997 | 366,997 |
+| Konflikty / overlapy / naruszenia odstępu FDD / komendy tacek | 0 | 0 |
+
+**To poprawa przyrostowa, nie kolejny skok jak w porównaniu pierwszego Universal
+z Instrument Roles.** 82 MIDI zyskały pokrycie długości; pozostałe 67 zachowały
+wynik. Dodano 591 kontynuacji o łącznej długości 623,037 s i 21 późnych wejść
+harmonii w 8 MIDI. Wszystkie odzyskane zdarzenia w tym korpusie były późnymi
+wejściami DVD; wariant odzyskania dokładnego ataku nie znalazł dodatkowych
+kandydatów przy tej konfiguracji. Zwiększenie liczby STOP o 609 wynika
+z dodatkowych odcinków wykonania, a nie ze skrócenia istniejących nut.
+Nie traktujemy tego rozszerzenia jako redukcji STOP.
+
+W części odłożonej 21/29 MIDI zyskało pokrycie długości, a średnia wzrosła
+z 82,4778% do 82,7630%. Dodano 97 kontynuacji (111,531 s) i 8 późnych wejść.
+W obu częściach wszystkie kontrole przeszły: zero utraconych wcześniej granych
+ID basu/wokalu, niezmienione wcześniejsze nuty, sidecary i reinforcement,
+identyczna konfiguracja oraz perkusja. W tym przebiegu wszystkie dodatki
+trafiły na DVD; komendy FDD i obu speakerów także pozostały identyczne.
+
+| Przykład | Pokrycie przed → po | Kontynuacje DVD |
+| --- | ---: | ---: |
+| Rabbit in Your Headlights | 61,80% → 68,39% | 44 |
+| How Do You | 73,82% → 76,54% | 18 |
+| Counting Stars | 63,29% → 64,88% | 33 |
+| No Surprises | 73,86% → 74,02% | 3 |
+| Let Down (część odłożona) | 67,36% → 67,41% | 5 |
+| Bodysnatchers | 90,14% → 90,20% | 1 |
+
+Najdłuższy odcinek pozostaje w **Ful Stop: 366,997 s**, już obecny w baseline.
+To około sześć minut planowanego ciągłego wykonania, nie potwierdzony bezpieczny
+czas pracy. Testy obejmują 650 przypadków backendu, w tym niezmienność planu,
+źródłowe granice, reartykulację, rezerwacje, rampę, CC/bend w późniejszej
+kontynuacji, determinizm i izolację korpusu. Pełny benchmark przechodzi 149/149.
+Nowy etap sprawdzono offline; wcześniejsze pozytywne odsłuchy Let Down i
+No Surprises dotyczyły pierwszej wersji. **Brak weryfikacji nowego etapu na
+fizycznych instrumentach REAL i brak pomiarów temperatury/prądu.**
 
 ## Ograniczenia fizyczne i muzyczne
 

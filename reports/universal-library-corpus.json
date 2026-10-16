@@ -1,0 +1,1925 @@
+{
+  "files": 316,
+  "unique": 149,
+  "errors": [],
+  "splits": {
+    "holdout": 29,
+    "development": 120
+  },
+  "songs": [
+    {
+      "file": "Coldplay - The Scientist.mid",
+      "sha256": "9e711509438cb419f99d5f7ec708b9224d03a13cb00f748c613523950f1af57e",
+      "aliases": [
+        "Coldplay - The Scientist-1.mid",
+        "Coldplay - The Scientist-2.mid",
+        "Coldplay - The Scientist-3.mid",
+        "Coldplay - The Scientist-4.mid",
+        "Coldplay - The Scientist-5.mid",
+        "Coldplay - The Scientist.mid"
+      ],
+      "group": "coldplaythescientist",
+      "musicHash": "cba9b81fd5f29e643c1ad394c59b8ecabd2e7e7a0cf6eab099ace5791fad5e9e",
+      "notes": 123,
+      "duration": 14.226837625,
+      "split": "holdout"
+    },
+    {
+      "file": "Every breath you take.mid",
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "aliases": [
+        "Every breath you take (2).mid",
+        "Every breath you take-1.mid",
+        "Every breath you take-2.mid",
+        "Every breath you take-3.mid",
+        "Every breath you take-4.mid",
+        "Every breath you take-5.mid",
+        "Every breath you take-6.mid",
+        "Every breath you take.mid"
+      ],
+      "group": "everybreathyoutake",
+      "musicHash": "471dbb3dbb338bb945a2110df9853de0ade3990f0b067ce18d7481fca9295eef",
+      "notes": 3538,
+      "duration": 219.807374875,
+      "split": "holdout"
+    },
+    {
+      "file": "The Police - Message in a Bottle.mid",
+      "sha256": "5bc05b4fc8fdd69a1b934916996706381cbdae0b9fe21336f668aef928e87a83",
+      "aliases": [
+        "The Police - Message in a Bottle (1).mid",
+        "The Police - Message in a Bottle-1.mid",
+        "The Police - Message in a Bottle-2.mid",
+        "The Police - Message in a Bottle-3.mid",
+        "The Police - Message in a Bottle-4.mid",
+        "The Police - Message in a Bottle.mid"
+      ],
+      "group": "thepolicemessageinabottle",
+      "musicHash": "5fd99c5d0b580ef25591a2efb7975a973d3949d1f4081c69d7e4f1028dbe741b",
+      "notes": 7617,
+      "duration": 288.0416666666667,
+      "split": "development"
+    },
+    {
+      "file": "coldplaythe_scientist.mid",
+      "sha256": "65c1d0aa5fa55af435b6cda74ecc9e3dd77b51fae1e2b428c140b737628c2744",
+      "aliases": [
+        "coldplaythe_scientist-1.mid",
+        "coldplaythe_scientist-2.mid",
+        "coldplaythe_scientist-3.mid",
+        "coldplaythe_scientist-4.mid",
+        "coldplaythe_scientist-5.mid",
+        "coldplaythe_scientist-6.mid",
+        "coldplaythe_scientist-7.mid",
+        "coldplaythe_scientist.mid"
+      ],
+      "group": "coldplaythescientist",
+      "musicHash": "05a79c8a677d5f3c696a1e19bffe627c5015ed1f240115388d29f7c507e81820",
+      "notes": 6935,
+      "duration": 319.8830648,
+      "split": "holdout"
+    },
+    {
+      "file": "0001-01-radiohead_1993-you.mid",
+      "sha256": "e64932ccf5abe2ecfefa5ee00c18853cbed183575df76eeb58121c4a52256b0b",
+      "aliases": [
+        "0001-01-radiohead_1993-you.mid"
+      ],
+      "group": "radioheadyou",
+      "musicHash": "00a19dbd59c4f53b70f125c5abe80193e71a098e4a1b4309341e5406abd15d68",
+      "notes": 6138,
+      "duration": 210.874805,
+      "split": "development"
+    },
+    {
+      "file": "0002-02-radiohead_1993-creep-[k].mid",
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "aliases": [
+        "0002-02-radiohead_1993-creep-[k] (2).mid",
+        "0002-02-radiohead_1993-creep-[k] (3).mid",
+        "0002-02-radiohead_1993-creep-[k] (4).mid",
+        "0002-02-radiohead_1993-creep-[k].mid"
+      ],
+      "group": "radioheadcreep",
+      "musicHash": "64f534893e68abdd0ddf148088adf9993b1b8ea15d0e66acd47068004e3984ff",
+      "notes": 7059,
+      "duration": 237.37702108333332,
+      "split": "development"
+    },
+    {
+      "file": "0003-03-radiohead_1993-how_do_you.mid",
+      "sha256": "a46879887806eac7f19cfd51e51dffc4e39c2f629d66835d805b1decbd2595be",
+      "aliases": [
+        "0003-03-radiohead_1993-how_do_you.mid"
+      ],
+      "group": "radioheadhowdoyou",
+      "musicHash": "cc6395c5ae29c7934d3c6c33244c40a81ab09e7a2b40c8747ff86fdf333ebb66",
+      "notes": 4287,
+      "duration": 119.99143406249999,
+      "split": "development"
+    },
+    {
+      "file": "0004-04-radiohead_1993-stop_whispering.mid",
+      "sha256": "f5c7393bed9175930ab93ebfe09b1082c010b0df840eb32bee8a024436f11fb0",
+      "aliases": [
+        "0004-04-radiohead_1993-stop_whispering.mid"
+      ],
+      "group": "radioheadstopwhispering",
+      "musicHash": "fb38750738bae5499227ddb8724cf9194ae025af1d6a49aeb9ffd6c7ba754df9",
+      "notes": 10846,
+      "duration": 322.08493171666663,
+      "split": "development"
+    },
+    {
+      "file": "0005-05-radiohead_1993-thinking_about_you.mid",
+      "sha256": "a08c2139af1e31ec4ceb0d2fa5696ae9842c9ad26093496c53e82ebec1c062ce",
+      "aliases": [
+        "0005-05-radiohead_1993-thinking_about_you-1.mid",
+        "0005-05-radiohead_1993-thinking_about_you-2.mid",
+        "0005-05-radiohead_1993-thinking_about_you-3.mid",
+        "0005-05-radiohead_1993-thinking_about_you-4.mid",
+        "0005-05-radiohead_1993-thinking_about_you-5.mid",
+        "0005-05-radiohead_1993-thinking_about_you-6.mid",
+        "0005-05-radiohead_1993-thinking_about_you-7.mid",
+        "0005-05-radiohead_1993-thinking_about_you-8.mid",
+        "0005-05-radiohead_1993-thinking_about_you-9.mid",
+        "0005-05-radiohead_1993-thinking_about_you.mid"
+      ],
+      "group": "radioheadthinkingaboutyou",
+      "musicHash": "c82ea78dfff858bc42d5f685db27d419da56507ebc8237e3459baf56ea9fc3cf",
+      "notes": 7322,
+      "duration": 161.29409199999998,
+      "split": "development"
+    },
+    {
+      "file": "0006-06-radiohead_1993-anyone_can_play_guitar.mid",
+      "sha256": "7df97b6c1f577b047260b7731d8c092cdcc8cd6fb2dc9f57c4be0cd60b8ef38a",
+      "aliases": [
+        "0006-06-radiohead_1993-anyone_can_play_guitar.mid"
+      ],
+      "group": "radioheadanyonecanplayguitar",
+      "musicHash": "44e43d82e3ee8f79951110f797063412ce5fa6f7ba7d2ce6b09fdf7d99bae176",
+      "notes": 8121,
+      "duration": 198.9370756,
+      "split": "holdout"
+    },
+    {
+      "file": "0007-07-radiohead_1993-ripcord.mid",
+      "sha256": "779f77bb1172554ad5e8fcab3ba2b50a9f01bb9883aa2df6c87f91e6de96be6e",
+      "aliases": [
+        "0007-07-radiohead_1993-ripcord.mid"
+      ],
+      "group": "radioheadripcord",
+      "musicHash": "e12d437eefef4c93cdc1d01595382835b4576b0339ba08ca7520e19b21d5f7b8",
+      "notes": 5391,
+      "duration": 182.60663585,
+      "split": "development"
+    },
+    {
+      "file": "0008-08-radiohead_1993-vegetable.mid",
+      "sha256": "981cb285acf86b6d4e74d1a3f80a184a0604c0e023a92fac4383f47419fc1cb2",
+      "aliases": [
+        "0008-08-radiohead_1993-vegetable-1.mid",
+        "0008-08-radiohead_1993-vegetable.mid"
+      ],
+      "group": "radioheadvegetable",
+      "musicHash": "6160d1cc755c1034f1868ef70d463c6d7d8bb98c126518337269a789a9e9a5d3",
+      "notes": 5310,
+      "duration": 190.0696864625,
+      "split": "holdout"
+    },
+    {
+      "file": "0009-09-radiohead_1993-prove_yourself.mid",
+      "sha256": "0cce6d7b28c63207c1835d2b6234484c8f255c5df046707eb543db84ab00da8c",
+      "aliases": [
+        "0009-09-radiohead_1993-prove_yourself.mid"
+      ],
+      "group": "radioheadproveyourself",
+      "musicHash": "471a87b842bc9971bb40ccde325f21141ed7078edd4c7babf2e50bc787d7964e",
+      "notes": 5955,
+      "duration": 143.56215545,
+      "split": "holdout"
+    },
+    {
+      "file": "0010-10-radiohead_1993-i_can't.mid",
+      "sha256": "e1e032bfd5c2bcbd97d60a327202bba97bfe3b3b85c70a80d9152d0c96cb7e42",
+      "aliases": [
+        "0010-10-radiohead_1993-i_can't.mid"
+      ],
+      "group": "radioheadicant",
+      "musicHash": "a475c947e72a046082adc269057f03d40451599866ed1ba3184e98b854de4b65",
+      "notes": 8281,
+      "duration": 256.1490043083333,
+      "split": "development"
+    },
+    {
+      "file": "0011-11-radiohead_1993-lurgee.mid",
+      "sha256": "cc4e7d90a7df8202b6872f4fed4a34bdebef2a4bdba68bdfa74c60349caaff4a",
+      "aliases": [
+        "0011-11-radiohead_1993-lurgee.mid"
+      ],
+      "group": "radioheadlurgee",
+      "musicHash": "7d892ee33e6b953d0fc2898f47b81036d447cf1f38561806559dd404aab02590",
+      "notes": 5816,
+      "duration": 185.87735804166664,
+      "split": "development"
+    },
+    {
+      "file": "0012-12-radiohead_1993-blow_out.mid",
+      "sha256": "1f519ce015c37d7e7c3a63b66dff37e989a742b14a00301b47030da8acb825da",
+      "aliases": [
+        "0012-12-radiohead_1993-blow_out.mid"
+      ],
+      "group": "radioheadblowout",
+      "musicHash": "abc0b2ad599bffaf9d89c6dee3fafbafe4ea86d3f3797f2fd62f57470e30333f",
+      "notes": 9078,
+      "duration": 272.14329291666667,
+      "split": "development"
+    },
+    {
+      "file": "0013-13-radiohead_1993-pop_is_dead.mid",
+      "sha256": "e0bc91c130cd169b3ed636adb21e957f83a5f6bb8a41e883e8100982236091d3",
+      "aliases": [
+        "0013-13-radiohead_1993-pop_is_dead.mid"
+      ],
+      "group": "radioheadpopisdead",
+      "musicHash": "9012eb9c59d3c5ade248b76ddc1a492e8b413eb4e358002e90f22231ae0951da",
+      "notes": 3098,
+      "duration": 125.56416015,
+      "split": "development"
+    },
+    {
+      "file": "0014-14-radiohead_1993-inside_my_head.mid",
+      "sha256": "91dd1cd17d3c4b7bf97b67c117eddf36108f322883447c61438640bd151da729",
+      "aliases": [
+        "0014-14-radiohead_1993-inside_my_head.mid"
+      ],
+      "group": "radioheadinsidemyhead",
+      "musicHash": "f8e17e477f1851343ad40d04bdfc2e49f14a5b52eb776e74c36f8ed4fd803da6",
+      "notes": 3624,
+      "duration": 176.8125,
+      "split": "development"
+    },
+    {
+      "file": "0015-04-radiohead_1994-banana_co.mid",
+      "sha256": "948943ee28e174ab99a1acb6fcac116464df7f980b47e9fa0acc7117c08087e1",
+      "aliases": [
+        "0015-04-radiohead_1994-banana_co.mid"
+      ],
+      "group": "radioheadbananaco",
+      "musicHash": "c3b25478294fd62fa8d987fcfcdc7e730798bd29e614ad2b01f45e793706b3b0",
+      "notes": 3826,
+      "duration": 141.528704625,
+      "split": "development"
+    },
+    {
+      "file": "0016-08-radiohead_1994-creep_(acoustic).mid",
+      "sha256": "e6b2de76774ec7f05a8ba183dc997ad7541931028f4207160334dffc74dca1cc",
+      "aliases": [
+        "0016-08-radiohead_1994-creep_(acoustic).mid"
+      ],
+      "group": "radioheadcreep",
+      "musicHash": "3e1d57672a4f769e7eadd63b515f4b7fbc397a2b8a4b6ad2bb3b5b6379f19a37",
+      "notes": 3752,
+      "duration": 303.3657680625,
+      "split": "development"
+    },
+    {
+      "file": "0017-02-radiohead_1994-the_trickster_(live).mid",
+      "sha256": "e4f8d46ef5d36d06e51af298cc616203684c7174ea55126272c7712bc7771a50",
+      "aliases": [
+        "0017-02-radiohead_1994-the_trickster_(live).mid"
+      ],
+      "group": "radioheadthetrickster",
+      "musicHash": "4d58d1d0357cc9136668166c70e799853bc45b5bc7f62718f18c9be1bc1ca229",
+      "notes": 7091,
+      "duration": 268.0429175,
+      "split": "development"
+    },
+    {
+      "file": "0018-06-radiohead_1994-lozenge_of_love_(live).mid",
+      "sha256": "70c4b2e5aeb0f1ab1d19a251e2e553388cbdf556a68df7d4b90efe3477096f24",
+      "aliases": [
+        "0018-06-radiohead_1994-lozenge_of_love_(live).mid"
+      ],
+      "group": "radioheadlozengeoflove",
+      "musicHash": "92d9ea8b29735283ded1a70ee99367a9479c07b8ddf7067e49d8d47ea0c7a32f",
+      "notes": 800,
+      "duration": 131.46964017083334,
+      "split": "development"
+    },
+    {
+      "file": "0019-07-radiohead_1994-you_never_wash_up_after_yourself_(live).mid",
+      "sha256": "4288b76fd2d722b1ae414506784442478e17f72851d8d7cdf1942bc474177cf7",
+      "aliases": [
+        "0019-07-radiohead_1994-you_never_wash_up_after_yourself_(live).mid"
+      ],
+      "group": "radioheadyouneverwashupafteryourself",
+      "musicHash": "4bc84f3666967d0f7ff89ee856cc84f4c473143d28bc85075cdccfbff0916555",
+      "notes": 2728,
+      "duration": 250.2738737625,
+      "split": "development"
+    },
+    {
+      "file": "0020-01-radiohead_1995-planet_telex.mid",
+      "sha256": "e98715f1d378d44d48a7dd6c01949db2e850a396c9c84985d9d3e1198ad7b104",
+      "aliases": [
+        "0020-01-radiohead_1995-planet_telex.mid"
+      ],
+      "group": "radioheadplanettelex",
+      "musicHash": "16ddb89ab5e3cdd11fa3f7861ecd99c617335cbf888612607ad6f1ce8124d9bb",
+      "notes": 6130,
+      "duration": 276.9787235,
+      "split": "holdout"
+    },
+    {
+      "file": "0021-02-radiohead_1995-the_bends.mid",
+      "sha256": "ee6a377355ed0e3595c405fe5a96b2c551f2a395005e853fdc15db90fbfff928",
+      "aliases": [
+        "0021-02-radiohead_1995-the_bends.mid"
+      ],
+      "group": "radioheadthebends",
+      "musicHash": "a3c8245d2cdcd29f857017b81ed5b5daa22e79e75740ce1777de1f7e1e247391",
+      "notes": 6699,
+      "duration": 234.65496891666666,
+      "split": "holdout"
+    },
+    {
+      "file": "0022-03-radiohead_1995-high_and_dry-[k].mid",
+      "sha256": "be6a0107f5592614286009c0255b610a23c6e5b9e950ac767a1ad7e1f15335a9",
+      "aliases": [
+        "0022-03-radiohead_1995-high_and_dry-[k]-1.mid",
+        "0022-03-radiohead_1995-high_and_dry-[k].mid"
+      ],
+      "group": "radioheadhighanddry",
+      "musicHash": "d0f00e5ae76335efd5509090682efed8724bfe885f7d32d70d7a5b6aa8958593",
+      "notes": 7401,
+      "duration": 262.809531,
+      "split": "development"
+    },
+    {
+      "file": "0023-04-radiohead_1995-fake_plastic_trees-[k].mid",
+      "sha256": "eeb1a97cdde6ece920bcdf82e362192adee80615bd050b5004c2fe8f98856bc7",
+      "aliases": [
+        "0023-04-radiohead_1995-fake_plastic_trees-[k]-1.mid",
+        "0023-04-radiohead_1995-fake_plastic_trees-[k]-2.mid",
+        "0023-04-radiohead_1995-fake_plastic_trees-[k].mid"
+      ],
+      "group": "radioheadfakeplastictrees",
+      "musicHash": "2c2462588142f4d6004a3a6bae2ec52a15e9cd769510e23602f3449ba25163fe",
+      "notes": 4599,
+      "duration": 307.13929025,
+      "split": "development"
+    },
+    {
+      "file": "0024-05-radiohead_1995-bones.mid",
+      "sha256": "b0eaa237ff7a3f6e0f6dcea40adbe6f91dae7eec42f6ffabb9eb1f6b3fe547b3",
+      "aliases": [
+        "0024-05-radiohead_1995-bones.mid"
+      ],
+      "group": "radioheadbones",
+      "musicHash": "845a27066e0984cc497ce5a2e289555626d2ff3d2a6f219cccef22afe8b465c8",
+      "notes": 3217,
+      "duration": 171.9158424625,
+      "split": "development"
+    },
+    {
+      "file": "0025-06-radiohead_1995-(nice_dream)-[k].mid",
+      "sha256": "90dc1a80def4c2f8e9944bb8449f8e1a26b6a9a8be05dd0cc6045c8cf19c11e5",
+      "aliases": [
+        "0025-06-radiohead_1995-(nice_dream)-[k] (2).mid",
+        "0025-06-radiohead_1995-(nice_dream)-[k]-1.mid",
+        "0025-06-radiohead_1995-(nice_dream)-[k].mid"
+      ],
+      "group": "radiohead",
+      "musicHash": "2bba09000084223c675afbef77c6e1f4952d3abc3c3d412dfd717d78418c8ed8",
+      "notes": 8895,
+      "duration": 232.84872160833334,
+      "split": "development"
+    },
+    {
+      "file": "0026-07-radiohead_1995-just-[k].mid",
+      "sha256": "8453058c3ab17210496d2f31f9b40227476acd9a4387879676aaf4466b6225de",
+      "aliases": [
+        "0026-07-radiohead_1995-just-[k].mid"
+      ],
+      "group": "radioheadjust",
+      "musicHash": "4157cd9a68fd7b2f614cd8f41901dc91a3075096fa30d32bc6b0a3f62f721728",
+      "notes": 8195,
+      "duration": 235.33585351666665,
+      "split": "development"
+    },
+    {
+      "file": "0027-08-radiohead_1995-my_iron_lung-[k].mid",
+      "sha256": "a4f1b71a938ce921f1393c495c4dd746eaea905e2f647e82191ebfa716e4ad63",
+      "aliases": [
+        "0027-08-radiohead_1995-my_iron_lung-[k].mid"
+      ],
+      "group": "radioheadmyironlung",
+      "musicHash": "5a6cfc7f3f3357aed51d1c0dbb476d69f9dc02f0982e63643b7627d8669f8bc7",
+      "notes": 4803,
+      "duration": 277.28737925,
+      "split": "development"
+    },
+    {
+      "file": "0029-10-radiohead_1995-black_star.mid",
+      "sha256": "f5f7ba835fb0313f20b5341e6bf628d58894cf5fa7e1eb6f0fc480bd6c709957",
+      "aliases": [
+        "0029-10-radiohead_1995-black_star.mid"
+      ],
+      "group": "radioheadblackstar",
+      "musicHash": "a4d9001beb62e6e9814984379fc67d3b4d663d544accfa0c64349c6ff98e05e4",
+      "notes": 5156,
+      "duration": 247.8430329375,
+      "split": "development"
+    },
+    {
+      "file": "0030-11-radiohead_1995-sulk.mid",
+      "sha256": "22088eab592ddfd6ed30f96e0bd90442d27c19711197da57b9d30ca440af3203",
+      "aliases": [
+        "0030-11-radiohead_1995-sulk.mid"
+      ],
+      "group": "radioheadsulk",
+      "musicHash": "cd566dc16cb5c317fc87dcbaa85da65ea3c449837ac859992e7b20301f221efb",
+      "notes": 4189,
+      "duration": 217.928146525,
+      "split": "development"
+    },
+    {
+      "file": "0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "aliases": [
+        "0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid"
+      ],
+      "group": "radioheadstreetspirit",
+      "musicHash": "1afe9265f0b4a5a58bacf8b51252e1805a214a9d672f2efd9b61ca9d5bec6e30",
+      "notes": 4710,
+      "duration": 254.583948,
+      "split": "holdout"
+    },
+    {
+      "file": "0032-01-radiohead_1997-airbag-[k].mid",
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "aliases": [
+        "0032-01-radiohead_1997-airbag-[k]-1.mid",
+        "0032-01-radiohead_1997-airbag-[k]-2.mid",
+        "0032-01-radiohead_1997-airbag-[k]-3.mid",
+        "0032-01-radiohead_1997-airbag-[k]-4.mid",
+        "0032-01-radiohead_1997-airbag-[k]-5.mid",
+        "0032-01-radiohead_1997-airbag-[k]-6.mid",
+        "0032-01-radiohead_1997-airbag-[k]-7.mid",
+        "0032-01-radiohead_1997-airbag-[k].mid"
+      ],
+      "group": "radioheadairbag",
+      "musicHash": "2fa0b6525ed2ce7fa82dd870a6fc7a78303e85048bdda81298609a29cc60b1af",
+      "notes": 7316,
+      "duration": 282.75418153124997,
+      "split": "development"
+    },
+    {
+      "file": "0033-02-radiohead_1997-paranoid_android-[k].mid",
+      "sha256": "aa8324e99320213f907bf484651566a29f5369cc9277da3469a04c6adcc9e2e3",
+      "aliases": [
+        "0033-02-radiohead_1997-paranoid_android-[k]-1.mid",
+        "0033-02-radiohead_1997-paranoid_android-[k].mid"
+      ],
+      "group": "radioheadparanoidandroid",
+      "musicHash": "706c317f38418fd65b497d198311025aec181f23ef7f3526759e9c2493596a12",
+      "notes": 11424,
+      "duration": 401.6306415,
+      "split": "development"
+    },
+    {
+      "file": "0034-03-radiohead_1997-subterranean_homesick_alien.mid",
+      "sha256": "b556c6d1513e4d56999321c8452c3ac5eb11f191eda88db7f0ce2ee47aa8f644",
+      "aliases": [
+        "0034-03-radiohead_1997-subterranean_homesick_alien.mid"
+      ],
+      "group": "radioheadsubterraneanhomesickalien",
+      "musicHash": "637a7458cbdef6171fb71296395a452f621798f8a35cc0083a42ce4db6f725cb",
+      "notes": 3231,
+      "duration": 260.5126021333333,
+      "split": "development"
+    },
+    {
+      "file": "0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid",
+      "sha256": "8c0c0223dcdbc577545429df843a27738f262f1e62c6e07c21776e225d0d7d66",
+      "aliases": [
+        "0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid"
+      ],
+      "group": "radioheadexitmusic",
+      "musicHash": "cffa08c7387702c6583c3a30f711dc49be4ad7ab7b0c97f2b0e3af52f47260af",
+      "notes": 2979,
+      "duration": 268.37907890625,
+      "split": "development"
+    },
+    {
+      "file": "0036-05-radiohead_1997-let_down-[k].mid",
+      "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+      "aliases": [
+        "0036-05-radiohead_1997-let_down-[k]-1.mid",
+        "0036-05-radiohead_1997-let_down-[k]-2.mid",
+        "0036-05-radiohead_1997-let_down-[k]-3.mid",
+        "0036-05-radiohead_1997-let_down-[k].mid"
+      ],
+      "group": "radioheadletdown",
+      "musicHash": "b63526c6d4e6aec4f000bfe3e886398df795eb0763a93d5cb8981cbe09e4e225",
+      "notes": 7290,
+      "duration": 307.240384,
+      "split": "holdout"
+    },
+    {
+      "file": "0037-06-radiohead_1997-karma_police-[k].mid",
+      "sha256": "486253a317a26e2a580cd00a745e8d13777aa59de9f42b26003d1eee6df74133",
+      "aliases": [
+        "0037-06-radiohead_1997-karma_police-[k].mid"
+      ],
+      "group": "radioheadkarmapolice",
+      "musicHash": "c964347067e75d0a6e8cbb34a0ecea75761a74112ab959e489c8cf958539a58d",
+      "notes": 5476,
+      "duration": 270.037552,
+      "split": "development"
+    },
+    {
+      "file": "0038-07-radiohead_1997-fitter_happier.mid",
+      "sha256": "8cefed0f5be45e150cf8bd870dbe6931ea273d66a78e6d58a696a750b6f1e756",
+      "aliases": [
+        "0038-07-radiohead_1997-fitter_happier.mid"
+      ],
+      "group": "radioheadfitterhappier",
+      "musicHash": "ee715eb100c14ba0add2b09f78420d6fd06d341ee650659a5a6237aff3480eda",
+      "notes": 173,
+      "duration": 89.52774196666667,
+      "split": "development"
+    },
+    {
+      "file": "0039-08-radiohead_1997-electioneering.mid",
+      "sha256": "d63e99b7a3faa361a5356579b144b618eef4cdae7aec2b8a1d6203481f09b0b7",
+      "aliases": [
+        "0039-08-radiohead_1997-electioneering.mid"
+      ],
+      "group": "radioheadelectioneering",
+      "musicHash": "3ea0b4c9a0ae3649f66bfeddb84891e5188ed520fc7e0c297b17690896d3ac54",
+      "notes": 8741,
+      "duration": 212.18394816666662,
+      "split": "development"
+    },
+    {
+      "file": "0040-09-radiohead_1997-climbing_up_the_walls-[k].mid",
+      "sha256": "eabc334c82e6958d905675b9511989b686eb01c1d97da1fb29670517b8faaf8e",
+      "aliases": [
+        "0040-09-radiohead_1997-climbing_up_the_walls-[k].mid"
+      ],
+      "group": "radioheadclimbingupthewalls",
+      "musicHash": "66fffcadd170ff5045475847b433ec7614b3d9d33526317f97fa693c1e98a60e",
+      "notes": 3306,
+      "duration": 271.521404,
+      "split": "development"
+    },
+    {
+      "file": "0041-10-radiohead_1997-no_surprises-[k].mid",
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "aliases": [
+        "0041-10-radiohead_1997-no_surprises-[k] (2).mid",
+        "0041-10-radiohead_1997-no_surprises-[k] (3).mid",
+        "0041-10-radiohead_1997-no_surprises-[k] (4).mid",
+        "0041-10-radiohead_1997-no_surprises-[k]-1.mid",
+        "0041-10-radiohead_1997-no_surprises-[k]-2.mid",
+        "0041-10-radiohead_1997-no_surprises-[k]-3.mid",
+        "0041-10-radiohead_1997-no_surprises-[k].mid"
+      ],
+      "group": "radioheadnosurprises",
+      "musicHash": "538dd8eb72ebe6843948e70368bf5eece8726b38e3c408be12c35d8c55dd9e43",
+      "notes": 5432,
+      "duration": 240.47605426041665,
+      "split": "development"
+    },
+    {
+      "file": "0042-11-radiohead_1997-lucky-[k].mid",
+      "sha256": "616f2c7fdda123c942fe94329d227eee2e4015f64da3b1a6903da430b6abaf49",
+      "aliases": [
+        "0042-11-radiohead_1997-lucky-[k].mid"
+      ],
+      "group": "radioheadlucky",
+      "musicHash": "1402c61609deca67674d7e9cdaa584675fc7ee02285a61772199e5ac89ccc6d2",
+      "notes": 5132,
+      "duration": 254.3047715,
+      "split": "development"
+    },
+    {
+      "file": "0043-12-radiohead_1997-the_tourist-[k].mid",
+      "sha256": "529c04959f3d7de8e1205cab273a23dc2a908af4cc4eda4bd47dd4625fe66069",
+      "aliases": [
+        "0043-12-radiohead_1997-the_tourist-[k].mid"
+      ],
+      "group": "radioheadthetourist",
+      "musicHash": "e5a01a94df9ce2a4ec6a806d295941904d6701db9017975c87a96d4f61741ae5",
+      "notes": 3374,
+      "duration": 326.209589,
+      "split": "development"
+    },
+    {
+      "file": "0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "sha256": "77309b18d07c1b3b9b6bed3964c2dc8ca0a2a9961307ebef17d87d59389b2a7c",
+      "aliases": [
+        "0044-01-radiohead_2000-everything_in_its_right_place.mid"
+      ],
+      "group": "radioheadeverythinginitsrightplace",
+      "musicHash": "af5689a267603013733998bb07c73cdd3a40bdd0a259c8d10e678fca3989d812",
+      "notes": 3024,
+      "duration": 246.28781387499996,
+      "split": "development"
+    },
+    {
+      "file": "0045-02-radiohead_2000-kid_a.mid",
+      "sha256": "163db355cc29260c2a1937965abaf8f809d89e77d19651daebdb3c53850d46cf",
+      "aliases": [
+        "0045-02-radiohead_2000-kid_a.mid"
+      ],
+      "group": "radioheadkida",
+      "musicHash": "c385169fbf200d48fc156a83dd42d0b9404c0185f8edc527364dd7715be7c64a",
+      "notes": 4277,
+      "duration": 269.69044233750003,
+      "split": "development"
+    },
+    {
+      "file": "0046-03-radiohead_2000-the_national_anthem.mid",
+      "sha256": "07227a13983380b1df08b205532b40ce2c889a43f57db26f3510110f4bc67c4f",
+      "aliases": [
+        "0046-03-radiohead_2000-the_national_anthem.mid"
+      ],
+      "group": "radioheadthenationalanthem",
+      "musicHash": "526c08b39c080435e9f5f26f835694c7efddd5161472d2985c0a3400716e2a32",
+      "notes": 3422,
+      "duration": 325.2373552875,
+      "split": "development"
+    },
+    {
+      "file": "0047-05-radiohead_2000-treefingers.mid",
+      "sha256": "4163a3369d4888f61ab8ea0d4b4f25d5739903a1b6e467b0e0731a270d0d13ef",
+      "aliases": [
+        "0047-05-radiohead_2000-treefingers.mid"
+      ],
+      "group": "radioheadtreefingers",
+      "musicHash": "2202900fb8b1a523458f9b510444356a92a01b48016426b6e25bb5d2ed5fd276",
+      "notes": 162,
+      "duration": 167.67445898333332,
+      "split": "development"
+    },
+    {
+      "file": "0048-06-radiohead_2000-optimistic-[k].mid",
+      "sha256": "265a37e13d9ca1706de0642fcc1c96abd08736d61a842545f6748fd015d23033",
+      "aliases": [
+        "0048-06-radiohead_2000-optimistic-[k].mid"
+      ],
+      "group": "radioheadoptimistic",
+      "musicHash": "3136598ee9e20b9bba6f4273bbe4587f071e5dfeb45ff8193ac50c39da92576b",
+      "notes": 9107,
+      "duration": 335.47858549999995,
+      "split": "development"
+    },
+    {
+      "file": "0049-07-radiohead_2000-in_limbo.mid",
+      "sha256": "a912ef58e1de55af2a9871561410d77b932f53ee67171e9233db83f63c7bd809",
+      "aliases": [
+        "0049-07-radiohead_2000-in_limbo.mid"
+      ],
+      "group": "radioheadinlimbo",
+      "musicHash": "8476f68d3e6851305209469b77a4b2220bd172881db821d9d3f6dc0b964d5296",
+      "notes": 3063,
+      "duration": 179.99542225,
+      "split": "development"
+    },
+    {
+      "file": "0050-08-radiohead_2000-idioteque.mid",
+      "sha256": "ce19521f7feb85da2bb4799bd16597b9c1c845153f907ab9b78e707658798f39",
+      "aliases": [
+        "0050-08-radiohead_2000-idioteque.mid"
+      ],
+      "group": "radioheadidioteque",
+      "musicHash": "a772e1aca9d0fa544f6d21020066b8da6e998d482f8ae4060ceb3698489b83d7",
+      "notes": 5082,
+      "duration": 302.86776,
+      "split": "holdout"
+    },
+    {
+      "file": "0051-09-radiohead_2000-morning_bell-[k].mid",
+      "sha256": "03adf5c5e76ac7e09796ebd6bcca1e3e5a43c1dd10f67702d3ee87eef6ccafdb",
+      "aliases": [
+        "0051-09-radiohead_2000-morning_bell-[k].mid"
+      ],
+      "group": "radioheadmorningbell",
+      "musicHash": "ea5ac4dc35bf6c25156ba360bf129644e37e92640679e546d8ea3952a4606d55",
+      "notes": 5612,
+      "duration": 272.342865,
+      "split": "development"
+    },
+    {
+      "file": "0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid",
+      "sha256": "d2d8c6d3f3fd5ceca622e314805a734fca6999ab7ea671c43ca1b3222635285c",
+      "aliases": [
+        "0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid"
+      ],
+      "group": "radioheadmotionpicturesoundtrack",
+      "musicHash": "afdf9ff56e49f084868c682092315d3e64740ba3cba95b01c371bbcd744db968",
+      "notes": 2334,
+      "duration": 188.4459209375,
+      "split": "development"
+    },
+    {
+      "file": "0053-01-radiohead_2001-packt_like_sardines_in_a_crushd_tin_box-[k].mid",
+      "sha256": "710b3c562ef7cd02f7d23d5ef5257f28637d7a11c0ba59fa45e51ca78cd8e042",
+      "aliases": [
+        "0053-01-radiohead_2001-packt_like_sardines_in_a_crushd_tin_box-[k].mid"
+      ],
+      "group": "radioheadpacktlikesardinesinacrushdtinbox",
+      "musicHash": "b2c75644bcf3ea7008c74dbcfbfbaf85e6bf201db46890f3d94c96f93ec90016",
+      "notes": 5782,
+      "duration": 248.674332,
+      "split": "development"
+    },
+    {
+      "file": "0054-02-radiohead_2001-pyramid_song.mid",
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "aliases": [
+        "0054-02-radiohead_2001-pyramid_song.mid"
+      ],
+      "group": "radioheadpyramidsong",
+      "musicHash": "441fa78a5e5620617963cac8d6e78b2ee8e4901ecc193d3e19d66ff7203e6367",
+      "notes": 2503,
+      "duration": 287.97615447916667,
+      "split": "holdout"
+    },
+    {
+      "file": "0055-04-radiohead_2001-you_and_whose_army-[k].mid",
+      "sha256": "161040d97741cc5c4793daa69ceea8c88eb1d50abc6710b884313898f9a6b04b",
+      "aliases": [
+        "0055-04-radiohead_2001-you_and_whose_army-[k].mid"
+      ],
+      "group": "radioheadyouandwhosearmy",
+      "musicHash": "d08b5f88bc8889fbdfd83c2ec31220f3bef01a5a50835bf1a09e45b36e7116d0",
+      "notes": 2070,
+      "duration": 202.09680799999998,
+      "split": "holdout"
+    },
+    {
+      "file": "0056-05-radiohead_2001-i_might_be_wrong.mid",
+      "sha256": "acc3055039f43ba3976d311fa010733e7449f6e83d30d9571fe824e4f1170f30",
+      "aliases": [
+        "0056-05-radiohead_2001-i_might_be_wrong.mid"
+      ],
+      "group": "radioheadimightbewrong",
+      "musicHash": "9738ce6ac8b6a1d25863fb24a261fc3f9cc3795c4a2f8c2f00f521a0da9051df",
+      "notes": 5642,
+      "duration": 288.9714903229166,
+      "split": "holdout"
+    },
+    {
+      "file": "0057-06-radiohead_2001-knives_out-[k].mid",
+      "sha256": "7dceb146c7af96b4d40cb38ddf4b4a48df2bdc67eb5d3b7f5713785d57b5563e",
+      "aliases": [
+        "0057-06-radiohead_2001-knives_out-[k].mid"
+      ],
+      "group": "radioheadknivesout",
+      "musicHash": "db1a8b618c92ee59265a4cb2775ac393ed1ef0eda8856b097f3c00ff98717f0c",
+      "notes": 5299,
+      "duration": 258.628224,
+      "split": "development"
+    },
+    {
+      "file": "0058-08-radiohead_2001-dollars_and_cents.mid",
+      "sha256": "5dd71eef6121405258a58cbd424c0ffe547e24e5c69c96a21ff2dcbdd82a2c70",
+      "aliases": [
+        "0058-08-radiohead_2001-dollars_and_cents.mid"
+      ],
+      "group": "radioheaddollarsandcents",
+      "musicHash": "8a7bc717bf9daeb273a82a84f294dc5c08253620d350de2c75b423248009d49d",
+      "notes": 5961,
+      "duration": 286.75228677499996,
+      "split": "holdout"
+    },
+    {
+      "file": "0059-09-radiohead_2001-hunting_bears.mid",
+      "sha256": "2d172589d56f47c797be44707c2ed55ffd68e868201d952f6491e2c4f7828571",
+      "aliases": [
+        "0059-09-radiohead_2001-hunting_bears.mid"
+      ],
+      "group": "radioheadhuntingbears",
+      "musicHash": "86f861e522c00a0574b7ad81ec41974071f0c33244bc6f5ce39176c7b0485e1c",
+      "notes": 110,
+      "duration": 122.119050375,
+      "split": "development"
+    },
+    {
+      "file": "0060-11-radiohead_2001-life_in_a_glass_house-[k].mid",
+      "sha256": "9cd803df51e1c64a0bad5b906fcf0a76c90323d9f175d0741568d3e0a31fd78e",
+      "aliases": [
+        "0060-11-radiohead_2001-life_in_a_glass_house-[k].mid"
+      ],
+      "group": "radioheadlifeinaglasshouse",
+      "musicHash": "22ee33b52452286e4ca5ce837228e3a40486b78a14cdd7d2b53185cd0009c0a9",
+      "notes": 2748,
+      "duration": 261.39244,
+      "split": "development"
+    },
+    {
+      "file": "0061-04-radiohead_2001-like_spinning_plates_(live).mid",
+      "sha256": "f25b11a21857a0505ae5ffd88e2229eafc52130e5cc62a0896b06b62e7143bdb",
+      "aliases": [
+        "0061-04-radiohead_2001-like_spinning_plates_(live).mid"
+      ],
+      "group": "radioheadlikespinningplates",
+      "musicHash": "c8217fde489753cf736f90141d31c9c0989c3a66ae60e2a8536c6e35f3798fc8",
+      "notes": 1507,
+      "duration": 220.1340520458333,
+      "split": "development"
+    },
+    {
+      "file": "0062-08-radiohead_2001-true_love_waits_(live).mid",
+      "sha256": "17e2467e8cd95434b6a4e509710c79d957098e98f13c37ceaeb43e59cf1969c1",
+      "aliases": [
+        "0062-08-radiohead_2001-true_love_waits_(live).mid"
+      ],
+      "group": "radioheadtruelovewaits",
+      "musicHash": "e374c163ede7193894041afc98ecc77fd4b943158b6e9ee052313a372ec52e86",
+      "notes": 8789,
+      "duration": 294.19148875,
+      "split": "development"
+    },
+    {
+      "file": "0063-01-radiohead_2003-2+2=5-[k].mid",
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "aliases": [
+        "0063-01-radiohead_2003-2+2=5-[k] (2).mid",
+        "0063-01-radiohead_2003-2+2=5-[k] (3).mid",
+        "0063-01-radiohead_2003-2+2=5-[k]-1.mid",
+        "0063-01-radiohead_2003-2+2=5-[k]-2.mid",
+        "0063-01-radiohead_2003-2+2=5-[k]-3.mid",
+        "0063-01-radiohead_2003-2+2=5-[k]-4.mid",
+        "0063-01-radiohead_2003-2+2=5-[k].mid"
+      ],
+      "group": "radiohead225",
+      "musicHash": "78915c92171876d094f92838d3731301e4c7650fe0de0cee7276330594261273",
+      "notes": 6414,
+      "duration": 202.356681,
+      "split": "development"
+    },
+    {
+      "file": "0064-02-radiohead_2003-sit_down_stand_up-[k].mid",
+      "sha256": "14012c9c0c5705807725c3bead4a2c7ed0ede5619461dad235cc6bb5f4dd7659",
+      "aliases": [
+        "0064-02-radiohead_2003-sit_down_stand_up-[k].mid"
+      ],
+      "group": "radioheadsitdownstandup",
+      "musicHash": "cf6dfd43b51138feefda71055f53289b8928a1ac1c739db69596195260af4e0e",
+      "notes": 8541,
+      "duration": 271.87973999999997,
+      "split": "development"
+    },
+    {
+      "file": "0065-03-radiohead_2003-sail_to_the_moon.mid",
+      "sha256": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+      "aliases": [
+        "0065-03-radiohead_2003-sail_to_the_moon.mid"
+      ],
+      "group": "radioheadsailtothemoon",
+      "musicHash": "5b2f637903d896c647add1bec5d4078b01d3510e7b6596b17e49f935aed6e851",
+      "notes": 1996,
+      "duration": 352.9595152499999,
+      "split": "development"
+    },
+    {
+      "file": "0066-04-radiohead_2003-backdrift-[intro].mid",
+      "sha256": "0be5d1651dde3c356cf350e6e6acbd0939bdc93d873ac7dde17544d02a3ce751",
+      "aliases": [
+        "0066-04-radiohead_2003-backdrift-[intro].mid"
+      ],
+      "group": "radioheadbackdrift",
+      "musicHash": "53a469d3fed25bc1565629e3793010c1e4179f529e7fea3df2352381d86e58e3",
+      "notes": 893,
+      "duration": 190.53697325,
+      "split": "development"
+    },
+    {
+      "file": "0067-05-radiohead_2003-go_to_sleep-[k].mid",
+      "sha256": "c13d8318345a12556e42e07f8d4b1e4eb80c53ca61a3ae7b24f07ed6d9306341",
+      "aliases": [
+        "0067-05-radiohead_2003-go_to_sleep-[k].mid"
+      ],
+      "group": "radioheadgotosleep",
+      "musicHash": "78d3cd6b288c9ed78f68deb491600d5355b1b144639a3af0cd206e9b04860bf4",
+      "notes": 7052,
+      "duration": 213.321024,
+      "split": "development"
+    },
+    {
+      "file": "0068-06-radiohead-2003-where_i_end_and_you_begin.mid",
+      "sha256": "f54991424a09ecd3b55a7e59c14c17d079ad786fb4363c87d7041d3c9053fccf",
+      "aliases": [
+        "0068-06-radiohead-2003-where_i_end_and_you_begin-1.mid",
+        "0068-06-radiohead-2003-where_i_end_and_you_begin-2.mid",
+        "0068-06-radiohead-2003-where_i_end_and_you_begin.mid"
+      ],
+      "group": "radioheadwhereiendandyoubegin",
+      "musicHash": "f3a54343871057d1c4e2561392eee1649b1fa72eb95b5837ea49d88d118774a9",
+      "notes": 7559,
+      "duration": 262.27126599999997,
+      "split": "development"
+    },
+    {
+      "file": "0069-07-radiohead-2003-we_suck_young_blood-[k].mid",
+      "sha256": "af3f57f17338975d41522a4a860040c4822a6971cd1e1afd2e8f93c4870caaf5",
+      "aliases": [
+        "0069-07-radiohead-2003-we_suck_young_blood-[k].mid"
+      ],
+      "group": "radioheadwesuckyoungblood",
+      "musicHash": "d6dea2f339a1e49cc3e7a1647d47089b0fd7ded6c7de0a2afffcf8dc0a4460b3",
+      "notes": 2282,
+      "duration": 294.94120225,
+      "split": "development"
+    },
+    {
+      "file": "0070-08-radiohead_2003-the_gloaming.mid",
+      "sha256": "d17e2544d26e675966eac7adcaaff5be5b5aae65f94787336eadd2d7bc66bacd",
+      "aliases": [
+        "0070-08-radiohead_2003-the_gloaming.mid"
+      ],
+      "group": "radioheadthegloaming",
+      "musicHash": "8965ae8670a7e7daa598aaf950f6272e07697bc9e4df5e524423ce32aa87f59c",
+      "notes": 2922,
+      "duration": 199.51219480833333,
+      "split": "development"
+    },
+    {
+      "file": "0071-09-radiohead_2003-there_there-[k].mid",
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "aliases": [
+        "0071-09-radiohead_2003-there_there-[k] (2).mid",
+        "0071-09-radiohead_2003-there_there-[k] (3).mid",
+        "0071-09-radiohead_2003-there_there-[k]-1.mid",
+        "0071-09-radiohead_2003-there_there-[k]-2.mid",
+        "0071-09-radiohead_2003-there_there-[k].mid"
+      ],
+      "group": "radioheadtherethere",
+      "musicHash": "f12a8090d5943b5704042314e1d998cc029bbdd7caeef1fe0a0c69b012d454e0",
+      "notes": 8505,
+      "duration": 327.636254,
+      "split": "development"
+    },
+    {
+      "file": "0072-10-radiohead_2003-i_will.mid",
+      "sha256": "07f2d5234e743265e35f7418f7f649a4436bbcc87b647a9677edf3e17f8e9c0d",
+      "aliases": [
+        "0072-10-radiohead_2003-i_will.mid"
+      ],
+      "group": "radioheadiwill",
+      "musicHash": "a413b76570e0cb00a4cd2254b36a0b21e14e9c5ad904ce469cf33df594dae6dd",
+      "notes": 584,
+      "duration": 121.80593124999999,
+      "split": "development"
+    },
+    {
+      "file": "0073-11-radiohead_2003-a_punchup_at_a_wedding-[k].mid",
+      "sha256": "3f2561b774ff7f1dc4bfee9c64ba659328baed7a61f6b3fef9d7a607d1becafe",
+      "aliases": [
+        "0073-11-radiohead_2003-a_punchup_at_a_wedding-[k].mid"
+      ],
+      "group": "radioheadapunchupatawedding",
+      "musicHash": "4f06d8461e3f43956a01d0a3cd79584d76b6e5a1ca2073bab553f2c98b466487",
+      "notes": 5970,
+      "duration": 306.64125199999995,
+      "split": "holdout"
+    },
+    {
+      "file": "0074-12-radiohead_2003-myxomatosis.mid",
+      "sha256": "43ee700dcfb15479daf6001f8e0ee21d78dbffde965b3cf6a54790d49dbd5d63",
+      "aliases": [
+        "0074-12-radiohead_2003-myxomatosis.mid"
+      ],
+      "group": "radioheadmyxomatosis",
+      "musicHash": "0ec123378496e03acd12c32a9c74b6979b35bcf5d097ef37fa514e91f2ed715e",
+      "notes": 4017,
+      "duration": 232.56718409374997,
+      "split": "development"
+    },
+    {
+      "file": "0075-13-radiohead_2003-scatterbrain-[k].mid",
+      "sha256": "ade84e57f05c01ceeaef30d47a4a81c3e10e4b876d3727d3fd8199e8c5a96c52",
+      "aliases": [
+        "0075-13-radiohead_2003-scatterbrain-[k].mid"
+      ],
+      "group": "radioheadscatterbrain",
+      "musicHash": "5dde6e42b96c352c9b020d4ccecf7f019feacae0948a72b3e7342141eedb162e",
+      "notes": 2878,
+      "duration": 210.78573199999997,
+      "split": "development"
+    },
+    {
+      "file": "0076-14-radiohead_2003-a_wolf_at_the_door.mid",
+      "sha256": "55461f8409deea548d720c86795e1e9e63651d4ff6cef1ec11b75f0ec3d75efc",
+      "aliases": [
+        "0076-14-radiohead_2003-a_wolf_at_the_door.mid"
+      ],
+      "group": "radioheadawolfatthedoor",
+      "musicHash": "eeb7ad0442d851a87ca519ca27c7b3d7baa6116378b30df0977c0442384eb97f",
+      "notes": 3240,
+      "duration": 199.66016069999998,
+      "split": "development"
+    },
+    {
+      "file": "0077-04-radiohead_2004-paperbag_writer.mid",
+      "sha256": "e910c9e221741edf83d39cac024e7e171a7903ffd3a99634a708bb769c372e30",
+      "aliases": [
+        "0077-04-radiohead_2004-paperbag_writer.mid"
+      ],
+      "group": "radioheadpaperbagwriter",
+      "musicHash": "cb751d21d6cc30041c5bbfa99499b57e0645fe54683e665cba693bd54f98ab55",
+      "notes": 4036,
+      "duration": 238.41034866666664,
+      "split": "development"
+    },
+    {
+      "file": "0078-06-radiohead_2004-i_am_citizen_insane.mid",
+      "sha256": "f9e6b9f88598a97000f52d0e95bb495272cc58c2be98e130ae42c889d6bc7fc4",
+      "aliases": [
+        "0078-06-radiohead_2004-i_am_citizen_insane.mid"
+      ],
+      "group": "radioheadiamcitizeninsane",
+      "musicHash": "91cc575c0aa28252f7c0f90e9cce809b5038c9025c6796ab5017280a661bc238",
+      "notes": 2629,
+      "duration": 199.62242523333333,
+      "split": "development"
+    },
+    {
+      "file": "0079-01-radiohead_2007-15_step-[k].mid",
+      "sha256": "c3bec792de58440ac6adefe68c7be0dc075bfce82066ebcfa73e862b0df4d6de",
+      "aliases": [
+        "0079-01-radiohead_2007-15_step-[k]-1.mid",
+        "0079-01-radiohead_2007-15_step-[k].mid"
+      ],
+      "group": "radiohead15step",
+      "musicHash": "a38217183201e97164519ef1a53019efee52ae2c1f04cac38c21dac9b1a7c7d8",
+      "notes": 4164,
+      "duration": 255.31294046250002,
+      "split": "development"
+    },
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "aliases": [
+        "0080-02-radiohead_2007-bodysnatchers-[k] (2).mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k] (3).mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-1.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-2.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-3.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-4.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-5.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-6.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-7.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-8.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k]-9.mid",
+        "0080-02-radiohead_2007-bodysnatchers-[k].mid"
+      ],
+      "group": "radioheadbodysnatchers",
+      "musicHash": "9d1e3d313186bdf6e5bbde19702fd1a09eaed8c0f9a7eca5a1382d2d018d2433",
+      "notes": 9364,
+      "duration": 237.15121655,
+      "split": "development"
+    },
+    {
+      "file": "0081-03-radiohead_2007-nude.mid",
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "aliases": [
+        "0081-03-radiohead_2007-nude (2).mid",
+        "0081-03-radiohead_2007-nude.mid"
+      ],
+      "group": "radioheadnude",
+      "musicHash": "88a0e635bf40afb2e0823b7f46c4c09404aedcbcb828fa24b8c0db2fce4f9a7e",
+      "notes": 2819,
+      "duration": 233.75682300000003,
+      "split": "development"
+    },
+    {
+      "file": "0082-04-radiohead_2007-weird_fishes-arpegi.mid",
+      "sha256": "441b44a841c48ef9c9925649adfde3740217a6a0117e1521a3e2836e417c8cce",
+      "aliases": [
+        "0082-04-radiohead_2007-weird_fishes-arpegi-1.mid",
+        "0082-04-radiohead_2007-weird_fishes-arpegi.mid"
+      ],
+      "group": "radioheadweirdfishesarpegi",
+      "musicHash": "152557c672891dd0a6c2234ed85cc08788c172763b03a8fd44ceac049e9bfb63",
+      "notes": 5882,
+      "duration": 304.5371792666666,
+      "split": "development"
+    },
+    {
+      "file": "0083-05-radiohead_2007-all_i_need.mid",
+      "sha256": "d1f1954bbb60aeab8a54c80a45a55d2008debd907b933ac3bee926720bb9d3b0",
+      "aliases": [
+        "0083-05-radiohead_2007-all_i_need.mid"
+      ],
+      "group": "radioheadallineed",
+      "musicHash": "863d6824d5769c81a070cb9903a5042b71b431622cd8e9e8a255b5b8ea391dfc",
+      "notes": 2204,
+      "duration": 215.99668222916665,
+      "split": "development"
+    },
+    {
+      "file": "0084-06-radiohead_2007-faust_arp.mid",
+      "sha256": "770095b6d0063608e06aa34d9a3000b8359df7f9db53e521df269357c1f2b922",
+      "aliases": [
+        "0084-06-radiohead_2007-faust_arp.mid"
+      ],
+      "group": "radioheadfaustarp",
+      "musicHash": "f032db8121128584a706f14ab3063e705142430e60d5f705112e6fc7b34acef9",
+      "notes": 1078,
+      "duration": 129.35087525,
+      "split": "development"
+    },
+    {
+      "file": "0085-07-radiohead_2007-reckoner-[k].mid",
+      "sha256": "9db449b977ac482c711e149d8049ec3c40ad54ab4cb52b4595447822411a3a8a",
+      "aliases": [
+        "0085-07-radiohead_2007-reckoner-[k].mid"
+      ],
+      "group": "radioheadreckoner",
+      "musicHash": "aa23c71f67ae7f66bd1dadeda2cbc10989281ded72dbb820b123b97f77a4e9f9",
+      "notes": 9654,
+      "duration": 285.27406057499996,
+      "split": "holdout"
+    },
+    {
+      "file": "0086-08-radiohead_2007-house_of_cards.mid",
+      "sha256": "d98730d50269e54f4160f289addc8764badd14509e644ba3dea0d3298f43a7b9",
+      "aliases": [
+        "0086-08-radiohead_2007-house_of_cards.mid"
+      ],
+      "group": "radioheadhouseofcards",
+      "musicHash": "737bc2f96ccf58d07469efcce33628e0bbea9400b09e1d55816a0b7c1b3f4797",
+      "notes": 4965,
+      "duration": 322.22464906666664,
+      "split": "development"
+    },
+    {
+      "file": "0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "aliases": [
+        "0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place (3).mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place (4).mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-1.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-2.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-3.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-4.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-5.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place-6.mid",
+        "0087-09-radiohead_2007-jigsaw_falling_into_place.mid"
+      ],
+      "group": "radioheadjigsawfallingintoplace",
+      "musicHash": "4158b7299190cc1006204b5af2ddc15177d616205bdeaa28d48450f787359351",
+      "notes": 7461,
+      "duration": 235.76311741249998,
+      "split": "development"
+    },
+    {
+      "file": "0088-10-radiohead_2007-videotape.mid",
+      "sha256": "454bb4054fd63ef0609d48965c0dbfc7b57018b0aedf8e75d44bc4846d3544cf",
+      "aliases": [
+        "0088-10-radiohead_2007-videotape.mid"
+      ],
+      "group": "radioheadvideotape",
+      "musicHash": "cd87aa3b225f53cf22db10560fd6f06c989a3526e1345f1ac98a5289d36b500d",
+      "notes": 3380,
+      "duration": 283.6259757625,
+      "split": "development"
+    },
+    {
+      "file": "0089-02-radiohead_2007-down_is_the_new_up.mid",
+      "sha256": "eba6977a270ebb4bffb010a6935640f10429f809733a70cf7b6b2b5acc0039e9",
+      "aliases": [
+        "0089-02-radiohead_2007-down_is_the_new_up.mid"
+      ],
+      "group": "radioheaddownisthenewup",
+      "musicHash": "285eb3f4b40564f747201fd140d2466879b02a8592a1a7a924cb753975329c87",
+      "notes": 3808,
+      "duration": 309.815599275,
+      "split": "holdout"
+    },
+    {
+      "file": "0090-03-radiohead_2007-go_slowly.mid",
+      "sha256": "ecfce2c0941ccce07ec5e63d0f509ff74ed75f9f07fbd83edb4d967531b9eb2b",
+      "aliases": [
+        "0090-03-radiohead_2007-go_slowly.mid"
+      ],
+      "group": "radioheadgoslowly",
+      "musicHash": "b0f82163640445fad5f2e7363d8d4ca2f72644b5fba242cfdf35a3a32cb0d458",
+      "notes": 1921,
+      "duration": 183.99791666666667,
+      "split": "holdout"
+    },
+    {
+      "file": "0091-05-radiohead_2007-last_flowers.mid",
+      "sha256": "af2ed20ab0120f51bbff3953e48c84f73e3b87efc8562865a8f2a232b1bbb9e1",
+      "aliases": [
+        "0091-05-radiohead_2007-last_flowers.mid"
+      ],
+      "group": "radioheadlastflowers",
+      "musicHash": "d27f7295560e8b3d6e471818e8d9cf3cf0b6e2e7f16a9d7b5cdf0143b74ad675",
+      "notes": 1997,
+      "duration": 232.49843750000002,
+      "split": "holdout"
+    },
+    {
+      "file": "0092-07-radiohead_2007-bangers_and_mash.mid",
+      "sha256": "a53a247b0f8fe03e77e13234b3132b8a1f98461954e4b209e092244994600498",
+      "aliases": [
+        "0092-07-radiohead_2007-bangers_and_mash.mid"
+      ],
+      "group": "radioheadbangersandmash",
+      "musicHash": "f125f0b82ad067edf5b7c4eecfd8ec83d0936112f80e4e7cf5e1930d16de512c",
+      "notes": 4038,
+      "duration": 198.56560031666666,
+      "split": "development"
+    },
+    {
+      "file": "0093-08-radiohead_2007-4_minutes_warning.mid",
+      "sha256": "5e7cfb72712b4a224f6fe0bd7ea075660d7a9499e2ec2730b80a9091c564bf92",
+      "aliases": [
+        "0093-08-radiohead_2007-4_minutes_warning.mid"
+      ],
+      "group": "radiohead4minuteswarning",
+      "musicHash": "1f5bf32e298d2658cc4440cf28e3fa074e3f2912c361c8771d2e7da6a2fd454b",
+      "notes": 1596,
+      "duration": 227.97916666666666,
+      "split": "development"
+    },
+    {
+      "file": "0094-01-radiohead_2011-bloom.mid",
+      "sha256": "ff01241322d61e124f03a726b167f0623916b891947c035571d924a8dd4410f6",
+      "aliases": [
+        "0094-01-radiohead_2011-bloom.mid"
+      ],
+      "group": "radioheadbloom",
+      "musicHash": "c059a7a8702a5eed8339213a5cfb5133c097f3f2f4b67427ad7c75794bdb08d0",
+      "notes": 5565,
+      "duration": 268.90427655,
+      "split": "development"
+    },
+    {
+      "file": "0095-03-radiohead_2011-little_by_little.mid",
+      "sha256": "da2220adbd67957b9e943d567a65b8863f90c7b4f34ad23f86e33d7e79baa90a",
+      "aliases": [
+        "0095-03-radiohead_2011-little_by_little.mid"
+      ],
+      "group": "radioheadlittlebylittle",
+      "musicHash": "29fcca72dc6909a5e55a95a0caa306cf21638070ab9d9bdd7706b89532fac140",
+      "notes": 6551,
+      "duration": 265.03471635,
+      "split": "development"
+    },
+    {
+      "file": "0096-04-radiohead_2011-feral.mid",
+      "sha256": "5f1e2b3acdbf6baeb82fa4ff57e73c3838bb62e324321fc7547a4d2e53d2649a",
+      "aliases": [
+        "0096-04-radiohead_2011-feral.mid"
+      ],
+      "group": "radioheadferal",
+      "musicHash": "bee87139dc7b5db54be4b34f557bc468489e7a2336fb356ec7f7d8d483669c7a",
+      "notes": 6081,
+      "duration": 188.93135552083334,
+      "split": "development"
+    },
+    {
+      "file": "0097-05-radiohead_2011-lotus_flower.mid",
+      "sha256": "7345684ba84ca5dead87505a93a8a11f1be655bd56f9e9c6e4ab08eb8bc3469e",
+      "aliases": [
+        "0097-05-radiohead_2011-lotus_flower.mid"
+      ],
+      "group": "radioheadlotusflower",
+      "musicHash": "3d804326ad7b84d5aae3fb782e869070c5ebfff1637968a3de31d3e6810e959b",
+      "notes": 2649,
+      "duration": 313.99791666666664,
+      "split": "development"
+    },
+    {
+      "file": "0098-06-radiohead_2011-codex.mid",
+      "sha256": "af93dab3e5803769c77d00ae6bd2d624ddc502b3ac59d545d5cade7ee9519e70",
+      "aliases": [
+        "0098-06-radiohead_2011-codex.mid"
+      ],
+      "group": "radioheadcodex",
+      "musicHash": "7b2bf820eb7e9cffe0f8141c532a031bc982cf2373194dbe1d9913927269dc7f",
+      "notes": 2092,
+      "duration": 251.60056323749998,
+      "split": "development"
+    },
+    {
+      "file": "0099-08-radiohead_2011-separator.mid",
+      "sha256": "d87fb3e9127673bf0b50228cdae83b39b8c5ea4dd02ec2d3134a39517e25d257",
+      "aliases": [
+        "0099-08-radiohead_2011-separator.mid"
+      ],
+      "group": "radioheadseparator",
+      "musicHash": "e154af25667a23f3639c4d99713eddb2f0a99169109b90cc218a8663fcf39f35",
+      "notes": 4184,
+      "duration": 310.70907572500005,
+      "split": "development"
+    },
+    {
+      "file": "0100-01-radiohead_2016-burn_the_witch.mid",
+      "sha256": "1a45c8ec816a0e7a948501f98ae5ac7d343a04d43f0230d59be003e23e80b2ee",
+      "aliases": [
+        "0100-01-radiohead_2016-burn_the_witch.mid"
+      ],
+      "group": "radioheadburnthewitch",
+      "musicHash": "da4fd4953fe15cd4a74a08689817fab3957072be1ae1856a16f5e5d727da2b88",
+      "notes": 3445,
+      "duration": 217.58333333333331,
+      "split": "holdout"
+    },
+    {
+      "file": "0101-02-radiohead_2016-daydreaming.mid",
+      "sha256": "7286e374b204543827896cd4bf1cc7415c8755dd03d0fe11f17bfffa1b23a314",
+      "aliases": [
+        "0101-02-radiohead_2016-daydreaming.mid"
+      ],
+      "group": "radioheaddaydreaming",
+      "musicHash": "3d77f7804c20d08eb156584d9ecb02ecc4654531f39d7bdb3968782da6977842",
+      "notes": 2010,
+      "duration": 316.77,
+      "split": "development"
+    },
+    {
+      "file": "0102-03-radiohead_2016-decks_dark.mid",
+      "sha256": "7e68b519d75fef9371e1d669b2e5a24bf60e6c6f13fe0d8dbf97c125bb3ca72a",
+      "aliases": [
+        "0102-03-radiohead_2016-decks_dark.mid"
+      ],
+      "group": "radioheaddecksdark",
+      "musicHash": "1a1cabe3abd561424a8a5f6e576df6c65edd661fc2aefad9bbe2d8d5afc61935",
+      "notes": 3397,
+      "duration": 278.55686430000003,
+      "split": "development"
+    },
+    {
+      "file": "0103-04-radiohead_2016-desert_island_disk.mid",
+      "sha256": "bbc95afbccd593b66c0e8b38b30e13dcc62ddf912fbabe5e17496fb1fcbc00c1",
+      "aliases": [
+        "0103-04-radiohead_2016-desert_island_disk.mid"
+      ],
+      "group": "radioheaddesertislanddisk",
+      "musicHash": "89c96fae74ca1e3e373202cb7ce2b8ba5da77ee8e995343f014f6cca0e713ac8",
+      "notes": 2140,
+      "duration": 222.53179963749997,
+      "split": "development"
+    },
+    {
+      "file": "0104-05-radiohead_2016-ful_stop.mid",
+      "sha256": "fc35c1167e0511a172a58d31778bb3ab217761f6ea03d6610067aad913d49853",
+      "aliases": [
+        "0104-05-radiohead_2016-ful_stop.mid"
+      ],
+      "group": "radioheadfulstop",
+      "musicHash": "f371d20b630e73ff03eff3845f9cc3796100fdc971683d6e42d9bb1d7818538c",
+      "notes": 7602,
+      "duration": 371.99666666666667,
+      "split": "development"
+    },
+    {
+      "file": "0105-06-radiohead_2016-glass_eyes.mid",
+      "sha256": "d31156689aff821fe4d9766b6104985712ee0277b7dcd570a77e5546d8a1cd41",
+      "aliases": [
+        "0105-06-radiohead_2016-glass_eyes.mid"
+      ],
+      "group": "radioheadglasseyes",
+      "musicHash": "42a3e2cd1f5ed93e77a2848fbc2c8ed081dea1882c1237b1910cacc4f5c3610f",
+      "notes": 778,
+      "duration": 162.97970458333333,
+      "split": "development"
+    },
+    {
+      "file": "0106-07-radiohead_2016-identikit.mid",
+      "sha256": "a551e16fe12cf4bc10450d93af1bca170a1e71dfee1f4f06029d39c0b93330e0",
+      "aliases": [
+        "0106-07-radiohead_2016-identikit.mid"
+      ],
+      "group": "radioheadidentikit",
+      "musicHash": "d23dbcaa214c50b1573e193dae830d77545db5d544993175f9116973198ab45b",
+      "notes": 3024,
+      "duration": 263.9051415,
+      "split": "development"
+    },
+    {
+      "file": "0107-08-radiohead_2016-the_numbers.mid",
+      "sha256": "6f000f2069ad50579a33c0b6673435719592d00153bd3a98d8582a57f7a5d9fe",
+      "aliases": [
+        "0107-08-radiohead_2016-the_numbers.mid"
+      ],
+      "group": "radioheadthenumbers",
+      "musicHash": "73f0b02e856cd41b8fb63ec55b95657493783af6784f526c69ae7459c12d039d",
+      "notes": 3733,
+      "duration": 278.990625,
+      "split": "holdout"
+    },
+    {
+      "file": "0108-09-radiohead_2016-present_tense.mid",
+      "sha256": "228e184fe57cd7ac6276065448312bfefa30aa055ca2b67eaae148ddd6d4acbd",
+      "aliases": [
+        "0108-09-radiohead_2016-present_tense.mid"
+      ],
+      "group": "radioheadpresenttense",
+      "musicHash": "e052d69988b54dbc13c473e228464ea90d4a56f173d761eec509379913211a12",
+      "notes": 3838,
+      "duration": 298.09428969999993,
+      "split": "development"
+    },
+    {
+      "file": "0109-10-radiohead_2016-tinker_tailor_soldier_sailor_rich_man_poor_man_beggar_man_thief.mid",
+      "sha256": "00b39fe64be5b430da609005c4b148aa4ffae3238bb683e3077532551820e57e",
+      "aliases": [
+        "0109-10-radiohead_2016-tinker_tailor_soldier_sailor_rich_man_poor_man_beggar_man_thief.mid"
+      ],
+      "group": "radioheadtinkertailorsoldiersailorrichmanpoormanbeggarmanthief",
+      "musicHash": "81a65f0fd7a043a8751a98974eb9db801710fbc9af5cc3ed9ef9f79887189798",
+      "notes": 1699,
+      "duration": 274.6552809,
+      "split": "holdout"
+    },
+    {
+      "file": "0110-11-radiohead_2016-true_love_waits.mid",
+      "sha256": "bd89b7c97856f4770f5483ac7c31a122f54824c9faf0ab8a58b872b62c24514d",
+      "aliases": [
+        "0110-11-radiohead_2016-true_love_waits.mid"
+      ],
+      "group": "radioheadtruelovewaits",
+      "musicHash": "9965be1810601f1b55cb947867a2774b00ddf42484f5c0ceacd5df996636208e",
+      "notes": 683,
+      "duration": 261.3711672,
+      "split": "development"
+    },
+    {
+      "file": "0111-radiohead_1993-yes_i_am.mid",
+      "sha256": "9a3767103faf1aaa05074ee6ee4e34a789131a0a6fe287dccca0598f57f72d0e",
+      "aliases": [
+        "0111-radiohead_1993-yes_i_am.mid"
+      ],
+      "group": "radioheadyesiam",
+      "musicHash": "dc513df334251e9c0caf2e6aa15071c7808d2b6b0cbf804d1612101ac7f04a57",
+      "notes": 7060,
+      "duration": 261.17411999999996,
+      "split": "development"
+    },
+    {
+      "file": "0112-radiohead_1995-maquiladora.mid",
+      "sha256": "44794f0950572eadbdb489e31ded42bf1753ab9a128dc10a6ef2de5c5a0a23ef",
+      "aliases": [
+        "0112-radiohead_1995-maquiladora.mid"
+      ],
+      "group": "radioheadmaquiladora",
+      "musicHash": "e0b60bd04b061a1f512f29392d8d9c6a9b7c5555ee3d39807bc00654799b4b46",
+      "notes": 4291,
+      "duration": 193.8426,
+      "split": "development"
+    },
+    {
+      "file": "0113-radiohead_1995-nobody_does_it_better.mid",
+      "sha256": "addba84778e1095c2df501212276326747bd8742841232343b5d70ad755c2ec9",
+      "aliases": [
+        "0113-radiohead_1995-nobody_does_it_better.mid"
+      ],
+      "group": "radioheadnobodydoesitbetter",
+      "musicHash": "76f2192021e448863e3b5f73edf067402d40819acef3d0f0b45562e7340d5d82",
+      "notes": 3551,
+      "duration": 201.22708,
+      "split": "development"
+    },
+    {
+      "file": "0114-radiohead_1996-bishop's_robes.mid",
+      "sha256": "4de801209be094d838f50a52f58f06bf730da3e651f053e632d84ca1c9b58e41",
+      "aliases": [
+        "0114-radiohead_1996-bishop's_robes.mid"
+      ],
+      "group": "radioheadbishopsrobes",
+      "musicHash": "9e0b280ddefbee5ee777022c234ee73a78b9352b95f7ddbd41ee24cb0ad9c3e5",
+      "notes": 555,
+      "duration": 206.26598749999997,
+      "split": "holdout"
+    },
+    {
+      "file": "0115-radiohead_1996-lift.mid",
+      "sha256": "2475ffc1218a9d19c4aaed7d8bd29274ae1b390937753c0fd7209cd4da30f623",
+      "aliases": [
+        "0115-radiohead_1996-lift.mid"
+      ],
+      "group": "radioheadlift",
+      "musicHash": "744f30264070713abab3a387f12bbf230ba6c0bed8b8e2763a8743323d4939a5",
+      "notes": 4304,
+      "duration": 196.49819999999997,
+      "split": "development"
+    },
+    {
+      "file": "0116-radiohead_1996-talk_show_host.mid",
+      "sha256": "f27a509ef3a1b149bc766265093cf6b22bd56a1220d018489e50b6808e8185d5",
+      "aliases": [
+        "0116-radiohead_1996-talk_show_host.mid"
+      ],
+      "group": "radioheadtalkshowhost",
+      "musicHash": "898315fcf3ebf5bdd11fd28e81df207d85c4914794a631efaf390ef8d1e87da5",
+      "notes": 6668,
+      "duration": 273.1014,
+      "split": "development"
+    },
+    {
+      "file": "0117-radiohead_1997-lull.mid",
+      "sha256": "9245f36d8653108233d02e2a991aa4374e9c0e1e70d19dfc80e3c5e04cf94e07",
+      "aliases": [
+        "0117-radiohead_1997-lull.mid"
+      ],
+      "group": "radioheadlull",
+      "musicHash": "29baea9bf3d7180f5b646e32fc281eb5a15258e15c2477c35c6a8b72d8d05682",
+      "notes": 1386,
+      "duration": 134.99892,
+      "split": "development"
+    },
+    {
+      "file": "0118-radiohead_1997-melatonin.mid",
+      "sha256": "fab5cb0134376aed9c998280838074c1e01aa1abce707f5a42bcb12a22e4ea13",
+      "aliases": [
+        "0118-radiohead_1997-melatonin.mid"
+      ],
+      "group": "radioheadmelatonin",
+      "musicHash": "b704b37b89617400f3b81b8c7ba79bf0a22d4f3c9a63b615a98570cd9e0a2ba4",
+      "notes": 723,
+      "duration": 126.99583333333334,
+      "split": "development"
+    },
+    {
+      "file": "0119-radiohead_1997-nude_(big_ideas).mid",
+      "sha256": "8c181f5d9e428a819f915fec6407da71ea67ec551f28786e62dace2dd80aead1",
+      "aliases": [
+        "0119-radiohead_1997-nude_(big_ideas).mid"
+      ],
+      "group": "radioheadnude",
+      "musicHash": "a546d59c6ff0fc061bdd3a570e10adca010b6586f72c1d95da11585e020f51df",
+      "notes": 4705,
+      "duration": 269.99034861666667,
+      "split": "development"
+    },
+    {
+      "file": "0120-radiohead_1997-pearly.mid",
+      "sha256": "8dae045820072f587c6e2ed6f377cbf45f1190a03db2bbb44eef7cc7bc3b8809",
+      "aliases": [
+        "0120-radiohead_1997-pearly.mid"
+      ],
+      "group": "radioheadpearly",
+      "musicHash": "01b1eff43dcdd99d12b40ddbfa64f06cdec4309d5fca8d27de24e1a07d3c8d5a",
+      "notes": 2663,
+      "duration": 201.02543999999997,
+      "split": "development"
+    },
+    {
+      "file": "0121-radiohead_1997-polyethylene_part_1&2-[k].mid",
+      "sha256": "a060d546b52f372eb00a7deb4426bb36f9d76365919adbd84cf52fb80a199f4b",
+      "aliases": [
+        "0121-radiohead_1997-polyethylene_part_1&2-[k].mid"
+      ],
+      "group": "radioheadpolyethylenepart12",
+      "musicHash": "f5e978bbbd85f96280b6a66fdb2471e1141c5b6ddda1de812d6954dd18be1d8a",
+      "notes": 4882,
+      "duration": 253.3004604583333,
+      "split": "development"
+    },
+    {
+      "file": "0122-radiohead_1998-how_i_made_my_millions.mid",
+      "sha256": "9f504a6fc5c9fd8b868eab10d2cc94a0e8b7176d508dc7817d95787d2512f696",
+      "aliases": [
+        "0122-radiohead_1998-how_i_made_my_millions.mid"
+      ],
+      "group": "radioheadhowimademymillions",
+      "musicHash": "c7445ccdfa1dcaa23caaf56f0869533b3a6e39e57540e64b012186187e00a6fe",
+      "notes": 573,
+      "duration": 170.32224,
+      "split": "holdout"
+    },
+    {
+      "file": "0123-radiohead_1998-big_boots_(man-o-war).mid",
+      "sha256": "826a40146f904eab905d8fb431a1a72a2acbd23eb15b9ec4b9392cbc1babbb2f",
+      "aliases": [
+        "0123-radiohead_1998-big_boots_(man-o-war).mid"
+      ],
+      "group": "radioheadbigboots",
+      "musicHash": "749decbda64d8f9ca36fbc0ec44bd3203c15955435c809e4a30e7728309686c8",
+      "notes": 3030,
+      "duration": 252.30743999999996,
+      "split": "development"
+    },
+    {
+      "file": "0124-radiohead_1998-rabbit_in_your_headlights.mid",
+      "sha256": "f749d4b49bb4d079a955b663a367ce6c63c7b5ba44a6253a5dd2253935b8901e",
+      "aliases": [
+        "0124-radiohead_1998-rabbit_in_your_headlights.mid"
+      ],
+      "group": "radioheadrabbitinyourheadlights",
+      "musicHash": "8da8ab1b8b63e8d3821373fecf66c3dbcef75dcf1a044fda4baea2f9cc65c85e",
+      "notes": 1271,
+      "duration": 169.98099723541665,
+      "split": "development"
+    },
+    {
+      "file": "0125-radiohead_2001-fog_(alligators_in_new_york_sewers).mid",
+      "sha256": "c05383c3a3af01f7f650f12e4827cfc56cf8a3f8cad44868fc20c518e821df62",
+      "aliases": [
+        "0125-radiohead_2001-fog_(alligators_in_new_york_sewers).mid"
+      ],
+      "group": "radioheadfog",
+      "musicHash": "743a3e9c8c697902f5e7ccf0ac34e035e750436a64edd94bc288e88d3d8d40b1",
+      "notes": 844,
+      "duration": 96.0,
+      "split": "development"
+    },
+    {
+      "file": "0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid",
+      "sha256": "a35f843b908f7f91b0141ded4c630a5f0c8a998b5e57f108bbfd65af4e04b0d8",
+      "aliases": [
+        "0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes)-1.mid",
+        "0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid"
+      ],
+      "group": "radioheadtherethere225",
+      "musicHash": "2ab5f600a1339c26829b66ca4824b62c7060758e8ca1782afaa8c29f8238b69d",
+      "notes": 13558,
+      "duration": 463.61872,
+      "split": "development"
+    },
+    {
+      "file": "0127-radiohead_2004-arpeggi.mid",
+      "sha256": "a0163a8ee0557669e53582b3111ece91b5094a5ac2f04998352dc4da9076d466",
+      "aliases": [
+        "0127-radiohead_2004-arpeggi.mid"
+      ],
+      "group": "radioheadarpeggi",
+      "musicHash": "9f7b99697a6f374cd9895812280ca191f4e79e3c00cd33278c795b4c8cd4af70",
+      "notes": 1830,
+      "duration": 99.0,
+      "split": "development"
+    },
+    {
+      "file": "0128-radiohead_2005-i_want_none_of_this.mid",
+      "sha256": "989d7b32a91471b4fbccd0b5dfd03b0137d2525e4fb8ab2f5138ef0a9de12241",
+      "aliases": [
+        "0128-radiohead_2005-i_want_none_of_this.mid"
+      ],
+      "group": "radioheadiwantnoneofthis",
+      "musicHash": "5e2af0ee5fd2456ca79b771caf1beb6468cd557d126b6463d58ff4b0ffc79503",
+      "notes": 1350,
+      "duration": 188.0,
+      "split": "holdout"
+    },
+    {
+      "file": "0129-radiohead_2008-house_of_cards_(live).mid",
+      "sha256": "8b9f83db5727aa3cfbce9da027529e60c59349bfbd56f378f28ea0c35e3f361e",
+      "aliases": [
+        "0129-radiohead_2008-house_of_cards_(live).mid"
+      ],
+      "group": "radioheadhouseofcards",
+      "musicHash": "8053edb129fce4724fdf37d0c61b7b6c842b2ba1428df664566d109a46971323",
+      "notes": 552,
+      "duration": 123.25896765000002,
+      "split": "development"
+    },
+    {
+      "file": "sony-playstation-startup.mid",
+      "sha256": "317bb1aae459983fed30f9faa234fd3d2fe6ae20f71f0d2c241fe936e3bf0f96",
+      "aliases": [
+        "PSX_Bios_zb.mid",
+        "sony-playstation-startup-1.mid",
+        "sony-playstation-startup-2.mid",
+        "sony-playstation-startup-3.mid",
+        "sony-playstation-startup.mid"
+      ],
+      "group": "sonyplaystationstartup",
+      "musicHash": "9a19e2a46ad8c4d8ee3fb45bf1833429f0890846d91347e86a2d2c67c5d4d817",
+      "notes": 85,
+      "duration": 13.95348,
+      "split": "development"
+    },
+    {
+      "file": "Avicii_Levels-1.mid",
+      "sha256": "fde6af0fc7c14e52d01bd034d139f1acf939edb2c5076e56fadade5ab3737fdd",
+      "aliases": [
+        "Avicii_Levels-1.mid",
+        "Avicii_Levels-2.mid",
+        "Avicii_Levels-3.mid",
+        "Avicii_Levels-4.mid",
+        "Avicii_Levels.mid"
+      ],
+      "group": "aviciilevels",
+      "musicHash": "bcdfc9edec7a6169b130189f020df410d56b19d66f5870c597db5cc257700f90",
+      "notes": 6434,
+      "duration": 203.7884866875,
+      "split": "development"
+    },
+    {
+      "file": "Awolnation_-_Sail__Intricacy_20130130013340.mid",
+      "sha256": "13291d893edf89c5f802f4089c0966c88d68285c412c98c35a752c7733ac0bc6",
+      "aliases": [
+        "Awolnation_-_Sail__Intricacy_20130130013340.mid"
+      ],
+      "group": "awolnationsailintricacy",
+      "musicHash": "9e0b98a7212dccfd8c8af8411c8e090735987c7b6f33aaff7af4496e1ad302f9",
+      "notes": 2383,
+      "duration": 224.01041666666666,
+      "split": "development"
+    },
+    {
+      "file": "Bastille_Pompeii-1.mid",
+      "sha256": "9bc7dd2ef1bf87fba0e9584b61029c5c41be146b7bb69983b94175e7c142f05c",
+      "aliases": [
+        "Bastille_Pompeii-1.mid",
+        "Bastille_Pompeii.mid"
+      ],
+      "group": "bastillepompeii",
+      "musicHash": "bd14c30a671124c32ea9fedb4d7354788e64e874bb12e2d6ed4bd2a7aee3f894",
+      "notes": 1085,
+      "duration": 123.49784,
+      "split": "development"
+    },
+    {
+      "file": "Coldplay_A_Sky_Full_of_Stars.mid",
+      "sha256": "288c249fdb56c534714797e9bd5593e314c23b25cfa01e75f69d19c193f73c93",
+      "aliases": [
+        "Coldplay_A_Sky_Full_of_Stars.mid"
+      ],
+      "group": "coldplayaskyfullofstars",
+      "musicHash": "5d76e4c703776cc022f8fcc73db6c8d02bed5c7c190f2bee9b7c85a3901a77ff",
+      "notes": 2673,
+      "duration": 282.0,
+      "split": "holdout"
+    },
+    {
+      "file": "Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid",
+      "sha256": "ee4bacbe4b9bdc706d4cfcb52d30c43fa4e7eb52b85b4871e7c66a21143b8ede",
+      "aliases": [
+        "Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid"
+      ],
+      "group": "mitskiwashingmachineheart",
+      "musicHash": "65dce216b9584a54cca195439f81a152676455b8efd163f902a1777f53dfeb23",
+      "notes": 927,
+      "duration": 167.999832,
+      "split": "development"
+    },
+    {
+      "file": "One_Republic_Counting_stars-1.mid",
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "aliases": [
+        "One_Republic_Counting_stars-1.mid",
+        "One_Republic_Counting_stars-10.mid",
+        "One_Republic_Counting_stars-2.mid",
+        "One_Republic_Counting_stars-3.mid",
+        "One_Republic_Counting_stars-4.mid",
+        "One_Republic_Counting_stars-5.mid",
+        "One_Republic_Counting_stars-6.mid",
+        "One_Republic_Counting_stars-7.mid",
+        "One_Republic_Counting_stars-8.mid",
+        "One_Republic_Counting_stars-9.mid",
+        "One_Republic_Counting_stars.mid"
+      ],
+      "group": "onerepubliccountingstars",
+      "musicHash": "3e804fee2624311417c9ed0c2a963ab3f8698e5ec3543e1764e4cb69a4f954a9",
+      "notes": 10318,
+      "duration": 258.76508426666663,
+      "split": "development"
+    },
+    {
+      "file": "PET SHOP BOYS.Always on my mind K.mid",
+      "sha256": "41be59146b6219e0e3572ab03873683889ae805cf3fd8e76e03c5f3605465e01",
+      "aliases": [
+        "PET SHOP BOYS.Always on my mind K.mid"
+      ],
+      "group": "petshopboysalwaysonmymindk",
+      "musicHash": "f0ad22a04afe9a3db402b41bd2cd0b7bc2edc66be8b0159168c1e242edc02de6",
+      "notes": 9469,
+      "duration": 236.1077826041667,
+      "split": "holdout"
+    },
+    {
+      "file": "Pink - Try [MIDIfind.com] (2).mid",
+      "sha256": "c8e0d1ff0c75de624c283fdc2061eee3485eebe4c4234d5eaafdca47d45e2304",
+      "aliases": [
+        "Pink - Try [MIDIfind.com] (2).mid",
+        "Pink - Try [MIDIfind.com].mid"
+      ],
+      "group": "pinktry",
+      "musicHash": "6d047c68f49058dbf0a776841b8bf5a62fad9f343a2f8ece9820ea826acc7d54",
+      "notes": 7107,
+      "duration": 231.272496,
+      "split": "holdout"
+    },
+    {
+      "file": "Pink_Floyd_-_Time.mid",
+      "sha256": "1364df4d9ee8de694621967f9da6a7e6265aa1b1de4cdea485fc3e9111724aef",
+      "aliases": [
+        "Pink_Floyd_-_Time.mid"
+      ],
+      "group": "pinkfloydtime",
+      "musicHash": "00700bbebaefa9caf25a13dddcaf015260024aeedf92620a1fbdf56917910c60",
+      "notes": 6251,
+      "duration": 381.1236282708333,
+      "split": "development"
+    },
+    {
+      "file": "Queen - Bohemian Rhapsody (2).mid",
+      "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+      "aliases": [
+        "Queen - Bohemian Rhapsody (2).mid",
+        "Queen - Bohemian Rhapsody (3).mid",
+        "Queen - Bohemian Rhapsody (4).mid",
+        "Queen - Bohemian Rhapsody.mid"
+      ],
+      "group": "queenbohemianrhapsody",
+      "musicHash": "b3423b73608b9e4de41cf73d78f2340d46f462a296d3cc47065dd99692bb3858",
+      "notes": 5925,
+      "duration": 1006.9746735937499,
+      "split": "development"
+    },
+    {
+      "file": "Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1) (2).mid",
+      "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+      "aliases": [
+        "Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1) (2).mid",
+        "Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1).mid",
+        "Radiohead \u2014 Sail to the Moon [MIDIfind.com].mid"
+      ],
+      "group": "radioheadsailtothemoon",
+      "musicHash": "bffc299ad17246c87f55f542b1b4f582de1513be4434b57091ddb698acfc628d",
+      "notes": 1957,
+      "duration": 256.74089875,
+      "split": "development"
+    },
+    {
+      "file": "Stay_Shakespears_Sister (2).mid",
+      "sha256": "64658ddba1818073b5d00999aa24f7ed68d8289a1ac5b490570d2f352926602d",
+      "aliases": [
+        "Stay_Shakespears_Sister (2).mid",
+        "Stay_Shakespears_Sister.mid"
+      ],
+      "group": "stayshakespearssister",
+      "musicHash": "c6ecdd883ed74709626a6209aa267db071961e06b6eaae306b9ff829d89d934a",
+      "notes": 3355,
+      "duration": 243.28086275,
+      "split": "development"
+    },
+    {
+      "file": "necros_-_introspection.mid",
+      "sha256": "0d8b25ea09e31992e930ca9b0327366ab682580919f9a57955c989340e6134e0",
+      "aliases": [
+        "necros_-_introspection.mid"
+      ],
+      "group": "necrosintrospection",
+      "musicHash": "f298e276919606f3257c1691afd4215978b4b63dde91a86c45af713d7135047d",
+      "notes": 6914,
+      "duration": 230.769,
+      "split": "development"
+    },
+    {
+      "file": "range-test.mid",
+      "sha256": "d94011ddb062ce74339e0bda439beea903455efae37799fa7cde3cce9f0c4ec9",
+      "aliases": [
+        "range-test.mid"
+      ],
+      "group": "rangetest",
+      "musicHash": "7f81f5e609840d32593accb628e887862fd032eb3ffc37aa8db70db8f3504dc0",
+      "notes": 73,
+      "duration": 9.125,
+      "split": "development"
+    },
+    {
+      "file": "stromae-formidable.mid",
+      "sha256": "3279bf71139e30db9680d4be8a6c842159886cdfadfbf4fc329ea91ad270f64c",
+      "aliases": [
+        "stromae-formidable.mid"
+      ],
+      "group": "stromaeformidable",
+      "musicHash": "14c23a91c6bdec15ab8a7088eb10a6f501d24168a32324a347aa0e2e0106715a",
+      "notes": 5829,
+      "duration": 253.81066236458332,
+      "split": "development"
+    },
+    {
+      "file": "test.mid",
+      "sha256": "dc6dd3622f3911770b660a7f3260ace79d475642019dc7a6a6754aea678ba473",
+      "aliases": [
+        "test.mid"
+      ],
+      "group": "test",
+      "musicHash": "224ffc4bcb57755152a16698ba0f4f67191dc7c6d1031a95936be8d87c145f04",
+      "notes": 54,
+      "duration": 16.87272,
+      "split": "development"
+    }
+  ],
+  "scope": "316 file paths at initial snapshot; byte deduplicated; grouped holdout fixed before arrangement tuning",
+  "roots": [
+    "/path/to/Music/MIDI",
+    "/path/to/electromechanical-midi/midi"
+  ]
+}

@@ -2,11 +2,13 @@
 import argparse
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
 import sys
 import time
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,6 +50,16 @@ def metrics(plan, registry):
     # do not inflate the score and dropping a long pad is not hidden by many taps.
     total_seconds = sum(e.duration for e in tonal)
     retained = sum(max(0., min(e.end, e.start+e.duration)-max(e.actual_start,e.start)) for e in played)
+    tails=defaultdict(list)
+    for e in plan.reinforcements:
+        if e.kind=='CONTINUATION':tails[e.source_id].append((e.start,e.start+e.duration))
+    voice_seconds=0.
+    for e in tonal:
+        intervals=tails[e.id]+([(e.actual_start,e.end)] if e.played else [])
+        end=e.start
+        for a,b in sorted(intervals):
+            a=max(a,e.start);b=min(b,e.start+e.duration)
+            voice_seconds+=max(0.,b-max(a,end));end=max(end,b)
     parts = defaultdict(lambda: [0, 0])
     for e in tonal:
         # Source-active 2 s windows, per logical track/channel; each event votes
@@ -61,6 +73,7 @@ def metrics(plan, registry):
         'retainedImportantIds':sorted(e.id for e in played if e.role in ('lead','bass')),
         'dropReasons':dict(Counter(e.reason for e in tonal if not e.played)),
         'sourceDurationCoverage':round(retained/max(1e-9,total_seconds),6),
+        'sourceVoiceDurationCoverage':round(voice_seconds/max(1e-9,total_seconds),6),
         'weightedOnsetCoverage':round(sum(e.velocity for e in played)/max(1,sum(e.velocity for e in tonal)),6),
         'unrepresentedPartWindows':sum(not b for a,b in parts.values()),
         'partWindows':len(parts), 'toneCommandsByFamily':dict(counts),
@@ -72,6 +85,10 @@ def metrics(plan, registry):
         'trayCommands':sum(registry.by_id[c.device_id]['type']=='DVD_TRAY' for c in timeline.commands),
         'drumFingerprint':digest([c.as_dict() for c in timeline.commands if c.kind=='hit']),
         'timelineFingerprint':digest(timeline.as_dict())}
+    recovery=plan.hardware.get('universal',{}).get('recovery')
+    if recovery is not None:
+        result['recovery']=recovery
+    result['backboneTimelineFingerprint']=(recovery or {}).get('backboneTimelineFingerprint',result['timelineFingerprint'])
     return result
 
 
@@ -85,8 +102,27 @@ def run_job(code_root, path, preset):
     for d in registry.devices:
         if d['type']=='DVD_TRAY': d['enabled']=False
     started=time.monotonic()
-    plan=arrange(MidiSource(Path(path)),registry)
+    protected={}
+    try:
+        from playback import universal_recovery
+    except ImportError:
+        universal_recovery=None  # frozen baseline predating recovery
+    if preset=='universal' and universal_recovery is not None:
+        original=universal_recovery.recover
+        def audited(plan, *args):
+            protected.update(events={e.id:e for e in plan.events if e.played},
+                extras=list(plan.reinforcements),sidecars=deepcopy(plan.execution_articulation))
+            return original(plan,*args)
+        with patch.object(universal_recovery,'recover',audited):
+            plan=arrange(MidiSource(Path(path)),registry)
+    else:plan=arrange(MidiSource(Path(path)),registry)
     values=metrics(plan,registry)
+    if protected:
+        after={e.id:e for e in plan.events}
+        values['originalPlayedEventsIdentical']=all(after[k]==v for k,v in protected['events'].items())
+        values['originalReinforcementsIdentical']=plan.reinforcements[:len(protected['extras'])]==protected['extras']
+        values['originalArticulationIdentical']=all(plan.execution_articulation.get(k)==v for k,v in protected['sidecars'].items())
+        assert all(values[k] for k in ('originalPlayedEventsIdentical','originalReinforcementsIdentical','originalArticulationIdentical'))
     if preset=='universal':
         assert not any(values[k] for k in ('fddAttackViolations','overlaps','mechanicalConflicts','trayCommands')), values
     values['planningSeconds']=round(time.monotonic()-started,3)
@@ -122,11 +158,22 @@ def main():
     p.add_argument('--output',type=Path,default=ROOT/'reports/universal-arrangement.json')
     args=p.parse_args();paths=args.midi
     if args.manifest:
-        for item in json.loads(args.manifest.read_text()):
+        inventory=defaultdict(list)
+        for directory in args.midi_dir:
+            for candidate in sorted(directory.rglob('*')):
+                if candidate.is_file() and candidate.suffix.lower() in ('.mid','.midi'):
+                    inventory[candidate.name].append(candidate)
+        document=json.loads(args.manifest.read_text())
+        for item in document.get('songs',[]) if isinstance(document,dict) else document:
             path=Path(item.get('path',''))
             if not path.is_file():
-                matches=[d/item['file'] for d in args.midi_dir if (d/item['file']).is_file()]
-                if len(matches)!=1:raise SystemExit('Cannot uniquely locate '+item['file'])
+                names=[item['file']]+[Path(a).name for a in item.get('aliases',[])]
+                matches=sorted(set(p for name in names for p in inventory[name]))
+                if item.get('sha256'):
+                    matches=[p for p in matches if hashlib.sha256(p.read_bytes()).hexdigest()==item['sha256']]
+                if not matches:raise SystemExit('Cannot locate matching MIDI: '+item['file'])
+                if not item.get('sha256') and len({hashlib.sha256(p.read_bytes()).hexdigest() for p in matches})>1:
+                    raise SystemExit('Ambiguous MIDI: '+item['file'])
                 path=matches[0]
             if item.get('sha256') and hashlib.sha256(path.read_bytes()).hexdigest()!=item['sha256']:
                 raise SystemExit('MIDI hash changed: '+str(path))
