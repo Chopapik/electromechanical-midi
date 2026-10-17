@@ -1,5 +1,8 @@
 # Urządzenia, ograniczenia i kalibracja
 
+Docelowy firmware obsługuje **8 FDD / 6 DVD / 4 HDD / 2 speakery**,
+6 rejestrów i 8 DRV8833, ale **host nadal deklaruje 4 FDD, 4 DVD i 14 urządzeń**. Nie rozszerzono aranżacji, profili JSON ani UI.
+FDD5–8 oraz DVD5–6 wymagają osobnej kwalifikacji fizycznej i są domyślnie wyłączone.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
 niewysłanych na serwer. Kolejność źródeł: aktywne urządzenia w
 [devices.json](../config/devices.json), połączone profile
@@ -20,12 +23,81 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-Wszystkie 14 wpisów są obecnie włączone. `enabled` / `present` deklaruje
+Wszystkie 14 wpisów **hosta** są obecnie włączone; tabela nie deklaruje
+obsługi FDD5–8 ani DVD5–6 przez aplikację. `enabled` / `present` deklaruje
 inventory; nie jest detekcją przewodów ani pomiarem sprawności. Ordynał lane
 jest fizycznym kanałem: usunięcie wpisu nie uprawnia do przesunięcia pozostałych.
 Typ `VHS` oraz komendy `VHS`/`VHS2` zachowano dla zgodności obu speakerów.
 HDD mają profil brzmienia `WD_CAVIAR_CURRENT`, ale fizyczny
 `hardwareProfile: HDD_PERCUSSION`; nie ma wykonawcy tonalnego HDD w tym zestawie.
+
+## Nowe FDD5–8: firmware bez rozszerzenia hosta
+
+| Kanał | TRACK0 | STEP / DIR | Stan po boot |
+| --- | ---: | --- | --- |
+| FDD5 | GPIO32 | Q8 / Q9 | Wyłączony, bez HOME |
+| FDD6 | GPIO33 | Q10 / Q11 | Wyłączony, bez HOME |
+| FDD7 | GPIO16 | Q12 / Q13 | Wyłączony, bez HOME |
+| FDD8 | GPIO17 | Q14 / Q15 | Wyłączony, bez HOME |
+
+Cztery istniejące kanały mają dotychczas testowaną logikę; nie oznacza to
+fizycznego sprawdzenia nowej kaskady i przeniesionych DVD/HDD. Dodatkowe FDD
+są jeszcze niepodłączone, a SR6 wymaga oddzielnego testu napięć i propagacji.
+
+Generator nadal dostarcza **cztery** profile FDD. `fddDefaults::profileIndex`
+w [rdzeniu C++](../firmware/controller/include/orchestra_core.h) jawnie wybiera
+dla FDD5–8 indeks 0: startowo 72 kroki oddalania, 5000 µs zmiany kierunku,
+2439 µs minimum STEP. To kopia domyślnych parametrów FDD1 z wygenerowanego
+nagłówka, **nie profil zmierzony nowych stacji**. Runtime PROFILE FDD1 nie
+zmienia automatycznie pozostałych kanałów. Osobny PROFILE n można nadać ręcznie
+przy zatrzymanym kanale po pomiarach. Nie edytuj wygenerowanego nagłówka ręcznie.
+
+FDD5–8 mają ENABLE/HOME/PLAY/STOP oraz obsługę błędów i watchdoga.
+Samo ENABLE nie wykonuje HOME. Jawne `FDD ALL HOME` obejmuje wszystkie
+**włączone** kanały; po boot są to tylko FDD1–4. STRICT_TRACKS pozostaje
+czterokanałowe i odrzuca PLAY FDD5–8, bez indeksowania tablicy czterech tracków.
+Zwykłe STATUS zachowuje FDD1–4 i 17 rekordów. `DIAG FDD` pokazuje FDD5–8
+w osobnej odpowiedzi diagnostycznej, bez poszerzania transakcji hosta.
+
+**Blokada poza zakresem zadania:** pełne osiem głosów w aplikacji wymagałoby
+zmian registry/ordynałów, inventory i profili, limitów ID transportu,
+alokacji/STRICT_TRACKS, parsowania lub kontraktu STATUS oraz testów hosta/UI.
+Konkretnie [registry](../host/runtime/registry.py) ogranicza rodzinę FDD do 4,
+[OrchestraLink](../host/orchestra_link.py) przyjmuje ID FDD tylko 1–4,
+a [STRICT_TRACKS](../host/playback/strict_tracks.py) wymaga czterech slotów. Samo dodanie wpisów JSON nie wystarczy.
+Wariant do osobnego wdrożenia: jawne poszerzenie całego kontraktu hosta do ośmiu
+FDD z indywidualnymi profilami, po kwalifikacji sprzętu. W tym zadaniu tego nie zrobiono.
+
+## Nowe DVD5–6: firmware i fallback czterech profili
+
+| Kanał | Wyjścia | Moduł | Stan po boot |
+| --- | --- | --- | --- |
+| DVD5 / SLED 5 | Q32–Q35 | DRV5, oba mostki | Wyłączony, bez ruchu |
+| DVD6 / SLED 6 | Q36–Q39 | DRV6, oba mostki | Wyłączony, bez ruchu |
+
+Generator i nagłówek wciąż zawierają **tylko DVD1–4**. Jawny
+`sledDefaults::profileIndex` w C++ wybiera dla DVD5–6 indeks **3 (DVD4)**:
+`travelSteps=0`, przyspieszenie 5000 kroków/s², `pitchRatio=1,0`, bez aktywnych
+pasm częstotliwości. To tymczasowe parametry wykonawcze, nie pomiary nowych
+silników ani potwierdzony bezpieczny zakres. Nie przenosimy hipotezy tunera 0,5
+z DVD1–3 na nowe egzemplarze. Ustal ratio, prąd, temperaturę i swobodę obrotu
+indywidualnie przed ruchem. Nie zmieniono generatora ani wygenerowanego pliku.
+
+Fallback obejmuje **każdy odczyt tablic profili DVD**, także sprawdzenie pasm
+w `sledFrequencyAllowed`. Indeksy sprzętowe 4/5 nigdy nie trafiają bezpośrednio
+do czteroelementowych tablic. Runtime PROFILE DVD4 nie zmienia DVD5/6;
+osobny PROFILE nowego kanału jest dopuszczony przy zatrzymaniu, tak jak dla DVD1–4.
+
+Komendy `SLED 5/6 ENABLE`, `PROFILE`, `DIR`, `PLAY`, `STOP` używają istniejącej
+rampy i zasad. ENABLE sam nie uruchamia ruchu. ALL STOP i watchdog obejmują
+sześć DVD oraz cztery HDD na Q40–Q47. Czterokanałowy STRICT_TRACKS blokuje
+PLAY wszystkich DVD. Status nowych kanałów pokazuje osobne **`DIAG SLED`**;
+zwykłe STATUS nadal zawiera tylko DVD1–4 i ma 17 rekordów.
+
+Host/registry, limity ID OrchestraLink, inventory, profile i aranżacja pozostają
+przy czterech DVD. UI i Laboratory nie sterują DVD5–6. Ich automatyczna aranżacja
+wymagałaby osobnego rozszerzenia kontraktu hosta po kwalifikacji fizycznej.
+Nie obchodzimy tego przez wpisy JSON, fałszywe lane ani dodatkowe rekordy STATUS.
 
 ## Jak czytać dowody
 
@@ -72,7 +144,7 @@ sufit **600 Hz akustycznych**, składając wyższe nuty o oktawy. Lab nie stosuj
 tego foldingu i nie daje przez to uprawnienia do dowolnie wysokich testów.
 
 `pitchRatio = acousticHz / stepsPerSecond`: DVD1–3 mają 0,5 (hipoteza tunera),
-DVD4 1,0. Dla 200 Hz są to odpowiednio 400 lub 200 kroków/s.
+DVD4 1,0; DVD5–6 tymczasowo także 1,0 przez fallback DVD4, bez nowego pomiaru. Dla 200 Hz są to odpowiednio 400 lub 200 kroków/s.
 Host i firmware przeliczają ten sam profil; komenda PLAY zawiera akustyczne Hz.
 Rampa wynosi 5000 kroków/s² (założenie robocze). `Sled::play()` zmienia
 cel bez zatrzymania; STOP natychmiast wyłącza fazy, bez rampy hamowania.
@@ -129,6 +201,16 @@ Obsługa drugiego kanału wymaga `speaker_fx=1`, nowych fal `speaker_waves=1`.
 Niezgodny firmware blokuje wymagającą ich grę REAL; aplikacja nie flashuje
 samoczynnie. Sposób podłączenia i nieznane elementy mocy:
 [dwa speakery](HARDWARE_WIRING.md#dwa-pc-speakery).
+
+## Mostki bez sterowania nSLEEP
+
+Firmware nie ma `map::sleep`, `wake()` ani zastępczego wyjścia usypiania.
+Moduły według użytkownika pracowały z niepodłączonym pinem, ale nie ustalono
+ich wariantu i wewnętrznych połączeń. Ta obserwacja nie jest zweryfikowanym
+zabezpieczeniem układów mocy. STOP sprowadza wejścia mostków do LOW (coast),
+a nie odłącza VM. Przy flashowaniu i diagnostyce logiki wyłącz/odłącz moc
+silników i sygnały do urządzeń. SR6 steruje HDD1–4; wszystkie 48 Q jest zajęte.
+Brak sterowania nSLEEP nie jest zabezpieczeniem przed ruchem.
 
 ## Walidacja i bezpieczeństwo
 

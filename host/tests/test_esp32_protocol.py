@@ -76,7 +76,7 @@ int main(int argc,char** argv){
   p.execute(Transport::Usb,"FDD 1 STOP");assert(!ctrl.fdd[0].playing&&sink.replies.empty());
   p.execute(Transport::Usb,"HDD 2 HIT");assert(ctrl.hdd[1].state==Hdd::Park);
   p.execute(Transport::Ble,"VHS AMP 25");assert(ctrl.amp==25);
-  p.execute(Transport::Ble,"ALL STOP");assert(ctrl.hdd[1].state==Hdd::Idle&&ctrl.amp==0&&io.previous==0x55);
+  p.execute(Transport::Ble,"ALL STOP");assert(ctrl.hdd[1].state==Hdd::Idle&&ctrl.amp==0&&io.previous==0x5555);
  }else if(c=="error_routing"){
   p.execute(Transport::Ble,"FDD 1 PLAY 220");assert(sink.replies.back().origin==Transport::Ble&&sink.replies.back().text=="ERR NOT_HOMED");
   p.execute(Transport::Ble,"FDD 1 HOME");p.execute(Transport::Usb,"FDD 2 HOME");
@@ -93,9 +93,36 @@ int main(int argc,char** argv){
   assert(sink.replies.back().text=="STOPPED 42"&&sink.replies.back().origin==Transport::Ble&&sink.replies.back().session==1);
   p.execute(Transport::Usb,"ALL STOP 43");assert(sink.replies.back().text=="STOPPED 43"&&sink.replies.back().origin==Transport::Usb);
   p.execute(Transport::Ble,"ALL STOP invalid");assert(sink.replies.back().text=="ERR VALUE");
+ }else if(c=="extended_status"){
+  p.execute(Transport::Ble,"DIAG FDD");assert(sink.replies.size()==6);
+  assert(sink.replies.front().text=="DIAG FDD BEGIN"&&sink.replies.back().text=="DIAG FDD END");
+  for(int i=0;i<4;++i){auto r=sink.replies[i+1];assert(r.origin==Transport::Ble&&r.session==1);assert(r.text.find("DIAG FDD "+std::to_string(i+5)+" enabled=0 homed=0 playing=0 homing=0")==0);assert(r.text.size()<159);}
+  assert(io.previous==0x5555);sink.replies.clear();p.execute(Transport::Usb,"STATUS");assert(sink.replies.size()==17);
+  for(auto r:sink.replies)assert(r.text.find("STATUS FDD 5")==std::string::npos&&r.text.find("DIAG FDD")==std::string::npos);
+  sink.replies.clear();p.execute(Transport::Usb,"FDD 8 ENABLE 1");p.execute(Transport::Usb,"FDD 8 HOME");
+  io.active[7]=true;ctrl.tick();p.execute(Transport::Usb,"DIAG FDD");
+  assert(sink.replies[4].text.find("DIAG FDD 8 enabled=1 homed=1 playing=0 homing=0")==0);assert(sink.replies[4].text.find("track0=1 raw=0")!=std::string::npos);
+ }else if(c=="extended_sled_status"){
+  p.execute(Transport::Ble,"DIAG SLED");assert(sink.replies.size()==4);
+  assert(sink.replies.front().text=="DIAG SLED BEGIN"&&sink.replies.back().text=="DIAG SLED END");
+  for(int i=0;i<2;++i){auto r=sink.replies[i+1];assert(r.origin==Transport::Ble&&r.session==1);assert(r.text=="DIAG SLED "+std::to_string(i+5)+" enabled=0 playing=0 hz=0.00 position=0 dir=fwd soft_min=0 soft_max=0 rate=0 target=0 pos_conf=LOW ramp=0");}
+  assert(io.previous==0x5555);sink.replies.clear();
+  p.execute(Transport::Usb,"SLED 6 ENABLE 1");p.execute(Transport::Usb,"SLED 6 PLAY 220");p.execute(Transport::Usb,"DIAG SLED");
+  assert(sink.replies.size()==4&&sink.replies[2].text.find("DIAG SLED 6 enabled=1 playing=1 hz=220.00")==0);
+  for(auto r:sink.replies)assert(r.origin==Transport::Usb&&r.text.size()<159);
+  sink.replies.clear();p.execute(Transport::Usb,"STATUS");assert(sink.replies.size()==17);
+  for(auto r:sink.replies)assert(r.text.find("STATUS SLED 5")==std::string::npos&&r.text.find("STATUS SLED 6")==std::string::npos);
+  p.execute(Transport::Ble,"ALL STOP 44");assert(!ctrl.sled[5].playing&&io.previous==0x5555&&sink.replies.back().text=="STOPPED 44");
+ }else if(c=="extended_error_routing"){
+  for(int i=5;i<=8;++i){char cmd[50];snprintf(cmd,sizeof(cmd),"FDD %d ENABLE 1",i);p.execute(Transport::Usb,cmd);snprintf(cmd,sizeof(cmd),"FDD %d HOME",i);p.execute(i%2?Transport::Ble:Transport::Usb,cmd);}
+  p.newBleSession(7);io.now+=2000001;ctrl.lastCommand=io.now;ctrl.tick();p.pollErrors();assert(sink.replies.size()==4);
+  for(int i=0;i<4;++i){auto r=sink.replies[i];assert(r.text=="ERR HOME_FAILED FDD="+std::to_string(i+5));assert(r.origin==(i%2?Transport::Usb:Transport::Ble));assert(r.session==1);}
+  p.pollErrors();assert(sink.replies.size()==4);
  }else if(c=="diag"){
-  p.execute(Transport::Ble,"DIAG BIT 39");assert(io.previous==(uint64_t(1)<<39)&&sink.replies.back().origin==Transport::Ble);
-  p.execute(Transport::Usb,"ALL STOP");assert((io.previous&0x55)==0x55);
+  for(int bit=0;bit<48;++bit){char cmd[40];snprintf(cmd,sizeof(cmd),"DIAG BIT %d",bit);p.execute(Transport::Ble,cmd);assert(io.previous==(uint64_t(1)<<bit)&&sink.replies.back().origin==Transport::Ble);}
+  const uint64_t old=io.previous;
+  for(const char* bad:{"DIAG BIT 48","DIAG BIT 255","DIAG BIT -1","DIAG BIT ","DIAG BIT invalid"}){p.execute(Transport::Usb,bad);assert(sink.replies.back().text=="ERR VALUE"&&io.previous==old);}
+  p.execute(Transport::Usb,"ALL STOP");assert((io.previous&0x5555)==0x5555);
  }else assert(false);
 }
 '''
@@ -119,7 +146,7 @@ class Esp32ProtocolTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
-             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'diag', 'stop_ack'):
+             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'extended_status', 'extended_sled_status', 'extended_error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32ProtocolTests, 'test_'+case, run)

@@ -1,6 +1,9 @@
 # Aranżacja MIDI i presety
 
-Aktualny opis algorytmów. Architektura wykonania jest w
+Aktualny opis algorytmów **hosta z czterema FDD i czterema DVD**. Rozszerzenie
+firmware nie zwiększa dostępnej polifonii aranżacji: FDD5–8 i DVD5–6 nie są w inventory/profilach
+hosta i startują wyłączone. Zmian MIDI, presetów ani alokatora w tej aktualizacji
+nie wykonywano. Architektura wykonania jest w
 [ARCHITECTURE.md](ARCHITECTURE.md), zakresy i parametry mechaniczne w
 [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md). Historyczne wyniki porównań
 są w [badaniach aranżacji](research/arrangement-benchmarks.md) oraz

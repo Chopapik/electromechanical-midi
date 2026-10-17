@@ -45,7 +45,7 @@ struct TestOutput {
 };
 
 // The only command dispatcher for both transports. Device commands keep using
-// Controller::command; the motor core and the Uno protocol are unchanged.
+// Controller::command; neither transport owns a copy of motor state.
 struct CommandProtocol {
  Controller& ctrl;
  ResponseSink& sink;
@@ -53,8 +53,8 @@ struct CommandProtocol {
  bool testOn = false;
  CommandLine usbLine, bleLine;
  uint32_t bleSession = 0;
- uint32_t homeSession[4] = {};
- Transport homeOwner[4] = {Transport::Usb, Transport::Usb, Transport::Usb, Transport::Usb};
+ uint32_t homeSession[map::fddCount] = {};
+ Transport homeOwner[map::fddCount] = {};
  CommandProtocol(Controller& c, ResponseSink& s, TestOutput& t): ctrl(c), sink(s), led(t) {}
  void reply(Transport origin, const char* line) { sink.send(origin, line, origin == Transport::Ble ? bleSession : 0); }
  void beginTest() { testOn = false; led.set(false); }
@@ -97,38 +97,54 @@ struct CommandProtocol {
   // Retain the existing explicit bring-up diagnostic through either transport.
   if (!strncmp(line, "DIAG BIT ", 9)) {
    char* end; long bit = strtol(line+9, &end, 10);
-   if (*end || bit < 0 || bit > 39) reply(origin, "ERR VALUE");
+   if (end==line+9 || *end || bit < 0 || bit >= map::bitCount) reply(origin, "ERR VALUE");
    else {
     ctrl.allStop(); ctrl.bus.safeState();
-    for (int b=0; b<40; ++b) ctrl.bus.setBit(b, b==bit);
+    for (int b=0; b<map::bitCount; ++b) ctrl.bus.setBit(b, b==bit);
     ctrl.bus.flush(); reply(origin, "OK DIAG: ACTUATORS MUST BE DISCONNECTED");
    }
    return;
   }
-  uint32_t started[4]; bool homing[4];
-  for (int i=0; i<4; ++i) { started[i]=ctrl.fdd[i].homeStartedUs; homing[i]=ctrl.fdd[i].homing; }
+  // Separate, opt-in diagnostics keep legacy STATUS below the host's 20-line
+  // transaction limit. No unsolicited FDD5-8 or DVD5-6 records enter its STATUS parser.
+  if (!strcmp(line,"DIAG FDD")) {
+   reply(origin,"DIAG FDD BEGIN");
+   for(int i=map::hostFddCount;i<map::fddCount;++i) fddStatus(origin,i,"DIAG FDD");
+   reply(origin,"DIAG FDD END");return;
+  }
+  if (!strcmp(line,"DIAG SLED")) {
+   reply(origin,"DIAG SLED BEGIN");
+   for(int i=map::hostSledCount;i<map::sledCount;++i) sledStatus(origin,i,"DIAG SLED");
+   reply(origin,"DIAG SLED END");return;
+  }
+  uint32_t started[map::fddCount]; bool homing[map::fddCount];
+  for (int i=0; i<map::fddCount; ++i) { started[i]=ctrl.fdd[i].homeStartedUs; homing[i]=ctrl.fdd[i].homing; }
   const char* result = ctrl.command(line);
-  for (int i=0; i<4; ++i)
+  for (int i=0; i<map::fddCount; ++i)
    if (ctrl.fdd[i].homing && (!homing[i] || started[i]!=ctrl.fdd[i].homeStartedUs)) { homeOwner[i]=origin; homeSession[i]=bleSession; }
   if (!strcmp(result, "STATUS")) status(origin);
   else if (strcmp(result, "OK")) reply(origin, result); // Existing successful motor commands stay silent.
  }
  void pollErrors() {
-  for (int i=0; i<4; ++i) if (ctrl.fdd[i].error) {
+  for (int i=0; i<map::fddCount; ++i) if (ctrl.fdd[i].error) {
    char line[64]; snprintf(line, sizeof(line), "ERR %s FDD=%d", ctrl.fdd[i].error, i+1);
    sink.send(homeOwner[i], line, homeSession[i]); ctrl.fdd[i].error = nullptr;
   }
+ }
+ void fddStatus(Transport origin, uint8_t i, const char* prefix) {
+  char line[160]; auto& d=ctrl.fdd[i]; bool active=ctrl.io.track0(d.track0Pin);
+  snprintf(line,sizeof(line),"%s %d enabled=%d homed=%d playing=%d homing=%d dir=%s away_steps=%u track0=%d raw=%d hz=%.2f reversing=%d profile=FDD",prefix,i+1,d.enabled,d.homed,d.playing,d.homing,d.directionAway?"away":"toward",d.awaySteps,active,!active,d.hz,!due(ctrl.io.us(),d.directionReadyUs)); reply(origin,line);
+ }
+ void sledStatus(Transport origin, uint8_t i, const char* prefix) {
+  char line[160]; snprintf(line,sizeof(line),"%s %d enabled=%d playing=%d hz=%.2f position=%d dir=%s soft_min=%d soft_max=%d rate=%.0f target=%.0f pos_conf=LOW ramp=%d",prefix,i+1,ctrl.sled[i].enabled,ctrl.sled[i].playing,ctrl.sled[i].hz,ctrl.sled[i].position,ctrl.sled[i].forward?"fwd":"rev",Sled::SOFT_MIN,ctrl.sled[i].softMax,ctrl.sled[i].currentStepRate,ctrl.sled[i].targetStepRate,fabsf(ctrl.sled[i].currentStepRate-ctrl.sled[i].targetStepRate)>1);reply(origin,line);
  }
  void status(Transport origin) {
   char line[160]; reply(origin, "STATUS BEGIN");
   snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 speaker_fx=1 speaker_waves=%d strict_tracks=1 strict_active=%d",ctrl.io.speakerAudioReady(),ctrl.strictTracks);
   reply(origin,line);
-  for (int i=0; i<4; ++i) {
-   auto& d=ctrl.fdd[i]; bool active=ctrl.io.track0(d.track0Pin);
-   snprintf(line,sizeof(line),"STATUS FDD %d enabled=%d homed=%d playing=%d homing=%d dir=%s away_steps=%u track0=%d raw=%d hz=%.2f reversing=%d profile=FDD",i+1,d.enabled,d.homed,d.playing,d.homing,d.directionAway?"away":"toward",d.awaySteps,active,!active,d.hz,!due(ctrl.io.us(),d.directionReadyUs)); reply(origin,line);
-  }
-  for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d mode=percussion state=%s ready_at=%lu hz=0 safety=UNKNOWN profile=HDD_PERCUSSION",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle,ctrl.hdd[i].state==Hdd::Park?"RESET":ctrl.hdd[i].state==Hdd::Settle?"SETTLE":ctrl.hdd[i].state==Hdd::Strike?"STRIKE":"READY",(unsigned long)(ctrl.hdd[i].state==Hdd::Idle?ctrl.io.us():ctrl.hdd[i].deadline+(ctrl.hdd[i].state==Hdd::Park?ctrl.hdd[i].settleUs+ctrl.hdd[i].strikeUs:ctrl.hdd[i].state==Hdd::Settle?ctrl.hdd[i].strikeUs:0)));reply(origin,line);}
-  for(int i=0;i<4;++i){snprintf(line,sizeof(line),"STATUS SLED %d enabled=%d playing=%d hz=%.2f position=%d dir=%s soft_min=%d soft_max=%d rate=%.0f target=%.0f pos_conf=LOW ramp=%d",i+1,ctrl.sled[i].enabled,ctrl.sled[i].playing,ctrl.sled[i].hz,ctrl.sled[i].position,ctrl.sled[i].forward?"fwd":"rev",Sled::SOFT_MIN,ctrl.sled[i].softMax,ctrl.sled[i].currentStepRate,ctrl.sled[i].targetStepRate,fabsf(ctrl.sled[i].currentStepRate-ctrl.sled[i].targetStepRate)>1);reply(origin,line);}
+  for (int i=0; i<map::hostFddCount; ++i) fddStatus(origin,i,"STATUS FDD");
+  for(int i=0;i<map::hddCount;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d mode=percussion state=%s ready_at=%lu hz=0 safety=UNKNOWN profile=HDD_PERCUSSION",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle,ctrl.hdd[i].state==Hdd::Park?"RESET":ctrl.hdd[i].state==Hdd::Settle?"SETTLE":ctrl.hdd[i].state==Hdd::Strike?"STRIKE":"READY",(unsigned long)(ctrl.hdd[i].state==Hdd::Idle?ctrl.io.us():ctrl.hdd[i].deadline+(ctrl.hdd[i].state==Hdd::Park?ctrl.hdd[i].settleUs+ctrl.hdd[i].strikeUs:ctrl.hdd[i].state==Hdd::Settle?ctrl.hdd[i].strikeUs:0)));reply(origin,line);}
+  for(int i=0;i<map::hostSledCount;++i) sledStatus(origin,i,"STATUS SLED");
   snprintf(line,sizeof(line),"STATUS VHS enabled=%d amp=%d hz=%.2f",ctrl.vhsEnabled,ctrl.amp,ctrl.frequency);reply(origin,line);snprintf(line,sizeof(line),"STATUS VHS2 enabled=%d amp=%d hz=%.2f",ctrl.fxEnabled,ctrl.fxAmp,ctrl.fxFrequency);reply(origin,line);reply(origin,"STATUS END");
  }
 };

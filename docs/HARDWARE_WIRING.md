@@ -1,8 +1,16 @@
 # Połączenia i zasilanie
 
-Aktualny układ: ESP32-WROOM-32, 5 × 74HC595, 6 × moduł DRV8833,
-4 FDD, 4 dwufazowe bipolarne steppery DVD, 4 cewki HDD VCM oraz
+Docelowy układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
+**8 × moduł DRV8833**, **8 FDD**, **6** dwufazowych bipolarnych stepperów DVD, 4 cewki HDD VCM oraz
 2 pasywne PC Speakery sterowane przez osobne S8050.
+Firmware przygotowuje **8 FDD i 6 DVD**; host nadal ma **4 FDD, 4 DVD i 14 urządzeń**.
+Dotychczasowe testy logiki dotyczą istniejących kanałów, nie fizycznej kwalifikacji
+całego docelowego zestawu 20 urządzeń. FDD5–8 i DVD5–6 są planowane do przyszłych
+testów, bez potwierdzonego podłączenia/kwalifikacji; startują wyłączone.
+SR6 i pozostałe niezmierzone wyjścia również wymagają pomiaru.
+Nowe okablowanie powstaje od zera: DVD/HDD zmieniają Q względem starszej mapy.
+**Nie uruchamiaj tego firmware z poprzednim okablowaniem DVD/HDD.**
+Kompatybilne STATUS nie identyfikuje rewizji połączeń; sprawdzenie mapy jest ręczne.
 Numery GPIO nie są numerami pozycji na złączu płytki ESP32.
 Numery pinów 74HC595 poniżej dotyczą DIP-16; oznaczenia DRV8833 dotyczą
 funkcji na module, a nie numerów nóżek układu scalonego.
@@ -19,15 +27,16 @@ zasileniem odpowiedniej części. Nie ma zatwierdzonej listy konkretnych modeli 
 
 | Obwód | Napięcie / miejsce podania | Status |
 | --- | --- | --- |
-| ESP32 | USB płytki developerskiej | Sposób zasilania logiki; sprawdź schemat konkretnej płytki przed równoczesnym podaniem zewnętrznego zasilania |
-| 5 × 74HC595 i pull-upy logiczne | 3,3 V, wspólna masa ESP32 | Przyjęta logika układu; nie szyna zasilania silników |
+| ESP32 | USB płytki developerskiej | Nie łącz dodatniej szyny zasilania ESP32 z dodatnią szyną ATX |
+| 6 × SN74HC595N i pull-upy logiczne | 3,3 V z ATX, wspólna masa z ESP32 USB | Osobna szyna logiki; nie łącz jej z pinem 3V3/5V/VIN zasilanej USB płytki ESP32 |
 | FDD | Osobne 5 V do złącza zasilania napędu | Bieżące założenie układu; sprawdź model i orientację wtyku |
-| DVD stepper | Proponowane 3,3 V **na VM DRV8833 #1–4** | Robocze napięcie zasilania silników, wymaga pomiaru temperatury i prądu; brak potwierdzonego limitu ciągłej pracy |
-| HDD VCM | Osobne VM DRV8833 #5–6, do ustalenia | Brak zweryfikowanego napięcia/prądu dla kompletu cewek; zapis testu 5 V i ~23,3 Ω znajduje się w [badaniach](research/hardware-measurements.md#hdd-vcm) |
+| DVD stepper | Proponowane 3,3 V **na VM DRV8833 #1–6** | Robocze napięcie zasilania silników, wymaga pomiaru temperatury i prądu; brak potwierdzonego limitu ciągłej pracy |
+| HDD VCM | Osobne VM DRV8833 #7–8, do ustalenia | Brak zweryfikowanego napięcia/prądu dla kompletu cewek; zapis testu 5 V i ~23,3 Ω znajduje się w [badaniach](research/hardware-measurements.md#hdd-vcm) |
 | PC Speaker / FX | Osobna szyna V_SPK, do ustalenia | Nieznany prąd obciążenia i rezystory bazowe S8050; nie zasilać głośnika z GPIO |
 
-Połącz masy zasilaczy, ESP32, rejestrów, napędów i sterowników. Wspólna masa
-nie oznacza połączenia dodatnich szyn o różnych napięciach. Prąd silników
+W teście samej logiki zasil ESP32 przez USB, a rejestry ze sprawdzonej szyny
+3,3 V ATX. Połącz masy zasilaczy, ESP32, rejestrów, napędów i sterowników. Wspólna masa
+nie oznacza połączenia dodatnich szyn, również dwóch niezależnych źródeł nominalnie 3,3 V. Prąd silników
 prowadź osobnymi przewodami do zasilaczy; nie przez regulator 3,3 V ESP32 ani
 cienkie mostki masy logiki. Sprawdź przerwy w szynach płytek stykowych.
 
@@ -49,25 +58,37 @@ po identyfikacji obciążeń. Samo 3,3 V nie dowodzi bezpiecznego prądu DVD.
 | 35 | FDD2 TRACK0, pin 26 |
 | 36 | FDD3 TRACK0, pin 26 |
 | 39 | FDD4 TRACK0, pin 26 |
+| 32 | FDD5 TRACK0, pin 26; nowy kanał |
+| 33 | FDD6 TRACK0, pin 26; nowy kanał |
+| 16 | FDD7 TRACK0, pin 26; nowy kanał |
+| 17 | FDD8 TRACK0, pin 26; nowy kanał |
 | 25 | R_B1 → baza S8050 Q1 → sterownik głównego PC Speakera |
 | 26 | R_B2 → baza S8050 Q2 → sterownik PC Speaker FX |
 | 27 | Opcjonalna dioda testowa: 330 Ω → anoda LED, katoda → GND |
 | 1 / 3 | UART0 / USB-Serial, pozostawione do programowania i diagnostyki |
 
-TRACK0 jest aktywne LOW. GPIO 34/35/36/39 są wejściowe i wymagają zewnętrznych
-pull-upów do 3,3 V. Wartość dobierz do wyjścia konkretnego napędu i przewodów.
+TRACK0 jest aktywne LOW. **Każde z ośmiu wejść ma zewnętrzny pull-up do 3,3 V**;
+firmware ustawia wszystkie jako INPUT, bez INPUT_PULLUP. Rezystancję każdego
+pull-upu dobierz do wyjścia konkretnego napędu i przewodów. GPIO34/35/36/39 są
+wyłącznie wejściowe. GPIO32/33/16/17 mogą pracować jako wejścia i nie kolidują
+z używanymi SPI, USB-UART, speakerami ani LED GPIO27 w tym firmware.
+[Karta ESP32-WROOM-32](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+potwierdza te GPIO; zweryfikuj jednak oznaczenie modułu, wyprowadzenia i schemat
+**konkretnej płytki 38-pin CP2102**. GPIO16/17 mają alternatywną funkcję UART2;
+nie podłączaj tam drugiego UART. Nie przenoś tej mapy na wariant z innymi
+wewnętrznymi przydziałami/PSRAM bez weryfikacji. Sam CP2102 nie identyfikuje modułu.
 Sprawdź, czy FDD nie podciąga tego sygnału do 5 V; w razie potrzeby zastosuj
 konwersję poziomu. Nie podawaj 5 V na wejścia ESP32. Nie zakładaj zgodności
 wejść STEP/DIR każdego FDD z logiką 3,3 V; gdy model jej nie gwarantuje,
 potrzebny jest odpowiedni nieodwracający bufor poziomów.
 Opcjonalny pull-down 10 kΩ GPIO27 zapewnia LOW także przed startem firmware.
-GPIO27 i wyjście rejestrów Q27 to różne połączenia.
+GPIO27 (LED) i Q27 (DRV3 BIN2) to różne połączenia.
 
 ## Łańcuch 74HC595
 
-Dla każdego z pięciu rejestrów: pin 16 → 3,3 V, pin 8 → GND,
+Dla **każdego z sześciu** rejestrów: pin 16 → 3,3 V, pin 8 → GND,
 pin 10 /SRCLR → 3,3 V. Nie pozostawiaj /SRCLR ani /OE w stanie pływającym.
-Łącz pin 9 QH′ układu #1 z pinem 14 SER układu #2, następnie #2→#3→#4→#5.
+Łącz pin 9 QH′ układu #1 z pinem 14 SER układu #2, następnie #2→#3→#4→#5→**#6**. SR6 jest ostatni, najdalej od ESP32.
 QH′ jest wyjściem szeregowym; nie zastępuje wyjścia QH.
 CLOCK, LATCH i /OE są wspólne. Układ #1 jest najbliżej ESP32.
 
@@ -78,14 +99,28 @@ CLOCK, LATCH i /OE są wspólne. Układ #1 jest najbliżej ESP32.
 | #3 | Q16–Q23 | 15 / 1 / 2 / 3 / 4 / 5 / 6 / 7 |
 | #4 | Q24–Q31 | 15 / 1 / 2 / 3 / 4 / 5 / 6 / 7 |
 | #5 | Q32–Q39 | 15 / 1 / 2 / 3 / 4 / 5 / 6 / 7 |
+| #6 | Q40–Q47 | 15 / 1 / 2 / 3 / 4 / 5 / 6 / 7 |
 
-SPI przesuwa bajt #5 jako pierwszy, #1 jako ostatni, MSB first, 1 MHz.
-40 bitów zajmuje co najmniej 40 µs plus narzut i zbocze LATCH.
-Boot utrzymuje /OE HIGH, ładuje STEP HIGH, wejścia mostków LOW i nSLEEP LOW,
-potem włącza /OE. Stan rejestrów jest wtedy `55 00 00 00 00` w kolejności
-#1→#5. Boot nie wykonuje HOME ani nie rozpoczyna nut.
+SPI przesuwa bajt **SR6 jako pierwszy, SR1 jako ostatni**, MSB first, 1 MHz.
+Ramka ma 6 bajtów / 48 bitów, co najmniej 48 µs plus narzut i zbocze LATCH.
+Boot utrzymuje /OE HIGH, ładuje STEP wszystkich ośmiu FDD HIGH, pozostałe
+wyjścia LOW, potem włącza /OE. Stan w kolejności SR1→SR6:
+**`55 55 00 00 00 00`**; kolejność bajtów SPI: `00 00 00 00 55 55`.
+Boot nie wykonuje HOME ani ruchu. /OE HIGH oznacza wyjścia high-Z, nie odcięcie
+mocy mostków. Przy flashowaniu i testach logiki odłącz zasilanie urządzeń
+wykonawczych oraz ich sygnały; nie polegaj wyłącznie na programie.
 
-## Wszystkie wyjścia Q0–Q39
+**Zgłoszona awaria montażowa:** brak połączenia pinu 8 GND każdego rejestru
+powodował nieprawidłowe napięcia i niestabilną logikę. Po poprawieniu GND na
+pinie 15 pięciu starych rejestrów zmierzono LOW ≈0 V / HIGH ≈3,41 V.
+To obserwacja użytkownika dla tych pięciu pinów, nie certyfikacja wszystkich
+Q ani nowego SR6. Sprawdź osobno pin 8 i napięcie zasilania każdego układu.
+
+## Wszystkie wyjścia Q0–Q47
+
+**Wszystkie 48 Q jest przypisane; nie ma wolnych wyjść ani linii usypiania.**
+SR1–2 obsługują FDD, SR3–5 DVD, SR6 HDD. Dla DVD wejścia są kolejno
+AIN1, AIN2, BIN1, BIN2. Każdy HDD zajmuje jeden mostek H.
 
 | Q | Połączenie | Q | Połączenie |
 | ---: | --- | ---: | --- |
@@ -93,22 +128,26 @@ potem włącza /OE. Stan rejestrów jest wtedy `55 00 00 00 00` w kolejności
 | 2 | FDD2 STEP | 3 | FDD2 DIR |
 | 4 | FDD3 STEP | 5 | FDD3 DIR |
 | 6 | FDD4 STEP | 7 | FDD4 DIR |
-| 8 | DRV1 AIN1 | 9 | DRV1 AIN2 |
-| 10 | DRV1 BIN1 | 11 | DRV1 BIN2 |
-| 12 | DRV2 AIN1 | 13 | DRV2 AIN2 |
-| 14 | DRV2 BIN1 | 15 | DRV2 BIN2 |
-| 16 | DRV3 AIN1 | 17 | DRV3 AIN2 |
-| 18 | DRV3 BIN1 | 19 | DRV3 BIN2 |
-| 20 | DRV4 AIN1 | 21 | DRV4 AIN2 |
-| 22 | DRV4 BIN1 | 23 | DRV4 BIN2 |
-| 24 | DRV5 AIN1 | 25 | DRV5 AIN2 |
-| 26 | DRV5 BIN1 | 27 | DRV5 BIN2 |
-| 28 | DRV6 AIN1 | 29 | DRV6 AIN2 |
-| 30 | DRV6 BIN1 | 31 | DRV6 BIN2 |
-| 32 | Wolne, boot LOW | 33 | Wolne, boot LOW |
-| 34 | Wolne, boot LOW | 35 | Wolne, boot LOW |
-| 36 | Wspólne nSLEEP DRV1–6 | 37 | Wolne, boot LOW |
-| 38 | Wolne, boot LOW | 39 | Wolne, boot LOW |
+| 8 | FDD5 STEP | 9 | FDD5 DIR |
+| 10 | FDD6 STEP | 11 | FDD6 DIR |
+| 12 | FDD7 STEP | 13 | FDD7 DIR |
+| 14 | FDD8 STEP | 15 | FDD8 DIR |
+| 16 | DRV1 AIN1 | 17 | DRV1 AIN2 |
+| 18 | DRV1 BIN1 | 19 | DRV1 BIN2 |
+| 20 | DRV2 AIN1 | 21 | DRV2 AIN2 |
+| 22 | DRV2 BIN1 | 23 | DRV2 BIN2 |
+| 24 | DRV3 AIN1 | 25 | DRV3 AIN2 |
+| 26 | DRV3 BIN1 | 27 | DRV3 BIN2 |
+| 28 | DRV4 AIN1 | 29 | DRV4 AIN2 |
+| 30 | DRV4 BIN1 | 31 | DRV4 BIN2 |
+| 32 | DRV5 AIN1 | 33 | DRV5 AIN2 |
+| 34 | DRV5 BIN1 | 35 | DRV5 BIN2 |
+| 36 | DRV6 AIN1 | 37 | DRV6 AIN2 |
+| 38 | DRV6 BIN1 | 39 | DRV6 BIN2 |
+| 40 | DRV7 AIN1 | 41 | DRV7 AIN2 |
+| 42 | DRV7 BIN1 | 43 | DRV7 BIN2 |
+| 44 | DRV8 AIN1 | 45 | DRV8 AIN2 |
+| 46 | DRV8 BIN1 | 47 | DRV8 BIN2 |
 
 ## FDD
 
@@ -131,19 +170,23 @@ HOME będzie wiarygodne dopiero po sprawdzeniu aktywności TRACK0.
 | DRV2 | DVD2 cewka A | DVD2 cewka B |
 | DRV3 | DVD3 cewka A | DVD3 cewka B |
 | DRV4 | DVD4 cewka A | DVD4 cewka B |
-| DRV5 | HDD1 VCM | HDD2 VCM |
-| DRV6 | HDD3 VCM | HDD4 VCM |
+| DRV5 | DVD5 cewka A | DVD5 cewka B |
+| DRV6 | DVD6 cewka A | DVD6 cewka B |
+| DRV7 | HDD1 VCM | HDD2 VCM |
+| DRV8 | HDD3 VCM | HDD4 VCM |
 
 Znajdź pary przewodów cewek DVD omomierzem przy odłączonym zasilaniu.
 Jedna cewka zajmuje cały mostek; nie łącz wyjść mostków ze sobą ani z masą.
 VM i GND każdego modułu podłącz do właściwego obwodu zasilania.
-Jeżeli moduł udostępnia nSLEEP, połącz je do Q36, sprawdzając jego wbudowane
-pull-upy i ewentualne zworki. Nie myl nSLEEP z nFAULT.
+Sterowanie używa wyłącznie AIN1/AIN2/BIN1/BIN2; nie ma dodatkowej linii
+usypiania/wybudzania z rejestrów ani ESP32. Q40–Q47 obsługują cztery HDD przez DRV7–8.
+O gotowości modułu do pracy decyduje jego faktyczny schemat; żaden pin
+niepodłączony na module nie jest traktowany jako zabezpieczenie odcinające moc.
 AISEN/BISEN muszą być połączone według schematu konkretnego modułu
 (z masą lub przez właściwe rezystory pomiaru prądu); nie zakładaj obecności
 ograniczania prądu tylko dlatego, że użyto DRV8833. Firmware nie mierzy tych prądów,
-nie odczytuje nFAULT i nie ma czujników temperatury. Moduły #7–8, jeśli są
-w zestawie, nie mają przydziału w aktualnym układzie.
+nie odczytuje nFAULT i nie ma czujników temperatury. Wszystkie osiem modułów
+ma przydział; ich fizyczna gotowość wymaga osobnych kontroli.
 
 ## Dwa PC Speakery
 
@@ -170,7 +213,7 @@ GPIO25 i GPIO26 są już przypisane; kolejnych GPIO nie trzeba szukać.
 ## Dokumentacja elementów
 
 - [TI SN74HC595 — pinout DIP-16, kaskada i /OE](https://www.ti.com/lit/ds/symlink/sn74hc595.pdf)
-- [TI DRV8833 — mostki, VM, nSLEEP i xISEN](https://www.ti.com/lit/ds/symlink/drv8833.pdf)
+- [TI DRV8833 — mostki, VM i xISEN](https://www.ti.com/lit/ds/symlink/drv8833.pdf)
 - [Espressif ESP32-WROOM-32 — GPIO i zasilanie](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
 
 Karta układu scalonego nie zastępuje schematu gotowego modułu ani identyfikacji

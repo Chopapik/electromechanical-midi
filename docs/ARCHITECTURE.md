@@ -1,5 +1,11 @@
 # Architektura i obsługa aplikacji
 
+Firmware ma docelowo osiem FDD, sześć DVD, sześć rejestrów i osiem DRV8833;
+**runtime hosta opisany poniżej nadal obsługuje cztery FDD i cztery DVD**.
+Nowe FDD5–8 i DVD5–6 są domyślnie wyłączone,
+poza inventory, UI, Laboratory i STRICT_TRACKS hosta. Nie poszerzono tego
+pipeline ani konfiguracji. [Mapowanie i status kwalifikacji](HARDWARE_DEVICES.md#nowe-fdd58-firmware-bez-rozszerzenia-hosta).
+
 ## Jeden harmonogram wykonawczy
 
 ```text
@@ -46,7 +52,9 @@ na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
 Wymaga `board=esp32`, protocol 2, `ready=1`, `stop_ack=1`, `hardware_profiles=1`
 oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
 `speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
-STATUS. FDD wymagają jawnego HOME. USB służy flashowaniu i diagnostyce.
+STATUS. Firmware zachowuje 17 rekordów STATUS z FDD1–4; dodatkowe kanały
+są widoczne tylko przez osobne `DIAG FDD` / `DIAG SLED`. Dotychczasowy parser hosta ma
+limit 20 linii transakcji. FDD wymagają jawnego HOME. USB służy flashowaniu i diagnostyce.
 
 VIRTUAL odbiera ten sam timeline, z wyprzedzeniem 150 ms względem czasu
 wykonania (REAL bez takiego lookahead). [virtualOutput.ts](../web/src/virtualOutput.ts)

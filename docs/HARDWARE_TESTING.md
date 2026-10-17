@@ -2,21 +2,22 @@
 
 Najpierw [połączenia](HARDWARE_WIRING.md), następnie
 [limity i status pomiarów](HARDWARE_DEVICES.md). Poniższa procedura nie została
-w całości powtórzona na fizycznym zestawie podczas porządkowania dokumentacji.
+w całości powtórzona na docelowym zestawie 8 FDD / 6 DVD / 4 HDD / 2 speakery / 6 rejestrów / 8 DRV8833.
 Testy programowe nie mierzą temperatury, prądu, dźwięku ani pozycji.
 
 ## Kontrola bez zasilania urządzeń
 
-1. Odłącz VM mostków, zasilanie FDD i V_SPK. Zidentyfikuj modele modułów,
+1. **Wyłącz/odłącz VM mostków, zasilanie FDD i V_SPK oraz sygnały do
+   FDD/DRV/speakerów**, także podczas flashowania. Zidentyfikuj modele modułów,
    piny zasilania, orientację 74HC595 i faktyczne B/C/E obu S8050.
-2. Sprawdź ciągłość wspólnej masy, brak zwarć między dodatnimi szynami i masą,
+2. Sprawdź **pin 8 GND każdego z sześciu rejestrów**, ciągłość wspólnej masy, brak zwarć między dodatnimi szynami i masą,
    połączenia szyn płytek stykowych, każdy /OE i /SRCLR oraz łańcuch QH′→SER.
-3. Prześledź wszystkie Q0–Q39 według tabeli w schemacie; wolne wyjścia zostaw
-   niepodłączone. Sprawdź, że GPIO27 nie trafiło na mostek HDD2 (Q27).
+3. Prześledź wszystkie Q0–Q47 według tabeli w schemacie; wszystkie mają przydział.
+   DVD5–6 zajmują Q32–Q39, HDD przeniesiono na Q40–Q47. Sprawdź, że GPIO27 nie trafiło na DRV3 BIN2 (Q27).
 4. Zmierz rezystancje par cewek DVD i HDD. Ustal wartości rezystorów bazowych
    oraz napięcie i prąd speakerów. Nie uruchamiaj nieustalonego obwodu mocy.
 5. Zweryfikuj poziomy STEP/DIR i TRACK0 dla konkretnych FDD. Nie podawaj
-   podciągania 5 V na GPIO ESP32. Przy odłączonej logice zidentyfikuj /DS.
+   podciągania 5 V na GPIO ESP32; każde z ośmiu TRACK0 ma zewnętrzny pull-up 3,3 V. Przy odłączonej logice zidentyfikuj /DS.
 6. Zapewnij możliwość natychmiastowego odłączenia zasilania urządzeń oraz
    pomiar prądu i temperatury silników/mostków podczas prób.
 
@@ -32,20 +33,52 @@ pio run -d firmware/controller -e esp32
 Flashowanie przez USB/CP2102: `/settings` → **Serwis → Wgraj firmware ESP32**,
 albo `pio run -d firmware/controller -e esp32 -t upload --upload-port PORT`.
 `PORT` zastąp wykrytym portem konkretnej płytki. Sam CP2102 nie dowodzi
-poprawności połączeń. Nie flashuj podczas ruchu; DeviceService potwierdza STOP
-i przejmuje wyłączne sterowanie. Monitor USB: 115200, 8N1; wyłącz DTR/RTS,
+poprawności połączeń. **Przed flashowaniem fizycznie odłącz zasilanie silników i speakerów oraz
+ich sygnały.** Potwierdzenie STOP i przejęcie sterowania przez DeviceService
+nie zastępują odłączenia mocy podczas resetu/flashowania. W tym zadaniu
+nie flashowano kontrolera ani nie uruchamiano obciążeń. Monitor USB: 115200, 8N1; wyłącz DTR/RTS,
 jeśli program monitora resetuje płytkę przy otwarciu.
 
-Uruchom samą logikę. Sprawdź /OE HIGH podczas resetu, potem stan boot
-`55 00 00 00 00` rejestrów #1→#5: STEP HIGH, wejścia mostków i nSLEEP LOW.
+Uruchom samą logikę: **ESP32 z USB, rejestry z 3,3 V ATX, wspólna masa**.
+Nie łącz dodatnich szyn ATX i zasilanej USB płytki ESP32, także pinów 3V3/5V/VIN.
+Sprawdź /OE podciągnięte 10 kΩ do 3,3 V i HIGH podczas resetu, potem stan boot
+**`55 55 00 00 00 00`** SR1→SR6: STEP FDD1–8 HIGH, pozostałe Q LOW.
+SR6 jest na końcu kaskady, za SR5; jego bajt wysyłany jest jako pierwszy.
+/OE wyłącza wyjścia logiczne, nie moc mostków.
 USB zgłasza `READY protocol=2 board=esp32`; nie oznacza to wykonania HOME.
 
-Do sprawdzenia pojedynczych wyjść służy `DIAG BIT n` (n=0…39).
+Do sprawdzenia pojedynczych wyjść służy `DIAG BIT n` (n=0…47).
 **Wszystkie urządzenia wykonawcze muszą być odłączone**, także FDD i wejścia
-sterowników mogące je uruchomić. Komenda nadpisuje ramkę, w tym STEP i nSLEEP;
+sterowników mogące je uruchomić. Komenda nadpisuje całą ramkę, także STEP i wejścia mostków;
 mierz wyłącznie logikę. Po diagnostyce zresetuj ESP32 przy nadal odłączonej mocy
 i ponownie sprawdź maskę boot. `ALL STOP` wyłącza obsługiwane urządzenia,
-ale nie czyści każdego wolnego bitu ustawionego przez DIAG.
+ustawia STEP HIGH i wejścia wszystkich mostków DVD/HDD LOW, także Q40–Q47 HDD. Zachowuje stan DIR,
+więc dopiero reset przywraca całą maskę startową; żadna z tych komend
+nie jest odłączeniem napięcia VM.
+
+### Pomiary sześciu rejestrów bez obciążeń
+
+Zgłoszony brak pinu 8 GND rejestrów powodował wcześniej nieprawidłowe napięcia
+i niestabilną logikę. Po poprawce pin 15 pięciu starych układów dawał LOW ≈0 V,
+HIGH ≈3,41 V. To tylko wskazany pomiar użytkownika, bez kwalifikacji innych
+wyjść i bez pomiaru SR6. Najpierw potwierdź GND i VCC każdego z sześciu układów.
+
+| Rejestr | QA, pin 15 DIP-16 | Komenda HIGH |
+| --- | --- | --- |
+| SR1 | Q0 | `DIAG BIT 0` |
+| SR2 | Q8 | `DIAG BIT 8` |
+| SR3 | Q16 | `DIAG BIT 16` |
+| SR4 | Q24 | `DIAG BIT 24` |
+| SR5 | Q32 | `DIAG BIT 32` |
+| SR6 — nowy, ostatni | Q40 | `DIAG BIT 40` |
+
+Mierz względem wspólnej masy; wybrane QA powinno być HIGH, pozostałe LOW.
+Przełącz wybrany bit na inny, aby sprawdzić również LOW danego pinu. Następnie
+sprawdź kolejno **wszystkie Q0–Q47**, właściwe piny QA–QH i brak przesunięcia
+bajtów. Nie zakładaj identycznego wyniku dla SR6 na podstawie pięciu starych.
+Po pomiarach zresetuj samą logikę i potwierdź maskę startową. Obciążenia
+podłączaj dopiero po przejściu tych kontroli, przy ponownie odłączonym zasilaniu.
+
 
 ## BLE bez silników
 
@@ -69,15 +102,24 @@ TEST ON
 TEST STATUS
 TEST OFF
 STATUS
-ALL STOP test1
+ALL STOP 1001
 ```
 
 Oczekuj PONG, zapalenia/zgaszenia opcjonalnej LED GPIO27, transakcji STATUS
-oraz `STOPPED test1`. STATUS zawiera BEGIN, CTRL, 4 FDD, 4 HDD, 4 SLED,
+oraz `STOPPED 1001`. STATUS zawiera BEGIN, CTRL, 4 FDD, 4 HDD, 4 SLED,
 VHS, VHS2, END (17 rekordów). Powiadomienia są fragmentowane do 20 bajtów:
 składaj je do LF, również przy MTU 23. Boot READY jest wysyłane przez USB;
 połączenie BLE sprawdza się PING/STATUS. Rekord urządzenia nie dowodzi,
-że silnik jest fizycznie podłączony.
+że silnik jest fizycznie podłączony. FDD5–8 celowo nie są dodawane do STATUS:
+bufor hosta ma limit 20 linii, a poszerzenie obecnych 17 dałoby 21.
+Wyślij osobno `DIAG FDD`: odpowiedź `DIAG FDD BEGIN`, cztery rekordy
+`DIAG FDD 5`…`DIAG FDD 8`, `DIAG FDD END` pokazuje enabled/HOME/PLAY/TRACK0
+nowych kanałów bez mieszania ich ze STATUS. Analogicznie **`DIAG SLED`** zwraca
+`DIAG SLED BEGIN`, dwa rekordy `DIAG SLED 5` / `DIAG SLED 6`, `DIAG SLED END`.
+Pokazuje ENABLE/PLAY, Hz, pozycję względną, kierunek i rampę nowych DVD.
+Osobna diagnostyka nie poszerza STATUS o nowe urządzenia.
+Używaj klienta diagnostycznego
+przy zatrzymanej aplikacji, aby nie współdzielić sterowania.
 
 USB i BLE mają osobne bufory linii do 95 bajtów. `ERR LINE_TOO_LONG`,
 `ERR RX_OVERFLOW` lub `ERR TX_OVERFLOW` oznaczają problem protokołu/kolejki,
@@ -93,11 +135,26 @@ uruchamiaj skończone próby z ograniczonym prądem. Nie zaczynaj od całej orki
 | Urządzenie | Sprawdzenie przed grą | Obserwacje w próbie |
 | --- | --- | --- |
 | FDD | /DS, TRACK0 aktywne LOW i właściwy kanał; jawny HOME | Czy dochodzi do TRACK0, odsuwa się, nie uderza w koniec, nie gubi odniesienia |
-| DVD | Pary cewek, VM, nSLEEP, swobodny obrót | Kierunek, rampa, zmiana celu bez STOP, prąd i wzrost temperatury |
+| DVD | Pary cewek, VM, stan wejść mostków, swobodny obrót | Kierunek, rampa, zmiana celu bez STOP, prąd i wzrost temperatury |
 | HDD | Rezystancja/połączenia cewki, VM, miejsce ruchu ramienia | Pojedynczy HIT, park/settle/strike, brak zakleszczenia i nadmiernego nagrzewania |
 | Speaker / FX | Ustalony V_SPK, R_B i pinout S8050 | Każdy kanał osobno, brak sprzęgania częstotliwości, prąd, temperatura i nośna PWM |
 
-Aplikacja konfiguruje profile i ENABLE przed grą. Samo połączenie nie wykonuje
+**FDD5–8 są domyślnie wyłączone i niepodłączone.** Nie uruchamiaj ich przed
+indywidualną kontrolą TRACK0, /DS, poziomów, ruchu i parametrów. Po kwalifikacji
+jednej stacji jawny `FDD n ENABLE 1` nie wykonuje HOME; dopiero osobny
+`FDD n HOME` rozpoczyna ruch. `FDD ALL HOME` obejmuje też nowe kanały, jeśli
+wcześniej zostały ręcznie włączone. Nie używaj tej komendy zamiast testu jednej
+nowej stacji. Dodatkowe kanały nie są dostępne w UI ani Laboratory hosta.
+
+**DVD5–6 są planowane do przyszłych prób, domyślnie wyłączone**. Nie uznawaj
+fallbacku DVD4 za kwalifikację silników. Najpierw sprawdź cztery połączenia wejść
+każdego DRV5/6, pary cewek, VM i mechanicznie swobodny obrót. Dopiero po kontroli
+logiki i ustaleniu parametrów jeden kanał można włączyć jawnym ENABLE i testować
+skończonym PLAY/STOP z diagnostyką DIAG SLED. W tym zadaniu nie wykonujemy
+żadnej z tych prób ruchowych. Ponownie sprawdź połączenia HDD1–4 na **DRV7/8**;
+nowa mapa nie jest zgodna ze starszym przypisaniem HDD do DRV5/6.
+
+Aplikacja konfiguruje profile i ENABLE **FDD1–4 oraz DVD1–4** przed grą. Samo połączenie nie wykonuje
 HOME; użyj `/settings` → **Serwis → Homing**. `homed=1` i aktywne TRACK0
 to różne stany. `HOME_FAILED` wymaga sprawdzenia czujnika, /DS, DIR i przewodów;
 nie ponawiaj bez końca uderzającej w ogranicznik karetki.
@@ -121,7 +178,7 @@ VHS2 ENABLE 1
 VHS2 AMP 50
 VHS2 FREQ 830.61
 VHS2 STOP
-ALL STOP test2
+ALL STOP 1002
 ```
 
 Każdy kanał ma `ENABLE 0|1`, np. `SLED 1 ENABLE 1`.
@@ -144,7 +201,7 @@ Zapis historycznej próby kontrolera: [pomiary i obserwacje](research/hardware-m
 
 ## Awarie
 
-**Naciśnij STOP.** REAL używa `ALL STOP <token>` i wymaga pasującego
+**Naciśnij STOP.** REAL używa `ALL STOP <token>` (token to 1–10 cyfr) i wymaga pasującego
 `STOPPED <token>` w ciągu 2 s. Brak ACK oznacza niepotwierdzony stan sprzętu;
 rozłączenie BLE samo nie jest potwierdzeniem zatrzymania. Gdy ruch trwa,
 pojawia się zapach/nadmierne grzanie lub nie można potwierdzić STOP,
@@ -174,3 +231,44 @@ VIRTUAL anuluje kolejki/epokę i wycisza audio po utracie synchronizacji.
 Telemetria `/api/monitor/raw` pokazuje ruch komend; nie jest analizatorem STEP
 ani pomiarem prądu. Zapisuj wersję kodu, profil, kanał, zasilanie, czas, temperaturę,
 prąd i metodę pomiaru przy każdej nowej kwalifikacji sprzętu.
+
+## Weryfikacja zmiany mapy
+
+Procedura offline (bez flashowania i obciążeń):
+
+```sh
+PYTHONPATH=host:host/tests .venv/bin/python -m unittest \
+  test_esp32_firmware test_esp32_protocol test_esp32_ble_adapter \
+  test_fdd_firmware_open_loop test_firmware test_firmware_flow test_orchestra_link -q
+pio run -d firmware/controller -e esp32
+.venv/bin/python scripts/generate_hardware_profiles.py --check
+```
+
+Testy w `host/tests/test_esp32_firmware.py`, `test_esp32_protocol.py` i
+`test_esp32_ble_adapter.py` kompilują produkcyjny C++ z atrapami czasu/GPIO,
+Arduino/NimBLE/FreeRTOS. Pozostałe sprawdzają m.in. rdzeń UNO i kompatybilność
+hosta z atrapami transportu/uploadu; nie są próbami fizycznymi.
+
+Wyniki offline dla docelowej mapy 8 FDD / 6 DVD — **2026-10-17**:
+
+- **98 testów PASS**, w tym 69 testów produkcyjnego C++ ESP32: 38 rdzenia,
+  18 protokołu i 13 adaptera. Obejmują sześć DVD, cztery HDD, domyślne
+  wyłączenie nowych kanałów, fallback i kontrolę częstotliwości DVD5–6,
+  indywidualny STOP, globalny STOP/watchdog, DIAG FDD / DIAG SLED / DIAG BIT,
+  boot `55 55 00 00 00 00` i istniejące zasady FDD/speakerów.
+- Wszystkie 48 bitów występuje w mapie dokładnie raz: 16 FDD, 24 DVD, 8 HDD.
+  Testy obejmują odrzucenie indeksów spoza ramki i osobne limity ID rodzin.
+- **56 przypadków rdzenia/protokołu PASS z UndefinedBehaviorSanitizer**, także
+  konstrukcja i PLAY DVD5–6. Czteroelementowy wygenerowany profil pozostaje
+  niezmieniony; wszystkie odwołania nowych DVD są kierowane przez fallback DVD4.
+- Bootowe STATUS jest bajtowo identyczne zarówno z `9c1bd17`, jak i z lokalną,
+  niezacommitowaną wersją 8 FDD / 4 DVD sprzed tej zmiany. Niezmieniony parser
+  hosta przyjął 17 linii / 14 urządzeń, bez dodatkowych kanałów w transakcji.
+- PlatformIO target ESP32: **SUCCESS**, RAM 39300 B, flash 622485 B dla tego
+  obrazu. Nie wykonywano uploadu. Generator profili `--check`, kompletność
+  tabeli Q0–Q47, lokalne odnośniki i kontrola zakresu zmienionych plików: PASS.
+
+To weryfikacja C++/protokołu i modeli offline, nie test elektryczny ani radiowy.
+Nie flashowano fizycznego ESP32 i nie uruchamiano silników. Obserwacja LOW ≈0 V /
+HIGH ≈3,41 V dotyczy wybranych wyjść pięciu rejestrów po naprawie GND; pozostałe
+wyjścia i SR6, dodatkowe FDD oraz DVD5–6 wymagają osobnych kontroli fizycznych.

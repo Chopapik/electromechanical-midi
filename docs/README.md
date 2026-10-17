@@ -4,14 +4,16 @@
 Poniższe pięć dokumentów wraz z tym indeksem stanowią bieżącą dokumentację.
 Audyt obejmuje wszystkie 31 śledzonych wcześniej plików Markdown, w tym AGENTS,
 raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
-Stan zweryfikowany względem lokalnego `main` po `cf51be4`, z uwzględnieniem
-`8b6724f`, `98bad14`, `bc03c79`; nie tylko kodu dostępnego na GitHubie.
+Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
+`8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
+Aktualizacja **2026-10-17** obejmuje nową mapę firmware 8 FDD / 6 DVD / 4 HDD / 6 rejestrów / 8 DRV8833,
+bez zmian kontraktu hosta: nadal cztery FDD, cztery DVD i 14 urządzeń w aplikacji.
 
 ## Bieżące instrukcje
 
 | Dokument | Właściciel informacji |
 | --- | --- |
-| [HARDWARE_WIRING.md](HARDWARE_WIRING.md) | Połączenia ESP32, 74HC595, pełne Q0–Q39, DRV8833, napędy, dwa S8050 i zasilanie |
+| [HARDWARE_WIRING.md](HARDWARE_WIRING.md) | Połączenia ESP32, 74HC595, pełne Q0–Q47, DRV8833, napędy, dwa S8050 i zasilanie |
 | [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md) | Inventory, profile, zakresy, kalibracja, mechanika i ograniczenia dowodów |
 | [HARDWARE_TESTING.md](HARDWARE_TESTING.md) | Kontrola przewodów, boot, BLE, HOME, lab, STOP i diagnostyka awarii |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Jeden runtime MIDI → REAL/VIRTUAL, obsługa UI/API, uruchamianie i testy |
@@ -25,17 +27,30 @@ mocy speakerów pozostaje konieczna do bezpiecznego uruchomienia całości.
 ## Źródła prawdy i rozstrzygnięte sprzeczności
 
 Kod i aktywna konfiguracja mają pierwszeństwo przed opisem i historycznym raportem.
-Nie zmieniono ich podczas refaktoryzacji dokumentacji.
+Podczas konsolidacji `9c1bd17` nie zmieniano kodu ani konfiguracji. Obecna
+aktualizacja mapy zmienia firmware i jego testy, pozostawiając host oraz JSON bez zmian.
 
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
-| Skład | 14 aktywnych urządzeń, w tym cztery DVD i dwa speakery | [devices.json](../config/devices.json) |
+| Skład hosta | 14 aktywnych urządzeń, w tym cztery FDD, cztery DVD i dwa speakery | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
 | HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |
 | UI i wyjście | `/` i `/settings`, ESP32 BLE, wspólny ExecutionTimeline, VIRTUAL Web Audio | [runtime](../host/runtime/application.py), [UI](../web/src/App.tsx) |
-| DIAG BIT | Wyłącznie bez podłączonych urządzeń; reset logiki przy odłączonej mocy przywraca także wolne Q | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
+| DIAG BIT | Q0–Q47, wyłącznie bez obciążeń i przy odłączonej mocy; boot `55 55 00 00 00 00`, wszystkie 48 Q zajęte | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
+
+Nowa mapa: osiem par STEP/DIR na SR1–2, DVD na SR3–5, HDD na SR6; wszystkie 48 Q zajęte.
+Nie ma sterowania nSLEEP ani zastępczego GPIO. FDD5–8 używają jawnego fallbacku
+parametrów wykonawczych FDD1, startują wyłączone i mają osobne `DIAG FDD`.
+DVD5–6 używają fallbacku DVD4 i osobnego `DIAG SLED`; również startują wyłączone.
+Zwykłe STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
+Pełne osiem FDD i sześć DVD w aranżacji wymaga osobnego rozszerzenia hosta i profili;
+[blokadę oraz wariant rozwiązania](HARDWARE_DEVICES.md#nowe-fdd58-firmware-bez-rozszerzenia-hosta)
+opisano jawnie. Przed flashowaniem i testami logiki odłącz moc i sygnały
+urządzeń wykonawczych. Zasilanie testu: ESP32 USB, rejestry 3,3 V ATX,
+wspólna masa bez łączenia dodatnich szyn. Awaria braku GND pinu 8 i pomiar
+pięciu pinów 15 są obserwacjami użytkownika, nie kwalifikacją nowego SR6.
 
 Wycofano powtarzane instrukcje z `esp32-orchestra.md`, `hardware-first.md`,
 `pc-speaker-fx.md`, `instrument-lab.md` i osobnych opisów presetów.

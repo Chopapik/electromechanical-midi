@@ -17,6 +17,7 @@ ARDUINO = r'''
 #include <vector>
 #include <deque>
 #include <utility>
+#include <cassert>
 constexpr int LOW=0,HIGH=1,INPUT=2,OUTPUT=3;
 uint32_t fakeUs=10000; int gpio[40]={}, modes[40]={}, taskCore=-1;
 std::vector<std::pair<int,int>> writes;
@@ -65,10 +66,11 @@ void xSemaphoreGive(SemaphoreHandle_t s){*s=1;}
 SPI = r'''
 #pragma once
 constexpr int MSBFIRST=1,SPI_MODE0=0;
-struct SPISettings { SPISettings(int,int,int){} };
+struct SPISettings { SPISettings(int hz,int order,int mode){assert(hz==1000000&&order==MSBFIRST&&mode==SPI_MODE0);} };
 struct FakeSPI {
- void begin(int clock,int,int data,int){} void beginTransaction(SPISettings){}
- void transfer(uint8_t){++fakeUs;} void endTransaction(){}
+ std::vector<std::vector<uint8_t>> frames;
+ void begin(int clock,int,int data,int){assert(clock==18&&data==23);} void beginTransaction(SPISettings){frames.emplace_back();}
+ void transfer(uint8_t b){frames.back().push_back(b);++fakeUs;} void endTransaction(){assert(frames.back().size()==6);}
 } SPI;
 '''
 NIMBLE = r'''
@@ -155,6 +157,10 @@ int main(int argc,char** argv){
   ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 440");fakeUs+=3000001;ctrl.tick();io.audioTick();assert(ledcDuty[0]==0);
   ctrl.command("VHS WAVE pulse");assert(ledcHz[0]==20000&&ledcDuty[0]==0);
  }else if(c=="boot"){
+  const std::vector<uint8_t> expected={0,0,0,0,0x55,0x55};assert(SPI.frames.front()==expected);
+  const int pins[8]={34,35,36,39,32,33,16,17};
+  for(int i=0;i<8;++i){assert(modes[pins[i]]==INPUT);assert(ctrl.fdd[i].enabled==(i<4));assert(!ctrl.fdd[i].homing&&!ctrl.fdd[i].playing);}
+  assert(gpio[21]==LOW&&gpio[22]==HIGH);
   assert(writes[0]==std::make_pair(27,LOW)&&gpio[27]==LOW&&modes[27]==OUTPUT);
   assert(NimBLEDevice::name=="Electromechanical-MIDI"&&fakeServer.svc.uuid==orchestra::ble::service);
   assert(fakeServer.svc.chars[0]->uuid==orchestra::ble::rx&&bleTx->uuid==orchestra::ble::tx);
@@ -163,10 +169,16 @@ int main(int argc,char** argv){
  }else if(c=="callback_deferred"){
   size_t n=writes.size();writeBle("TEST ON\n");assert(gpio[27]==LOW&&writes.size()==n&&uxQueueMessagesWaiting(bleRxQueue)==1);
   drainInput();assert(gpio[27]==HIGH&&drainBle()=="TEST ON\n");
+ }else if(c=="extended_sled"){
+  writeBle("SLED 6 PLAY 220\n");drainInput();assert(!ctrl.sled[5].playing&&drainBle()=="ERR DISABLED\n");bleTx->notifications.clear();
+  writeBle("SLED 6 ENABLE 1\nSLED 6 PLAY 220\n");assert(!ctrl.sled[5].playing);drainInput();assert(ctrl.sled[5].playing&&ctrl.sled[5].targetStepRate==220);
+  writeBle("DIAG SLED\n");drainInput();auto text=drainBle();assert(text.find("DIAG SLED BEGIN\n")==0&&text.find("DIAG SLED 6 enabled=1 playing=1 hz=220.00")!=std::string::npos);bleTx->notifications.clear();
+  writeBle("ALL STOP 45\n");drainInput();assert(!ctrl.sled[5].playing&&drainBle()=="STOPPED 45\n");
  }else if(c=="motor_deferred"){
   ctrl.fdd[0].homed=true;size_t n=writes.size();writeBle("FDD 1 PLAY 220\n");
-  assert(!ctrl.fdd[0].playing&&writes.size()==n);drainInput();assert(ctrl.fdd[0].playing);
-  fakeServer.callbacks->onDisconnect(&fakeServer);assert(ctrl.fdd[0].playing&&writes.size()>n);
+  assert(!ctrl.fdd[0].playing&&writes.size()==n);drainInput();assert(ctrl.fdd[0].playing&&writes.size()==n);
+  ctrl.tick();assert(writes.size()>n);n=writes.size();
+  fakeServer.callbacks->onDisconnect(&fakeServer);assert(ctrl.fdd[0].playing&&writes.size()==n);
  }else if(c=="routing"){
   writeBle("PI");pollBle();for(uint8_t ch:std::string("PING\n"))Serial.rx.push_back(ch);
   loop();assert(Serial.sent=="PONG\n"&&uxQueueMessagesWaiting(bleTxQueue)==0);
@@ -221,7 +233,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('serial_boot_once', 'speaker_waves', 'boot', 'callback_deferred', 'motor_deferred', 'routing', 'reconnect',
+for case in ('serial_boot_once', 'speaker_waves', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
              'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

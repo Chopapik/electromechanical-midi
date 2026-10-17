@@ -10,12 +10,33 @@
 
 namespace orchestra {
 namespace map {
+constexpr uint8_t fddCount=8, hostFddCount=4, registerCount=6, bitCount=registerCount*8;
+constexpr uint8_t sledCount=6, hostSledCount=4, hddCount=4;
 constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25, speakerFx=26;
-constexpr uint8_t track0[4]={34,35,36,39};
-constexpr uint8_t step[4]={0,2,4,6}, dir[4]={1,3,5,7};
-constexpr uint8_t sled[4][4]={{8,9,10,11},{12,13,14,15},{16,17,18,19},{20,21,22,23}};
-constexpr uint8_t hdd[4][2]={{24,25},{26,27},{28,29},{30,31}};
-constexpr uint8_t sleep=36;
+constexpr uint8_t track0[fddCount]={34,35,36,39,32,33,16,17};
+constexpr uint8_t step[fddCount]={0,2,4,6,8,10,12,14}, dir[fddCount]={1,3,5,7,9,11,13,15};
+constexpr uint8_t sled[sledCount][4]={{16,17,18,19},{20,21,22,23},{24,25,26,27},{28,29,30,31},{32,33,34,35},{36,37,38,39}};
+constexpr uint8_t hdd[hddCount][2]={{40,41},{42,43},{44,45},{46,47}};
+}
+namespace fddDefaults {
+// The unchanged generator/host inventory contains four existing profile entries only.
+// New, disabled channels explicitly borrow FDD1's working execution parameters;
+// this fallback is NOT individual hardware qualification of FDD5-8.
+static_assert(sizeof(physical::fddTravel)/sizeof(physical::fddTravel[0])==map::hostFddCount,"FDD profile count changed");
+static_assert(sizeof(physical::fddReversalUs)/sizeof(physical::fddReversalUs[0])==map::hostFddCount,"FDD reversal profile count changed");
+static_assert(sizeof(physical::fddMinStepUs)/sizeof(physical::fddMinStepUs[0])==map::hostFddCount,"FDD STEP profile count changed");
+constexpr uint8_t profileIndex(uint8_t id){return id<map::hostFddCount?id:0;}
+}
+namespace sledDefaults {
+// The generator still owns four profiles. Unqualified DVD5-6 temporarily use
+// DVD4's defaults, including ratio=1 rather than the tuner hypothesis for DVD1-3.
+// Every generated-array lookup, including the frequency-band check, uses this index.
+static_assert(sizeof(physical::sledTravel)/sizeof(physical::sledTravel[0])==map::hostSledCount,"DVD profile count changed");
+static_assert(sizeof(physical::sledAcceleration)/sizeof(physical::sledAcceleration[0])==map::hostSledCount,"DVD acceleration count changed");
+static_assert(sizeof(physical::sledPitchRatio)/sizeof(physical::sledPitchRatio[0])==map::hostSledCount,"DVD pitch ratio count changed");
+static_assert(sizeof(physical::sledAllowedBandCount)/sizeof(physical::sledAllowedBandCount[0])==map::hostSledCount,"DVD band count changed");
+static_assert(sizeof(physical::sledAllowedBandsHz)/sizeof(physical::sledAllowedBandsHz[0])==map::hostSledCount,"DVD band table count changed");
+constexpr uint8_t profileIndex(uint8_t id){return id<map::hostSledCount?id:map::hostSledCount-1;}
 }
 struct IO {
  virtual ~IO() {}
@@ -32,23 +53,23 @@ struct IO {
  virtual bool speakerAudioReady(){return true;}
 };
 struct ShiftRegisterBus {
- IO& io; uint8_t shadow[5]={};
+ IO& io; uint8_t shadow[map::registerCount]={};
  explicit ShiftRegisterBus(IO& value):io(value){}
- void setBit(uint8_t bit,bool value) { if(bit<40) {uint8_t mask=1u<<(bit%8); if(value)shadow[bit/8]|=mask;else shadow[bit/8]&=~mask;} }
- bool getBit(uint8_t bit)const {return bit<40 && (shadow[bit/8]&(1u<<(bit%8)));}
- uint32_t flush(){uint8_t bytes[5];for(int i=0;i<5;++i)bytes[i]=shadow[4-i];return io.frame(bytes,5);}
+ void setBit(uint8_t bit,bool value) { if(bit<map::bitCount) {uint8_t mask=1u<<(bit%8); if(value)shadow[bit/8]|=mask;else shadow[bit/8]&=~mask;} }
+ bool getBit(uint8_t bit)const {return bit<map::bitCount && (shadow[bit/8]&(1u<<(bit%8)));}
+ uint32_t flush(){uint8_t bytes[map::registerCount];for(size_t i=0;i<sizeof(bytes);++i)bytes[i]=shadow[sizeof(bytes)-1-i];return io.frame(bytes,sizeof(bytes));}
  void disableOutputs(){io.outputEnable(false);}
  void enableOutputs(){io.outputEnable(true);}
- void safeState(){memset(shadow,0,5);for(auto b:map::step)setBit(b,true);}
+ void safeState(){memset(shadow,0,sizeof(shadow));for(auto b:map::step)setBit(b,true);}
  void begin(){disableOutputs();io.beginSPI();safeState();flush();enableOutputs();}
 };
 inline bool due(uint32_t now,uint32_t when){return int32_t(now-when)>=0;}
 struct FloppyDrive {
- uint8_t track0Pin,stepBit,dirBit; bool enabled=true,homed=false,playing=false,directionAway=true,homing=false;
+ uint8_t track0Pin,stepBit,dirBit; bool enabled,homed=false,playing=false,directionAway=true,homing=false;
  uint8_t awaySteps=0; uint32_t stepIntervalUs=1000,nextStepUs=0,lastStepUs=0,directionReadyUs=0,homeStartedUs=0;
  uint8_t safeAwaySteps; uint32_t reversalIntervalUs,minStepUs;
  bool hasStep=false; float hz=0; const char* error=nullptr;
- FloppyDrive(uint8_t id):track0Pin(map::track0[id]),stepBit(map::step[id]),dirBit(map::dir[id]),safeAwaySteps(physical::fddTravel[id]),reversalIntervalUs(physical::fddReversalUs[id]),minStepUs(physical::fddMinStepUs[id]){}
+ FloppyDrive(uint8_t id):track0Pin(map::track0[id]),stepBit(map::step[id]),dirBit(map::dir[id]),enabled(id<map::hostFddCount),safeAwaySteps(physical::fddTravel[fddDefaults::profileIndex(id)]),reversalIntervalUs(physical::fddReversalUs[fddDefaults::profileIndex(id)]),minStepUs(physical::fddMinStepUs[fddDefaults::profileIndex(id)]){}
  void stop(){playing=false;homing=false;hz=0;}
  void direction(bool away,ShiftRegisterBus& bus){directionAway=away;bus.setBit(dirBit,!away); uint32_t edge=bus.flush();directionReadyUs=edge+physical::fddDirSetupUs;
   if(hasStep && !due(directionReadyUs,lastStepUs+reversalIntervalUs))directionReadyUs=lastStepUs+reversalIntervalUs;}
@@ -86,11 +107,11 @@ struct Sled {
  int32_t position=0;int16_t softMax;
  uint8_t id,phase=0;bool enabled=false,playing=false,forward=true,clockStarted=false;
  uint32_t period=0,last=0;float hz=0,currentStepRate=0,targetStepRate=0,accelerationLimit,pitchRatio,fraction=0;
- Sled(uint8_t i):softMax(physical::sledTravel[i]),id(i),accelerationLimit(physical::sledAcceleration[i]),pitchRatio(physical::sledPitchRatio[i]){}
+ Sled(uint8_t i):softMax(physical::sledTravel[sledDefaults::profileIndex(i)]),id(i),accelerationLimit(physical::sledAcceleration[sledDefaults::profileIndex(i)]),pitchRatio(physical::sledPitchRatio[sledDefaults::profileIndex(i)]){}
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;currentStepRate=targetStepRate=fraction=0;clockStarted=false;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){
   if(!enabled||softMax<0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;
-  if(!physical::sledFrequencyAllowed(id,value/pitchRatio))return false;
+  if(!physical::sledFrequencyAllowed(sledDefaults::profileIndex(id),value/pitchRatio))return false;
   double interval=1000000.0/(value/pitchRatio);
   if(interval<physical::sledMinPeriodUs||interval>2147483647)return false;
   period=uint32_t(interval);hz=value;targetStepRate=(forward?1.f:-1.f)*value/pitchRatio;playing=true;return true;
@@ -128,25 +149,24 @@ struct Sled {
  }
 };
 struct Controller {
- IO& io;ShiftRegisterBus bus;FloppyDrive fdd[4]={{0},{1},{2},{3}};Hdd hdd[4]={{0},{1},{2},{3}};Sled sled[4]={{0},{1},{2},{3}};
+ IO& io;ShiftRegisterBus bus;FloppyDrive fdd[map::fddCount]={{0},{1},{2},{3},{4},{5},{6},{7}};Hdd hdd[map::hddCount]={{0},{1},{2},{3}};Sled sled[map::sledCount]={{0},{1},{2},{3},{4},{5}};
  uint8_t vhsWave=Pulse,fxWave=Pulse;
  bool fxEnabled=false;uint8_t fxAmp=0;float fxFrequency=0;
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
  bool strictTracks=false; int16_t strictTrack[4]={-1,-1,-1,-1};
  explicit Controller(IO& value):io(value),bus(value){}
  void begin(){bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
- void wake(){bus.setBit(map::sleep,true);bus.flush();}
- void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.setBit(map::sleep,false);bus.flush();}
+ void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.flush();}
  void tick(){
   if(uint32_t(io.us()-lastCommand)>physical::hostWatchdogUs){if(!watchdogStopped){allStop();watchdogStopped=true;}return;}
   for(auto& d:hdd)d.tick(bus);for(auto& d:sled)d.tick(bus);
   bus.flush();
-  bool step[4]={};bool any=false;
-  for(int i=0;i<4;++i){step[i]=fdd[i].wantsStep(bus);any|=step[i];}
+  bool step[map::fddCount]={};bool any=false;
+  for(int i=0;i<map::fddCount;++i){step[i]=fdd[i].wantsStep(bus);any|=step[i];}
   // Directions may have taken time to flush: each candidate must still be due.
-  if(any){for(int i=0;i<4;++i)if(step[i])bus.setBit(fdd[i].stepBit,false);
-   uint32_t edge=bus.flush();for(int i=0;i<4;++i)if(step[i])fdd[i].stepped(edge);
-   io.delayUs(physical::fddStepLowUs);for(int i=0;i<4;++i)if(step[i])bus.setBit(fdd[i].stepBit,true);bus.flush();}
+  if(any){for(int i=0;i<map::fddCount;++i)if(step[i])bus.setBit(fdd[i].stepBit,false);
+   uint32_t edge=bus.flush();for(int i=0;i<map::fddCount;++i)if(step[i])fdd[i].stepped(edge);
+   io.delayUs(physical::fddStepLowUs);for(int i=0;i<map::fddCount;++i)if(step[i])bus.setBit(fdd[i].stepBit,true);bus.flush();}
  }
  // Pure parser shared with native tests. Responses are queued outside STEP generation.
  const char* command(const char* text){
@@ -188,7 +208,7 @@ struct Controller {
    if(!strcmp(args[1],"ENABLE")&&(v==0||v==1)){fxEnabled=v==1;if(!fxEnabled){fxAmp=0;fxFrequency=0;io.vhsFx(0,0);}return "OK";}
    if(!fxEnabled)return "ERR DISABLED";
    if(!strcmp(args[1],"AMP")&&v<=255)fxAmp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v>0&&v<=(fxWave==Pulse?20000:2000))fxFrequency=v;else return "ERR VALUE";
-   wake();io.vhsFx(fxAmp,fxFrequency);return "OK";
+   io.vhsFx(fxAmp,fxFrequency);return "OK";
   }
   if(!strcmp(args[0],"VHS")){
    if(n==2&&!strcmp(args[1],"STOP")){amp=0;frequency=0;io.vhs(0,0);return "OK";}
@@ -197,13 +217,15 @@ struct Controller {
    if(n!=3)return "ERR COMMAND";char* end;float v=strtof(args[2],&end);if(*end||!isfinite(v)||v<0)return "ERR VALUE";
    if(!strcmp(args[1],"ENABLE")&&(v==0||v==1)){vhsEnabled=v==1;if(!vhsEnabled){amp=0;frequency=0;io.vhs(0,0);}return "OK";}
    if(!vhsEnabled)return "ERR DISABLED";
-   if(!strcmp(args[1],"AMP")&&v<=255)amp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v<=(vhsWave==Pulse?20000:2000))frequency=v;else return "ERR VALUE";wake();io.vhs(amp,frequency);return "OK";
+   if(!strcmp(args[1],"AMP")&&v<=255)amp=uint8_t(v);else if(!strcmp(args[1],"FREQ")&&v<=(vhsWave==Pulse?20000:2000))frequency=v;else return "ERR VALUE";io.vhs(amp,frequency);return "OK";
   }
-  if(!strcmp(text,"FDD ALL HOME")){wake();for(auto& d:fdd)if(d.enabled)d.home(bus);return "OK";}
+  if(!strcmp(text,"FDD ALL HOME")){for(auto& d:fdd)if(d.enabled)d.home(bus);return "OK";}
   if(n<3)return "ERR COMMAND";char* end;long id=strtol(args[1],&end,10);if(*end||id<1)return "ERR ID";--id;
   bool isFdd=!strcmp(args[0],"FDD"),isHdd=!strcmp(args[0],"HDD"),isSled=!strcmp(args[0],"SLED");
-  if((!isFdd&&!isHdd&&!isSled)||id>=4)return "ERR ID";
+  if((!isFdd&&!isHdd&&!isSled)||id>=(isFdd?map::fddCount:isSled?map::sledCount:map::hddCount))return "ERR ID";
   if(strictTracks&&isFdd&&n>=4&&!strcmp(args[2],"PLAY")){
+   // STRICT_TRACKS remains the unchanged four-lane host contract.
+   if(id>=map::hostFddCount)return "ERR STRICT_OUTPUT";
    if(n!=6||strcmp(args[4],"TRACK"))return "ERR TRACK_REQUIRED";
    char* trackEnd;long track=strtol(args[5],&trackEnd,10);
    if(*trackEnd||track<0||track>32767||strictTrack[id]!=track)return "ERR TRACK";
@@ -234,9 +256,9 @@ struct Controller {
    return "OK";
   }
   if(!*enabled)return "ERR DISABLED";
-  if(isFdd&&n==3&&!strcmp(args[2],"HOME")){wake();fdd[id].home(bus);return "OK";}
-  if(isHdd&&n==3&&!strcmp(args[2],"HIT")){wake();bool ok=hdd[id].hit(bus);bus.flush();return ok?"OK":"ERR BUSY";}
-  if((isFdd||isSled)&&(n==4||(strictTracks&&isFdd&&n==6))&&!strcmp(args[2],"PLAY")){float value=strtof(args[3],&end);if(*end||!isfinite(value))return "ERR VALUE";bool ok=isFdd?fdd[id].play(value,io):sled[id].play(value);if(ok)wake();if(isSled&&sled[id].softMax<0)return "ERR TRAVEL_UNKNOWN";return ok?"OK":isFdd&&!fdd[id].homed?"ERR NOT_HOMED":"ERR VALUE";}
+  if(isFdd&&n==3&&!strcmp(args[2],"HOME")){fdd[id].home(bus);return "OK";}
+  if(isHdd&&n==3&&!strcmp(args[2],"HIT")){bool ok=hdd[id].hit(bus);bus.flush();return ok?"OK":"ERR BUSY";}
+  if((isFdd||isSled)&&(n==4||(strictTracks&&isFdd&&n==6))&&!strcmp(args[2],"PLAY")){float value=strtof(args[3],&end);if(*end||!isfinite(value))return "ERR VALUE";bool ok=isFdd?fdd[id].play(value,io):sled[id].play(value);if(isSled&&sled[id].softMax<0)return "ERR TRAVEL_UNKNOWN";return ok?"OK":isFdd&&!fdd[id].homed?"ERR NOT_HOMED":"ERR VALUE";}
   if(isSled&&n==4&&!strcmp(args[2],"DIR")&&(!strcmp(args[3],"FWD")||!strcmp(args[3],"REV"))){sled[id].forward=!strcmp(args[3],"FWD");return "OK";}
   return "ERR COMMAND";
  }
