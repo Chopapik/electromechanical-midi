@@ -6,7 +6,7 @@ export interface State {
   activity?:Record<string,Command>; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
   arrangementPreset?:'balanced'|'fdd_quality'|'dvd_lead_low_fdd'|'fdd_quality_adaptive'|'instrument_roles'|'instrument_roles_unison'|'instrument_roles_duet' | 'universal';revision:number;error:string|null;audioOwner:string|null;devices:Device[];
   output:{mode:'REAL'|'VIRTUAL';connected:boolean;unknown:boolean;message:string;muted:string[]};
-  service:{busy:boolean;error:string|null;reset:{available:boolean;reason:string};home:{available:boolean;reason:string};firmware:{available:boolean;reason:string|null;port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
+  service:{power?:{state:'ON'|'OFF'|'UNKNOWN'|'UNAVAILABLE';available:boolean;operation:string|null;error:string|null;reason:string|null;measured:false};busy:boolean;error:string|null;reset:{available:boolean;reason:string};home:{available:boolean;reason:string};firmware:{available:boolean;reason:string|null;port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
 }
 export interface FirmwareEvent {type:'firmware_event';seq:number;kind:'status'|'log';line?:string;stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}
 export interface MidiLoading {name:string;stage:'stopping'|'uploading'|'planning'}

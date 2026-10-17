@@ -94,6 +94,17 @@ struct CommandProtocol {
    char ack[32];snprintf(ack,sizeof(ack),"STOPPED %s",token);reply(origin,ack);
    return;
   }
+  // Optional decimal correlation token prevents a stale reply confirming a new operation.
+  if (!strncmp(line,"POWER ",6)) {
+   char action[8]={}, token[12]={}, extra[2]={};
+   int count=sscanf(line,"POWER %7s %11s %1s",action,token,extra);
+   if(count<1 || count>2 || (strcmp(action,"ON")&&strcmp(action,"OFF")&&strcmp(action,"STATUS")) ||
+      (count==2 && (strlen(token)>10 || strspn(token,"0123456789")!=strlen(token)))) {reply(origin,"ERR COMMAND");return;}
+   char command[24];snprintf(command,sizeof(command),"POWER %s",action);
+   const char* result=ctrl.command(command);
+   char ack[96];snprintf(ack,sizeof(ack),"%s%s%s",result,count==2?" token=":"",count==2?token:"");
+   reply(origin,ack);return;
+  }
   // Retain the existing explicit bring-up diagnostic through either transport.
   if (!strncmp(line, "DIAG BIT ", 9)) {
    char* end; long bit = strtol(line+9, &end, 10);
@@ -140,7 +151,7 @@ struct CommandProtocol {
  }
  void status(Transport origin) {
   char line[160]; reply(origin, "STATUS BEGIN");
-  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 speaker_fx=1 speaker_waves=%d strict_tracks=1 strict_active=%d",ctrl.io.speakerAudioReady(),ctrl.strictTracks);
+  snprintf(line,sizeof(line),"STATUS CTRL board=esp32 protocol=2 ready=1 stop_ack=1 hardware_profiles=1 dvd_continuous=1 speaker_fx=1 speaker_waves=%d strict_tracks=1 strict_active=%d atx=%s",ctrl.io.speakerAudioReady(),ctrl.strictTracks,ctrl.powerOn?"ON":"OFF");
   reply(origin,line);
   for (int i=0; i<map::hostFddCount; ++i) fddStatus(origin,i,"STATUS FDD");
   for(int i=0;i<map::hddCount;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d mode=percussion state=%s ready_at=%lu hz=0 safety=UNKNOWN profile=HDD_PERCUSSION",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle,ctrl.hdd[i].state==Hdd::Park?"RESET":ctrl.hdd[i].state==Hdd::Settle?"SETTLE":ctrl.hdd[i].state==Hdd::Strike?"STRIKE":"READY",(unsigned long)(ctrl.hdd[i].state==Hdd::Idle?ctrl.io.us():ctrl.hdd[i].deadline+(ctrl.hdd[i].state==Hdd::Park?ctrl.hdd[i].settleUs+ctrl.hdd[i].strikeUs:ctrl.hdd[i].state==Hdd::Settle?ctrl.hdd[i].strikeUs:0)));reply(origin,line);}

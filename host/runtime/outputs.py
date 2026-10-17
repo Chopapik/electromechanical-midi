@@ -17,7 +17,21 @@ class RealOutput:
         self.configured = False
         self.active_speakers = set()
         self.last_ping = 0.
+        self.power_seen = False
         self.sent = []
+
+    def power_state(self):
+        if self.link:
+            state = self.link.controller_status.get('atx')
+            if state in ('ON','OFF','UNKNOWN'):
+                self.power_seen = True
+                return state
+            return 'UNAVAILABLE'
+        return 'UNKNOWN' if self.power_seen else 'UNAVAILABLE'
+
+    def require_power(self):
+        state = self.power_state()
+        if state != 'ON': raise OutputError('ATX '+state+': włącz zasilanie w Settings przed ruchem REAL')
 
     def status(self):
         return {'connected':self.link is not None, 'unknown':self.unknown,
@@ -41,12 +55,14 @@ class RealOutput:
                 except Exception: pass
             try: self.link.close()
             except Exception: pass
+        self.power_state()
         self.link = None
         self.configured = False
         self.active_speakers.clear()
 
     def attach(self, link):
         self.link = link
+        self.power_state()
         self.configured = False
         # Establish a stopped baseline on reconnect; never resume playback.
         self.stop()
@@ -112,6 +128,7 @@ class RealOutput:
     def ready(self, commands=()):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
+        self.require_power()
         if any(self.registry.by_id[c.device_id]['lane']=='drum:2' and c.kind!='stop' for c in commands) and self.link.controller_status.get('speaker_fx')!='1':
             raise OutputError('Wgraj nowe firmware ESP32: wymagany PC Speaker FX na GPIO 26')
         for c in commands:
@@ -135,6 +152,7 @@ class RealOutput:
         # An offline attempt cannot have started physical motion. Keep genuine
         # write failures conservative: a connected batch may be partially sent.
         if not self.link: raise OutputError('Brak połączenia z ESP32')
+        if any(c.kind!='stop' for c in commands): self.require_power()
         lines=[]
         for c in commands:
             prefix=self.prefix(c.device_id)
@@ -169,6 +187,7 @@ class RealOutput:
 
     def set_speaker_amplitude(self, ident):
         if self.link and ident in self.active_speakers:
+            self.require_power()
             self.write([f"{self.prefix(ident)} AMP {self.registry.by_id[ident].get('realAmplitude',50)}"])
 
     def stop_device(self, ident):

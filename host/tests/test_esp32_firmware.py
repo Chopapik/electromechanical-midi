@@ -14,6 +14,8 @@ SOURCE = r'''
 #include <array>
 using namespace orchestra;
 struct Fake: IO {
+ bool atxOn=false;std::vector<bool> powerWrites;
+ void atx(bool on)override{atxOn=on;powerWrites.push_back(on);}
  uint8_t fxAmp=0;float fxHz=0;
  uint32_t now=10000;bool active[8]={};bool outputs=false;uint64_t previous=0;
  std::vector<std::pair<uint32_t,uint64_t>> edges;
@@ -32,10 +34,29 @@ struct Fake: IO {
  void vhsFx(uint8_t amp,float hz)override{fxAmp=amp;fxHz=hz;}
 };
 int main(int argc,char** argv){
- std::string c=argv[1];Fake io;Controller d(io);d.begin();
+ std::string c=argv[1];Fake io;Controller d(io);d.begin();if(c!="boot"&&c!="power")d.command("POWER ON");
  auto runFor=[&](uint32_t time){uint32_t start=io.now;while(uint32_t(io.now-start)<time){io.now+=100;d.lastCommand=io.now;d.tick();}};
  auto nextPhase=[&](int id){auto& s=d.sled[id];int phase=s.phase;for(int n=0;n<10000&&s.phase==phase;++n){io.now+=100;d.lastCommand=io.now;d.tick();}assert(s.phase!=phase);};
- if(c=="map"){
+ if(c=="power"){
+  assert(map::atx==19&&!d.powerOn&&!io.atxOn&&io.powerWrites.front()==false);
+  const char* blocked[]={"HOME","PLAY 220","HIT","DRUM 50","DRUMF 220","FDD ALL HOME","FDD 8 HOME","FDD 1 PLAY 220","SLED 6 PLAY 220","HDD 4 HIT","VHS AMP 50","VHS FREQ 220","VHS2 AMP 50","VHS2 FREQ 830"};
+  for(auto text:blocked)assert(!strcmp(d.command(text),"ERR POWER_OFF"));
+  assert(!strcmp(d.command("POWER STATUS"),"POWER STATUS OFF gpio19=0"));
+  assert(!strcmp(d.command("POWER ON"),"POWER ON gpio19=1"));assert(d.powerOn&&io.atxOn);
+  assert(!strcmp(d.command("POWER STATUS"),"POWER STATUS ON gpio19=1"));
+  for(auto& f:d.fdd){f.enabled=true;f.homed=true;f.play(220,io);}
+  for(auto& l:d.sled){l.enabled=true;l.play(220);}
+  for(auto& h:d.hdd)h.hit(d.bus);
+  d.command("VHS AMP 50");d.command("VHS FREQ 220");
+  d.command("VHS2 ENABLE 1");d.command("VHS2 AMP 50");d.command("VHS2 FREQ 830");
+  assert(!strcmp(d.command("POWER OFF"),"POWER OFF gpio19=0"));
+  for(auto& f:d.fdd)assert(!f.playing&&!f.homing);for(auto& l:d.sled)assert(!l.playing);for(auto& h:d.hdd)assert(h.state==Hdd::Idle);
+  assert(!d.powerOn&&!io.atxOn&&!d.amp&&!d.fxAmp&&(io.previous&0xffffffff0000ULL)==0);
+  assert(!strcmp(d.command("ALL STOP"),"OK"));assert(!strcmp(d.command("POWER OFF"),"POWER OFF gpio19=0"));
+  d.command("POWER ON");d.command("FDD ALL HOME");d.begin();
+  assert(!d.powerOn&&!io.atxOn);for(auto& f:d.fdd)assert(!f.homing&&!f.playing);
+  d.command("POWER ON");io.now+=3000001;d.tick();assert(d.powerOn&&io.atxOn&&d.watchdogStopped);
+ }else if(c=="map"){
   std::vector<int> used;for(auto b:map::step)used.push_back(b);for(auto b:map::dir)used.push_back(b);
   for(auto& group:map::sled)for(auto b:group)used.push_back(b);
   for(auto& group:map::hdd)for(auto b:group)used.push_back(b);
@@ -54,6 +75,7 @@ int main(int argc,char** argv){
   const std::array<uint8_t,6> expected={{0,0,0,0,0x55,0x55}};assert(io.bytes.front()==expected);
   for(int i=0;i<8;++i)assert(d.fdd[i].enabled==(i<4));
   auto bootBits=io.previous;io.now+=100000;d.tick();assert(io.previous==bootBits);
+  assert(!d.powerOn&&!io.atxOn&&io.powerWrites.front()==false);d.command("POWER ON");
   d.command("FDD ALL HOME");for(int i=0;i<8;++i)assert(d.fdd[i].homing==(i<4));
   d.command("ALL STOP");for(auto& f:d.fdd)assert(!f.homing&&!f.playing&&!f.homed);
  }else if(c=="home"){
@@ -356,7 +378,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('map','boot','home','home_timeout','extended_fdd','extended_stop','extended_strict','parallel','independent','away','timing','hdd','sled','six_sleds','all_actuators_stop','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
+for case in ('power','map','boot','home','home_timeout','extended_fdd','extended_stop','extended_strict','parallel','independent','away','timing','hdd','sled','six_sleds','all_actuators_stop','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

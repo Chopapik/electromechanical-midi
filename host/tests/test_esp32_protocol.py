@@ -15,8 +15,14 @@ struct Sink: ResponseSink {
 struct Led: TestOutput { bool on=true; int writes=0; void set(bool value)override{on=value;++writes;} };
 void feed(CommandProtocol& p,Transport origin,const std::string& text){for(uint8_t ch:text)p.input(origin,ch);}
 int main(int argc,char** argv){
- std::string c=argv[1];Fake io;Controller ctrl(io);ctrl.begin();Sink sink;Led led;CommandProtocol p(ctrl,sink,led);p.beginTest();p.newBleSession(1);
- if(c=="led"){
+ std::string c=argv[1];Fake io;Controller ctrl(io);ctrl.begin();Sink sink;Led led;CommandProtocol p(ctrl,sink,led);p.beginTest();p.newBleSession(1);if(c!="power")ctrl.command("POWER ON");
+ if(c=="power"){
+  feed(p,Transport::Usb,"POWER STATUS\n");assert(sink.replies.back().text=="POWER STATUS OFF gpio19=0"&&sink.replies.back().origin==Transport::Usb);
+  feed(p,Transport::Ble,"POWER ON 42\n");assert(io.atxOn&&sink.replies.back().text=="POWER ON gpio19=1 token=42"&&sink.replies.back().session==1);
+  feed(p,Transport::Usb,"POWER OFF 43\n");assert(!io.atxOn&&sink.replies.back().text=="POWER OFF gpio19=0 token=43");
+  feed(p,Transport::Ble,"FDD ALL HOME\n");assert(sink.replies.back().text=="ERR POWER_OFF");
+  for(auto text:{"POWER ON bad","POWER OFF 12345678901","POWER ON 1 EXTRA","POWER INVALID","POWER"}){p.execute(Transport::Ble,text);assert(sink.replies.back().text=="ERR COMMAND"&&!io.atxOn);}
+ }else if(c=="led"){
   assert(!led.on&&!p.testOn&&led.writes==1);
   p.execute(Transport::Ble,"TEST ON");assert(led.on&&sink.replies.back().text=="TEST ON");
   p.execute(Transport::Usb,"TEST OFF");assert(!led.on&&sink.replies.back().text=="TEST OFF");
@@ -145,7 +151,7 @@ class Esp32ProtocolTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
+for case in ('power','led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
              'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'extended_status', 'extended_sled_status', 'extended_error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

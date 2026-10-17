@@ -16,6 +16,8 @@ export function SettingsPage({app}:{app:Runtime}){
   const started=reverseStart<0?-1:events.length-1-reverseStart
   const current=started>=0?events.slice(started):events
   const latest=[...current].reverse().find(event=>event.kind==='status')
+  const power=s?.service.power
+  const powerDisabled=disabled||!power?.available
   const firmware=s?.service.firmware
   const stage=latest?.stage??firmware?.stage??'idle'
   const flash=latest?.flash??firmware?.flash??'idle'
@@ -24,7 +26,7 @@ export function SettingsPage({app}:{app:Runtime}){
   const issue=latest?latest.error:firmware?.error
   const consoleRef=useRef<HTMLPreElement>(null)
   useEffect(()=>{if(consoleRef.current)consoleRef.current.scrollTop=consoleRef.current.scrollHeight},[events])
-  const labels:Record<string,string>={idle:'Gotowe',prepare:'Przygotowanie i zatrzymanie odtwarzania',build:'Kompilacja firmware',upload:'Upload przez USB',flash_confirmed:'Potwierdzenie flashowania',reboot_wait:'Restart ESP32',ble_connect:'Nawiązywanie BLE',ble_retry:'Ponawianie połączenia BLE',ready:'Handshake i kontroler gotowy',failed:'Błąd aktualizacji'}
+  const labels:Record<string,string>={idle:'Gotowe',prepare:'Przygotowanie i zatrzymanie odtwarzania',power_off:'Wyłączanie ATX i oczekiwanie po GPIO19 LOW',build:'Kompilacja firmware',upload:'Upload przez USB',flash_confirmed:'Potwierdzenie flashowania',reboot_wait:'Restart ESP32',ble_connect:'Nawiązywanie BLE',ble_retry:'Ponawianie połączenia BLE',ready:'Handshake i kontroler gotowy',failed:'Błąd aktualizacji'}
   return <div className="workstation">
     <header className="top-bar settings-top"><div className="settings-shell settings-header">
       <Link to="/" className="settings-back">← Wróć</Link>
@@ -35,6 +37,20 @@ export function SettingsPage({app}:{app:Runtime}){
         <section className="settings-section">
           <h2>Output</h2>
           <label><input type="checkbox" checked={virtual} disabled={disabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
+        </section>
+        <section className="settings-section">
+          <h2>Zasilanie ATX</h2>
+          <p role="status">Stan logiczny: {power?.state??'UNAVAILABLE'}</p>
+          <div className="settings-action">
+            <button disabled={powerDisabled||power?.state==='ON'} onClick={()=>{
+              if(window.confirm('Włączyć fizyczny zasilacz ATX? Upewnij się, że układ jest gotowy do zasilenia.'))void app.send('service',{operation:'power_on',confirmed:true})
+            }}>Włącz ATX</button>
+            <button disabled={powerDisabled} onClick={()=>void app.send('service',{operation:'power_off'})}>Wyłącz ATX</button>
+          </div>
+          <small>GPIO19 / PS_ON#: stan logiczny, bez pomiaru napięcia. POWER OFF nie potwierdza zaniku napięć ani nie rozwiązuje zasilania ESP32 i rejestrów z różnych źródeł.</small>
+          {power?.operation&&<p role="status">Operacja: {power.operation==='firmware'?'Flashowanie firmware':power.operation}</p>}
+          {power?.reason&&<p>{power.reason}</p>}
+          {power?.error&&<p role="alert">{power.error}</p>}
         </section>
         <section className="settings-section">
           <h2>Brzmienie PC Speaker</h2>
@@ -98,7 +114,7 @@ export function SettingsPage({app}:{app:Runtime}){
             <h3>Aktualizacja firmware</h3>
             {flash==='success'&&<p className="firmware-success" role="status">✓ Firmware ESP32 zostało pomyślnie wgrane przez USB.</p>}
             <p role="status">Etap: {labels[stage]??stage}</p>
-            {progress!=null&&stage==='upload'?<progress aria-label="Postęp uploadu" max="100" value={progress}/>:['prepare','build','upload','reboot_wait','ble_connect','ble_retry'].includes(stage)&&<progress aria-label="Operacja w toku"/>}
+            {progress!=null&&stage==='upload'?<progress aria-label="Postęp uploadu" max="100" value={progress}/>:['prepare','power_off','build','upload','reboot_wait','ble_connect','ble_retry'].includes(stage)&&<progress aria-label="Operacja w toku"/>}
             <p>Flash USB: {flash==='success'?'zakończony pomyślnie':flash==='failed'?'nieudany':flash==='running'?'w toku':'jeszcze nie rozpoczęty'}</p>
             <p>BLE: {ble==='verified'?'połączono i zweryfikowano handshake':ble==='retrying'?'niedostępne, ponawianie':ble==='connecting'?'łączenie i weryfikacja':ble==='waiting'?'oczekiwanie na restart ESP32':'niezweryfikowane'}</p>
             <pre ref={consoleRef} className="firmware-console" aria-label="Log PlatformIO">{current.filter(event=>event.kind==='log').map(event=>event.line).join('\n')}</pre>

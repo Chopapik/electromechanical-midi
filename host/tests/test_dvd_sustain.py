@@ -185,7 +185,7 @@ class DvdSustainTests(unittest.TestCase):
         self.assertEqual(self.apply(p)['bridged'],2)
         timeline=compile_plan(p)
         registry=DeviceRegistry(); real=RealOutput(registry); lines=[]
-        real.link=SimpleNamespace(send_batch=lambda batch:lines.extend(batch))
+        real.link=SimpleNamespace(controller_status={'atx':'ON'},send_batch=lambda batch:lines.extend(batch))
         packets=[]; virtual=VirtualOutput(packets.append)
         virtual.dispatch(timeline.commands,epoch=1)
         real.dispatch(timeline.commands)

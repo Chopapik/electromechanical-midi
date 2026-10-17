@@ -22,7 +22,7 @@ ROOT=Path(__file__).resolve().parents[2]
 class Link:
     def __init__(self):
         self.sent=[];self.closed=False;self.fail_stop=False;self.fail_write=False
-        self.controller_status={'board':'esp32','protocol':'2','ready':'1','stop_ack':'1','hardware_profiles':'1','dvd_continuous':'1','strict_tracks':'1'}
+        self.controller_status={'atx':'ON','board':'esp32','protocol':'2','ready':'1','stop_ack':'1','hardware_profiles':'1','dvd_continuous':'1','strict_tracks':'1'}
         self.status_generation=0
         self.device_status={d['lane'].upper() if d['type']!='VHS' else 'VHS':{'enabled':'1','homed':'1','homing':'0'} for d in DeviceRegistry().devices}
         self.lines=[]
@@ -39,6 +39,10 @@ class Link:
         result,self.lines=self.lines,[]
         if 'STATUS END' in result: self.status_generation+=1
         return result
+    def power(self, action):
+        self.sent.append('POWER '+action)
+        if action!='STATUS': self.controller_status['atx']=action
+        return self.controller_status['atx']
     def ping(self): pass
     def wait_boot(self,**_): return True
     def wait_homed(self,**_): return True
@@ -254,15 +258,15 @@ class SafetyTests(unittest.TestCase):
         with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=None,device='/host-dev/cu.usbserial-0001')]),patch('runtime.device_service.platformio',return_value='pio'):
             app.service.refresh()
         self.assertEqual(app.service.upload_port,'/host-dev/cu.usbserial-0001')
-        self.assertTrue(app.service.status()['firmware']['available'])
-        self.assertIsNone(app.service.status()['firmware']['reason'])
+        self.assertFalse(app.service.status()['firmware']['available'])
+        self.assertIn('BLE',app.service.status()['firmware']['reason'])
     def test_firmware_stays_unavailable_when_only_ble_is_connected(self):
         app=Application();app.real.attach(Link())
         with patch('runtime.device_service.scan_ports',return_value=[]),patch('runtime.device_service.platformio',return_value='pio'):
             app.service.refresh()
         self.assertFalse(app.service.status()['firmware']['available'])
         self.assertIn('USB',app.service.status()['firmware']['reason'])
-    def test_firmware_is_not_blocked_by_background_ble_connect(self):
+    def test_firmware_refuses_conflicting_background_ble_connect(self):
         import threading
         from types import SimpleNamespace
         app=Application();started=threading.Event();release=threading.Event()
@@ -272,24 +276,18 @@ class SafetyTests(unittest.TestCase):
         thread=threading.Thread(target=app.service.connect);thread.start()
         self.assertTrue(started.wait(2));self.assertTrue(app.service.connecting)
         with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,pid=0xEA60,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',return_value='ok'):
-            app.service.run('firmware')
+            with self.assertRaisesRegex(OutputError,'zajęty'): app.service.run('firmware')
         release.set();thread.join(timeout=2)
         self.assertFalse(app.service.busy);self.assertIsNone(app.real.link)
-    def test_firmware_upload_works_without_ble_when_usb_is_present(self):
-        """Foreign/non-orchestra firmware has no BLE; USB flash must still work."""
+    def test_firmware_refuses_upload_without_ble_even_when_usb_is_present(self):
         from types import SimpleNamespace
-        app=Application();replacement=Link()
-        app.service.restart_delay=.01
-        self.assertIsNone(app.real.link)
-        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,pid=0xEA60,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware',return_value='ok') as flash,patch.object(app.service,'connect_fn',return_value=replacement):
+        app=Application()
+        with patch('runtime.device_service.scan_ports',return_value=[SimpleNamespace(vid=0x10C4,pid=0xEA60,device='/dev/fake')]),patch('runtime.device_service.platformio',return_value='pio'),patch('runtime.device_service.run_firmware') as flash:
             app.service.refresh()
-            self.assertTrue(app.service.status()['firmware']['available'])
-            app.service.run('firmware')
-            self.assertEqual(flash.call_count,2)
-            import time
-            deadline=time.monotonic()+2
-            while app.real.link is None and time.monotonic()<deadline: time.sleep(.01)
-        self.assertIs(app.real.link,replacement)
+            self.assertFalse(app.service.status()['firmware']['available'])
+            with self.assertRaisesRegex(OutputError,'Brak BLE'): app.service.run('firmware')
+            flash.assert_not_called()
+        app.service.shutdown()
     def test_disconnect_never_falls_back_or_replays_on_reconnect(self):
         app=Application();link=Link();app.real.attach(link);app.real.configured=True
         app.player.load(T((C(0,'fdd-1','tone',2,220),C(2,'fdd-1','stop')),2));app.player.play()

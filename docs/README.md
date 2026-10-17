@@ -38,6 +38,7 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
 | HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |
+| ATX | GPIO19 → S8050 → PS_ON#, stan logiczny, brak PWR_OK/ADC; upload przez potwierdzone OFF | [połączenia](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on), [procedura](HARDWARE_TESTING.md#firmware-i-sama-logika) |
 | UI i wyjście | `/` i `/settings`, ESP32 BLE, wspólny ExecutionTimeline, VIRTUAL Web Audio | [runtime](../host/runtime/application.py), [UI](../web/src/App.tsx) |
 | DIAG BIT | Q0–Q47, wyłącznie bez obciążeń i przy odłączonej mocy; boot `55 55 00 00 00 00`, wszystkie 48 Q zajęte | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
 

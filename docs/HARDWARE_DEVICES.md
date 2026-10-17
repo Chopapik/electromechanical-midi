@@ -231,3 +231,12 @@ to wynik harmonogramu, nie pozytywny test termiczny. Brak kodowego limitu czasu
 nie oznacza możliwości nieograniczonej pracy sprzętu. Watchdog chroni przed
 utratą komend hosta, nie przed przegrzaniem przy poprawnie działającym hoście.
 Procedury STOP i odłączania mocy są w [testach](HARDWARE_TESTING.md#awarie).
+
+## ATX: zakres potwierdzenia
+
+GPIO19 steruje PS_ON# przez osobny S8050; [połączenia i domeny zasilania](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on).
+ON/OFF są wyłącznie stanami logicznymi. Bez PWR_OK/ADC nie potwierdzamy napięć,
+rozładowania, poprawnego startu szyn ani bezpieczeństwa termicznego silników.
+Firmware domyślnie OFF, blokuje ruch przy OFF i unieważnia HOME po wyłączeniu.
+ALL STOP/watchdog nie wyłączają zasilacza. Opóźnienia 100 ms po ON i 1 s po OFF
+są roboczą polityką programową, bez kwalifikacji elektrycznej tej instalacji.

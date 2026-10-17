@@ -46,6 +46,40 @@ przewodów. To zalecenia projektowe producentów, nie wynik pomiaru tej instalac
 Zasilacze, przekroje, zabezpieczenia i nastawy ograniczenia prądu wymagają doboru
 po identyfikacji obciążeń. Samo 3,3 V nie dowodzi bezpiecznego prądu DVD.
 
+## Sterowanie ATX przez PS_ON#
+
+Ustalone połączenie, osobny S8050 względem dwóch tranzystorów speakerów:
+
+```text
+GPIO19 ── 2,2 kΩ ── baza S8050
+                     │
+                  47–100 kΩ
+                     │
+wspólne GND ────── emiter
+ATX PS_ON# (zielony) ─ kolektor
+```
+
+GPIO19 HIGH włącza tranzystor i zwiera aktywne LOW PS_ON# do GND: **ATX ON**.
+GPIO19 LOW: **ATX OFF** jako żądanie logiczne. Rezystor baza–emiter utrzymuje
+tranzystor wyłączony podczas resetu/wysokiej impedancji GPIO. Zweryfikuj rzeczywisty
+pinout posiadanego S8050; samo oznaczenie nie ustala kolejności nóżek obudowy.
+**Nie podłączamy PWR_OK, ADC ani dodatkowego wejścia pomiarowego. GPIO27 pozostaje LED.**
+
+ESP32 pozostaje zasilany z USB, gdy główna szyna 3,3 V ATX zasilająca 74HC595
+jest wyłączona. Wyjścia ESP32 DATA/CLOCK/LATCH oraz /OE oraz pull-upy mogą wtedy
+pracować względem niezasilonych rejestrów: istnieje ryzyko zasilania wstecznego
+przez wejścia, nieustalonego /OE i utraty zawartości rejestrów. Nie łącz dodatnich
+szyn USB/ESP32 z ATX. Sam POWER OFF, rezystor /OE ani wysłanie ramki STOP
+**nie rozwiązują izolacji domen zasilania**. Dobór separacji/buforów i kontrola
+kolejności zasilania wymagają osobnej weryfikacji elektrycznej, przed użyciem obciążeń.
+
+Firmware startuje z GPIO19 LOW i nie zapisuje ON. Przy POWER ON zatrzymuje
+instrumenty, ustawia HIGH, czeka robocze 100 ms i ponownie wysyła ramkę STOP.
+To opóźnienie programowe, nie potwierdzenie prawidłowego narastania szyn ani
+rozwiązanie powyższego problemu. Przy POWER OFF najpierw zatrzymuje wszystkie
+instrumenty, potem ustawia LOW; FDD tracą potwierdzenie HOME. Potwierdzenie
+komendy ani odczekanie czasu nie oznacza pomiaru zaniku napięcia.
+
 ## GPIO ESP32
 
 | GPIO | Połączenie |
@@ -64,6 +98,7 @@ po identyfikacji obciążeń. Samo 3,3 V nie dowodzi bezpiecznego prądu DVD.
 | 17 | FDD8 TRACK0, pin 26; nowy kanał |
 | 25 | R_B1 → baza S8050 Q1 → sterownik głównego PC Speakera |
 | 26 | R_B2 → baza S8050 Q2 → sterownik PC Speaker FX |
+| 19 | 2,2 kΩ → baza osobnego S8050 ATX; kolektor do PS_ON#, emiter do GND |
 | 27 | Opcjonalna dioda testowa: 330 Ω → anoda LED, katoda → GND |
 | 1 / 3 | UART0 / USB-Serial, pozostawione do programowania i diagnostyki |
 

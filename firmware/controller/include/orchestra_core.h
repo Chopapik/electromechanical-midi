@@ -12,7 +12,7 @@ namespace orchestra {
 namespace map {
 constexpr uint8_t fddCount=8, hostFddCount=4, registerCount=6, bitCount=registerCount*8;
 constexpr uint8_t sledCount=6, hostSledCount=4, hddCount=4;
-constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25, speakerFx=26;
+constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25, speakerFx=26, atx=19;
 constexpr uint8_t track0[fddCount]={34,35,36,39,32,33,16,17};
 constexpr uint8_t step[fddCount]={0,2,4,6,8,10,12,14}, dir[fddCount]={1,3,5,7,9,11,13,15};
 constexpr uint8_t sled[sledCount][4]={{16,17,18,19},{20,21,22,23},{24,25,26,27},{28,29,30,31},{32,33,34,35},{36,37,38,39}};
@@ -47,6 +47,7 @@ struct IO {
  virtual void beginSPI()=0;
  // Return timestamp immediately after the latch edge, before any other work.
  virtual uint32_t frame(const uint8_t*,size_t)=0;
+ virtual void atx(bool)=0;
  virtual void vhs(uint8_t,float)=0;
  virtual void vhsFx(uint8_t,float){}
  virtual void speakerWave(uint8_t,uint8_t){}
@@ -153,12 +154,14 @@ struct Controller {
  uint8_t vhsWave=Pulse,fxWave=Pulse;
  bool fxEnabled=false;uint8_t fxAmp=0;float fxFrequency=0;
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
+ bool powerOn=false;
  bool strictTracks=false; int16_t strictTrack[4]={-1,-1,-1,-1};
  explicit Controller(IO& value):io(value),bus(value){}
- void begin(){bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
+ void begin(){powerOn=false;io.atx(false);for(auto& d:fdd){d.stop();d.homed=false;}for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=fxAmp=0;frequency=fxFrequency=0;bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
  void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.flush();}
  void tick(){
   if(uint32_t(io.us()-lastCommand)>physical::hostWatchdogUs){if(!watchdogStopped){allStop();watchdogStopped=true;}return;}
+  if(!powerOn)return;
   for(auto& d:hdd)d.tick(bus);for(auto& d:sled)d.tick(bus);
   bus.flush();
   bool step[map::fddCount]={};bool any=false;
@@ -180,6 +183,10 @@ struct Controller {
   if(!strcmp(args[0],"PING")&&n==1)return "PONG";
   if(!strcmp(args[0],"STATUS")&&n==1)return "STATUS";
   if(!strcmp(text,"ALL STOP")){allStop();return "OK";}
+  if(!strcmp(text,"POWER OFF")){allStop();io.atx(false);powerOn=false;for(auto& d:fdd)d.homed=false;return "POWER OFF gpio19=0";}
+  if(!strcmp(text,"POWER ON")){if(!powerOn){allStop();io.atx(true);io.delayUs(100000);bus.flush();powerOn=true;}return "POWER ON gpio19=1";}
+  if(!strcmp(text,"POWER STATUS"))return powerOn?"POWER STATUS ON gpio19=1":"POWER STATUS OFF gpio19=0";
+
   // Host supplies MIDI provenance on every PLAY while this guard is active.
   // -1 disables a lane. Switching modes always silences the current output.
   if(!strcmp(text,"TRACKS OFF")){allStop();strictTracks=false;for(auto& t:strictTrack)t=-1;return "OK";}
@@ -200,6 +207,11 @@ struct Controller {
   if(!strcmp(text,"HIT"))return command("HDD 1 HIT");
   if(!strcmp(text,"HDD 0"))return command("ALL STOP");
   if((!strcmp(args[0],"DRUM")||!strcmp(args[0],"DRUMF"))&&n==2){snprintf(expanded,96,"VHS %s %s",!strcmp(args[0],"DRUM")?"AMP":"FREQ",args[1]);return command(expanded);}
+  if(!powerOn && (
+    ((!strcmp(args[0],"VHS")||!strcmp(args[0],"VHS2")) && n>=2 && (!strcmp(args[1],"AMP")||!strcmp(args[1],"FREQ"))) ||
+    !strcmp(text,"FDD ALL HOME") ||
+    (n>=3 && (!strcmp(args[0],"FDD")||!strcmp(args[0],"SLED")||!strcmp(args[0],"HDD")) &&
+     (!strcmp(args[2],"PLAY")||!strcmp(args[2],"HOME")||!strcmp(args[2],"HIT")))))return "ERR POWER_OFF";
   if(!strcmp(args[0],"VHS2")){
    if(n==2&&!strcmp(args[1],"STOP")){fxAmp=0;fxFrequency=0;io.vhsFx(0,0);return "OK";}
    if(strictTracks&&strcmp(text,"VHS2 ENABLE 0"))return "ERR STRICT_OUTPUT";

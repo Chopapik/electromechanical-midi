@@ -71,9 +71,37 @@ Utrata synchronizacji wycisza audio; brzmienie, poziom i rezonanse wymagają
 osobnej kalibracji wobec urządzeń.
 
 [DeviceService](../host/runtime/device_service.py) po potwierdzonym STOP
-przejmuje wyłączne sterowanie na czas USB uploadu lub homingu.
+przejmuje wyłączne sterowanie na czas USB uploadu, homingu lub operacji POWER.
 Nie ma resetowania kontrolera przez BLE. STOP/ACK, watchdog i postępowanie
 przy niepewnym stanie opisuje [procedura awarii](HARDWARE_TESTING.md#awarie).
+
+## Logiczne zasilanie ATX
+
+DeviceService publikuje `service.power`: ON / OFF / UNKNOWN / UNAVAILABLE,
+`operation`, `available`, `reason`, `error` i `measured:false`. OFF/ON odnoszą
+się do sterowania GPIO19, UNKNOWN do braku pewnego bieżącego potwierdzenia,
+a UNAVAILABLE do braku połączenia przy starcie albo braku obsługi POWER
+w firmware. Nie jest to pomiar napięcia. Rozłączenie znanego kontrolera zmienia
+stan na UNKNOWN; ponowne BLE odczytuje POWER STATUS, nigdy nie odtwarza ON.
+REAL wymaga ON przed ready/dispatch/HOME, VIRTUAL nie wymaga ATX.
+Potwierdzone OFF unieważnia HOME FDD; przed dalszą grą wymagany jest homing.
+
+`/settings` → **Zasilanie ATX** zawiera ręczne ON/OFF i potwierdzenie przed ON.
+Backend także wymaga `confirmed:true` dla włączenia. Operacje używają wspólnej
+wyłączności serwisowej; żądania POWER/upload podczas zajętości są odrzucane.
+WebSocket udostępnia je tylko z Origin zgodnym z Host lokalnego adresu
+localhost / 127.0.0.1 / ::1. Brama BLE i port Compose są związane z loopback.
+To ograniczenie lokalnej aplikacji, nie uwierzytelnianie radiowego NUS: USB
+wymaga dostępu fizycznego, BLE nadal wymaga zaufanego otoczenia i kontroli dostępu
+do komputera. Nie wystawiaj aplikacji/bramy przez publiczny proxy/tunel.
+
+Upload wymaga potwierdzonego ALL STOP i POWER OFF, odczekuje 1 s, zwalnia BLE
+przed sprawdzaniem portu i budowaniem, następnie używa istniejącego PlatformIO.
+Powrót BLE po uploadzie potwierdza OFF, bez automatycznego ON i autoplay.
+Wspólne wejście dla narzędzi to [safe_upload.py](../scripts/safe_upload.py);
+[procedura i pierwszy bootstrap](HARDWARE_TESTING.md#firmware-i-sama-logika).
+Stan szyn 74HC595 przy osobnym USB ESP32 pozostaje
+[ograniczeniem sprzętowym](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on).
 
 ## Obsługa i konfiguracja
 
@@ -83,6 +111,7 @@ przy niepewnym stanie opisuje [procedura awarii](HARDWARE_TESTING.md#awarie).
 | `/settings` → Output | REAL albo Virtual debug · Web Audio |
 | `/settings` → Aranżacja | Preset oraz Arrangement · PerformancePlan |
 | `/settings` → Brzmienie PC Speaker | Gain VIRTUAL, fala i duty/poziom REAL osobno dla dwóch speakerów |
+| `/settings` → Zasilanie ATX | Ręczne ON/OFF, stan logiczny i potwierdzenie ON |
 | `/settings` → Serwis | Wgraj firmware ESP32, Homing |
 | `/settings` → Laboratory | Laboratory · debug, skończony test bez MIDI |
 

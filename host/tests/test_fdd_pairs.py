@@ -178,7 +178,7 @@ class FddPairTests(unittest.TestCase):
             timeline = compile_plan(self.plan(tracks, r))
             lines, packets = [], []
             real = RealOutput(r)
-            real.link = SimpleNamespace(send_batch=lambda batch: lines.extend(batch))
+            real.link = SimpleNamespace(controller_status={'atx':'ON'},send_batch=lambda batch: lines.extend(batch))
             virtual = VirtualOutput(packets.append)
             real.dispatch(timeline.commands)
             virtual.dispatch(timeline.commands, epoch=1)

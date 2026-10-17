@@ -146,8 +146,14 @@ int main(int argc,char** argv){
   assert(Serial.sent.find("PONG\n")!=std::string::npos&&Serial.sent.find("STATUS END\n")!=std::string::npos);
   return 0;
  }
- txRead=txWrite=0;connectBle();
- if(c=="speaker_waves"){
+ txRead=txWrite=0;connectBle();if(c!="boot"&&c!="power")ctrl.command("POWER ON");
+ if(c=="power"){
+  assert(writes.front()==std::make_pair(19,LOW)&&gpio[19]==LOW&&modes[19]==OUTPUT&&!ctrl.powerOn);
+  writeBle("POWER ON 1\n");assert(gpio[19]==LOW);drainInput();assert(gpio[19]==HIGH&&drainBle()=="POWER ON gpio19=1 token=1\n");bleTx->notifications.clear();
+  writeBle("STATUS\n");drainInput();assert(uxQueueMessagesWaiting(bleTxQueue)==17);
+  writeBle("POWER OFF 2\n");drainInput();assert(gpio[19]==LOW&&drainBle()=="POWER OFF gpio19=0 token=2\n");
+  ctrl.command("POWER ON");setup();assert(!ctrl.powerOn&&gpio[19]==LOW);
+ }else if(c=="speaker_waves"){
   assert(io.audioReady);ctrl.command("VHS2 ENABLE 1");ctrl.command("VHS WAVE sine");ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 220");
   ctrl.command("VHS2 WAVE triangle");ctrl.command("VHS2 AMP 50");ctrl.command("VHS2 FREQ 987");
   assert(ledcHz[0]==40000&&ledcHz[2]==40000);
@@ -161,7 +167,8 @@ int main(int argc,char** argv){
   const int pins[8]={34,35,36,39,32,33,16,17};
   for(int i=0;i<8;++i){assert(modes[pins[i]]==INPUT);assert(ctrl.fdd[i].enabled==(i<4));assert(!ctrl.fdd[i].homing&&!ctrl.fdd[i].playing);}
   assert(gpio[21]==LOW&&gpio[22]==HIGH);
-  assert(writes[0]==std::make_pair(27,LOW)&&gpio[27]==LOW&&modes[27]==OUTPUT);
+  assert(writes[0]==std::make_pair(19,LOW)&&gpio[19]==LOW&&modes[19]==OUTPUT&&!ctrl.powerOn);
+  assert(writes[1]==std::make_pair(27,LOW)&&gpio[27]==LOW&&modes[27]==OUTPUT);
   assert(NimBLEDevice::name=="Electromechanical-MIDI"&&fakeServer.svc.uuid==orchestra::ble::service);
   assert(fakeServer.svc.chars[0]->uuid==orchestra::ble::rx&&bleTx->uuid==orchestra::ble::tx);
   assert(fakeServer.svc.chars[0]->properties==(NIMBLE_PROPERTY::WRITE|NIMBLE_PROPERTY::WRITE_NR));
@@ -233,7 +240,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('serial_boot_once', 'speaker_waves', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
+for case in ('power','serial_boot_once', 'speaker_waves', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
              'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

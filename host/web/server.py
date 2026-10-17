@@ -6,6 +6,7 @@ import contextlib
 import json
 import os
 import sys
+from urllib.parse import urlsplit
 from pathlib import Path
 HOST_DIR=Path(__file__).resolve().parents[1]
 if str(HOST_DIR) not in sys.path: sys.path.insert(0,str(HOST_DIR))
@@ -97,7 +98,14 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
     async def action(peer, owner, message):
         operation=message.get('action'); request=message.get('requestId')
         try:
+            if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
+            if command_lock.locked() and operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware'):
+                raise ValueError('DeviceService jest zajęty')
             def perform():
+                if operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware'):
+                    origin=urlsplit(peer.headers.get('origin',''))
+                    if origin.scheme not in ('http','https') or origin.hostname not in ('localhost','127.0.0.1','::1') or origin.netloc!=peer.headers.get('host'):
+                        raise ValueError('Sterowanie ATX i upload wymagają lokalnego połączenia z poprawnym Origin')
                 if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
                 p=runtime.player
                 if operation=='set_file': runtime.load(library.resolve(message['file']))
@@ -123,7 +131,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 elif operation=='lab_test':
                     if runtime.router.mode=='VIRTUAL': runtime.virtual.owner=owner
                     runtime.lab.test(owner,message['deviceId'],message.get('hz',200),message.get('duration',1))
-                elif operation=='service': runtime.service.run(message['operation'])
+                elif operation=='service': runtime.service.run(message['operation'],confirmed=message.get('confirmed') is True)
                 else: raise ValueError('Unknown action')
             async with command_lock:
                 await asyncio.to_thread(perform)

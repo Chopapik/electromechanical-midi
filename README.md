@@ -6,6 +6,7 @@ Aktywne pozostaje **14: 4 FDD, 4 DVD, 4 HDD i oba speakery**.
 Docelowe okablowanie i firmware: **8 FDD + 6 DVD + 4 HDD + 2 speakery / 6 × SN74HC595N / 8 × DRV8833**;
 FDD5–8 i DVD5–6 są w katalogu, lecz pozostają wyłączone i fizycznie niezweryfikowane;
 nie uczestniczą w aranżacji. Nowa mapa przenosi DVD/HDD — wymaga nowego okablowania.
+ATX: `/settings` → **Zasilanie ATX**, domyślnie OFF po restarcie ESP32; status jest logiczny, bez pomiaru napięcia.
 REAL steruje przez BLE, VIRTUAL gra przez Web Audio. Oba wykonują jeden
 `ExecutionTimeline`; brzmienie symulacji nie jest pomiarem sprzętu.
 
@@ -58,3 +59,8 @@ Firmware ESP32: `pio run -d firmware/controller -e esp32`.
 
 <a id="fizyczna-kalibracja-fdd"></a>
 Zachowany odnośnik proweniencji kalibracji: [wyniki pomiarów FDD](docs/research/hardware-measurements.md#fdd).
+
+Upload ESP32 wyłącznie przez Settings → Serwis albo
+`.venv/bin/python scripts/safe_upload.py`: wspólna procedura wymaga potwierdzonego
+POWER OFF. Stary firmware wymaga osobno zatwierdzonego ręcznego bootstrapu;
+[procedura i ograniczenia zasilania](docs/HARDWARE_TESTING.md#firmware-i-sama-logika).

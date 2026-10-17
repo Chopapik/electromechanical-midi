@@ -30,14 +30,53 @@ pio run -d firmware/controller -e esp32
 .venv/bin/python scripts/generate_hardware_profiles.py --check
 ```
 
-Flashowanie przez USB/CP2102: `/settings` → **Serwis → Wgraj firmware ESP32**,
-albo `pio run -d firmware/controller -e esp32 -t upload --upload-port PORT`.
-`PORT` zastąp wykrytym portem konkretnej płytki. Sam CP2102 nie dowodzi
-poprawności połączeń. **Przed flashowaniem fizycznie odłącz zasilanie silników i speakerów oraz
-ich sygnały.** Potwierdzenie STOP i przejęcie sterowania przez DeviceService
-nie zastępują odłączenia mocy podczas resetu/flashowania. W tym zadaniu
-nie flashowano kontrolera ani nie uruchamiano obciążeń. Monitor USB: 115200, 8N1; wyłącz DTR/RTS,
+Flashowanie przez USB/CP2102 wykonuj wyłącznie przez `/settings` →
+**Serwis → Wgraj firmware ESP32** lub wspólną procedurę:
+
+```sh
+.venv/bin/python scripts/safe_upload.py
+```
+
+Skrypt łączy się z lokalną aplikacją (`--url ws://127.0.0.1:5173/ws`),
+wywołuje ten sam DeviceService i nie ma obejścia braku potwierdzenia OFF.
+Nie używaj bezpośredniego `pio ... -t upload`. Sekwencja: wyłączność serwisowa →
+zatrzymanie odtwarzania i potwierdzone ALL STOP → POWER OFF z dopasowanym tokenem
+oraz potwierdzeniem GPIO19 LOW → robocze 1 s oczekiwania → zamknięcie BLE →
+sprawdzenie USB → build → ponowne sprawdzenie portu → upload → powrót BLE.
+Nie ma automatycznego POWER ON ani autoplay; po flashowaniu backend ponownie
+potwierdza OFF. Brak BLE, obsługi POWER lub świeżego ACK przerywa procedurę
+**przed buildem/uploadem**, także przy obecnym porcie USB. Błąd builda/uploadu
+pozostawia zasilanie logicznie OFF; utrata łączności oznacza UNKNOWN.
+
+**Pierwsze wdrożenie:** starszy firmware nie zna POWER, więc normalny upload
+zostanie odmówiony. Potrzebna jest osobno zatwierdzona ręczna procedura bootstrapu,
+z fizycznie wyłączonym/odłączonym ATX, odłączonymi obciążeniami/sygnałami i oceną
+[domen zasilania](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on).
+Nie traktuj samej deklaracji GPIO LOW ani upływu 1 s jako pomiaru napięcia.
+Nie dodano przycisku ani flagi omijającej tę blokadę. Zasady pracy narzędzi:
+[AGENTS.md](../AGENTS.md). Monitor USB: 115200, 8N1; wyłącz DTR/RTS,
 jeśli program monitora resetuje płytkę przy otwarciu.
+
+### ATX: protokół i testy logiczne
+
+Na USB i BLE dostępne są `POWER ON`, `POWER OFF`, `POWER STATUS`.
+Odpowiedzi: `POWER ON gpio19=1`, `POWER OFF gpio19=0`,
+`POWER STATUS ON gpio19=1` albo `POWER STATUS OFF gpio19=0`.
+Opcjonalny dziesiętny token (1–10 cyfr) jest powtarzany jako `token=...`;
+backend wymaga dokładnego dopasowania tokenu, stanu i poziomu GPIO.
+STATUS CTRL ma dodatkowe `atx=ON/OFF`, nadal w tej samej 17-liniowej transakcji.
+OFF blokuje PLAY/HOME/HIT i AMP/FREQ obu speakerów, również aliasy protokołu;
+STOP, konfiguracja, status i odłączona diagnostyka pozostają dostępne.
+ALL STOP i watchdog zatrzymują instrumenty, lecz nie przełączają ATX.
+
+Testy offline są w [test_atx_power.py](../host/tests/test_atx_power.py),
+[test_esp32_firmware.py](../host/tests/test_esp32_firmware.py),
+[test_esp32_protocol.py](../host/tests/test_esp32_protocol.py),
+[test_esp32_ble_adapter.py](../host/tests/test_esp32_ble_adapter.py) oraz
+[atxPower.test.tsx](../web/src/atxPower.test.tsx). Testują logiczny stan,
+transport, blokady i sekwencję uploadu; nie testują elektrycznie zasilacza,
+tranzystora, zaniku napięcia ani domen zasilania. Nie uruchamiaj obciążeń jako
+części tych testów. Fizyczne testy wymagają osobnej decyzji użytkownika.
 
 Uruchom samą logikę: **ESP32 z USB, rejestry z 3,3 V ATX, wspólna masa**.
 Nie łącz dodatnich szyn ATX i zasilanej USB płytki ESP32, także pinów 3V3/5V/VIN.

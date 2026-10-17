@@ -10,6 +10,7 @@ class EspIO:public IO {
 public:
  SpeakerOscillator speakers[2];SemaphoreHandle_t audioLock=nullptr;esp_timer_handle_t audioTimer=nullptr;
  bool audioReady=false;
+ void atx(bool on)override{digitalWrite(map::atx,on?HIGH:LOW);pinMode(map::atx,OUTPUT);}
  bool speakerAudioReady()override{return audioReady;}
  static void audioCallback(void* context){static_cast<EspIO*>(context)->audioTick();}
  void audioTick(){
@@ -108,7 +109,7 @@ public:
   if (origin==Transport::Usb) { queue(line); return; }
   if (!bleConnected.load() || !bleSubscribed.load() || epoch!=bleEpoch.load()) return;
   // A correlated STOP acknowledgement must not sit behind obsolete telemetry.
-  if (!strncmp(line,"STOPPED ",8)) xQueueReset(bleTxQueue);
+  if (!strncmp(line,"STOPPED ",8) || !strncmp(line,"POWER OFF ",10)) xQueueReset(bleTxQueue);
   BleReply packet{}; packet.session=epoch;
   size_t count=strlen(line);
   if (count>=sizeof(packet.bytes)) { bleTxOverflow.store(epoch); return; }
@@ -192,6 +193,7 @@ void pollBle() {
  }
 }
 void setup(){
+ io.atx(false); // Before SPI, audio, USB and BLE; external base pull-down covers reset/high-Z.
  digitalWrite(ble::testPin,LOW);pinMode(ble::testPin,OUTPUT);protocol.beginTest();
  ctrl.begin();Serial.begin(115200);if(!io.audioReady)queue("ERR SPEAKER_AUDIO_INIT");queue("READY protocol=2 board=esp32");beginBle();
 }
