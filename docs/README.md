@@ -7,7 +7,7 @@ raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
 Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
 Aktualizacja **2026-10-17** obejmuje nową mapę firmware 8 FDD / 6 DVD / 4 HDD / 6 rejestrów / 8 DRV8833,
-bez zmian kontraktu hosta: nadal cztery FDD, cztery DVD i 14 urządzeń w aplikacji.
+oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, niezweryfikowanych.
 
 ## Bieżące instrukcje
 
@@ -28,11 +28,12 @@ mocy speakerów pozostaje konieczna do bezpiecznego uruchomienia całości.
 
 Kod i aktywna konfiguracja mają pierwszeństwo przed opisem i historycznym raportem.
 Podczas konsolidacji `9c1bd17` nie zmieniano kodu ani konfiguracji. Obecna
-aktualizacja mapy zmienia firmware i jego testy, pozostawiając host oraz JSON bez zmian.
+mapa firmware pochodzi z `8638fdd`; aktualizacja backendu rozszerza inventory i adresację,
+bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
-| Skład hosta | 14 aktywnych urządzeń, w tym cztery FDD, cztery DVD i dwa speakery | [devices.json](../config/devices.json) |
+| Skład hosta | 20 wpisów; aktywne 4 FDD + 4 DVD + 4 HDD + 2 speakery | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
@@ -45,9 +46,11 @@ Nie ma sterowania nSLEEP ani zastępczego GPIO. FDD5–8 używają jawnego fallb
 parametrów wykonawczych FDD1, startują wyłączone i mają osobne `DIAG FDD`.
 DVD5–6 używają fallbacku DVD4 i osobnego `DIAG SLED`; również startują wyłączone.
 Zwykłe STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
-Pełne osiem FDD i sześć DVD w aranżacji wymaga osobnego rozszerzenia hosta i profili;
-[blokadę oraz wariant rozwiązania](HARDWARE_DEVICES.md#nowe-fdd58-firmware-bez-rozszerzenia-hosta)
-opisano jawnie. Przed flashowaniem i testami logiki odłącz moc i sygnały
+Host zna pełne osiem FDD i sześć DVD; dodatkowe sześć kanałów pozostaje
+wyłączonych (`enabled:false`, `present:false`). Pełna pojemność nie oznacza
+kwalifikacji ani gotowości do automatycznej gry. [Ograniczenia potwierdzeń
+stanu i przyszłej aktywacji](HARDWARE_DEVICES.md#nowe-fdd58-adresacja-i-kwalifikacja).
+Przed flashowaniem i testami logiki odłącz moc i sygnały
 urządzeń wykonawczych. Zasilanie testu: ESP32 USB, rejestry 3,3 V ATX,
 wspólna masa bez łączenia dodatnich szyn. Awaria braku GND pinu 8 i pomiar
 pięciu pinów 15 są obserwacjami użytkownika, nie kwalifikacją nowego SR6.

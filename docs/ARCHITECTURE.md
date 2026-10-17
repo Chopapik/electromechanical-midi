@@ -1,10 +1,11 @@
 # Architektura i obsługa aplikacji
 
-Firmware ma docelowo osiem FDD, sześć DVD, sześć rejestrów i osiem DRV8833;
-**runtime hosta opisany poniżej nadal obsługuje cztery FDD i cztery DVD**.
-Nowe FDD5–8 i DVD5–6 są domyślnie wyłączone,
-poza inventory, UI, Laboratory i STRICT_TRACKS hosta. Nie poszerzono tego
-pipeline ani konfiguracji. [Mapowanie i status kwalifikacji](HARDWARE_DEVICES.md#nowe-fdd58-firmware-bez-rozszerzenia-hosta).
+Katalog i adresacja hosta odpowiadają firmware: **8 FDD, 6 DVD, 4 HDD i 2 speakery**.
+Z 20 wpisów aktywnych pozostaje 14: FDD1–4, DVD1–4, HDD1–4 i oba speakery.
+FDD5–8 i DVD5–6 mają `enabled:false` i `present:false`; nie są fizycznie
+zakwalifikowane ani automatycznie aranżowane. Zmiana pojemności nie zmienia
+presetów ani harmonogramu aktywnego zestawu. STRICT_TRACKS zachowuje cztery sloty.
+[Inventory i kwalifikacja](HARDWARE_DEVICES.md#inventory-i-identyfikatory).
 
 ## Jeden harmonogram wykonawczy
 
@@ -49,6 +50,11 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 
 [REAL](../host/runtime/outputs.py) używa ESP32 BLE, bez automatycznego fallbacku
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
+Konfiguracja jawnie wysyła `FDD 5..8 ENABLE 0` oraz `SLED 5..6 ENABLE 0`,
+bez HOME/PLAY dla tych kanałów; HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
+Registry oraz `bind_devices(..., 2)` liczą ordynały również wyłączonych pozycji,
+więc wyłączenie FDD1 nie przenosi FDD2 na kanał 1. OrchestraLink sprawdza
+osobne granice FDD 1–8, SLED 1–6 i HDD 1–4, odrzucając także ID typu bool.
 Wymaga `board=esp32`, protocol 2, `ready=1`, `stop_ack=1`, `hardware_profiles=1`
 oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
 `speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
@@ -175,6 +181,11 @@ pio run -d firmware/controller -e esp32
 Zainstaluj `httpx` w środowisku testowym dla testów API; testy natywnego rdzenia
 C++ potrzebują lokalnego kompilatora. `npm ci` instaluje frontendowe zależności.
 Generator z `--check` sprawdza zgodność bez zapisywania konfiguracji/nagłówka.
+[Testy pojemności backendu](../host/tests/test_backend_capacity.py) sprawdzają
+20 pozycji / 14 aktywnych, stabilne ordynały wyłączonych kanałów, limity ID,
+jawne ENABLE 0, HIT wszystkich czterech HDD, niezmieniony STATUS i cztery sloty
+STRICT_TRACKS. Dla ośmiu presetów porównują zdarzenia, artykulację i skompilowany
+timeline z dodatkową nieaktywną pulą oraz bez niej, wyłącznie offline.
 Firmware ma przypięte zależności w [platformio.ini](../firmware/controller/platformio.ini);
 zmiana wersji Arduino/LEDC wymaga oddzielnej weryfikacji, nie automatycznej migracji.
 

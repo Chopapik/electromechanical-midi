@@ -3,7 +3,7 @@
 Docelowy układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
 **8 × moduł DRV8833**, **8 FDD**, **6** dwufazowych bipolarnych stepperów DVD, 4 cewki HDD VCM oraz
 2 pasywne PC Speakery sterowane przez osobne S8050.
-Firmware przygotowuje **8 FDD i 6 DVD**; host nadal ma **4 FDD, 4 DVD i 14 urządzeń**.
+Firmware przygotowuje **8 FDD i 6 DVD**; host ma katalog 20 pozycji, z których aktywne pozostają **4 FDD, 4 DVD, 4 HDD i 2 speakery**.
 Dotychczasowe testy logiki dotyczą istniejących kanałów, nie fizycznej kwalifikacji
 całego docelowego zestawu 20 urządzeń. FDD5–8 i DVD5–6 są planowane do przyszłych
 testów, bez potwierdzonego podłączenia/kwalifikacji; startują wyłączone.

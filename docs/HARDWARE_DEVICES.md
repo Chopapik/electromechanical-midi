@@ -1,7 +1,9 @@
 # Urządzenia, ograniczenia i kalibracja
 
 Docelowy firmware obsługuje **8 FDD / 6 DVD / 4 HDD / 2 speakery**,
-6 rejestrów i 8 DRV8833, ale **host nadal deklaruje 4 FDD, 4 DVD i 14 urządzeń**. Nie rozszerzono aranżacji, profili JSON ani UI.
+6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **14 jest aktywnych**:
+4 FDD, 4 DVD, 4 HDD i oba speakery. Adresacja obejmuje pełną pojemność;
+algorytmy aranżacji i UI pozostają bez zmian.
 FDD5–8 oraz DVD5–6 wymagają osobnej kwalifikacji fizycznej i są domyślnie wyłączone.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
 niewysłanych na serwer. Kolejność źródeł: aktywne urządzenia w
@@ -18,20 +20,25 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | Urządzenia | ID / lane | Wykonawca i rola |
 | --- | --- | --- |
 | FDD1–4 | `fdd-1`…`fdd-4`, `fdd:1`…`fdd:4` | STEP/DIR, monofoniczne głosy tonalne |
+| FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Wyłączone; profil teoretyczny, niezweryfikowane |
 | DVD1–4 | `DVD_STEPPER_1`…`DVD_STEPPER_4`, `sled:1`…`sled:4` | DRV8833, dwie cewki, pełny krok, ciągły obrót |
+| DVD5–6 | `DVD_STEPPER_5`…`DVD_STEPPER_6`, `sled:5`…`sled:6` | Wyłączone; profil teoretyczny, niezweryfikowane |
 | PC Speaker | `vhs-1`, `drum:1` | GPIO25, główny wokal/lead |
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-Wszystkie 14 wpisów **hosta** są obecnie włączone; tabela nie deklaruje
-obsługi FDD5–8 ani DVD5–6 przez aplikację. `enabled` / `present` deklaruje
-inventory; nie jest detekcją przewodów ani pomiarem sprawności. Ordynał lane
-jest fizycznym kanałem: usunięcie wpisu nie uprawnia do przesunięcia pozostałych.
+Aktywne jest 14 z 20 wpisów. Tylko FDD5–8 i DVD5–6 mają `enabled:false`.
+`enabled` oznacza decyzję konfiguracji aplikacji, a `present` w metadanych profili
+obecność zadeklarowaną na podstawie potwierdzenia fizycznego, bez automatycznej
+detekcji przewodów ani sprawności. Nowe lane mają `present:false` i puste
+`quantities`: dziedziczą profil teoretyczny, bez cudzych pomiarów. Sam profil
+nie kwalifikuje urządzenia. Włączenie wpisu nie zastępuje procedury pomiarowej.
+Ordynał lane jest fizycznym kanałem; pozycje wyłączone też zajmują swój numer.
 Typ `VHS` oraz komendy `VHS`/`VHS2` zachowano dla zgodności obu speakerów.
 HDD mają profil brzmienia `WD_CAVIAR_CURRENT`, ale fizyczny
 `hardwareProfile: HDD_PERCUSSION`; nie ma wykonawcy tonalnego HDD w tym zestawie.
 
-## Nowe FDD5–8: firmware bez rozszerzenia hosta
+## Nowe FDD5–8: adresacja i kwalifikacja
 
 | Kanał | TRACK0 | STEP / DIR | Stan po boot |
 | --- | ---: | --- | --- |
@@ -59,14 +66,13 @@ czterokanałowe i odrzuca PLAY FDD5–8, bez indeksowania tablicy czterech track
 Zwykłe STATUS zachowuje FDD1–4 i 17 rekordów. `DIAG FDD` pokazuje FDD5–8
 w osobnej odpowiedzi diagnostycznej, bez poszerzania transakcji hosta.
 
-**Blokada poza zakresem zadania:** pełne osiem głosów w aplikacji wymagałoby
-zmian registry/ordynałów, inventory i profili, limitów ID transportu,
-alokacji/STRICT_TRACKS, parsowania lub kontraktu STATUS oraz testów hosta/UI.
-Konkretnie [registry](../host/runtime/registry.py) ogranicza rodzinę FDD do 4,
-[OrchestraLink](../host/orchestra_link.py) przyjmuje ID FDD tylko 1–4,
-a [STRICT_TRACKS](../host/playback/strict_tracks.py) wymaga czterech slotów. Samo dodanie wpisów JSON nie wystarczy.
-Wariant do osobnego wdrożenia: jawne poszerzenie całego kontraktu hosta do ośmiu
-FDD z indywidualnymi profilami, po kwalifikacji sprzętu. W tym zadaniu tego nie zrobiono.
+[Registry](../host/runtime/registry.py), inventory i [OrchestraLink](../host/orchestra_link.py)
+znają osiem kanałów FDD. Domyślne `configure()` jawnie wysyła ENABLE 0 dla
+FDD5–8, bez HOME/PLAY. Cztery aktywne stacje zachowują ustawienia i transpozycje.
+[STRICT_TRACKS](../host/playback/strict_tracks.py) nadal ma cztery sloty.
+Normalny STATUS nie potwierdza stanu dodatkowych FDD: ich przyszłe uruchamianie
+w aplikacji wymaga osobnej kwalifikacji oraz obsługi potwierdzeń diagnostycznych.
+Obecna zmiana nie aktywuje dodatkowych głosów ani nie zmienia alokatora.
 
 ## Nowe DVD5–6: firmware i fallback czterech profili
 
@@ -94,10 +100,11 @@ sześć DVD oraz cztery HDD na Q40–Q47. Czterokanałowy STRICT_TRACKS blokuje
 PLAY wszystkich DVD. Status nowych kanałów pokazuje osobne **`DIAG SLED`**;
 zwykłe STATUS nadal zawiera tylko DVD1–4 i ma 17 rekordów.
 
-Host/registry, limity ID OrchestraLink, inventory, profile i aranżacja pozostają
-przy czterech DVD. UI i Laboratory nie sterują DVD5–6. Ich automatyczna aranżacja
-wymagałaby osobnego rozszerzenia kontraktu hosta po kwalifikacji fizycznej.
-Nie obchodzimy tego przez wpisy JSON, fałszywe lane ani dodatkowe rekordy STATUS.
+Host rejestruje i adresuje DVD1–6, ale DVD5–6 pozostają wyłączone i mają
+`present:false`. Konfiguracja wysyła dla nich tylko ENABLE 0. Nie kopiujemy
+kalibracji DVD1–4 do nowych instancji; firmware zachowuje istniejący fallback.
+Normalny STATUS nie potwierdza DVD5–6. Przyszła aktywacja wymaga fizycznej
+kwalifikacji i obsługi ich diagnostyki; nie poszerzamy STATUS ani STRICT_TRACKS.
 
 ## Jak czytać dowody
 

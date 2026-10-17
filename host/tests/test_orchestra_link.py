@@ -29,7 +29,7 @@ class ProtocolTests(unittest.TestCase):
             'FDD 4 PLAY 220.00','FDD 3 HOME','FDD 2 STOP','HDD 4 HIT','HDD 2 STOP',
             'SLED 3 PLAY 196.00','SLED 1 STOP',
             'VHS AMP 200','VHS FREQ 164.81','VHS STOP','PING','STATUS','ALL STOP'])
-        for id in (0,5,True,'1'):
+        for id in (0,9,True,'1'):
             with self.assertRaises(ValueError): l.fdd_home(id)
 
     def test_stop_waits_for_matching_execution_ack(self):

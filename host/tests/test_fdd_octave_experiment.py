@@ -16,8 +16,9 @@ from test_allocator import write_tracks
 class FddOctaveExperimentTests(unittest.TestCase):
     def test_all_four_drives_shift_source_and_working_register(self):
         r = DeviceRegistry()
-        for d in r.devices:
-            if d['type'] != 'FDD': continue
+        active = [d for d in r.devices if d['type']=='FDD' and d['enabled']]
+        self.assertEqual([d['id'] for d in active], [f'fdd-{i}' for i in range(1,5)])
+        for d in active:
             self.assertEqual(d['transpose'], -12)
             self.assertEqual(d['overrides']['preferredMinHz']['value'], 100)
             self.assertEqual(d['overrides']['preferredMaxHz']['value'], 205)
@@ -41,7 +42,7 @@ class FddOctaveExperimentTests(unittest.TestCase):
                 for strict in (False, True):
                     with self.subTest(preset=preset, strict=strict):
                         r = DeviceRegistry()
-                        for d in r.devices: d['enabled'] = d['type'] == 'FDD'
+                        for d in r.devices: d['enabled'] = d['type'] == 'FDD' and d['id'] in {f'fdd-{i}' for i in range(1,5)}
                         r.document['parameters']['arrangementPreset'] = preset
                         if strict:
                             r.document['routing'] = {'mode': 'STRICT_TRACKS', 'tracks': [1, None, None, None]}

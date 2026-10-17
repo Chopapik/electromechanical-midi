@@ -339,6 +339,36 @@
           "confidence": "MEDIUM"
         }
       }
+    },
+    "fdd:5": {
+      "present": false,
+      "profile": "FDD",
+      "quantities": {}
+    },
+    "fdd:6": {
+      "present": false,
+      "profile": "FDD",
+      "quantities": {}
+    },
+    "fdd:7": {
+      "present": false,
+      "profile": "FDD",
+      "quantities": {}
+    },
+    "fdd:8": {
+      "present": false,
+      "profile": "FDD",
+      "quantities": {}
+    },
+    "sled:5": {
+      "present": false,
+      "profile": "DVD_SLED",
+      "quantities": {}
+    },
+    "sled:6": {
+      "present": false,
+      "profile": "DVD_SLED",
+      "quantities": {}
     }
   }
 }

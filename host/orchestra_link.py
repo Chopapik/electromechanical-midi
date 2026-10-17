@@ -71,12 +71,13 @@ class OrchestraLink(FloppyLink):
         return lines
 
     @staticmethod
-    def _id(id, maximum=4):
+    def _id(id, maximum):
         if not isinstance(id, int) or isinstance(id, bool) or not 1 <= id <= maximum:
             raise ValueError('invalid device ID')
         return id
 
-    def _device(self, kind, id, action, maximum=4):
+    def _device(self, kind, id, action):
+        maximum = {'FDD': 8, 'SLED': 6, 'HDD': 4}[kind]
         self.send(f'{kind} {self._id(id, maximum)} {action}')
 
     def fdd_play(self, id, hz): self._device('FDD', id, f'PLAY {hz:.2f}')
