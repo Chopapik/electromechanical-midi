@@ -16,6 +16,10 @@ class RealOutput:
         self.error = None
         self.configured = False
         self.active_speakers = set()
+        self.speaker_frequencies = {}
+        self.homing_devices = ()
+        self.homing_deadline = 0.
+        self.homing_status_pending = False
         self.last_ping = 0.
         self.power_seen = False
         self.sent = []
@@ -58,7 +62,10 @@ class RealOutput:
         self.power_state()
         self.link = None
         self.configured = False
+        self.homing_devices = ()
+        self.homing_status_pending = False
         self.active_speakers.clear()
+        self.speaker_frequencies.clear()
 
     def attach(self, link):
         self.link = link
@@ -83,7 +90,10 @@ class RealOutput:
             self.unknown = True
             self.error = 'Nieznany stan sprzętu: '+str(exc)
             raise OutputError(self.error) from exc
+        self.homing_devices = ()
+        self.homing_status_pending = False
         self.active_speakers.clear()
+        self.speaker_frequencies.clear()
         self.active = self.unknown = False
         self.error = None
 
@@ -108,8 +118,8 @@ class RealOutput:
             if on and d['type']=='VHS' and self.link.controller_status.get('speaker_waves')=='1':
                 lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")
             if on and profile: lines.append(profile)
-            if on and p.get('continuousRotation'): lines.append(f'{prefix} DIR FWD')
             lines.append(f'{prefix} ENABLE {int(on)}')
+            if on and p.get('continuousRotation'): lines.append(f'{prefix} DIR FWD')
         if strict:
             if self.link.controller_status.get('strict_tracks')!='1': raise OutputError('Firmware bez STRICT TRACKS')
             lines.append('TRACKS SET '+' '.join(str(t if t is not None else -1) for t in routing['tracks']))
@@ -125,7 +135,7 @@ class RealOutput:
             time.sleep(.005)
         raise OutputError('Brak potwierdzenia konfiguracji ESP32')
 
-    def ready(self, commands=()):
+    def ready(self, commands=(), *, auto_home=False):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
         self.require_power()
@@ -135,6 +145,7 @@ class RealOutput:
             if c.kind!='stop' and self.registry.by_id[c.device_id]['type']=='VHS':
                 self.require_waveform(self.registry.by_id[c.device_id].get('waveform','pulse'))
         self.configure()
+        missing_home=[]
         for c in commands:
             if c.kind=='stop': continue
             d=self.registry.by_id[c.device_id]
@@ -142,7 +153,40 @@ class RealOutput:
             status=self.link.device_status.get(key,{})
             if status.get('enabled')!='1': raise OutputError(d['name']+': firmware nie potwierdził ENABLE')
             if d['type']=='FDD' and (status.get('homed')!='1' or status.get('homing')=='1'):
-                raise OutputError(d['name']+': wymagany homing TRACK0')
+                if not auto_home: raise OutputError(d['name']+': wymagany homing TRACK0')
+                if d['id'] not in missing_home: missing_home.append(d['id'])
+        if missing_home:
+            self.stop() # Confirm a stopped baseline before mechanical preparation.
+            self.homing_devices=tuple(missing_home)
+            self.homing_deadline=time.monotonic()+10 # Existing homing wait limit.
+            self.homing_status_pending=False
+            self.homing_query_after=0.
+            self.active=True
+            self.write([self.prefix(ident)+' HOME' for ident in missing_home])
+            return False
+        return True
+
+    def homing_ready(self):
+        if not self.link or self.unknown: raise OutputError('Homing: utracono połączenie lub nieznany stan sprzętu')
+        self.require_power()
+        if not self.homing_devices: return True
+        now=time.monotonic()
+        if now>=self.homing_deadline: raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.homing_devices))
+        generation=self.link.status_generation
+        if self.homing_status_pending and generation>self.homing_status_generation:
+            self.homing_status_pending=False
+            states=[self.link.device_status.get(self.registry.by_id[ident]['lane'].upper(),{}) for ident in self.homing_devices]
+            if all(s.get('enabled')=='1' and s.get('homed')=='1' and s.get('homing')=='0' for s in states):
+                self.homing_devices=()
+                return True
+        # Never overlap fragmented BLE STATUS transactions. Player ticks keep
+        # STOP responsive and retain watchdog PING while waiting for TRACK0.
+        if not self.homing_status_pending and now>=self.homing_query_after:
+            self.homing_status_generation=generation
+            self.link.status()
+            self.homing_status_pending=True
+            self.homing_query_after=now+.2
+        return False
 
     def prefix(self, ident):
         lane=self.registry.by_id[ident]['lane']
@@ -160,6 +204,9 @@ class RealOutput:
             if c.kind=='stop': lines.append(prefix+' STOP')
             elif c.kind=='hit': lines.append(prefix+' HIT')
             elif d['type']=='VHS':
+                if d.get('realAmplitude',50)==0:
+                    lines.append(prefix+' STOP')
+                    continue
                 if self.link.controller_status.get('speaker_waves')=='1':
                     lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")
                 lines.extend([f"{prefix} AMP {d.get('realAmplitude',50)}",f'{prefix} FREQ {c.hz:.2f}'])
@@ -173,8 +220,12 @@ class RealOutput:
         self.write(lines)
         for c in commands:
             if self.registry.by_id[c.device_id]['type']=='VHS':
-                if c.kind=='stop': self.active_speakers.discard(c.device_id)
-                else: self.active_speakers.add(c.device_id)
+                if c.kind=='stop':
+                    self.active_speakers.discard(c.device_id)
+                    self.speaker_frequencies.pop(c.device_id,None)
+                else:
+                    self.active_speakers.add(c.device_id)
+                    self.speaker_frequencies[c.device_id]=c.hz
 
     def require_waveform(self,waveform):
         if waveform!='pulse' and (not self.link or self.link.controller_status.get('speaker_waves')!='1'):
@@ -186,14 +237,21 @@ class RealOutput:
             self.write([f'{self.prefix(ident)} WAVE {waveform}'])
 
     def set_speaker_amplitude(self, ident):
-        if self.link and ident in self.active_speakers:
+        if not self.link: return
+        prefix=self.prefix(ident)
+        amplitude=self.registry.by_id[ident].get('realAmplitude',50)
+        if amplitude==0:
+            # A zero level is an explicit device STOP, including an idle/stale tone.
+            self.write([prefix+' STOP'])
+        elif ident in self.active_speakers:
             self.require_power()
-            self.write([f"{self.prefix(ident)} AMP {self.registry.by_id[ident].get('realAmplitude',50)}"])
+            self.write([f'{prefix} AMP {amplitude}',f'{prefix} FREQ {self.speaker_frequencies[ident]:.2f}'])
 
     def stop_device(self, ident):
         if self.link:
             self.write([self.prefix(ident)+' STOP'])
             self.active_speakers.discard(ident)
+            self.speaker_frequencies.pop(ident,None)
         elif self.active or self.unknown: raise OutputError('Nieznany stan sprzętu; STOP urządzenia niepotwierdzony')
 
     def poll(self):

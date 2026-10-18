@@ -9,7 +9,7 @@ Testy programowe nie mierzą temperatury, prądu, dźwięku ani pozycji.
 
 1. **Wyłącz/odłącz VM mostków, zasilanie FDD i V_SPK oraz sygnały do
    FDD/DRV/speakerów**, także podczas flashowania. Zidentyfikuj modele modułów,
-   piny zasilania, orientację 74HC595 i faktyczne B/C/E obu S8050.
+   piny zasilania, orientację 74HC595 i faktyczne B/C/E obu S8550 PNP speakerów (osobny S8050 NPN steruje ATX).
 2. Sprawdź **pin 8 GND każdego z sześciu rejestrów**, ciągłość wspólnej masy, brak zwarć między dodatnimi szynami i masą,
    połączenia szyn płytek stykowych, każdy /OE i /SRCLR oraz łańcuch QH′→SER.
 3. Prześledź wszystkie Q0–Q47 według tabeli w schemacie; wszystkie mają przydział.
@@ -176,7 +176,7 @@ uruchamiaj skończone próby z ograniczonym prądem. Nie zaczynaj od całej orki
 | FDD | /DS, TRACK0 aktywne LOW i właściwy kanał; jawny HOME | Czy dochodzi do TRACK0, odsuwa się, nie uderza w koniec, nie gubi odniesienia |
 | DVD | Pary cewek, VM, stan wejść mostków, swobodny obrót | Kierunek, rampa, zmiana celu bez STOP, prąd i wzrost temperatury |
 | HDD | Rezystancja/połączenia cewki, VM, miejsce ruchu ramienia | Pojedynczy HIT, park/settle/strike, brak zakleszczenia i nadmiernego nagrzewania |
-| Speaker / FX | Ustalony V_SPK, R_B i pinout S8050 | Każdy kanał osobno, brak sprzęgania częstotliwości, prąd, temperatura i nośna PWM |
+| Speaker / FX | Zgłoszone 3,3 V ATX, baza 330 Ω, pull-up 10 kΩ, szeregowo 56 Ω (moc rezystora do potwierdzenia); pinout S8550 do sprawdzenia | Każdy kanał osobno, brak sprzęgania częstotliwości, prąd, temperatura i nośna PWM |
 
 **FDD5–8 są domyślnie wyłączone i niepodłączone.** Nie uruchamiaj ich przed
 indywidualną kontrolą TRACK0, /DS, poziomów, ruchu i parametrów. Po kwalifikacji
@@ -194,8 +194,15 @@ skończonym PLAY/STOP z diagnostyką DIAG SLED. W tym zadaniu nie wykonujemy
 nowa mapa nie jest zgodna ze starszym przypisaniem HDD do DRV5/6.
 
 Aplikacja konfiguruje profile i ENABLE **FDD1–4 oraz DVD1–4** przed grą. Samo połączenie nie wykonuje
-HOME; użyj `/settings` → **Serwis → Homing**. `homed=1` i aktywne TRACK0
-to różne stany. `HOME_FAILED` wymaga sprawdzenia czujnika, /DS, DIR i przewodów;
+HOME. Przy jawnym **Play** w REAL aplikacja automatycznie wysyła HOME do
+niewyciszonych FDD potrzebnych w planie, które nie mają potwierdzonego `homed=1`.
+Czeka na kompletny STATUS z `homed=1, homing=0`, dopiero potem uruchamia zegar
+utworu i nuty. Już skalibrowane FDD nie są ponownie parkowane. STOP przerywa
+przygotowanie; błąd czujnika/transportu lub timeout nie uruchamia muzyki.
+ATX musi być wcześniej włączony przez użytkownika; Play nie włącza go automatycznie.
+VIRTUAL nie wykonuje homingu. Laboratory nadal wymaga jawnego HOME.
+Ręczne parkowanie pozostaje w `/settings` → **Serwis → Homing TRACK0**
+(obejmuje wszystkie włączone stacje). `homed=1` i aktywne TRACK0 to różne stany. `HOME_FAILED` wymaga sprawdzenia czujnika, /DS, DIR i przewodów;
 nie ponawiaj bez końca uderzającej w ogranicznik karetki.
 
 Ręczne komendy diagnostyczne (najpierw poprawny profil/ENABLE; podane Hz są
@@ -264,7 +271,7 @@ VIRTUAL anuluje kolejki/epokę i wycisza audio po utracie synchronizacji.
 | Nuta pominięta / skrócona | `/api/plan` i Settings → Aranżacja → Arrangement · PerformancePlan; powód decyzji, nie tylko statystyka |
 | STOP pomiędzy tonami DVD | `/api/timeline`: rzeczywista przerwa, źródłowa fraza, ograniczenie sustainu, zmiana partii lub rezerwacja |
 | 130 Hz zamiast 260 Hz FDD | Obecna transpozycja −12 i zakres 100–205 Hz; patrz [zakresy](HARDWARE_DEVICES.md#fdd-trzy-różne-zakresy) |
-| Nieznana fala / drugi speaker | `speaker_waves` / `speaker_fx` w STATUS, aktualność firmware |
+| Drugi speaker / przebieg | `speaker_fx` w STATUS; obsługiwany tylko `pulse`, `speaker_waves=0` |
 | VIRTUAL milczy | Wybrane Output, gest uruchamiający Web Audio, gain/duty 0, Mute, aktywna karta i synchronizacja |
 
 Telemetria `/api/monitor/raw` pokazuje ruch komend; nie jest analizatorem STEP
@@ -311,3 +318,14 @@ To weryfikacja C++/protokołu i modeli offline, nie test elektryczny ani radiowy
 Nie flashowano fizycznego ESP32 i nie uruchamiano silników. Obserwacja LOW ≈0 V /
 HIGH ≈3,41 V dotyczy wybranych wyjść pięciu rejestrów po naprawie GND; pozostałe
 wyjścia i SR6, dodatkowe FDD oraz DVD5–6 wymagają osobnych kontroli fizycznych.
+
+### Sprawdzenie polaryzacji speakerów S8550 PNP
+
+Przed odsłuchem zweryfikuj połączenia z [aktualnym schematem](HARDWARE_WIRING.md#dwa-pc-speakery).
+Przy zatrzymanym odtwarzaniu GPIO25 i GPIO26 powinny mieć HIGH względem GND,
+także po STOP, watchdogu i logicznym POWER OFF, gdy ESP32 pozostaje zasilone.
+HIGH wyłącza PNP; nie jest pomiarem zaniku napięcia ATX.
+Oscyloskopem sprawdź osobno oba kanały: pulse 440 Hz i AMP 50 powinien dawać
+LOW przez 50/256 okresu, HIGH przez resztę. Innych przebiegów nie obsługujemy. Boot/reset wymaga również sprawdzenia
+stanów przejściowych i działania pull-upów; testy C++ nie mierzą GPIO.
+Nie podłączaj wejścia pomiarowego do obciążenia bez sprawdzenia jego zakresu.

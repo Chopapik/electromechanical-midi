@@ -60,7 +60,13 @@ oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
 `speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
 STATUS. Firmware zachowuje 17 rekordów STATUS z FDD1–4; dodatkowe kanały
 są widoczne tylko przez osobne `DIAG FDD` / `DIAG SLED`. Dotychczasowy parser hosta ma
-limit 20 linii transakcji. FDD wymagają jawnego HOME. USB służy flashowaniu i diagnostyce.
+limit 20 linii transakcji. FDD wymagają potwierdzonego HOME. Jawny Play w REAL przygotowuje automatycznie
+niewyciszone FDD użyte w planie, jeśli nie mają odniesienia; Player czeka bez
+przesuwania zegara utworu, pozostawiając STOP dostępny. STATUS nie jest wysyłany
+ponownie przed zakończeniem poprzedniej transakcji. Dopiero pełne potwierdzenie
+homingu pozwala zacząć nuty; błąd/timeout nie wznawia odtwarzania. Boot/reconnect
+same nie wykonują HOME ani Play. Laboratory wymaga ręcznego HOME.
+USB służy flashowaniu i diagnostyce.
 
 VIRTUAL odbiera ten sam timeline, z wyprzedzeniem 150 ms względem czasu
 wykonania (REAL bez takiego lookahead). [virtualOutput.ts](../web/src/virtualOutput.ts)

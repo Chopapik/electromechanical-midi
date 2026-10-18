@@ -31,7 +31,7 @@ function Orchestra({app}:{app:ReturnType<typeof useRuntime>}){
         <ProgressBar position={s?.position??0} duration={s?.duration??0} playing={s?.state==='playing'} loading={!!app.midiLoading} onSeek={position=>void app.send('seek',{position})}/>
         <div className="top-bar-main">
           <div className="top-bar-playback">
-            <PlayerControls state={s?.state??'stopped'} disabled={!canPlay} loading={s?.service.busy} onRestart={()=>void app.send('seek',{position:0})} onToggle={()=>void app.send(s?.state==='playing'?'pause':'play')} onStop={()=>void app.send('stop')}/>
+            <PlayerControls state={s?.state??'stopped'} disabled={!canPlay} loading={s?.service.busy||s?.homing} onRestart={()=>void app.send('seek',{position:0})} onToggle={()=>void app.send(s?.state==='playing'?'pause':'play')} onStop={()=>void app.send('stop')}/>
           </div>
           <MidiFileSelector selected={s?.file??null} loading={app.midiLoading} onUpload={file=>void app.upload(file)}/>
         </div>

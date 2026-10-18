@@ -10,6 +10,7 @@ export function StatusFooter({app,settings=false,issue}:{app:ReturnType<typeof u
     !output?'Łączenie z aplikacją…':
     unknown?'ESP32 · brak potwierdzenia STOP. Połącz sprzęt ponownie, aby potwierdzić zatrzymanie.':
     output.mode==='VIRTUAL'?'Tryb wirtualny · Web Audio':
+    online&&app.state?.homing?'Parkowanie FDD przed utworem · STOP przerywa':
     online?'ESP32 · połączony przez BLE':'Offline · ESP32 nie jest połączony'
   const errors=[...new Set([app.error,app.state?.error,issue].filter((message):message is string=>!!message))]
   return <footer className="workstation-status"><div className="workstation-status-content">

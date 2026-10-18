@@ -47,21 +47,12 @@ size_t uxQueueMessagesWaiting(QueueHandle_t q){return q->items.size();}
 void vTaskDelay(uint32_t n){fakeUs+=n*1000;}
 int xTaskCreatePinnedToCore(void(*)(void*),const char*,int,void*,int,void*,int core){taskCore=core;return pdPASS;}
 '''
-TIMER = r'''
+LEDC = r'''
 #pragma once
-constexpr int ESP_TIMER_TASK=0,ESP_OK=0;
-using esp_timer_handle_t=void*;
-struct esp_timer_create_args_t{void(*callback)(void*)=nullptr;void* arg=nullptr;int dispatch_method=0;const char* name=nullptr;bool skip_unhandled_events=false;};
-int esp_timer_create(const esp_timer_create_args_t*,esp_timer_handle_t* timer){*timer=(void*)1;return ESP_OK;}
-int esp_timer_start_periodic(esp_timer_handle_t,uint64_t){return ESP_OK;}
-'''
-SEMAPHORE = r'''
-#pragma once
-using SemaphoreHandle_t=int*;
-constexpr uint32_t portMAX_DELAY=0xffffffffu;
-SemaphoreHandle_t xSemaphoreCreateMutex(){return new int(1);}
-int xSemaphoreTake(SemaphoreHandle_t s,uint32_t){if(!*s)return 0;*s=0;return 1;}
-void xSemaphoreGive(SemaphoreHandle_t s){*s=1;}
+using ledc_channel_t=int;
+constexpr int LEDC_HIGH_SPEED_MODE=0;
+int ledc_set_duty(int mode,ledc_channel_t channel,uint32_t duty){assert(mode==0&&duty<=256);ledcDuty[channel]=duty;return 0;}
+int ledc_update_duty(int,ledc_channel_t){return 0;}
 '''
 SPI = r'''
 #pragma once
@@ -148,27 +139,44 @@ int main(int argc,char** argv){
  }
  txRead=txWrite=0;connectBle();if(c!="boot"&&c!="power")ctrl.command("POWER ON");
  if(c=="power"){
-  assert(writes.front()==std::make_pair(19,LOW)&&gpio[19]==LOW&&modes[19]==OUTPUT&&!ctrl.powerOn);
+  assert(writes[0]==std::make_pair(19,LOW)&&gpio[19]==LOW&&modes[19]==OUTPUT&&!ctrl.powerOn);
   writeBle("POWER ON 1\n");assert(gpio[19]==LOW);drainInput();assert(gpio[19]==HIGH&&drainBle()=="POWER ON gpio19=1 token=1\n");bleTx->notifications.clear();
   writeBle("STATUS\n");drainInput();assert(uxQueueMessagesWaiting(bleTxQueue)==17);
   writeBle("POWER OFF 2\n");drainInput();assert(gpio[19]==LOW&&drainBle()=="POWER OFF gpio19=0 token=2\n");
   ctrl.command("POWER ON");setup();assert(!ctrl.powerOn&&gpio[19]==LOW);
- }else if(c=="speaker_waves"){
-  assert(io.audioReady);ctrl.command("VHS2 ENABLE 1");ctrl.command("VHS WAVE sine");ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 220");
-  ctrl.command("VHS2 WAVE triangle");ctrl.command("VHS2 AMP 50");ctrl.command("VHS2 FREQ 987");
-  assert(ledcHz[0]==40000&&ledcHz[2]==40000);
-  fakeUs+=1000;io.audioTick();assert(ledcDuty[0]>=0&&ledcDuty[0]<=100&&ledcDuty[2]>=0&&ledcDuty[2]<=100);
-  ctrl.command("VHS STOP");assert(ledcDuty[0]==0);fakeUs+=200;io.audioTick();assert(ledcDuty[0]==0);
-  ctrl.command("ALL STOP");fakeUs+=1000;io.audioTick();assert(ledcDuty[0]==0&&ledcDuty[2]==0);
-  ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 440");fakeUs+=3000001;ctrl.tick();io.audioTick();assert(ledcDuty[0]==0);
-  ctrl.command("VHS WAVE pulse");assert(ledcHz[0]==20000&&ledcDuty[0]==0);
+ }else if(c=="speaker_pnp"){
+  assert(writes[1]==std::make_pair(25,HIGH)&&writes[2]==std::make_pair(26,HIGH));
+  assert(gpio[25]==HIGH&&gpio[26]==HIGH&&ledcDuty[0]==256&&ledcDuty[2]==256);
+  assert(EspIO::pnpDuty(0)==256&&EspIO::pnpDuty(255)==0);
+  for(int duty=1;duty<255;++duty)assert(256-EspIO::pnpDuty(duty)==duty);
+  ctrl.command("VHS2 ENABLE 1");
+  for(int i=0;i<2;++i){
+   std::string prefix=i?"VHS2":"VHS";int channel=i?2:0;
+   ctrl.command((prefix+" AMP 50").c_str());assert(ledcDuty[channel]==256); // No frequency yet.
+   ctrl.command((prefix+" FREQ 440").c_str());assert(ledcHz[channel]==440&&ledcDuty[channel]==206);
+   ctrl.command((prefix+" STOP").c_str());assert(ledcDuty[channel]==256);
+   ctrl.command((prefix+" WAVE pulse").c_str());ctrl.command((prefix+" AMP 50").c_str());
+   ctrl.command((prefix+" FREQ 830").c_str());
+   assert(ledcHz[channel]==830&&ledcDuty[channel]==206);
+   ctrl.command("ALL STOP");assert(ledcDuty[0]==256&&ledcDuty[2]==256);
+  }
+  ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 440");
+  ctrl.command("VHS2 AMP 72");ctrl.command("VHS2 FREQ 830");
+  fakeUs+=3000001;ctrl.tick();assert(ledcDuty[0]==256&&ledcDuty[2]==256);
+  ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 440");
+  ctrl.command("VHS2 AMP 72");ctrl.command("VHS2 FREQ 830");
+  ctrl.command("POWER OFF");assert(ledcDuty[0]==256&&ledcDuty[2]==256);
+  ctrl.command("POWER ON");
+  ctrl.command("VHS AMP 50");ctrl.command("VHS FREQ 440");
+  ctrl.command("VHS2 AMP 72");ctrl.command("VHS2 FREQ 830");
+  setup();assert(ledcDuty[0]==256&&ledcDuty[2]==256&&!ctrl.powerOn);
  }else if(c=="boot"){
   const std::vector<uint8_t> expected={0,0,0,0,0x55,0x55};assert(SPI.frames.front()==expected);
   const int pins[8]={34,35,36,39,32,33,16,17};
   for(int i=0;i<8;++i){assert(modes[pins[i]]==INPUT);assert(ctrl.fdd[i].enabled==(i<4));assert(!ctrl.fdd[i].homing&&!ctrl.fdd[i].playing);}
   assert(gpio[21]==LOW&&gpio[22]==HIGH);
   assert(writes[0]==std::make_pair(19,LOW)&&gpio[19]==LOW&&modes[19]==OUTPUT&&!ctrl.powerOn);
-  assert(writes[1]==std::make_pair(27,LOW)&&gpio[27]==LOW&&modes[27]==OUTPUT);
+  assert(writes[3]==std::make_pair(27,LOW)&&gpio[27]==LOW&&modes[27]==OUTPUT);
   assert(NimBLEDevice::name=="Electromechanical-MIDI"&&fakeServer.svc.uuid==orchestra::ble::service);
   assert(fakeServer.svc.chars[0]->uuid==orchestra::ble::rx&&bleTx->uuid==orchestra::ble::tx);
   assert(fakeServer.svc.chars[0]->properties==(NIMBLE_PROPERTY::WRITE|NIMBLE_PROPERTY::WRITE_NR));
@@ -226,8 +234,8 @@ class Esp32BleAdapterTests(unittest.TestCase):
             raise RuntimeError('C++ compiler required for BLE adapter tests')
         cls.directory = tempfile.TemporaryDirectory()
         root = Path(cls.directory.name)
-        (root/'freertos').mkdir()
-        for name, content in [('esp_timer.h',TIMER),('freertos/semphr.h',SEMAPHORE),('Arduino.h', ARDUINO), ('SPI.h', SPI), ('NimBLEDevice.h', NIMBLE)]:
+        (root/'driver').mkdir()
+        for name, content in [('driver/ledc.h',LEDC),('Arduino.h', ARDUINO), ('SPI.h', SPI), ('NimBLEDevice.h', NIMBLE)]:
             (root/name).write_text(content)
         source = root/'ble.cpp'
         production = ROOT/'firmware/controller/src/esp32/main.cpp'
@@ -240,7 +248,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('power','serial_boot_once', 'speaker_waves', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
+for case in ('speaker_pnp','power','serial_boot_once', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
              'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

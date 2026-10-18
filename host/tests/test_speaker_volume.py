@@ -21,14 +21,14 @@ class SpeakerVolumeTests(unittest.TestCase):
         r=DeviceRegistry(volume_path=self.path)
         self.assertEqual((r.by_id['vhs-1']['realAmplitude'],r.by_id['pc-speaker-fx']['realAmplitude']),(50,22))
         self.assertEqual((r.by_id['vhs-1']['volume'],r.by_id['pc-speaker-fx']['volume']),(.2,.7))
-    def test_live_real_amp_without_restart_or_frequency_change(self):
+    def test_live_real_zero_stops_and_raise_restores_current_note(self):
         link=Link();self.app.real.attach(link)
         self.app.real.dispatch([ExecutionCommand(0,'pc-speaker-fx','tone',5,830)])
         link.sent.clear();timeline=self.app.player.timeline
         self.app.set_speaker_volume('pc-speaker-fx','REAL',0)
-        self.assertEqual(link.sent,['VHS2 AMP 0'])
+        self.assertEqual(link.sent,['VHS2 STOP'])
         self.app.set_speaker_volume('pc-speaker-fx','REAL',64)
-        self.assertEqual(link.sent[-1],'VHS2 AMP 64')
+        self.assertEqual(link.sent[-2:],['VHS2 AMP 64','VHS2 FREQ 830.00'])
         self.assertIs(self.app.player.timeline,timeline)
         link.sent.clear();self.app.set_speaker_volume('vhs-1','REAL',33)
         self.assertEqual(link.sent,[])  # No sound is started by changing an idle speaker.
@@ -59,26 +59,40 @@ class SpeakerVolumeTests(unittest.TestCase):
         config=registry.configuration()
         self.assertEqual(next(d for d in config.devices if d['id']=='vhs-1')['volume'],2.5)
 
-    def test_waveforms_persist_independently_and_live_real_requires_new_firmware(self):
-        link=Link();self.app.real.attach(link)
-        self.app.real.dispatch([ExecutionCommand(0,'vhs-1','tone',5,220)])
-        with self.assertRaisesRegex(Exception,'firmware'):self.app.set_speaker_waveform('vhs-1','sine')
-        self.assertNotIn('waveform',self.app.registry.by_id['vhs-1'])
-        link.controller_status['speaker_waves']='1';self.app.real.configured=True;link.sent.clear()
-        self.app.set_speaker_waveform('vhs-1','sine')
-        self.app.set_speaker_waveform('pc-speaker-fx','triangle')
-        self.assertEqual(link.sent,['VHS WAVE sine','VHS2 WAVE triangle'])
-        self.app.set_speaker_volume('vhs-1','VIRTUAL',1.75)
+    def test_only_pulse_is_accepted_and_saved_experiments_are_migrated(self):
+        self.path.write_text(json.dumps({'vhs-1':{'waveform':'sine','volume':.8,'realAmplitude':22},'pc-speaker-fx':{'waveform':'sawtooth','volume':1,'realAmplitude':50}}))
         registry=DeviceRegistry(volume_path=self.path)
-        self.assertEqual(registry.by_id['vhs-1']['waveform'],'sine')
-        self.assertEqual(registry.by_id['pc-speaker-fx']['waveform'],'triangle')
-        with self.assertRaises(ValueError):registry.set_waveform('fdd-1','sine')
-        with self.assertRaises(ValueError):registry.set_waveform('vhs-1','noise')
+        self.assertEqual(registry.by_id['vhs-1']['waveform'],'pulse')
+        self.assertEqual(registry.by_id['pc-speaker-fx']['waveform'],'pulse')
+        self.assertEqual(registry.by_id['vhs-1']['realAmplitude'],22)
+        self.assertEqual(registry.by_id['vhs-1']['volume'],.8)
+        for wave in ('sine','triangle','sawtooth','noise'):
+            with self.assertRaises(ValueError):self.app.set_speaker_waveform('vhs-1',wave)
+        self.app.set_speaker_waveform('vhs-1','pulse')
+        self.assertEqual(json.loads(self.path.read_text())['vhs-1']['waveform'],'pulse')
 
-    def test_next_real_note_uses_waveform_changed_while_virtual(self):
+    def test_real_uses_pulse_even_when_previous_settings_selected_other_waves(self):
         link=Link();link.controller_status['speaker_waves']='1';self.app.real.attach(link)
-        self.app.real.configured=True;self.app.router.mode='VIRTUAL'
-        self.app.set_speaker_waveform('vhs-1','sawtooth')
-        link.sent.clear();self.app.router.mode='REAL'
+        self.app.real.configured=True;link.sent.clear()
         self.app.real.dispatch([ExecutionCommand(0,'vhs-1','tone',1,440)])
-        self.assertEqual(link.sent[:3],['VHS WAVE sawtooth','VHS AMP 50','VHS FREQ 440.00'])
+        self.assertEqual(link.sent[:3],['VHS WAVE pulse','VHS AMP 50','VHS FREQ 440.00'])
+
+    def test_zero_real_skips_tones_for_both_speakers_and_resumes_latest_pitch(self):
+        link=Link();self.app.real.attach(link)
+        for ident,prefix in [('vhs-1','VHS'),('pc-speaker-fx','VHS2')]:
+            self.app.set_speaker_volume(ident,'REAL',0)
+            link.sent.clear()
+            self.app.real.dispatch([ExecutionCommand(0,ident,'tone',5,440),ExecutionCommand(1,ident,'tone',5,830)])
+            self.assertEqual(link.sent,[prefix+' STOP',prefix+' STOP'])
+            self.app.set_speaker_volume(ident,'REAL',128)
+            self.assertEqual(link.sent[-2:],[prefix+' AMP 128',prefix+' FREQ 830.00'])
+            self.app.real.stop_device(ident)
+            link.sent.clear();self.app.set_speaker_volume(ident,'REAL',64)
+            self.assertEqual(link.sent,[])
+
+    def test_zero_sends_stop_even_when_idle_without_power_on(self):
+        link=Link();self.app.real.attach(link);link.sent.clear()
+        link.controller_status['atx']='OFF'
+        self.app.set_speaker_volume('vhs-1','REAL',0)
+        self.assertEqual(link.sent,['VHS STOP'])
+        self.assertEqual(link.controller_status['atx'],'OFF')

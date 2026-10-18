@@ -2,7 +2,7 @@
 
 Docelowy układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
 **8 × moduł DRV8833**, **8 FDD**, **6** dwufazowych bipolarnych stepperów DVD, 4 cewki HDD VCM oraz
-2 pasywne PC Speakery sterowane przez osobne S8050.
+2 pasywne PC Speakery sterowane przez osobne S8550 (PNP).
 Firmware przygotowuje **8 FDD i 6 DVD**; host ma katalog 20 pozycji, z których aktywne pozostają **4 FDD, 4 DVD, 4 HDD i 2 speakery**.
 Dotychczasowe testy logiki dotyczą istniejących kanałów, nie fizycznej kwalifikacji
 całego docelowego zestawu 20 urządzeń. FDD5–8 i DVD5–6 są planowane do przyszłych
@@ -32,7 +32,7 @@ zasileniem odpowiedniej części. Nie ma zatwierdzonej listy konkretnych modeli 
 | FDD | Osobne 5 V do złącza zasilania napędu | Bieżące założenie układu; sprawdź model i orientację wtyku |
 | DVD stepper | Proponowane 3,3 V **na VM DRV8833 #1–6** | Robocze napięcie zasilania silników, wymaga pomiaru temperatury i prądu; brak potwierdzonego limitu ciągłej pracy |
 | HDD VCM | Osobne VM DRV8833 #7–8, do ustalenia | Brak zweryfikowanego napięcia/prądu dla kompletu cewek; zapis testu 5 V i ~23,3 Ω znajduje się w [badaniach](research/hardware-measurements.md#hdd-vcm) |
-| PC Speaker / FX | Osobna szyna V_SPK, do ustalenia | Nieznany prąd obciążenia i rezystory bazowe S8050; nie zasilać głośnika z GPIO |
+| PC Speaker / FX | 3,3 V ATX | S8550 PNP, baza 330 Ω + pull-up 10 kΩ, szeregowo z głośnikiem 56 Ω (moc rezystora do potwierdzenia); połączenie zgłoszone, bez pomiarów; nie zasilać głośnika z GPIO |
 
 W teście samej logiki zasil ESP32 przez USB, a rejestry ze sprawdzonej szyny
 3,3 V ATX. Połącz masy zasilaczy, ESP32, rejestrów, napędów i sterowników. Wspólna masa
@@ -48,7 +48,7 @@ po identyfikacji obciążeń. Samo 3,3 V nie dowodzi bezpiecznego prądu DVD.
 
 ## Sterowanie ATX przez PS_ON#
 
-Ustalone połączenie, osobny S8050 względem dwóch tranzystorów speakerów:
+Ustalone połączenie, osobny S8050 NPN, niezależny od dwóch S8550 PNP speakerów:
 
 ```text
 GPIO19 ── 2,2 kΩ ── baza S8050
@@ -96,8 +96,8 @@ komendy ani odczekanie czasu nie oznacza pomiaru zaniku napięcia.
 | 33 | FDD6 TRACK0, pin 26; nowy kanał |
 | 16 | FDD7 TRACK0, pin 26; nowy kanał |
 | 17 | FDD8 TRACK0, pin 26; nowy kanał |
-| 25 | R_B1 → baza S8050 Q1 → sterownik głównego PC Speakera |
-| 26 | R_B2 → baza S8050 Q2 → sterownik PC Speaker FX |
+| 25 | 330 Ω → baza S8550 Q1 → sterownik głównego PC Speakera |
+| 26 | 330 Ω → baza S8550 Q2 → sterownik PC Speaker FX |
 | 19 | 2,2 kΩ → baza osobnego S8050 ATX; kolektor do PS_ON#, emiter do GND |
 | 27 | Opcjonalna dioda testowa: 330 Ω → anoda LED, katoda → GND |
 | 1 / 3 | UART0 / USB-Serial, pozostawione do programowania i diagnostyki |
@@ -225,25 +225,31 @@ ma przydział; ich fizyczna gotowość wymaga osobnych kontroli.
 
 ## Dwa PC Speakery
 
-Potwierdzona przez użytkownika topologia funkcjonalna jest identyczna dla obu
-kanałów: osobny S8050 i osobny rezystor bazy. Przyjęte połączenie low-side:
+Użytkownik zgłosił poniższy montaż obu kanałów z S8550 **PNP**.
+Połączenia nie zostały potwierdzone pomiarami; nie jest to kwalifikacja elektryczna.
+Dla GPIO25 (PC Speaker) i GPIO26 (FX) identycznie:
 
 ```text
-GPIO25 ── R_B1 ── B Q1 S8050        GPIO26 ── R_B2 ── B Q2 S8050
-                  E ── GND                           E ── GND
-                  C ── Speaker−                      C ── Speaker FX−
-V_SPK ──────────────── Speaker+      V_SPK ──────────────── Speaker FX+
+ATX +3,3 V ───────── E S8550
+ATX +3,3 V ── 10 kΩ ── B
+GPIO25 / GPIO26 ── 330 Ω ── B
+                       C ── 56 Ω (moc rezystora do potwierdzenia) ── Speaker (+)
+Wspólne GND ───────────────────────────── Speaker (−)
 ```
 
-**R_B1, R_B2 i V_SPK są nieustalone**. Głośniki według użytkownika są
-prawdopodobnie 8 Ω; producent, moc i faktyczna impedancja nie są potwierdzone.
-Nie zakładaj kolejności B/C/E z nazwy S8050: sprawdź konkretnego producenta,
-obudowę i element. Rezystor jest między GPIO a bazą, głośnik w obwodzie
-kolektora, emiter na wspólnej masie. Przed zasileniem dobierz rezystor,
-prąd obciążenia oraz ochronę tranzystora przed przepięciami obciążenia
-indukcyjnego. Te dane nie wynikają z kodu. Nie kopiuj napięcia z dawnych
-połączeń silnika VHS. Nie podłączaj głośnika 8 Ω bezpośrednio do GPIO.
-GPIO25 i GPIO26 są już przypisane; kolejnych GPIO nie trzeba szukać.
+HIGH wyłącza tranzystor; LOW włącza. Firmware odwraca elektryczny PWM,
+zachowując czas przewodzenia zadany przez AMP i generator fali. STOP, watchdog,
+POWER OFF i brak aktywnego tonu ustawiają stałe HIGH. Boot ustawia HIGH przed
+uruchomieniem SPI/audio/BLE; podczas resetu i stanu wysokiej impedancji
+wyłączenie zależy od zewnętrznych pull-upów 10 kΩ oraz dostępności szyny ATX.
+Nie jest to gwarancja braku impulsów w dowolnej sekwencji zasilania.
+
+Głośniki są prawdopodobnie 8 Ω; impedancja i moc wymagają potwierdzenia.
+Sprawdź pinout konkretnego S8550, prąd, temperaturę i przepięcia obciążenia.
+Nie podłączaj głośnika bezpośrednio do GPIO. Osobne zasilanie ESP32 i ATX
+pozostawia ryzyko zasilania wstecznego przez bazę/GPIO przy wyłączonym ESP32;
+zmiana polaryzacji firmware nie rozwiązuje separacji domen zasilania.
+Sterowanie ATX na GPIO19 nadal używa osobnego **S8050 NPN**.
 
 ## Dokumentacja elementów
 

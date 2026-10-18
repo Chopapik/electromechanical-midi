@@ -13,21 +13,26 @@ const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orches
   output:{mode:'REAL',connected:false,unknown:false,message:'Brak połączenia z ESP32',muted:[]},
   service:{busy:false,error:null,reset:{available:false,reason:'Brak komendy resetu'},home:{available:false,reason:'Offline'},firmware:{available:false,reason:'Podłącz ESP32 przez USB (CP2102), aby wgrać firmware'}}}
 vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents})}))
-beforeEach(()=>{cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
+beforeEach(()=>{Object.assign(state,{homing:false});cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
 function mount(path='/'){return render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>)}
 describe('Orchestra UI',()=>{
  it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Offline · ESP32 nie jest połączony')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
  it('Settings only exposes debug, maintenance and device mute',()=>{mount('/settings');fireEvent.click(screen.getByLabelText('Virtual debug · Web Audio'));expect(send).toHaveBeenCalledWith('output',{mode:'VIRTUAL'});fireEvent.click(screen.getByLabelText('Mute FDD #1'));expect(send).toHaveBeenCalledWith('mute',{deviceId:'fdd-1',muted:true});expect((screen.getByText('Reset ESP32 — niedostępny') as HTMLButtonElement).disabled).toBe(true);expect(screen.queryByText('AUTO · 4 FDD')).toBeNull()})
- it('exposes shared waveform and independent VIRTUAL volume sliders in Settings',()=>{
+ it('exposes only pulse modulation and independent VIRTUAL gain in Settings',()=>{
   state.devices.push({id:'vhs-1',name:'PC Speaker',type:'VHS',enabled:true,volume:.6,bands:[],reason:null},{id:'pc-speaker-fx',name:'PC Speaker FX',type:'VHS',enabled:true,volume:.4,bands:[],reason:null})
   mount('/settings')
   for(const [name,id] of [['PC Speaker','vhs-1'],['PC Speaker FX','pc-speaker-fx']]){
    fireEvent.change(screen.getByRole('slider',{name:`${name} VIRTUAL głośność`}),{target:{value:'25'}})
    expect(send).toHaveBeenCalledWith('speaker_volume',{deviceId:id,output:'VIRTUAL',value:.625})
-   fireEvent.change(screen.getByRole('combobox',{name:`${name} kształt fali`}),{target:{value:'sine'}})
-   expect(send).toHaveBeenCalledWith('speaker_waveform',{deviceId:id,waveform:'sine'})
-   fireEvent.change(screen.getByRole('slider',{name:`${name} wypełnienie fali`}),{target:{value:'64'}})
+   expect(screen.queryByRole('combobox',{name:`${name} kształt fali`})).toBeNull()
+   fireEvent.change(screen.getByRole('slider',{name:`${name} wypełnienie fali`}),{target:{value:'50'}})
    expect(send).toHaveBeenCalledWith('speaker_volume',{deviceId:id,output:'REAL',value:64})
+   for(const [percent,amplitude] of [[0,0],[100,128]]){
+    const slider=screen.getByRole('slider',{name:`${name} wypełnienie fali`}) as HTMLInputElement
+    expect(slider.min).toBe('0');expect(slider.max).toBe('100')
+    fireEvent.change(slider,{target:{value:String(percent)}})
+    expect(send).toHaveBeenCalledWith('speaker_volume',{deviceId:id,output:'REAL',value:amplitude})
+   }
   }
  })
  it('virtual is a manual output allowing offline Play',()=>{state.output.mode='VIRTUAL';mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(false);fireEvent.click(screen.getByRole('button',{name:'Play'}));expect(send).toHaveBeenCalledWith('play')})
@@ -116,4 +121,14 @@ it('keeps arrangement settings and plan preview out of the player',()=>{
 it('selects the universal adaptive arrangement',()=>{
  mount('/settings');fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'universal'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'universal'})
+})
+
+it('shows automatic FDD homing while keeping STOP available',()=>{
+ Object.assign(state,{homing:true});state.output.connected=true
+ mount()
+ expect(screen.getByText('Parkowanie FDD przed utworem · STOP przerywa')).toBeTruthy()
+ expect((screen.getByRole('button',{name:'Ładowanie odtwarzania'}) as HTMLButtonElement).disabled).toBe(true)
+ const stop=screen.getByRole('button',{name:'Stop'}) as HTMLButtonElement
+ expect(stop.disabled).toBe(false);fireEvent.click(stop)
+ expect(send).toHaveBeenCalledWith('stop')
 })

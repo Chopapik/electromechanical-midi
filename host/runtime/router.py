@@ -14,8 +14,11 @@ class Router:
         if mode not in ('REAL','VIRTUAL'): raise ValueError('Unknown output')
         self.output.stop()  # Failure leaves selection unchanged.
         self.mode=mode
-    def ready(self, commands):
-        self.output.ready([c for c in commands if c.device_id not in self.muted])
+    def ready(self, commands, *, auto_home=False):
+        commands=[c for c in commands if c.device_id not in self.muted]
+        if self.mode=='REAL': return self.real.ready(commands,auto_home=auto_home)
+        self.virtual.ready(commands)
+        return True
     def stop(self): self.output.stop()
     def mute(self, ident, muted):
         if ident not in self.registry.by_id: raise ValueError('Unknown device')

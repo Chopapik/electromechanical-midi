@@ -51,7 +51,7 @@ struct IO {
  virtual void vhs(uint8_t,float)=0;
  virtual void vhsFx(uint8_t,float){}
  virtual void speakerWave(uint8_t,uint8_t){}
- virtual bool speakerAudioReady(){return true;}
+ virtual bool speakerAudioReady(){return false;}
 };
 struct ShiftRegisterBus {
  IO& io; uint8_t shadow[map::registerCount]={};

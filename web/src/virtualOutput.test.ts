@@ -29,7 +29,7 @@ describe('Web Audio output',()=>{
   const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx')]}, {'vhs-1':{volume:.6,type:'VHS'},'pc-speaker-fx':{volume:.4,type:'VHS'}})
   const envelopeCalls=ctx.gains[1].gain.linearRampToValueAtTime.mock.calls.length
   output.setVolumes([{id:'vhs-1',volume:0},{id:'pc-speaker-fx',volume:.4}])
-  expect(ctx.gains[3].gain.linearRampToValueAtTime.mock.calls[0][0]).toBe(0)
+  expect(ctx.gains[3].gain.setValueAtTime).toHaveBeenLastCalledWith(0,ctx.currentTime)
   expect(ctx.gains[6].gain.linearRampToValueAtTime).not.toHaveBeenCalled()
   expect(ctx.gains[1].gain.linearRampToValueAtTime.mock.calls).toHaveLength(envelopeCalls)
   expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
@@ -43,15 +43,24 @@ describe('Web Audio output',()=>{
   expect(ctx.sources[0].frequency.setValueAtTime).toHaveBeenCalledTimes(1)
   expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
   output.setVolumes([{id:'vhs-1',volume:.6,realAmplitude:0}])
-  expect(ctx.gains[3].gain.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(0)
+  expect(ctx.gains[3].gain.setValueAtTime).toHaveBeenLastCalledWith(0,ctx.currentTime)
  })
- it('switches sine, triangle and sawtooth independently on active speakers',async()=>{
-  const ctx=await setup();output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx')]}, {'vhs-1':{volume:2.5,type:'VHS',waveform:'sine'},'pc-speaker-fx':{volume:.4,type:'VHS',waveform:'triangle'}})
-  expect(ctx.sources.map(n=>n.type)).toEqual(['sine','triangle'])
-  output.setVolumes([{id:'vhs-1',volume:2.5,waveform:'sawtooth'},{id:'pc-speaker-fx',volume:.4,waveform:'triangle'}])
-  expect(ctx.sources.map(n=>n.type)).toEqual(['sawtooth','triangle'])
-  expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
-  expect(ctx.sources[0].frequency.setValueAtTime).toHaveBeenCalledTimes(1)
+ it('zero silences active and queued speaker voices for pulse modulation, with live recovery',async()=>{
+  const ctx=await setup()
+  for(const waveform of ['pulse'] as const){
+   output.stop()
+   const pair={'vhs-1':{volume:.6,type:'VHS',realAmplitude:128,waveform},'pc-speaker-fx':{volume:.4,type:'VHS',realAmplitude:72,waveform}}
+   output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note('vhs-1'),note('pc-speaker-fx',.5)]},pair)
+   const levels=[ctx.gains.at(-4)!,ctx.gains.at(-1)!]
+   output.setVolumes([{id:'vhs-1',volume:0,realAmplitude:128,waveform},{id:'pc-speaker-fx',volume:0,realAmplitude:72,waveform}])
+   for(const level of levels){
+    expect(level.gain.cancelScheduledValues).toHaveBeenLastCalledWith(ctx.currentTime)
+    expect(level.gain.setValueAtTime).toHaveBeenLastCalledWith(0,ctx.currentTime)
+   }
+   output.setVolumes(Object.entries(pair).map(([id,d])=>({id,...d})))
+   expect(levels[0].gain.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(.6)
+   expect(levels[1].gain.linearRampToValueAtTime.mock.calls.at(-1)?.[0]).toBe(.4)
+  }
  })
  it('silences when Player stops',async()=>{const ctx=await setup();output.schedule({epoch:1,origin:100,serverTime:100,commands:[note()]},devices);output.state(1,false);expect(ctx.sources[0].stop).toHaveBeenLastCalledWith()})
 })

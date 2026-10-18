@@ -146,6 +146,7 @@ class DeviceService:
             if action=='OFF':
                 self.real.active=False; self.real.unknown=False; self.real.error=None
                 self.real.active_speakers.clear()
+                self.real.speaker_frequencies.clear()
                 for key,state in getattr(self.real.link,'device_status',{}).items():
                     if key.startswith('FDD:'): state.update(homed='0',homing='0',playing='0')
             self.power_error=None

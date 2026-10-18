@@ -139,7 +139,10 @@ Wykonanie: aktywne LOW STEP o szerokości 30 µs; zmiana DIR z czasem ustalenia
 5 ms. Roboczy limit oddalania to 72 kroki. Fizyczne TRACK0 jest jedynym odniesieniem:
 resetuje `awaySteps`; ruch do TRACK0 nie jest odliczaniem pozycji z powrotem.
 HOME ma timeout 2 s i okres kroku 5 ms. Boot i reconnect nie wykonują HOME.
-Po utracie odniesienia wykonaj jawny HOME; telemetria nie jest enkoderem.
+Po utracie odniesienia wymagany jest HOME; licznik nie jest enkoderem.
+Play w REAL automatycznie kalibruje potrzebne, niewyciszone FDD bez `homed=1`
+przed uruchomieniem zegara utworu. STOP może przerwać oczekiwanie. Błąd homingu
+blokuje start muzyki. Ręczny HOME w Settings i wymóg HOME w Laboratory pozostają.
 Wartości wspólne czterem stacjom nie oznaczają indywidualnej kalibracji każdej.
 Długie gate'y i powroty karetki nadal mogą wpływać na brzmienie.
 
@@ -184,30 +187,32 @@ czterech obecnych urządzeń. Wyniki: [HDD VCM](research/hardware-measurements.m
 ## PC Speaker i PC Speaker FX
 
 Główny speaker ma `transpose: +12`, FX `0`, przed foldingiem profilu.
-Profil hosta `VHS` dopuszcza 20–2000 Hz; protokół ma szerszy zakres pulse do
-20 kHz i pozostałych fal do 2 kHz. Granice protokołu nie są pomiarem akustycznym.
-LEDC kanały 0 i 2 mają osobne timery; kanał 1 współdzieliłby timer z kanałem 0.
+Profil hosta `VHS` dopuszcza 20–2000 Hz; protokół przyjmuje pulse do 20 kHz.
+Granice protokołu nie są pomiarem akustycznym. GPIO25 i GPIO26 są sterowane
+sprzętowym LEDC, kanały 0 i 2 mają osobne timery. Nie ma programowego generatora
+próbek ani callbacku audio 20 kHz. Dostępny jest wyłącznie prostokąt / impuls.
 
-`/settings` → **Brzmienie PC Speaker**: osobny gain VIRTUAL i wybór fali dla
-każdego głośnika. Fala `pulse`, `sine`, `triangle`, `sawtooth` jest wspólna
-REAL/VIRTUAL. W pulse suwak `realAmplitude` 0–128 daje duty 0–50% przez
-`AMP/256`; **AMP 50 = 19,53125% duty**, a nie 50% głośności.
-Duty 50% daje prostokąt symetryczny; mniejsze wypełnienie zmienia barwę i poziom,
-więc fizyczna głośność i kształt impulsu nie są niezależnymi regulatorami.
-VIRTUAL 0–100% mapuje gain 0–2,5 (dawny gain 1 odpowiada 40% nowej skali).
-Zapisane ustawienia użytkownika mogą zastępować wartości początkowe.
+`/settings` → **Brzmienie PC Speaker**: osobny gain VIRTUAL i modulacja
+wypełnienia prostokąta, wspólna dla REAL/VIRTUAL, dla każdego speakera.
+Oba suwaki mają skalę 0–100%. Modulacja mapuje ją na `realAmplitude` 0–128;
+nie podnosi dotychczasowego maksimum. 100% nastawy oznacza przewodzenie przez
+50% okresu (symetryczny kwadrat). Niższe wypełnienie zmienia barwę i poziom,
+nie jest niezależną regulacją głośności REAL. Wypełnienie = `AMP/256` czasu
+przewodzenia PNP (LOW na GPIO); **AMP 50 = 19,53125%**, nie 50% głośności.
 
-Pulse VIRTUAL to pasmoograniczony szereg 64 harmonicznych. Pozostałe fale REAL
-używają PWM 40 kHz, aktualizowanego co 50 µs (20 kHz). To modulacja impulsów
-przez S8050, nie analogowy DAC. Filtracja nośnej, obciążenie i mechanika głośnika
-wpływają na słyszany przebieg; identyczny wybór generatora nie oznacza zmierzonej
-identyczności dźwięku REAL/VIRTUAL. STOP i próbki synchronizuje wspólny mutex,
-aby spóźniona próbka nie przywróciła wyjścia.
+Przy modulacji 0% host wysyła STOP dla danego speakera zamiast kolejnych tonów;
+podniesienie poziomu w trwającej nucie przywraca jej aktualną częstotliwość.
+VIRTUAL 0% wycisza aktywne i zaplanowane głosy natychmiast. Jego gain 0–2,5
+jest oddzielny od wypełnienia (dawny gain 1 odpowiada 40% nowej skali).
+Zapisane wcześniej inne fale są przy odczycie ustawień zastępowane `pulse`,
+z zachowaniem poziomów obu kanałów. API odrzuca inne przebiegi.
 
-Obsługa drugiego kanału wymaga `speaker_fx=1`, nowych fal `speaker_waves=1`.
-Niezgodny firmware blokuje wymagającą ich grę REAL; aplikacja nie flashuje
-samoczynnie. Sposób podłączenia i nieznane elementy mocy:
-[dwa speakery](HARDWARE_WIRING.md#dwa-pc-speakery).
+Pulse VIRTUAL to pasmoograniczony szereg 64 harmonicznych. REAL to odwrócony
+PWM dla S8550 PNP; HIGH wyłącza tranzystor. Boot, STOP, watchdog i POWER OFF
+wyłączają oba kanały. Nie ma timera audio ani mutexu do próbek.
+Obsługa drugiego kanału wymaga `speaker_fx=1`. STATUS zachowuje pole
+`speaker_waves=0`; zgodnościowa komenda WAVE przyjmuje tylko `pulse`.
+Połączenia i ograniczenia sprzętowe: [dwa speakery](HARDWARE_WIRING.md#dwa-pc-speakery).
 
 ## Mostki bez sterowania nSLEEP
 

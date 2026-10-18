@@ -13,7 +13,7 @@ oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, nie
 
 | Dokument | Właściciel informacji |
 | --- | --- |
-| [HARDWARE_WIRING.md](HARDWARE_WIRING.md) | Połączenia ESP32, 74HC595, pełne Q0–Q47, DRV8833, napędy, dwa S8050 i zasilanie |
+| [HARDWARE_WIRING.md](HARDWARE_WIRING.md) | Połączenia ESP32, 74HC595, pełne Q0–Q47, DRV8833, napędy, dwa S8550 speakerów, S8050 ATX i zasilanie |
 | [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md) | Inventory, profile, zakresy, kalibracja, mechanika i ograniczenia dowodów |
 | [HARDWARE_TESTING.md](HARDWARE_TESTING.md) | Kontrola przewodów, boot, BLE, HOME, lab, STOP i diagnostyka awarii |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Jeden runtime MIDI → REAL/VIRTUAL, obsługa UI/API, uruchamianie i testy |

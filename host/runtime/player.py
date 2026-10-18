@@ -21,10 +21,11 @@ class Player:
         self.base=0.; self.origin=0.; self.index=0; self.epoch=0
         self.error=None; self.dropped=0; self.max_lag=0.
         self.running=False
+        self.homing=False
     def position(self):
         return max(0.,min(self.timeline.duration,self.clock()-self.origin if self.state=='playing' else self.base))
     def invalidate(self):
-        self.base=self.position(); self.state='stopped'; self.epoch+=1
+        self.base=self.position(); self.state='stopped'; self.epoch+=1; self.homing=False
         self.index=len(self.timeline.commands)
     def stop(self, reset=True):
         with self.lock:
@@ -49,9 +50,11 @@ class Player:
     def play(self):
         with self.lock:
             if self.owner=='service': raise OutputError('Sprzęt jest zajęty przez DeviceService')
-            if self.state=='playing': return
+            if self.state=='playing' or self.homing: return
             if not any(c.kind!='stop' for c in self.timeline.commands): raise OutputError('Brak nut do odtworzenia')
-            self.router.ready(self.timeline.commands)
+            if self.router.ready(self.timeline.commands,auto_home=self.owner=='orchestra') is False:
+                self.homing=True;self.error=None;self.epoch+=1
+                return
             if self.base>=self.timeline.duration: self.base=0.
             self.index=bisect.bisect_left([c.time for c in self.timeline.commands],self.base)
             self.epoch+=1; self.error=None
@@ -70,12 +73,12 @@ class Player:
     def seek(self, position):
         if isinstance(position,bool) or not isinstance(position,(int,float)) or not math.isfinite(position): raise ValueError('Invalid position')
         with self.lock:
-            previous=self.state
+            previous=self.state;was_homing=self.homing
             target=max(0.,min(position,self.timeline.duration))
             # Cancel the previous queue and confirm REAL STOP before moving the clock.
             self.stop(reset=False); self.base=target
             if previous=='paused': self.state='paused'
-            elif previous=='playing' and target<self.timeline.duration:
+            elif (previous=='playing' or was_homing) and target<self.timeline.duration:
                 try: self.play()
                 except Exception as exc:
                     self.error=str(exc); raise
@@ -89,7 +92,9 @@ class Player:
             self.base=0.; self.error=None
     def mute(self, ident, muted):
         with self.lock:
-            try: self.router.mute(ident,muted)
+            try:
+                if self.homing:self.stop(reset=False)
+                self.router.mute(ident,muted)
             except Exception as exc:
                 self.invalidate(); self.error=str(exc); raise
     def tick(self):
@@ -97,6 +102,10 @@ class Player:
             try:
                 if self.owner=='service': return
                 if self.router.mode=='REAL': self.router.real.poll()
+                if self.homing:
+                    if self.router.real.homing_ready():
+                        self.homing=False;self.play()
+                    return
                 if self.state!='playing': return
                 position=self.position()
                 horizon=position+self.router.output.lookahead
@@ -131,7 +140,7 @@ class Player:
                         c=commands[i]
                         if c.kind!='stop' and c.time+c.duration>position and ident not in self.router.muted:
                             activity[ident]=c.as_dict()
-            return {'activity':activity,'state':self.state,'position':self.position(),'duration':self.timeline.duration,
+            return {'activity':activity,'homing':self.homing,'state':self.state,'position':self.position(),'duration':self.timeline.duration,
                     'owner':self.owner,'epoch':self.epoch,'origin':self.origin,'serverTime':self.clock(),
                     'output':self.router.status(),'error':self.error,
                     'timing':{'droppedExpired':self.dropped,'maxLag':self.max_lag}}

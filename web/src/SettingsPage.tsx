@@ -59,22 +59,14 @@ export function SettingsPage({app}:{app:Runtime}){
             <label>VIRTUAL · {Math.round(d.volume/2.5*100)}%
               <input aria-label={`${d.name} VIRTUAL głośność`} type="range" min="0" max="100" step="1" value={Math.round(d.volume/2.5*100)} disabled={disabled} onChange={e=>void app.send('speaker_volume',{deviceId:d.id,output:'VIRTUAL',value:Number(e.target.value)/100*2.5})}/>
             </label>
-            <label>Kształt · REAL + VIRTUAL
-              <select aria-label={`${d.name} kształt fali`} value={d.waveform??'pulse'} disabled={disabled} onChange={e=>void app.send('speaker_waveform',{deviceId:d.id,waveform:e.target.value})}>
-                <option value="pulse">Kwadrat / impuls</option>
-                <option value="sine">Sinus</option>
-                <option value="triangle">Trójkąt</option>
-                <option value="sawtooth">Piła</option>
-              </select>
-            </label>
-            <label>{(d.waveform??'pulse')==='pulse'?'Wypełnienie · REAL + VIRTUAL':'Poziom REAL'} · {((d.realAmplitude??50)/256*100).toFixed(1)}%
-              <input aria-label={`${d.name} wypełnienie fali`} type="range" min="0" max="128" step="1" value={d.realAmplitude??50} disabled={disabled} onChange={e=>void app.send('speaker_volume',{deviceId:d.id,output:'REAL',value:Number(e.target.value)})}/>
+            <label>Modulacja prostokąta · REAL + VIRTUAL · {Math.round((d.realAmplitude??50)/128*100)}%
+              <input aria-label={`${d.name} wypełnienie fali`} type="range" min="0" max="100" step="1" value={Math.round((d.realAmplitude??50)/128*100)} disabled={disabled} onChange={e=>void app.send('speaker_volume',{deviceId:d.id,output:'REAL',value:Math.round(Number(e.target.value)/100*128)})}/>
             </label>
             <svg className="pulse-preview" viewBox="0 0 200 40" role="img" aria-label={`${d.name} podgląd fali`}>
-              <polyline points={waveformPoints(d.waveform??'pulse',d.realAmplitude??50)} fill="none" stroke="currentColor" strokeWidth="1.5"/>
+              <polyline points={waveformPoints('pulse',d.realAmplitude??50)} fill="none" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
           </div>)}
-          <small>VIRTUAL: nowe 100% odpowiada dawnemu 250%. Kształt jest wspólny dla REAL i VIRTUAL. Sinus, trójkąt i piła w REAL wymagają nowego firmware. Dla impulsu 50% to kwadrat, 0% to cisza. Ustawienia zapisują się automatycznie.</small>
+          <small>Tylko prostokąt z regulacją wypełnienia, wspólną dla REAL i VIRTUAL. Skala modulacji 0–100% odpowiada przewodzeniu tranzystora przez 0–50% okresu; 100% daje symetryczny kwadrat, 0% ciszę. Modulacja zmienia barwę i słyszany poziom, nie jest niezależną regulacją głośności REAL. VIRTUAL ma osobny suwak głośności 0–100% (gain 0–2,5). Ustawienia zapisują się automatycznie.</small>
         </section>
         <section className="settings-section">
           <h2>Aranżacja</h2>

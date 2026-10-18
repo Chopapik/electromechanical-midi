@@ -259,17 +259,14 @@ int main(int argc,char** argv){
   assert(d.sled[0].hz==140&&fabsf(d.sled[0].targetStepRate)==280);
   assert(!strcmp(d.command("SLED 1 PROFILE 140 5000 1"),"ERR BUSY"));
  }else if(c=="speaker_waves"){
-  assert(!strcmp(d.command("VHS WAVE sine"),"OK")&&d.vhsWave==Sine);
-  assert(!strcmp(d.command("VHS2 WAVE triangle"),"OK")&&d.fxWave==Triangle);
-  assert(!strcmp(d.command("VHS WAVE invalid"),"ERR VALUE")&&d.vhsWave==Sine);
-  assert(!strcmp(d.command("VHS FREQ 2001"),"ERR VALUE"));d.command("VHS2 ENABLE 1");assert(!strcmp(d.command("VHS2 FREQ 2001"),"ERR VALUE"));
-  SpeakerOscillator s;s.amp=50;s.hz=100;s.wave=Sine;s.last=0;
-  assert(s.sample(2500)==100);assert(s.sample(7500)==0);
-  s.wave=Triangle;s.phase=0;s.last=0;assert(s.sample(5000)==100);assert(s.sample(10000)==0);
-  s.wave=Sawtooth;s.phase=0;s.last=0;assert(s.sample(5000)==50);
-  for(int wave=1;wave<4;++wave){s.wave=wave;s.phase=0;s.last=0;int sum=0;for(int i=1;i<=200;++i){int value=s.sample(i*50);assert(value>=0&&value<=100);sum+=value;}assert(abs(sum/200-50)<=1);}
-  s.amp=0;assert(s.sample(100000)==0);
-  d.command("TRACKS SET 1 2 3 4");assert(!strcmp(d.command("VHS WAVE sine"),"ERR STRICT_OUTPUT"));
+  for(const char* prefix:{"VHS","VHS2"}){
+   std::string name=prefix;
+   assert(!strcmp(d.command((name+" WAVE pulse").c_str()),"OK"));
+   for(const char* wave:{"sine","triangle","sawtooth","invalid"})
+    assert(!strcmp(d.command((name+" WAVE "+wave).c_str()),"ERR VALUE"));
+  }
+  assert(d.vhsWave==Pulse&&d.fxWave==Pulse);
+  d.command("TRACKS SET 1 2 3 4");assert(!strcmp(d.command("VHS WAVE pulse"),"ERR STRICT_OUTPUT"));
  }else if(c=="speaker_fx"){
   assert(map::speakerFx==26&&map::vhs==25&&io.fxAmp==0);
   assert(!strcmp(d.command("VHS2 FREQ 830"),"ERR DISABLED"));

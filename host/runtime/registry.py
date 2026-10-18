@@ -38,9 +38,9 @@ class DeviceRegistry:
                         value = values.get(key, default)
                         self.validate_volume(ident, output, value)
                         self.by_id[ident][key] = value
-                    waveform=values.get('waveform','pulse')
-                    self.validate_waveform(ident,waveform)
-                    self.by_id[ident]['waveform']=waveform
+        # Retire saved non-pulse experiments without changing levels or files.
+        for device in self.devices:
+            if device['type']=='VHS':device['waveform']='pulse'
         self.configuration()  # Validate musical profile references as well.
 
     def validate_volume(self, ident, output, value):
@@ -69,7 +69,7 @@ class DeviceRegistry:
         finally: temporary.unlink(missing_ok=True)
 
     def validate_waveform(self,ident,waveform):
-        if ident not in self.by_id or self.by_id[ident]['type']!='VHS' or waveform not in ('pulse','sine','triangle','sawtooth'):
+        if ident not in self.by_id or self.by_id[ident]['type']!='VHS' or waveform!='pulse':
             raise ValueError('Invalid speaker waveform')
 
     def set_waveform(self,ident,waveform):

@@ -46,9 +46,8 @@ export class VirtualOutput {
     const {real,imag}=pulseCoefficients(amplitude)
     source.setPeriodicWave(this.context.createPeriodicWave(real,imag,{disableNormalization:true}))
   }
-  private setWave(source:OscillatorNode,waveform:SpeakerWaveform,amplitude:number){
-    if(waveform==='pulse')this.pulse(source,amplitude)
-    else source.type=waveform
+  private setWave(source:OscillatorNode,_waveform:SpeakerWaveform,amplitude:number){
+    this.pulse(source,amplitude)
   }
   setVolumes(devices:{id:string;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform}[]) {
     const values=new Map(devices.map(d=>[d.id,d]))
@@ -61,10 +60,15 @@ export class VirtualOutput {
         this.setWave(voice.source,waveform,duty);voice.duty=duty;voice.waveform=waveform
       }
       if(voice.level&&value!==undefined&&value!==voice.levelValue){
-        const at=Math.max(this.context?.currentTime??0,voice.start)
-        voice.level.gain.cancelScheduledValues(at)
-        voice.level.gain.setValueAtTime(voice.levelValue??value,at)
-        voice.level.gain.linearRampToValueAtTime(value,at+.01)
+        const now=this.context?.currentTime??0
+        const at=Math.max(now,voice.start)
+        // Silence active and queued voices immediately; cancel future gain too.
+        voice.level.gain.cancelScheduledValues(value===0?now:at)
+        if(value===0)voice.level.gain.setValueAtTime(0,now)
+        else {
+          voice.level.gain.setValueAtTime(voice.levelValue??value,at)
+          voice.level.gain.linearRampToValueAtTime(value,at+.01)
+        }
         voice.levelValue=value
       }
     }

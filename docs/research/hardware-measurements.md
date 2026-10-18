@@ -61,13 +61,17 @@ nie są widmem zmierzonym na odzyskanych dyskach.
 
 ## Speakery
 
-Użytkownik potwierdził dwa S8050, każdy z jednym rezystorem między GPIO a bazą,
-i głośnik w obwodzie kolektora. Głośniki prawdopodobnie 8 Ω; brak producenta,
-potwierdzonej impedancji/mocy, wartości R_B i napięcia V_SPK. GPIO25/26 wynikają
-z firmware, nie z pomiaru fizycznego połączenia. Topologia funkcjonalna jest w
-[schemacie](../HARDWARE_WIRING.md#dwa-pc-speakery).
-Nie zarejestrowano prądu tranzystorów, temperatur ani kształtu sygnału na głośniku
-przy PWM 40 kHz. Wybór sinusa nie dowodzi uzyskania sinusa akustycznego.
+Wcześniejszy opis zakładał dwa S8050 NPN; użytkownik skorygował oznaczenie
+na **S8550 PNP** i zgłosił montaż: emiter do ATX 3,3 V, baza przez 330 Ω do
+GPIO25/26 i 10 kΩ do emitera, kolektor przez 56 Ω (moc rezystora do potwierdzenia) do plusa głośnika,
+minus do wspólnego GND. To deklaracja połączeń, bez potwierdzenia pomiarami.
+Głośniki prawdopodobnie 8 Ω; impedancja/moc i pinout elementów niepotwierdzone.
+Pierwszy montaż zawierał omyłkowo 47 kΩ zamiast planowanych 47 Ω; użytkownik
+zastąpił go 56 Ω i wskazał to jako przyczynę ciszy. Nie wykonano pomiarów prądu
+ani temperatury tego wariantu. Aktualny [schemat](../HARDWARE_WIRING.md#dwa-pc-speakery) opisuje PNP;
+firmware ustawia HIGH dla wyłączenia i odwraca PWM obu kanałów.
+Nie zarejestrowano prądu tranzystorów, temperatur ani kształtu sygnału na głośniku.
+Aktualne sterowanie obejmuje tylko sprzętowy prostokąt z regulacją wypełnienia.
 
 ## Laboratory
 
