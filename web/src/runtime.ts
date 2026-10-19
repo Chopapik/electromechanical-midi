@@ -1,8 +1,10 @@
 import type {SpeakerWaveform} from './pulseWave'
 import {useEffect,useRef,useState} from 'react'
 import {VirtualOutput,type Command} from './virtualOutput'
-export interface Device {id:string;name:string;type:string;enabled:boolean;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform;bands:number[][];reason:string|null;continuousRotation?:boolean}
+export interface Device {id:string;name:string;type:string;enabled:boolean;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform;bands:number[][];labBands?:number[][];reason:string|null;continuousRotation?:boolean}
+export interface LabTest {hz:number;currentHz:number;duration:number|null;mode:'off'|'sine'|'triangle';depth:number;period:number;elapsed:number;remaining:number|null}
 export interface State {
+  laboratory?:{active:Record<string,LabTest>};
   activity?:Record<string,Command>; homing?:boolean; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
   arrangementPreset?:'balanced'|'fdd_quality'|'dvd_lead_low_fdd'|'fdd_quality_adaptive'|'instrument_roles'|'instrument_roles_unison'|'instrument_roles_duet' | 'universal';revision:number;error:string|null;audioOwner:string|null;devices:Device[];
   output:{mode:'REAL'|'VIRTUAL';connected:boolean;unknown:boolean;message:string;muted:string[]};

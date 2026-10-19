@@ -6,7 +6,7 @@ export interface Command {
   hz:number; velocity:number; articulation?:MechanicalArticulation & {attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
     gain?:{times:number[];values:number[]}; frequency?:{times:number[];values:number[]}}
 }
-type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string;level?:GainNode;levelValue?:number;duty?:number;waveform?:SpeakerWaveform}
+type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string;level?:GainNode;levelValue?:number;duty?:number;waveform?:SpeakerWaveform;labHz?:number}
 export class VirtualOutput {
   context:AudioContext|null=null
   private voices:Voice[]=[]
@@ -100,6 +100,10 @@ export class VirtualOutput {
       const end=when+c.duration
       if(end<=ctx.currentTime || (c.kind==='hit'&&ctx.currentTime-when>.1))continue
       const start=Math.max(ctx.currentTime,when)
+      if(c.kind==='tone'&&c.articulation?.kind==='laboratory'){
+        this.liveTone(c,devices[c.device_id],start,end)
+        continue
+      }
       for(const v of this.voices)if(v.device===c.device_id && v.end>start && v.start<=start){
         v.gain.gain.cancelScheduledValues(start);v.gain.gain.setValueAtTime(0,start)
         try{v.source.stop(start)}catch{/* ended */}
@@ -144,6 +148,39 @@ export class VirtualOutput {
       else source.start(start)
       source.stop(end)
     }
+  }
+  private liveTone(c:Command,device:{volume:number;type:string;realAmplitude?:number},start:number,end:number){
+    const ctx=this.context!
+    const existing=this.voices.find(v=>v.device===c.device_id&&v.labHz!==undefined&&v.end>start)
+    if(existing){
+      if('buffer' in existing.source)existing.source.playbackRate.linearRampToValueAtTime(c.hz/existing.labHz!,start)
+      else existing.source.frequency.linearRampToValueAtTime(c.hz,start)
+      existing.end=end
+      existing.source.stop(end) // Refresh a bounded audio lease, without reattacking.
+      return
+    }
+    const gain=ctx.createGain(),mechanical=device.type!=='VHS'
+    let source:OscillatorNode|AudioBufferSourceNode
+    if(mechanical){
+      // Loop complete periods after the model's startup transient. Live pitch
+      // scales this preview buffer; it is not an acoustic hardware calibration.
+      const cycles=Math.max(4,Math.ceil(c.hz*.1)),length=Math.min(Math.round(ctx.sampleRate*.25),Math.max(2,Math.round(cycles/c.hz*ctx.sampleRate)))
+      const warmup=Math.ceil(ctx.sampleRate*.03)
+      const samples=mechanicalSamples(device.type,c.device_id,c.hz,(length+warmup+200)/ctx.sampleRate,ctx.sampleRate)
+      const buffer=ctx.createBuffer(1,length,ctx.sampleRate);buffer.copyToChannel(samples.slice(warmup,warmup+length),0)
+      const node=ctx.createBufferSource();node.buffer=buffer;node.loop=true;source=node
+    }else{
+      const node=ctx.createOscillator();this.pulse(node,device.realAmplitude??50);node.frequency.setValueAtTime(c.hz,start);source=node
+    }
+    const level=mechanical?undefined:ctx.createGain(),levelValue=(device.realAmplitude??50)===0?0:device.volume
+    gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(mechanical?.132:.045,start+.005)
+    source.connect(gain)
+    if(level){level.gain.setValueAtTime(levelValue,start);gain.connect(level);level.connect(this.bus??ctx.destination)}
+    else gain.connect(this.bus??ctx.destination)
+    const voice:Voice={source,gain,start,end,device:c.device_id,level,levelValue,duty:device.realAmplitude??50,labHz:c.hz}
+    this.voices.push(voice)
+    source.onended=()=>{source.disconnect();gain.disconnect();level?.disconnect();this.voices=this.voices.filter(v=>v!==voice)}
+    source.start(start);source.stop(end)
   }
   close(){this.stop();if(this.watchdog)clearInterval(this.watchdog);this.watchdog=null;void this.context?.close();this.context=null;this.bus=null}
 }

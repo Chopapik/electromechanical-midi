@@ -53,6 +53,7 @@ class RuntimeTests(unittest.TestCase):
         self.app=Application();self.now=100.
         self.player=Player(self.app.router,clock=lambda:self.now)
         self.app.player=self.player;self.app.lab.player=self.player;self.app.service.player=self.player
+        self.player.laboratory=self.app.lab
         self.link=Link()
     def real(self):
         self.app.real.attach(self.link);self.app.real.configured=True

@@ -66,4 +66,4 @@ class Application:
     def snapshot(self):
         return {**self.player.snapshot(),'file':self.source.path.name if self.source else None,
                 'revision':self.revision,'arrangementPreset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced'),'devices':self.registry.catalog(),'service':self.service.status(),
-                'audioOwner':self.virtual.owner}
+                'audioOwner':self.virtual.owner,'laboratory':self.lab.snapshot()}

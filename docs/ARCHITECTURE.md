@@ -81,6 +81,17 @@ przejmuje wyłączne sterowanie na czas USB uploadu, homingu lub operacji POWER.
 Nie ma resetowania kontrolera przez BLE. STOP/ACK, watchdog i postępowanie
 przy niepewnym stanie opisuje [procedura awarii](HARDWARE_TESTING.md#awarie).
 
+Laboratorium ma niezależne zadania kanałów w
+[Laboratory](../host/runtime/laboratory.py), wykonywane przez istniejący tick Playera
+oraz Router. Nie ładuje nowego timeline przy każdym starcie, więc drugi kanał
+nie zatrzymuje pierwszego. Komendy nadal są `ExecutionCommand`; wyjścia i STOP
+pozostają wspólne. Serwis/POWER OFF unieważniają zadania przez Player.invalidate.
+Stan `laboratory.active` zawiera aktualne Hz, modulację, czas i pozostały limit;
+`lab_test`, `lab_update`, `lab_stop` wymagają właściciela sesji lab. VIRTUAL
+używa krótkiej odnawianej dzierżawy audio bez ponownych ataków. Mechaniczny model
+lab używa zapętlenia bufora z playbackRate; model utworów MIDI pozostaje bez zmian.
+[Szczegółowa obsługa i ograniczenia](HARDWARE_TESTING.md#laboratory).
+
 ## Logiczne zasilanie ATX
 
 DeviceService publikuje `service.power`: ON / OFF / UNKNOWN / UNAVAILABLE,
@@ -116,10 +127,10 @@ Stan szyn 74HC595 przy osobnym USB ESP32 pozostaje
 | `/` | Import/wybór MIDI, transport i karty urządzeń; również sesja lab |
 | `/settings` → Output | REAL albo Virtual debug · Web Audio |
 | `/settings` → Aranżacja | Preset oraz Arrangement · PerformancePlan |
-| `/settings` → Brzmienie PC Speaker | Gain VIRTUAL, fala i duty/poziom REAL osobno dla dwóch speakerów |
+| `/settings` → Brzmienie PC Speaker | Gain VIRTUAL i modulacja prostokąta REAL + VIRTUAL osobno dla dwóch speakerów |
 | `/settings` → Zasilanie ATX | Ręczne ON/OFF, stan logiczny i potwierdzenie ON |
 | `/settings` → Serwis | Wgraj firmware ESP32, Homing |
-| `/settings` → Laboratory | Laboratory · debug, skończony test bez MIDI |
+| `/settings` → Laboratory | Lista i panel urządzenia, równoległe testy, odliczanie lub ∞ Do STOP |
 
 Aplikacja zawsze startuje w REAL, nawet offline. Wybór presetu jest sesyjny:
 restart odczytuje `parameters.arrangementPreset` z JSON (obecnie `balanced`).

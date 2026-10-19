@@ -22,9 +22,11 @@ class Player:
         self.error=None; self.dropped=0; self.max_lag=0.
         self.running=False
         self.homing=False
+        self.laboratory=None
     def position(self):
         return max(0.,min(self.timeline.duration,self.clock()-self.origin if self.state=='playing' else self.base))
     def invalidate(self):
+        if self.laboratory: self.laboratory.cancel()
         self.base=self.position(); self.state='stopped'; self.epoch+=1; self.homing=False
         self.index=len(self.timeline.commands)
     def stop(self, reset=True):
@@ -102,6 +104,9 @@ class Player:
             try:
                 if self.owner=='service': return
                 if self.router.mode=='REAL': self.router.real.poll()
+                if self.owner=='lab' and self.laboratory and self.state=='playing':
+                    self.laboratory.tick()
+                    return
                 if self.homing:
                     if self.router.real.homing_ready():
                         self.homing=False;self.play()

@@ -1,7 +1,7 @@
 import {afterEach,describe,it,expect,vi} from 'vitest'
 import {VirtualOutput,type Command} from './virtualOutput'
 class Param {setValueAtTime=vi.fn();linearRampToValueAtTime=vi.fn();cancelScheduledValues=vi.fn()}
-class Node {gain=new Param();frequency=new Param();connect=vi.fn();disconnect=vi.fn();start=vi.fn();stop=vi.fn();type='';setPeriodicWave=vi.fn();onended=()=>{}}
+class Node {gain=new Param();frequency=new Param();playbackRate=new Param();connect=vi.fn();disconnect=vi.fn();start=vi.fn();stop=vi.fn();type='';setPeriodicWave=vi.fn();onended=()=>{}}
 class Context {sampleRate=48000;currentTime=10;state='running';destination={};sources:Node[]=[];gains:Node[]=[];resume=vi.fn();close=vi.fn();createBuffer(_channels:number,length:number,rate:number){return {length,sampleRate:rate,copyToChannel:vi.fn()}}createBufferSource(){const n=new Node();this.sources.push(n);return Object.assign(n,{buffer:null})}createGain(){const n=new Node();this.gains.push(n);return n}createPeriodicWave(real:Float32Array,imag:Float32Array){return {real,imag}}createOscillator(){const n=new Node();this.sources.push(n);return n}}
 const note=(device_id='fdd-1',time=0):Command=>({time,device_id,kind:'tone',duration:1,hz:220,velocity:100})
 const devices={'fdd-1':{volume:.6,type:'FDD'},'fdd-2':{volume:.6,type:'FDD'}}
@@ -63,4 +63,32 @@ describe('Web Audio output',()=>{
   }
  })
  it('silences when Player stops',async()=>{const ctx=await setup();output.schedule({epoch:1,origin:100,serverTime:100,commands:[note()]},devices);output.state(1,false);expect(ctx.sources[0].stop).toHaveBeenLastCalledWith()})
+})
+
+
+describe('Laboratory live audio lease',()=>{
+ it('renews one speaker oscillator and updates pitch without reattack',async()=>{
+  const ctx=await setup(),pair={'vhs-1':{volume:.6,type:'VHS'}}
+  const tone={...note('vhs-1'),duration:.5,articulation:{kind:'laboratory'}}
+  output.schedule({epoch:1,origin:100,serverTime:100,commands:[tone]},pair)
+  output.schedule({epoch:1,origin:100,serverTime:100,commands:[{...tone,time:.1,hz:300}]},pair)
+  expect(ctx.sources).toHaveLength(1);expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].frequency.linearRampToValueAtTime).toHaveBeenLastCalledWith(300,expect.any(Number))
+  expect(ctx.sources[0].stop.mock.calls.at(-1)?.[0]).toBeCloseTo(10.6)
+  output.stop('vhs-1');expect(ctx.sources[0].disconnect).toHaveBeenCalled()
+ })
+ it('loops bounded mechanical buffers with independent live pitches',async()=>{
+  const ctx=await setup(),tone={...note(),duration:.5,articulation:{kind:'laboratory'}}
+  output.schedule({epoch:1,origin:100,serverTime:100,commands:[tone,{...tone,device_id:'fdd-2'}]},devices)
+  output.schedule({epoch:1,origin:100,serverTime:100,commands:[{...tone,time:.1,hz:330}]},devices)
+  expect(ctx.sources).toHaveLength(2)
+  expect(ctx.sources[0].playbackRate.linearRampToValueAtTime).toHaveBeenLastCalledWith(1.5,expect.any(Number))
+  expect(ctx.sources[1].playbackRate.linearRampToValueAtTime).not.toHaveBeenCalled()
+  expect((ctx.sources[0] as unknown as AudioBufferSourceNode).loop).toBe(true)
+ })
+ it('bounds the buffer allocation for extremely low allowed DVD frequencies',async()=>{
+  const ctx=await setup(),allocation=vi.spyOn(ctx,'createBuffer')
+  output.schedule({epoch:1,origin:100,serverTime:100,commands:[{...note('dvd'),duration:.5,hz:.001,articulation:{kind:'laboratory'}}]}, {dvd:{volume:.6,type:'DVD_SLED'}})
+  expect(allocation.mock.calls[0][1]).toBeLessThanOrEqual(ctx.sampleRate*.25)
+ })
 })

@@ -5,7 +5,7 @@ import os
 import math
 import tempfile
 from pathlib import Path
-from playback.hardware_profiles import HardwareRegistry
+from playback.hardware_profiles import HardwareRegistry, sled_frequency_range
 from playback.orchestra import parse_orchestra
 
 DEFAULT = Path(__file__).resolve().parents[2] / 'config/devices.json'
@@ -103,7 +103,8 @@ class DeviceRegistry:
             bands = [[max(lo,interval[0])*ratio,min(hi,interval[1])*ratio] if interval else [lo*ratio,hi*ratio] for lo,hi in bands]
             continuous=bool(p and p.get('continuousRotation'))
             if continuous: bands=[]
-            result.append({**d, 'bands':bands, 'continuousRotation':continuous, 'reason':None if d['enabled'] and p else 'Brak potwierdzonego profilu lub obecności w registry'})
+            lab_bands = [[max(.001, lo*ratio), hi*ratio] for lo, hi in [sled_frequency_range(p)]] if continuous else bands
+            result.append({**d, 'bands':bands, 'labBands':lab_bands, 'continuousRotation':continuous, 'reason':None if d['enabled'] and p else 'Brak potwierdzonego profilu lub obecności w registry'})
         return result
 
 class PlanningProfiles:

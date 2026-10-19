@@ -234,14 +234,46 @@ Nie przesyłaj ręcznie profilu z pominięciem nierozpoznanych parametrów sprz�
 ## Laboratory
 
 `/settings` → **Laboratory → Laboratory · debug** otwiera testy bez MIDI.
-Wybierz urządzenie, Hz i czas (0,1–10 s, domyślnie 1 s), potem **Uruchom test**.
-HDD wykonuje pojedynczy HIT zamiast tonu. Lab używa tego samego Playera,
-Routera i wyjścia; REAL wymaga BLE, profilu i HOME dla FDD. Odrzucone Hz nie
-są składane oktawowo. Kończący się test wysyła STOP; **Stop** przerywa wcześniej.
-**Wróć do Orkiestry** zamyka sesję bez autoplay.
+Po lewej jest lista urządzeń, po prawej panel wybranego kanału. Nie ma kart
+orkiestry. Częstotliwość ustawisz suwakiem, polem Hz, skrótem nuty lub przyciskami
+±półton / ±oktawa. Ustawienia każdego urządzenia zapisują się lokalnie w przeglądarce;
+zmiana zaznaczenia, wyjście i odświeżenie nie kasują parametrów i nie uruchamiają testów.
 
-Aktualny WebSocket ma wyłączną sesję lab; sync odnawia lease 3 s.
-Wygaśnięcie lease, utrata sesji lub zmiana właściciela kończy wykonanie.
+Wybierz **Odliczanie** (0,1–3600 s, domyślnie 5 s) lub **∞ Do STOP**, potem
+**Uruchom**. Przejdź do kolejnego urządzenia i uruchom je niezależnie: wcześniejszy
+kanał nadal gra. Lista pokazuje aktualne Hz i czas. **Stop [urządzenie]** zatrzymuje
+wybrany kanał; **Zatrzymaj wszystko** przerywa całą sesję. **Orkiestra** kończy testy
+bez autoplay. Zmiana czasu dotyczy kolejnego uruchomienia, nie wydłuża aktywnego testu.
+
+**Vibrato** moduluje częstotliwość sinusoidalnie, **Przemiatanie** trójkątnie.
+To modulacja wysokości tonu, nie nowy przebieg elektryczny speakera: oba PC Speakery
+nadal generują wyłącznie prostokąt z regulowanym wypełnieniem. Pole Hz i modulacja
+aktualizują aktywny test po 250 ms bez zmian suwaka. Zakres całej modulacji musi
+mieścić się w jednym dozwolonym paśmie profilu; nie składamy Hz oktawowo.
+Dla ciągłego DVD obowiązuje istniejący zakres wykonawczy profilu/protokołu,
+nie muzyczny sufit aranżera 600 Hz. Dostępny zakres nie oznacza bezpieczeństwa
+termicznego, mechanicznego ani potwierdzonego brzmienia.
+
+HDD wykonuje tylko pojedynczy HIT z czasami i odstępami profilu, bez opcji ciągłej
+lub modulacji. REAL wymaga BLE, logicznego ATX ON, aktywnego profilu, braku Mute
+oraz wcześniej potwierdzonego HOME dla FDD. Lab nie włącza ATX ani nie wykonuje
+automatycznie homingu. Dodatkowe niezakwalifikowane FDD/DVD pozostają zablokowane.
+
+Lab używa tego samego Playera, Routera i wyjścia. Każdy kanał ma własny termin;
+wspólna pętla wysyła zmiany maksymalnie co 100 ms, w jednym batchu, bez nadrabiania
+zaległych próbek. Stały ton REAL nie wymaga ponawiania PLAY. VIRTUAL odnawia
+krótkie, maksymalnie 0,5-sekundowe odcinki bez ponownego ataku oscylatora.
+Podgląd mechaniczny lab zapętla krótki fragment modelu i zmienia playbackRate:
+przy zmianie Hz zmieniają się także rezonanse modelu. To przybliżenie do odsłuchu
+połączenia częstotliwości, nie pomiar ani kalibracja rzeczywistego urządzenia.
+Zwykłe odtwarzanie MIDI zachowuje dotychczasowy model dźwięku.
+
+Wyłączna sesja lab ma lease 3 s odnawiany przez WebSocket sync. Wygaśnięcie lease,
+utrata sesji/BLE, błąd wykonania, POWER OFF, zmiana wyjścia/właściciela i globalny
+STOP kasują aktywne testy. Ponowne połączenie nie wznawia dźwięku. STOP globalny
+zachowuje istniejące potwierdzenie kontrolera; brak ACK pozostaje błędem, nie sukcesem.
+**∞ oznacza brak terminu aplikacyjnego, nie kwalifikację do nienadzorowanej pracy.**
+Nadzoruj sprzęt i temperaturę; watchdog komunikacji nie mierzy przegrzania.
 Nie ma dawnego panelu ocen rezonansu i eksportu historii ocen.
 Zapis historycznej próby kontrolera: [pomiary i obserwacje](research/hardware-measurements.md#laboratory).
 

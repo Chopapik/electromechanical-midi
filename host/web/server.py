@@ -128,9 +128,11 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 elif operation=='mute': p.mute(message['deviceId'],message['muted'])
                 elif operation=='lab_enter': runtime.lab.enter(owner)
                 elif operation=='lab_leave': runtime.lab.leave(owner); runtime.orchestra()
-                elif operation=='lab_test':
+                elif operation in ('lab_test','lab_update'):
+                    runtime.lab.require_session(owner)
                     if runtime.router.mode=='VIRTUAL': runtime.virtual.owner=owner
-                    runtime.lab.test(owner,message['deviceId'],message.get('hz',200),message.get('duration',1))
+                    runtime.lab.test(owner,message['deviceId'],message.get('hz',200),message.get('duration',1),message.get('modulation'),update=operation=='lab_update')
+                elif operation=='lab_stop': runtime.lab.stop_device(owner,message['deviceId'])
                 elif operation=='service': runtime.service.run(message['operation'],confirmed=message.get('confirmed') is True)
                 else: raise ValueError('Unknown action')
             async with command_lock:
