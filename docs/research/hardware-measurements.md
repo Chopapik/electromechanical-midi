@@ -37,12 +37,25 @@ opisuje wcześniejszą politykę, nie bieżący efektywny zakres.
 | Tuner gitarowy, 2026-10-11 | Komenda 200 Hz odczyt ~100 Hz; 500 Hz odczyt ~250 Hz | Możliwa detekcja oktawy/harmonicznej, brak pomiaru widmowego i indywidualnej kwalifikacji DVD1–3 |
 
 Ostatnia obserwacja uzasadnia **hipotezę** `pitchRatio=0,5`, LOW confidence,
-zapisaną dla DVD1–3. DVD4 pozostaje przy 1,0. `steps/s=acousticHz/pitchRatio`:
+zapisaną pierwotnie dla DVD1–3. DVD4 miał wtedy 1,0. `steps/s=acousticHz/pitchRatio`:
 żądane 200 Hz przy ratio 0,5 oznacza 400 kroków/s, 500 Hz oznacza 1000 kroków/s.
 Nie jest to pomiar momentu, temperatury ani bezpieczeństwa tych częstotliwości.
 Źródło metadanych sweepu i tunera: [instances.json](../../config/hardware-profiles/instances.json).
 Ciągły tryb korzysta z innej interpretacji profilu niż ten sweep; oryginalne dane
 pozostają zachowane, ale nie aktywują historycznych pasm ani 140 kroków.
+
+Aktualizacja **2026-10-19** — użytkownik zgłosił identyczny typ silnika DVD3
+i DVD4, lecz przy zadanych 440 Hz stroik wskazywał odpowiednio około 440 i 220 Hz.
+Kod wysyłał tę samą wartość PLAY, ale profile wymuszały odpowiednio 880 i 440 kroków/s.
+Symulacja produkcyjnego C++ potwierdziła tę różnicę; nie jest to pomiar fizycznych
+impulsów ani dźwięku. Dla DVD4 dodano indywidualną korekcję `pitchRatio=0,5`
+(HYPOTHESIS/LOW), aby żądane 440 Hz oznaczało 880 kroków/s jak dla DVD3.
+Oczekiwany wynik akustyczny wymaga ponownego odsłuchu/stroika; nie wykonano nowej
+próby fizycznej, analizy widma ani pomiarów prądu/temperatury. DVD1 jest innym
+silnikiem i użytkownik zgłosił nieprawidłowe brzmienie; jego stare ratio pozostaje
+niepotwierdzone. Korekcja DVD4 nie obejmuje DVD5–6: zachowano jawne ratio 1,0
+i stan wyłączenia. Host wysyła PROFILE podczas konfiguracji, więc zastosowanie
+korekcji DVD4 przez aplikację nie wymaga flashowania ESP32.
 
 Najdłuższy ciągły odcinek DVD w software benchmarku Universal pełnej biblioteki:
 **366,997 s (Ful Stop)**. W pierwszym korpusie 31 MIDI: **136,195 s (Fake Plastic Trees)**.

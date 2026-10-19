@@ -158,7 +158,7 @@ int main(int argc,char** argv){
   for(int i=0;i<6;++i)assert(sledDefaults::profileIndex(i)==(i<4?i:3));
   for(int i=4;i<6;++i){
    auto& s=d.sled[i];assert(!s.enabled&&!s.playing&&s.softMax==physical::sledTravel[3]);
-   assert(s.accelerationLimit==physical::sledAcceleration[3]&&s.pitchRatio==physical::sledPitchRatio[3]&&s.pitchRatio==1);
+   assert(s.accelerationLimit==physical::sledAcceleration[3]&&s.pitchRatio==1&&physical::sledPitchRatio[3]==.5f);
    char cmd[80];snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"ERR DISABLED"));
    snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",i+1);assert(!strcmp(d.command(cmd),"OK")&&!s.playing);
    snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"OK"));
@@ -305,9 +305,9 @@ int main(int argc,char** argv){
   assert(!strcmp(d.command("SLED 1 PLAY 100"),"ERR VALUE"));
  }else if(c=="sled_calibration"){
   for(int id=0;id<4;++id){
-   auto& s=d.sled[id];assert(s.pitchRatio==(id<3?.5f:1.f));assert(s.softMax==0);
+   auto& s=d.sled[id];assert(s.pitchRatio==.5f);assert(s.softMax==0);
    char cmd[60];snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",id+1);d.command(cmd);
-   for(int hz: {200,500}){
+   for(int hz: {200,440,500}){
     snprintf(cmd,sizeof(cmd),"SLED %d PLAY %d",id+1,hz);assert(!strcmp(d.command(cmd),"OK"));
     assert(s.hz==hz);assert(s.targetStepRate==hz/s.pitchRatio);
     assert(s.period==uint32_t(1000000.f/(hz/s.pitchRatio)));

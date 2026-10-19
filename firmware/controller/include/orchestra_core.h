@@ -29,7 +29,8 @@ constexpr uint8_t profileIndex(uint8_t id){return id<map::hostFddCount?id:0;}
 }
 namespace sledDefaults {
 // The generator still owns four profiles. Unqualified DVD5-6 temporarily use
-// DVD4's defaults, including ratio=1 rather than the tuner hypothesis for DVD1-3.
+// DVD4's travel/acceleration/band defaults, but explicitly retain ratio=1.
+// Never copy an individual motor's tuner correction onto unqualified DVD5-6.
 // Every generated-array lookup, including the frequency-band check, uses this index.
 static_assert(sizeof(physical::sledTravel)/sizeof(physical::sledTravel[0])==map::hostSledCount,"DVD profile count changed");
 static_assert(sizeof(physical::sledAcceleration)/sizeof(physical::sledAcceleration[0])==map::hostSledCount,"DVD acceleration count changed");
@@ -37,6 +38,7 @@ static_assert(sizeof(physical::sledPitchRatio)/sizeof(physical::sledPitchRatio[0
 static_assert(sizeof(physical::sledAllowedBandCount)/sizeof(physical::sledAllowedBandCount[0])==map::hostSledCount,"DVD band count changed");
 static_assert(sizeof(physical::sledAllowedBandsHz)/sizeof(physical::sledAllowedBandsHz[0])==map::hostSledCount,"DVD band table count changed");
 constexpr uint8_t profileIndex(uint8_t id){return id<map::hostSledCount?id:map::hostSledCount-1;}
+constexpr float pitchRatio(uint8_t id){return id<map::hostSledCount?physical::sledPitchRatio[id]:1.0f;}
 }
 struct IO {
  virtual ~IO() {}
@@ -108,7 +110,7 @@ struct Sled {
  int32_t position=0;int16_t softMax;
  uint8_t id,phase=0;bool enabled=false,playing=false,forward=true,clockStarted=false;
  uint32_t period=0,last=0;float hz=0,currentStepRate=0,targetStepRate=0,accelerationLimit,pitchRatio,fraction=0;
- Sled(uint8_t i):softMax(physical::sledTravel[sledDefaults::profileIndex(i)]),id(i),accelerationLimit(physical::sledAcceleration[sledDefaults::profileIndex(i)]),pitchRatio(physical::sledPitchRatio[sledDefaults::profileIndex(i)]){}
+ Sled(uint8_t i):softMax(physical::sledTravel[sledDefaults::profileIndex(i)]),id(i),accelerationLimit(physical::sledAcceleration[sledDefaults::profileIndex(i)]),pitchRatio(sledDefaults::pitchRatio(i)){}
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;currentStepRate=targetStepRate=fraction=0;clockStarted=false;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){
   if(!enabled||softMax<0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;

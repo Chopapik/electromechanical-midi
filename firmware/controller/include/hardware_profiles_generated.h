@@ -18,7 +18,7 @@ constexpr int32_t fddReversalUs[4] = {5000, 5000, 5000, 5000};
 constexpr int32_t fddMinStepUs[4] = {2439, 2439, 2439, 2439};
 constexpr int32_t sledTravel[4] = {0, 0, 0, 0};
 constexpr float sledAcceleration[4] = {5000.0f, 5000.0f, 5000.0f, 5000.0f};
-constexpr float sledPitchRatio[4] = {0.5f, 0.5f, 0.5f, 1.0f};
+constexpr float sledPitchRatio[4] = {0.5f, 0.5f, 0.5f, 0.5f};
 constexpr uint8_t sledAllowedBandCount[4] = {0, 0, 0, 0};
 constexpr float sledAllowedBandsHz[4][1][2] = {{{0.0f, 0.0f}}, {{0.0f, 0.0f}}, {{0.0f, 0.0f}}, {{0.0f, 0.0f}}};
 inline bool sledFrequencyAllowed(uint8_t id, float stepHz) {

@@ -83,11 +83,13 @@ Obecna zmiana nie aktywuje dodatkowych głosów ani nie zmienia alokatora.
 
 Generator i nagłówek wciąż zawierają **tylko DVD1–4**. Jawny
 `sledDefaults::profileIndex` w C++ wybiera dla DVD5–6 indeks **3 (DVD4)**:
-`travelSteps=0`, przyspieszenie 5000 kroków/s², `pitchRatio=1,0`, bez aktywnych
-pasm częstotliwości. To tymczasowe parametry wykonawcze, nie pomiary nowych
+`travelSteps=0`, przyspieszenie 5000 kroków/s² i brak aktywnych
+pasm częstotliwości. `sledDefaults::pitchRatio` utrzymuje dla DVD5–6 jawne **1,0**,
+niezależnie od indywidualnej korekcji DVD4. To tymczasowe parametry wykonawcze, nie pomiary nowych
 silników ani potwierdzony bezpieczny zakres. Nie przenosimy hipotezy tunera 0,5
-z DVD1–3 na nowe egzemplarze. Ustal ratio, prąd, temperaturę i swobodę obrotu
-indywidualnie przed ruchem. Nie zmieniono generatora ani wygenerowanego pliku.
+z DVD1–4 na nowe egzemplarze. Ustal ratio, prąd, temperaturę i swobodę obrotu
+indywidualnie przed ruchem. Generator nadal obejmuje cztery profile; aktualizacja
+korekcji DVD4 z 2026-10-19 nie zmienia fallbacku ratio nowych silników.
 
 Fallback obejmuje **każdy odczyt tablic profili DVD**, także sprawdzenie pasm
 w `sledFrequencyAllowed`. Indeksy sprzętowe 4/5 nigdy nie trafiają bezpośrednio
@@ -154,7 +156,12 @@ sufit **600 Hz akustycznych**, składając wyższe nuty o oktawy. Lab nie stosuj
 tego foldingu i nie daje przez to uprawnienia do dowolnie wysokich testów.
 
 `pitchRatio = acousticHz / stepsPerSecond`: DVD1–3 mają 0,5 (hipoteza tunera),
-DVD4 1,0; DVD5–6 tymczasowo także 1,0 przez fallback DVD4, bez nowego pomiaru. Dla 200 Hz są to odpowiednio 400 lub 200 kroków/s.
+DVD4 ma osobną korekcję 0,5 z odczytu użytkownika 440 → około 220 Hz
+przy poprzednim ratio 1,0 (2026-10-19, HYPOTHESIS/LOW). DVD5–6 zachowują
+jawny fallback 1,0, bez pomiaru. Dla 440 Hz DVD1–4 otrzymują 880 kroków/s,
+DVD5–6 przy przyszłym dopuszczeniu z dotychczasowym profilem otrzymałyby 440 kroków/s.
+Różny silnik DVD1 nadal wymaga osobnego sprawdzenia; wspólne ratio nie dowodzi
+jego poprawnego strojenia.
 Host i firmware przeliczają ten sam profil; komenda PLAY zawiera akustyczne Hz.
 Rampa wynosi 5000 kroków/s² (założenie robocze). `Sled::play()` zmienia
 cel bez zatrzymania; STOP natychmiast wyłącza fazy, bez rampy hamowania.

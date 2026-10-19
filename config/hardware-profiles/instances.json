@@ -337,6 +337,17 @@
           "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
           "evidenceType": "FACT",
           "confidence": "MEDIUM"
+        },
+        "pitchRatio": {
+          "value": 0.5,
+          "unit": "acoustic Hz / steps per second",
+          "uncertainty": {
+            "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+            "quantitativeError": null
+          },
+          "source": "User reports DVD3 and DVD4 are the same motor type: requested 440 Hz reads about 440 Hz on DVD3 (ratio 0.5), but about 220 Hz on DVD4 (previous ratio 1.0). Individual DVD4 correction hypothesis; no spectral, current or temperature measurement (2026-10-19).",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
         }
       }
     },
