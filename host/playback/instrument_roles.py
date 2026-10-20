@@ -3,7 +3,7 @@ import statistics
 from collections import defaultdict
 
 PRESET = 'instrument_roles'
-PRESETS = (PRESET, 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
+PRESETS = (PRESET, 'instrument_roles_unison', 'instrument_roles_duet','instrument_roles_unison4', 'universal')
 # Musical gate for a long note that must fall back to FDD; not a safety rating.
 FDD_MAX_HOLD_S = .4
 FDD_SHADOW_HOLD_S = .08

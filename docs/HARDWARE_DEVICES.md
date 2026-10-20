@@ -193,7 +193,8 @@ czterech obecnych urządzeń. Wyniki: [HDD VCM](research/hardware-measurements.m
 
 ## PC Speaker i PC Speaker FX
 
-Główny speaker ma `transpose: +12`, FX `0`, przed foldingiem profilu.
+Główny speaker ma `transpose: 0`, FX również `0`, przed foldingiem profilu.
+Główny kanał obniżono o oktawę względem wcześniejszego `+12`; FX pozostaje bez zmian.
 Profil hosta `VHS` dopuszcza 20–2000 Hz; protokół przyjmuje pulse do 20 kHz.
 Granice protokołu nie są pomiarem akustycznym. GPIO25 i GPIO26 są sterowane
 sprzętowym LEDC, kanały 0 i 2 mają osobne timery. Nie ma programowego generatora

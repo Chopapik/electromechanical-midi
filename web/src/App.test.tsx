@@ -132,3 +132,10 @@ it('shows automatic FDD homing while keeping STOP available',()=>{
  expect(stop.disabled).toBe(false);fireEvent.click(stop)
  expect(send).toHaveBeenCalledWith('stop')
 })
+
+it('offers the experimental four-drive unison preset',()=>{
+ mount('/settings')
+ expect(screen.getByRole('option',{name:'4 FDD Unisono · eksperymentalny'})).toBeTruthy()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles_unison4'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles_unison4'})
+})

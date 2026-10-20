@@ -39,6 +39,8 @@ def arrange(source, registry):
             plan.execution_articulation['extra:'+str(i)]=plan.execution_articulation[e.source_id]
     from playback.fdd_attack_rate import apply as limit_fdd_attacks
     limit_fdd_attacks(plan, registry)
+    from playback.fdd_pairs import synchronize_unison4
+    synchronize_unison4(plan, registry)
     if routing['mode']=='AUTO' and plan.policy.get('arrangementPreset')=='universal':
         from playback.universal_recovery import recover
         existing_extras=len(plan.reinforcements)

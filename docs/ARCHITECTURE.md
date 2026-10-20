@@ -133,7 +133,7 @@ Stan szyn 74HC595 przy osobnym USB ESP32 pozostaje
 | `/settings` → Laboratory | Lista i panel urządzenia, równoległe testy, odliczanie lub ∞ Do STOP |
 
 Aplikacja zawsze startuje w REAL, nawet offline. Wybór presetu jest sesyjny:
-restart odczytuje `parameters.arrangementPreset` z JSON (obecnie `balanced`).
+restart odczytuje `parameters.arrangementPreset` z JSON (obecnie `instrument_roles_unison4`).
 Zmiana presetu potwierdza STOP, przebudowuje plan i zwiększa rewizję,
 bez autoplay. Inventory/profil zmieniasz w JSON, potem przebudowujesz aplikację;
 nie ma panelu dodawania urządzeń ani wyboru kontrolera. Mute nie zmienia inventory.
@@ -230,7 +230,7 @@ Generator z `--check` sprawdza zgodność bez zapisywania konfiguracji/nagłówk
 [Testy pojemności backendu](../host/tests/test_backend_capacity.py) sprawdzają
 20 pozycji / 14 aktywnych, stabilne ordynały wyłączonych kanałów, limity ID,
 jawne ENABLE 0, HIT wszystkich czterech HDD, niezmieniony STATUS i cztery sloty
-STRICT_TRACKS. Dla ośmiu presetów porównują zdarzenia, artykulację i skompilowany
+STRICT_TRACKS. Dla dziewięciu presetów porównują zdarzenia, artykulację i skompilowany
 timeline z dodatkową nieaktywną pulą oraz bez niej, wyłącznie offline.
 Firmware ma przypięte zależności w [platformio.ini](../firmware/controller/platformio.ini);
 zmiana wersji Arduino/LEDC wymaga oddzielnej weryfikacji, nie automatycznej migracji.

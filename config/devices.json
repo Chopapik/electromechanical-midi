@@ -270,7 +270,7 @@
       "enabled": true,
       "volume": 0.6,
       "pan": 0.0,
-      "transpose": 12
+      "transpose": 0
     },
     {
       "id": "pc-speaker-fx",
@@ -339,7 +339,7 @@
     "dvdMaxBridgeMs": 200.0,
     "fddUnisonEnabled": true,
     "fddUnisonMaxVoices": 2,
-    "arrangementPreset": "balanced"
+    "arrangementPreset": "instrument_roles_unison4"
   },
   "dvdMode": "independent",
   "idleReinforcement": {

@@ -1,7 +1,7 @@
-"""Two phrase-following FDD instruments, on stable physical pairs 1+2 / 3+4.
+"""Phrase-following FDD pairs, or one experimental FDD1-4 unison group.
 
-Revoice only the FDD accompaniment pool after the Instrument Roles plan is
-complete. Other actuators retain their allocated notes and reservations.
+Revoice the FDD pool after the Instrument Roles plan is complete.
+Other actuators retain their allocated notes and reservations.
 """
 from bisect import bisect_left, bisect_right
 from collections import Counter, defaultdict
@@ -17,13 +17,14 @@ from .performance import ReinforcementEvent
 from .tonal_articulation import resolve, retarget
 
 PRESETS = ('instrument_roles_unison', 'instrument_roles_duet')
+QUAD_PRESET = 'instrument_roles_unison4'
 CHORD_WINDOW = .015  # Follow MIDI strums without moving either NOTE_ON.
 PHRASE_LOOKAHEAD = .75
 OWNER_PICKUP = .12
 
 
 def enabled(policy):
-    return policy.get('arrangementPreset') in PRESETS
+    return policy.get('arrangementPreset') in PRESETS + (QUAD_PRESET,)
 
 
 def arrange(plan, config, context, pins=None):
@@ -31,12 +32,16 @@ def arrange(plan, config, context, pins=None):
     from .hardware_arranger import fold_for_profile
 
     pins = pins or {}
-    mode = 'unison' if config.policy['arrangementPreset'] == PRESETS[0] else 'duet'
+    quad = config.policy['arrangementPreset'] == QUAD_PRESET
+    mode = 'unison4' if quad else 'unison' if config.policy['arrangementPreset'] == PRESETS[0] else 'duet'
+    label = 'FDD 4× unisono' if quad else 'FDD pair '+mode
     plan.policy['arrangementPreset'] = config.policy['arrangementPreset']
     bound, _ = bind_devices(config.instances(), 2)
     available = plan.hardware['physicalLanes']
     pairs = [tuple(bound[lane].id for lane in (f'fdd:{i}', f'fdd:{i+1}')
                    if lane in bound and bound[lane].id in available) for i in (1, 3)]
+    if quad:
+        pairs = [tuple(ident for pair in pairs for ident in pair)]
     devices = {d.id: d for d in bound.values()}
     profiles = {ident: context.profile_for(devices[ident], available[ident])
                 for pair in pairs for ident in pair}
@@ -55,9 +60,11 @@ def arrange(plan, config, context, pins=None):
             plan.execution_articulation['extra:'+str(i)] = asdict(retarget(tonal[e.source_id],
                 types[e.device_id], e.duration, e.velocity, e.start-sources[e.source_id].actual_start))
     candidates = [e for e in plan.events if e.id not in pins and not e.rule_id
-                  and e.role in ('bass', 'harmony')
+                  and (e.role in ('bass', 'harmony') or quad and e.device_type == 'FDD')
                   and (e.device_type == 'FDD' or (not e.played and e.reason not in
                        ('MANUAL_DROP', 'UNPITCHED_EFFECT', 'NO_DEVICE')))]
+    if quad and any(e.played and e.device_type == 'FDD' and (e.id in pins or e.rule_id) for e in plan.events):
+        raise ValueError('4 FDD Unisono: usuń ręczne przypisania nut do FDD przed eksperymentem')
     candidate_ids = {e.id for e in candidates}
     covered = {e.id: held_background(replace(e, actual_start=e.start,
                    actual_duration=e.duration), plan.events) for e in candidates}
@@ -67,7 +74,7 @@ def arrange(plan, config, context, pins=None):
     accepted = {ident: [] for ident in profiles}
     extras = []
     replacements = {}
-    owners = [None, None]
+    owners = [None for _ in pairs]
     changes = Counter()
     last_pitch = {}
     attacks = defaultdict(list)
@@ -106,7 +113,7 @@ def arrange(plan, config, context, pins=None):
                        played_note=fold.midi_note+12*fold.octave_shift, played_hz=fold.hz,
                        actual_start=event.start, actual_duration=duration,
                        outcome='ACCEPTED', preferred_device=ident, sustain_added=0.,
-                       reason='FDD pair '+mode)
+                       reason=label)
 
     def feasible(notes):
         for ident, note in notes.items():
@@ -144,6 +151,8 @@ def arrange(plan, config, context, pins=None):
                 continue
             if len({n.played_hz for n in notes.values()}) != 1:
                 continue
+            if quad and len({(n.actual_start, n.actual_duration) for n in notes.values()}) != 1:
+                continue
             if feasible(notes):
                 return notes
         return None
@@ -159,7 +168,7 @@ def arrange(plan, config, context, pins=None):
             for ident in pair for e in fixed[ident]+accepted[ident])}
         represented = {owners[i] for i in occupied if owners[i] is not None}
         # Existing owners get first refusal, avoiding swaps when both attack.
-        order = sorted(range(2), key=lambda i: (owners[i] not in by_part, i))
+        order = sorted(range(len(pairs)), key=lambda i: (owners[i] not in by_part, i))
         for i in order:
             if i in occupied or not pairs[i]:
                 continue
@@ -189,7 +198,7 @@ def arrange(plan, config, context, pins=None):
                 for ident, note in notes.items():
                     ev = _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], [])[note.id]
                     note = replace(note, hardware={**ev.as_dict(), 'lane': available[ident],
-                        'selection': {'reason': 'FDD pair '+mode, 'pair': i+1,
+                        'selection': {'reason': label, 'pair': i+1,
                                       'part': list(key), 'sourceMidiNote': note.note}})
                     accepted[ident].append(note)
                     if note.id not in primary_ids:
@@ -199,8 +208,8 @@ def arrange(plan, config, context, pins=None):
                         primary = replacements[note.id]
                         extras.append(ReinforcementEvent(note.id, ident, note.actual_start,
                             note.actual_duration, note.played_hz, note.velocity,
-                            kind='FDD_PAIR_UNISON', source_device=primary.device_id,
-                            reason='FDD pair: same MIDI note and attack',
+                            kind='FDD_UNISON4' if quad else 'FDD_PAIR_UNISON', source_device=primary.device_id,
+                            reason=label+': same MIDI note and attack',
                             semantic_compatibility='same source part / exact unison', role=note.role))
                 break
 
@@ -208,7 +217,7 @@ def arrange(plan, config, context, pins=None):
         if e.id not in replacements:
             replacements[e.id] = replace(e, device_id=None, device_type=None,
                 played_note=None, played_hz=None, actual_start=e.start, actual_duration=0.,
-                sustain_added=0., outcome='DROPPED', reason='FDD_PAIR_CAPACITY')
+                sustain_added=0., outcome='DROPPED', reason='FDD_UNISON4_CAPACITY' if quad else 'FDD_PAIR_CAPACITY')
     plan.events = sorted([replacements.get(e.id, e) for e in plan.events],
                          key=lambda e: (e.actual_start, e.track, e.id))
     # Pair reservations replace optional FDD copies; other actuator copies stay.
@@ -241,9 +250,81 @@ def arrange(plan, config, context, pins=None):
             counter['dropReasons']['FDD_PAIR_NOT_SELECTED'] = counter['droppedNotes']
         plan.hardware['states'][ident] = state.as_dict()
     plan.hardware['fddPairs'] = {'mode': mode, 'pairs': [list(p) for p in pairs],
-        'partChanges': {str(i+1): changes[i] for i in range(2)},
+        'partChanges': {str(i+1): changes[i] for i in range(len(pairs))},
         'primaryNotes': sum(e.played for e in replacements.values()),
         'unisonCopies': len(extras),
         'notSelected': sum(not e.played for e in replacements.values()),
-        'scope': 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
+        'scope': 'one shared part on FDD1-4; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
+    if quad:
+        plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'], devices=list(pairs[0]))
     return plan
+
+
+def synchronize_unison4(plan, registry):
+    """Keep whole unison groups after per-lane attack/physical vetoes.
+
+    Another lane's calibration must never leave a partial four-drive attack.
+    Preserve non-FDD sidecars and reservations even if their source is dropped.
+    """
+    if plan.policy.get('arrangementPreset') != QUAD_PRESET:
+        return
+    report = plan.hardware.get('fddUnison4')
+    if report is None:  # STRICT_TRACKS deliberately bypasses AUTO presets.
+        return
+    members = report['devices']
+    if not members:
+        return
+    types = {d['id']: d['type'] for d in plan.devices}
+    sources = {e.id: e for e in plan.events}
+    groups = defaultdict(list)
+    for e in plan.events:
+        if e.played and e.device_type == 'FDD':
+            groups[e.id].append((e.device_id, e.actual_start, e.actual_duration, e.played_hz))
+    for e in plan.reinforcements:
+        if types[e.device_id] == 'FDD':
+            groups[e.source_id].append((e.device_id, e.start, e.duration, e.hz))
+    states = {ident: HardwareDeviceState() for ident in members}
+    kept = {}
+    for source_id, notes in sorted(groups.items(), key=lambda x: (min(n[1] for n in x[1]), x[0])):
+        if (len(notes) != len(members) or {n[0] for n in notes} != set(members)
+                or len({(n[1], n[3]) for n in notes}) != 1
+                or not sources[source_id].played):
+            continue
+        start, hz = notes[0][1], notes[0][3]
+        duration = min(n[2] for n in notes)
+        note = HardwareNote(hz, duration, start)
+        evaluations = {ident: evaluate(registry.profile(ident), note, states[ident]) for ident in members}
+        if any(not ev.authorized or ev.ready_at > start+1e-8
+               or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load) for ev in evaluations.values()):
+            continue
+        kept[source_id] = duration
+        for ident, ev in evaluations.items():
+            advance_state(states[ident], registry.profile(ident), note, ev)
+    plan.events = [replace(e, actual_duration=kept[e.id]) if e.id in kept else
+                   replace(e, device_id=None, device_type=None, actual_duration=0.,
+                           sustain_added=0., outcome='DROPPED', reason='FDD_UNISON4_SYNC')
+                   if e.id in groups and e.played and e.device_type == 'FDD' else e for e in plan.events]
+    articulation = {k: v for k, v in plan.execution_articulation.items() if not k.startswith('extra:')}
+    for source_id in groups:
+        if source_id not in kept:
+            articulation.pop(source_id, None)
+        elif source_id in articulation:
+            articulation[source_id] = {**articulation[source_id], 'gate': kept[source_id]}
+    extras = []
+    for i, extra in enumerate(plan.reinforcements):
+        is_fdd = types[extra.device_id] == 'FDD'
+        if is_fdd and extra.source_id not in kept:
+            continue
+        if is_fdd:
+            extra = replace(extra, duration=kept[extra.source_id])
+        art = plan.execution_articulation.get('extra:'+str(i))
+        if art is not None:
+            articulation['extra:'+str(len(extras))] = {**art, 'gate': extra.duration} if is_fdd else art
+        extras.append(extra)
+    plan.reinforcements = extras
+    plan.execution_articulation = articulation
+    for ident, state in states.items():
+        plan.hardware['states'][ident] = state.as_dict()
+        plan.hardware['counters'][ident]['playedNotes'] = len(kept)
+    report.update(executedNotes=len(kept), unisonCopies=len(kept)*(len(members)-1),
+                  synchronizedVetoes=len(groups)-len(kept))

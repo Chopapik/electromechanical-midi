@@ -32,7 +32,8 @@ class MechanicalArrangementTests(unittest.TestCase):
         for d in r.devices:
             d['enabled']=(d['type']=='FDD' and int(d['lane'].split(':')[1])<=fdd or
                           d['type']=='DVD_SLED' and int(d['lane'].split(':')[1])<=dvd)
-        r.document['parameters'].update(mechanicalSustain=False,sourceContinuity=False)
+        # These fixtures exercise Balanced, independently of the app default.
+        r.document['parameters'].update(arrangementPreset='balanced',mechanicalSustain=False,sourceContinuity=False)
         return r
     def plan(self, tracks, r=None, roles=None):
         r=r or self.registry();source=self.source(tracks);analysis=analyze(source)

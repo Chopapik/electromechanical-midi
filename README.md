@@ -29,7 +29,9 @@ Aplikacja startuje w REAL również offline; samo offline nie przełącza wyjśc
 
 Presety wybierasz w `/settings` → **Aranżacja → Preset aranżacji**:
 Universal, Balanced / Mechanical-Aware, FDD Riffs + DVD Tło, Pary Unisono,
-Pary Dwugłos, FDD Quality, FDD Quality Adaptive, DVD Lead + Low FDD.
+Pary Dwugłos, **4 FDD Unisono · eksperymentalny**, FDD Quality, FDD Quality Adaptive, DVD Lead + Low FDD.
+Domyślnie uruchamia się **4 FDD Unisono · eksperymentalny**; główny PC Speaker
+ma transpozycję 0, czyli oktawę niżej niż wcześniejsze +12, niezależnie od presetu.
 Wybór zatrzymuje odtwarzanie i przebudowuje plan. Opisy i kompromisy:
 [aranżacja](docs/ARRANGEMENT.md).
 

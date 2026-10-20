@@ -27,7 +27,7 @@ class Application:
             self.lab.session=None
             self.source=source; self.plan=plan; self.timeline=timeline; self.revision+=1
     def set_preset(self, preset):
-        if preset not in ('balanced','fdd_quality','dvd_lead_low_fdd','fdd_quality_adaptive','instrument_roles','instrument_roles_unison','instrument_roles_duet','universal'): raise ValueError('Unknown arrangement preset')
+        if preset not in ('balanced','fdd_quality','dvd_lead_low_fdd','fdd_quality_adaptive','instrument_roles','instrument_roles_unison','instrument_roles_duet','instrument_roles_unison4','universal'): raise ValueError('Unknown arrangement preset')
         with self.player.lock:
             if self.service.busy: raise ValueError('DeviceService jest zajęty')
             self.player.stop()  # STOP confirmation/cancellation precedes any planning.

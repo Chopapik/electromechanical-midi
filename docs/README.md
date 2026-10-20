@@ -17,7 +17,7 @@ oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, nie
 | [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md) | Inventory, profile, zakresy, kalibracja, mechanika i ograniczenia dowodów |
 | [HARDWARE_TESTING.md](HARDWARE_TESTING.md) | Kontrola przewodów, boot, BLE, HOME, lab, STOP i diagnostyka awarii |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Jeden runtime MIDI → REAL/VIRTUAL, obsługa UI/API, uruchamianie i testy |
-| [ARRANGEMENT.md](ARRANGEMENT.md) | Wspólna klasyfikacja, osiem presetów, Source Continuity, UNISON, sustain i recovery |
+| [ARRANGEMENT.md](ARRANGEMENT.md) | Wspólna klasyfikacja, dziewięć presetów, Source Continuity, UNISON, sustain i recovery |
 
 Czytaj schemat → urządzenia → testy przy budowie układu. Nie zastępuj brakujących
 wartości zasilania/rezystorów parametrami znalezionymi w archiwum. Topologia jest

@@ -5,6 +5,7 @@ from pathlib import Path
 import mido
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from midi_source import MidiSource
+from pitch import midi_to_hz
 from runtime.registry import DeviceRegistry
 from runtime.arranger import arrange
 from runtime.compiler import compile_plan,ExecutionCommand
@@ -49,3 +50,27 @@ class SpeakerFxTests(unittest.TestCase):
         self.assertIn('VHS2 STOP',link.sent)
         parsed=parse_status(['STATUS BEGIN','STATUS CTRL speaker_fx=1','STATUS VHS2 enabled=1 amp=50 hz=830','STATUS END'])
         self.assertEqual(parsed['devices']['VHS2']['hz'],'830')
+
+    def test_main_speaker_octave_reduction_across_all_presets_preserves_fx(self):
+        presets=('balanced','fdd_quality','dvd_lead_low_fdd','fdd_quality_adaptive',
+                 'instrument_roles','instrument_roles_unison','instrument_roles_duet',
+                 'instrument_roles_unison4','universal')
+        with tempfile.TemporaryDirectory() as directory:
+            source=self.source(Path(directory)/'song.mid')
+            for preset in presets:
+                with self.subTest(preset=preset):
+                    registry=DeviceRegistry()
+                    registry.document['parameters']['arrangementPreset']=preset
+                    current=arrange(source,registry)
+                    registry.by_id['vhs-1']['transpose']=12  # Previous register, for comparison.
+                    previous=arrange(source,registry)
+                    before={e.id:e for e in previous.events if e.played and e.device_id=='vhs-1'}
+                    main=[e for e in current.events if e.played and e.device_id=='vhs-1']
+                    # DVD Lead may allocate this source entirely to DVD.
+                    self.assertEqual({e.id for e in main},set(before))
+                    for event in main:
+                        self.assertIn(event.id,before)
+                        self.assertAlmostEqual(event.played_hz,before[event.id].played_hz/2)
+                        self.assertAlmostEqual(event.played_hz,midi_to_hz(event.note))
+                    fx=lambda p:[c for c in compile_plan(p).commands if c.device_id=='pc-speaker-fx']
+                    self.assertEqual(fx(current),fx(previous))

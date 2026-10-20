@@ -23,7 +23,7 @@ from test_runtime import Link
 ROOT = Path(__file__).resolve().parents[2]
 EXTRA = {f'fdd-{i}' for i in range(5, 9)} | {f'DVD_STEPPER_{i}' for i in range(5, 7)}
 PRESETS = ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'fdd_quality_adaptive',
-           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
+           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet','instrument_roles_unison4', 'universal')
 
 
 class BackendCapacityTests(unittest.TestCase):

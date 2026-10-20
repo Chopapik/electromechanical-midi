@@ -50,7 +50,7 @@ nie są dowodem odtworzenia każdej nuty w jej źródłowym momencie.
 ## Presety
 
 Wybór: `/settings` → **Aranżacja → Preset aranżacji**. Jest sesyjny;
-restart wczytuje `arrangementPreset` z JSON (aktualnie `balanced`).
+restart wczytuje `arrangementPreset` z JSON (aktualnie `instrument_roles_unison4`).
 Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 
 | ID / nazwa | Decyzje muzyczne | Kompromis |
@@ -59,6 +59,7 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
+| `instrument_roles_unison4` — 4 FDD Unisono · eksperymentalny | FDD1–4 tworzą jeden instrument: kolejne nuty jednej partii grają jednocześnie z identycznym Hz i gate; DVD/speakery/HDD zachowują alokację Instrument Roles | Jedna linia zamiast czterech; świadoma redukcja polifonii, bez gwarancji pełnego MIDI |
 | `instrument_roles_duet` — Pary Dwugłos | Te same pary, do dwóch istniejących nut jednej partii; monofoniczna fraza przechodzi w unisono | Nie dopisuje harmonii i nie robi echa 100 ms; w gęstym MIDI nadal możliwe straty partii |
 | `fdd_quality` — FDD Quality | Ważność frazy/akcentu kontra koszt kroków, zawróceń, duty i rest; skracanie gate i ograniczenie extras | Zachowany atak może mieć krótszy sustain |
 | `fdd_quality_adaptive` — FDD Quality Adaptive | Quality jako referencja, lokalna gęstość i tempo sterują odzyskiwaniem wartościowych nut i krótkich gate | Większa aktywność przy szybkich frazach; wspólny limit ataków może ponownie zredukować wynik |
@@ -76,6 +77,21 @@ Szczegóły istotne dla porównań:
 - Pary (`fdd_pairs.py`): właściciel track/channel, lookahead 750 ms,
   rezerwacja pickup 120 ms, tolerancja strumów 15 ms. Dwa realne głosy muszą
   pozostać różnymi wykonanymi nutami po foldingu, inaczej to unisono.
+- 4 FDD Unisono korzysta z tego samego wyboru właściciela frazy co pary, lecz
+  ma jedną grupę FDD1–4. Nie gra stałych 440 Hz przez utwór: wspólnie wykonuje
+  wybraną sekwencję nut źródłowych. W pauzie właściciela może przejąć inną partię,
+  bez zmiany NOTE_ON i bez wymyślania nut. Inne urządzenia zachowują rezerwacje
+  referencyjnego `instrument_roles`; pozostałe presety nie zmieniają zachowania.
+  Po wspólnym ograniczaniu ataków dodatkowa synchronizacja usuwa niekompletne
+  grupy i ponownie sprawdza wspólny gate wobec wszystkich profili. Weto pojedynczej
+  stacji usuwa atak całej grupy, nie pozostawia samotnych kopii. Domyślny odstęp
+  ataków FDD 120 ms, transpozycja i zakresy pozostają obowiązujące. Wyłączona stacja
+  nie jest automatycznie włączana ani zastępowana przez FDD5–8; pozostałe człony
+  grupy nadal grają wspólnie. Mute pozostaje niezależną bramką wykonania.
+  Tryb dotyczy AUTO; ręczne przypisania do FDD są odrzucane z komunikatem,
+  ponieważ mogłyby wymusić niezależne nuty. Ręczne pominięcia i przydziały innych
+  rodzin zachowują znaczenie. `hardware.fddUnison4` raportuje członków i liczbę
+  wspólnych nut/kopii po filtrze; są to plany, nie pomiary ruchu czy głośności.
 - Quality (`fdd_quality.py`): preferowany gate 350 ms jest punktem oceny,
   nie sztywnym limitem każdej ważnej nuty. Opcjonalny UNISON wymaga wysokiej
   wartości i wolnego budżetu; nie może wypchnąć primary.
@@ -90,7 +106,7 @@ Szczegóły istotne dla porównań:
 
 ## Speakery i perkusja
 
-Główny PC Speaker preferuje rozpoznany wokal/lead, z transpozycją +12.
+Główny PC Speaker preferuje rozpoznany wokal/lead, bez dodatkowej transpozycji (0; oktawę niżej niż wcześniejsze +12).
 FX (bez tej transpozycji) reprezentuje osobną wysoką monofoniczną linię ozdobników.
 W starszych presetach reguła FX wymaga leadu, co najmniej 8 nut, średniego pitch
 76–96, gęstości do 3 nut/s i odpowiedniego programu Pipe/Synth Effects/Synth Lead,
