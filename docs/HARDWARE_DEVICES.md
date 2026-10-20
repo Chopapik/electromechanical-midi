@@ -1,10 +1,9 @@
 # Urządzenia, ograniczenia i kalibracja
 
 Docelowy firmware obsługuje **8 FDD / 6 DVD / 4 HDD / 2 speakery**,
-6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **18 uczestniczy
-w planowaniu i VIRTUAL**: 8 FDD, 4 DVD, 4 HDD i oba speakery.
-FDD5–8 wymagają osobnej kwalifikacji fizycznej i mają `realEnabled:false`;
-DVD5–6 pozostają całkowicie wyłączone.
+6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **18 jest aktywnych
+w planowaniu, VIRTUAL i REAL**: 8 FDD, 4 DVD, 4 HDD i oba speakery.
+FDD5–8 są zadeklarowane jako podłączone; DVD5–6 pozostają wyłączone.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
 niewysłanych na serwer. Kolejność źródeł: aktywne urządzenia w
 [devices.json](../config/devices.json), połączone profile
@@ -20,19 +19,19 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | Urządzenia | ID / lane | Wykonawca i rola |
 | --- | --- | --- |
 | FDD1–4 | `fdd-1`…`fdd-4`, `fdd:1`…`fdd:4` | STEP/DIR, monofoniczne głosy tonalne |
-| FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Aranżacja/VIRTUAL aktywne; REAL zablokowany do kwalifikacji; profil teoretyczny |
+| FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Aktywne w aranżacji, VIRTUAL i REAL; parametry wykonawcze z fallbacku firmware |
 | DVD1–4 | `DVD_STEPPER_1`…`DVD_STEPPER_4`, `sled:1`…`sled:4` | DRV8833, dwie cewki, pełny krok, ciągły obrót |
 | DVD5–6 | `DVD_STEPPER_5`…`DVD_STEPPER_6`, `sled:5`…`sled:6` | Wyłączone; profil teoretyczny, niezweryfikowane |
 | PC Speaker | `vhs-1`, `drum:1` | GPIO25, główny wokal/lead |
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-W planowaniu aktywne jest 18 z 20 wpisów; tylko DVD5–6 mają `enabled:false`.
-FDD5–8 mają `enabled:true`, lecz `realEnabled:false`. `enabled` oznacza udział
+Aktywne jest 18 z 20 wpisów; tylko DVD5–6 mają `enabled:false`.
+FDD5–8 mają `enabled:true`, `realEnabled:true` i `present:true`. `enabled` oznacza udział
 w aranżacji i VIRTUAL, `realEnabled` dopuszczenie transportu REAL, a `present`
 w metadanych profili
 obecność zadeklarowaną na podstawie potwierdzenia fizycznego, bez automatycznej
-detekcji przewodów ani sprawności. Nowe lane mają `present:false`; parametry
+detekcji przewodów ani sprawności. Parametry
 wykonawcze 72/5/2439 są oznaczone jako niskiej pewności fallback firmware,
 a nie indywidualne pomiary. Sam profil
 nie kwalifikuje urządzenia. Włączenie wpisu nie zastępuje procedury pomiarowej.
@@ -41,7 +40,7 @@ Typ `VHS` oraz komendy `VHS`/`VHS2` zachowano dla zgodności obu speakerów.
 HDD mają profil brzmienia `WD_CAVIAR_CURRENT`, ale fizyczny
 `hardwareProfile: HDD_PERCUSSION`; nie ma wykonawcy tonalnego HDD w tym zestawie.
 
-## Nowe FDD5–8: adresacja i kwalifikacja
+## FDD5–8: adresacja i obsługa
 
 | Kanał | TRACK0 | STEP / DIR | Stan po boot |
 | --- | ---: | --- | --- |
@@ -70,10 +69,8 @@ Zwykłe STATUS zachowuje FDD1–4 i 17 rekordów. `DIAG FDD` pokazuje FDD5–8
 w osobnej odpowiedzi diagnostycznej, bez poszerzania transakcji hosta.
 
 [Registry](../host/runtime/registry.py), inventory i [OrchestraLink](../host/orchestra_link.py)
-znają osiem kanałów FDD. Dopóki `realEnabled:false`, `configure()` jawnie wysyła
-ENABLE 0 dla FDD5–8, bez HOME/PLAY. Po kwalifikacji i zmianie flagi host wysyła
-PROFILE/ENABLE, atomowo scala `DIAG FDD`, wykonuje potwierdzony homing TRACK0
-i dopiero potem dopuszcza PLAY.
+znają osiem kanałów FDD. Host wysyła FDD5–8 PROFILE/ENABLE, atomowo scala
+`DIAG FDD`, wykonuje potwierdzony homing TRACK0 i dopiero potem dopuszcza PLAY.
 [STRICT_TRACKS](../host/playback/strict_tracks.py) nadal ma cztery sloty.
 Normalny STATUS nie zawiera dodatkowych FDD; host używa dla nich osobnej,
 ograniczonej transakcji `DIAG FDD`. Domyślny preset aranżuje dwie grupy 4× FDD.
@@ -131,7 +128,7 @@ wyniki testów od aktualnej polityki muzycznej.
 | Firmware, wejście PLAY | 40–500 Hz | Zakres poprawnej komendy, nie gwarancja osiągalnej częstotliwości |
 | Firmware, impulsy STEP | Minimalny odstęp 2439 µs ≈ 410 kroków/s | Osobny limit wykonania, również przy komendzie 500 Hz |
 | Metadane FDD1 | `stableHz` 130–410 Hz | Górny punkt z testu; 130 Hz zachowane w metadanych, nie zmierzony próg dolny |
-| Ataki nut | Minimum 120 ms między NOTE_ON na stację | Muzyczne ograniczenie zmian nut, niezależne od częstotliwości STEP |
+| Ataki nut | Minimum 203 ms między zachowanymi NOTE_ON na stację; ton trwa 200 ms | Globalny eksperyment muzyczny z przerwą 3 ms, niezależny od częstotliwości STEP |
 
 `COMFORT_MIN_HZ=200` / `MAX=410` w [pitch.py](../host/pitch.py) to ogólny
 fallback. Aktywne preferencje urządzeń go zawężają do 100–205 Hz po transpozycji.

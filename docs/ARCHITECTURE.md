@@ -1,9 +1,9 @@
 # Architektura i obsługa aplikacji
 
 Katalog i adresacja hosta odpowiadają firmware: **8 FDD, 6 DVD, 4 HDD i 2 speakery**.
-Z 20 wpisów 18 uczestniczy w aranżacji i VIRTUAL: FDD1–8, DVD1–4, HDD1–4
-i oba speakery. FDD5–8 zachowują `present:false` i `realEnabled:false`, więc
-nie są uruchamiane w REAL przed kwalifikacją. DVD5–6 mają `enabled:false`.
+Z 20 wpisów 18 uczestniczy w aranżacji, VIRTUAL i REAL: FDD1–8, DVD1–4,
+HDD1–4 i oba speakery. FDD5–8 mają `present:true` i `realEnabled:true`;
+DVD5–6 mają `enabled:false`.
 Domyślny preset tworzy dwie grupy unisono po cztery FDD. STRICT_TRACKS zachowuje
 cztery sloty i wyłącza FDD5–8 w konfiguracji REAL.
 [Inventory i kwalifikacja](HARDWARE_DEVICES.md#inventory-i-identyfikatory).
@@ -51,10 +51,9 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 
 [REAL](../host/runtime/outputs.py) używa ESP32 BLE, bez automatycznego fallbacku
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
-Konfiguracja jawnie wysyła `FDD 5..8 ENABLE 0` dopóki ich `realEnabled` jest
-fałszywe oraz zawsze `SLED 5..6 ENABLE 0`. Po kwalifikacji i ustawieniu
-`realEnabled:true` wysyła PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
+Konfiguracja wysyła FDD5–8 PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
 automatyczny homing TRACK0 czeka na potwierdzenie FDD5–8 przed PLAY.
+`SLED 5..6` nadal otrzymują ENABLE 0.
 HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
 Registry oraz `bind_devices(..., 2)` liczą ordynały również wyłączonych pozycji,
 więc wyłączenie FDD1 nie przenosi FDD2 na kanał 1. OrchestraLink sprawdza

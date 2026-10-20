@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "8 FDD + 6 DVD + 4 HDD + 2 PC Speakers (18 planning-active; FDD5-8 REAL-gated; 2 DVD disabled)",
+  "name": "8 FDD + 6 DVD + 4 HDD + 2 PC Speakers (18 active; 8 FDD enabled for REAL; 2 DVD disabled)",
   "devices": [
     {
       "id": "fdd-1",
@@ -106,7 +106,7 @@
       "profile": "FDD_CURRENT",
       "hardwareProfile": "FDD",
       "enabled": true,
-      "realEnabled": false,
+      "realEnabled": true,
       "volume": 0.6,
       "pan": 0.0,
       "transpose": -12,
@@ -131,7 +131,7 @@
       "profile": "FDD_CURRENT",
       "hardwareProfile": "FDD",
       "enabled": true,
-      "realEnabled": false,
+      "realEnabled": true,
       "volume": 0.6,
       "pan": 0.0,
       "transpose": -12,
@@ -156,7 +156,7 @@
       "profile": "FDD_CURRENT",
       "hardwareProfile": "FDD",
       "enabled": true,
-      "realEnabled": false,
+      "realEnabled": true,
       "volume": 0.6,
       "pan": 0.0,
       "transpose": -12,
@@ -181,7 +181,7 @@
       "profile": "FDD_CURRENT",
       "hardwareProfile": "FDD",
       "enabled": true,
-      "realEnabled": false,
+      "realEnabled": true,
       "volume": 0.6,
       "pan": 0.0,
       "transpose": -12,

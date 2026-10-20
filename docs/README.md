@@ -8,9 +8,9 @@ Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
 Aktualizacja **2026-10-17** obejmuje nową mapę firmware 8 FDD / 6 DVD / 4 HDD / 6 rejestrów / 8 DRV8833,
 oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, niezweryfikowanych.
-Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu i VIRTUAL jako drugą
-grupę 4× unisono. Pozostają niezakwalifikowane dla REAL (`realEnabled:false`);
-host ma przygotowany potwierdzany cykl `DIAG FDD` / TRACK0 / PLAY po kwalifikacji.
+Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu, VIRTUAL i REAL jako
+drugą grupę 4× unisono. Są zadeklarowane jako podłączone (`present:true`,
+`realEnabled:true`), a host wymaga cyklu `DIAG FDD` / TRACK0 przed PLAY.
 
 ## Bieżące instrukcje
 
@@ -47,7 +47,8 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 
 Nowa mapa: osiem par STEP/DIR na SR1–2, DVD na SR3–5, HDD na SR6; wszystkie 48 Q zajęte.
 Nie ma sterowania nSLEEP ani zastępczego GPIO. FDD5–8 używają jawnego fallbacku
-parametrów wykonawczych FDD1, startują wyłączone i mają osobne `DIAG FDD`.
+parametrów wykonawczych FDD1. Firmware startuje z nimi wyłączonymi, po czym host
+REAL wysyła PROFILE/ENABLE i sprawdza je przez osobne `DIAG FDD`.
 DVD5–6 używają fallbacku DVD4 i osobnego `DIAG SLED`; również startują wyłączone.
 Zwykłe STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
 Host zna pełne osiem FDD i sześć DVD; dodatkowe sześć kanałów pozostaje

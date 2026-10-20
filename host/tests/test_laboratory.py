@@ -103,6 +103,7 @@ class LaboratoryTests(unittest.TestCase):
         self.link.controller_status['atx'] = 'OFF'
         with self.assertRaisesRegex(OutputError, 'ATX OFF'): self.lab.test('a','fdd-1',220,None)
         self.link.controller_status['atx'] = 'ON'
+        self.app.registry.by_id['fdd-8']['realEnabled'] = False
         with self.assertRaises(ValueError): self.lab.test('a','fdd-8',220,None)
         self.app.router.muted.add('fdd-1')
         with self.assertRaisesRegex(ValueError, 'Mute'): self.lab.test('a','fdd-1',220,None)

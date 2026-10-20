@@ -352,7 +352,7 @@
       }
     },
     "fdd:5": {
-      "present": false,
+      "present": true,
       "profile": "FDD",
       "quantities": {
         "travelSteps": {
@@ -390,7 +390,7 @@
       }
     },
     "fdd:6": {
-      "present": false,
+      "present": true,
       "profile": "FDD",
       "quantities": {
         "travelSteps": {
@@ -428,7 +428,7 @@
       }
     },
     "fdd:7": {
-      "present": false,
+      "present": true,
       "profile": "FDD",
       "quantities": {
         "travelSteps": {
@@ -466,7 +466,7 @@
       }
     },
     "fdd:8": {
-      "present": false,
+      "present": true,
       "profile": "FDD",
       "quantities": {
         "travelSteps": {

@@ -54,7 +54,7 @@ class BackendCapacityTests(unittest.TestCase):
                     self.assertIsNone(d['reason'])
                 if d['id'] in EXTENDED_FDD:
                     instance = r.profiles.instances[d['lane']]
-                    self.assertIs(instance['present'], False)
+                    self.assertIs(instance['present'], True)
                     self.assertEqual(instance['quantities']['travelSteps']['value'],72)
                     self.assertEqual(instance['quantities']['executionMinStepUs']['value'],2439)
                     self.assertEqual(instance['quantities']['travelSteps']['confidence'],'LOW')
@@ -107,7 +107,7 @@ class BackendCapacityTests(unittest.TestCase):
             for invalid in (0, -1, maximum+1, True, False, '1', 1.0, None):
                 with self.subTest(method=method, invalid=invalid), self.assertRaises(ValueError): fn(invalid, *args)
 
-    def test_configure_keeps_unqualified_extended_fdd_real_disabled_and_retains_all_hdd_hits(self):
+    def test_configure_enables_extended_fdd_and_retains_all_hdd_hits(self):
         link = Link()
         link.controller_status['speaker_fx'] = '1'
         link.device_status = {k:v for k,v in link.device_status.items()
@@ -115,24 +115,23 @@ class BackendCapacityTests(unittest.TestCase):
         output = RealOutput(self.registry)
         output.attach(link)
         output.configure()
-        for ident in EXTRA | EXTENDED_FDD:
+        for ident in EXTENDED_FDD:
+            prefix = output.prefix(ident)
+            self.assertIn(prefix+' ENABLE 1',link.sent)
+        for ident in EXTRA:
             prefix = output.prefix(ident)
             self.assertEqual([s for s in link.sent if s.startswith(prefix+' ')], [prefix+' ENABLE 0'])
         for i in range(1,5): self.assertIn(f'HDD {i} ENABLE 1', link.sent)
         self.assertFalse(any('HOME' in s or 'PLAY' in s for s in link.sent))
-        self.assertEqual(link.extended_status_generation, 0)
+        self.assertEqual(link.extended_status_generation, 1)
         link.sent.clear()
         commands = [ExecutionCommand(0,f'hdd_vcm-{i}','hit') for i in range(1,5)]
         output.ready(commands)
         output.dispatch(commands)
         self.assertEqual(link.sent, [f'HDD {i} HIT' for i in range(1,5)])
 
-    def test_qualified_extended_fdd_configure_status_home_and_play_lifecycle(self):
-        document=copy.deepcopy(self.registry.document)
-        for device in document['devices']:
-            if device['id'] in EXTENDED_FDD:
-                device['realEnabled']=True
-        registry=self.registry_for(document)
+    def test_extended_fdd_configure_status_home_and_play_lifecycle(self):
+        registry=self.registry
         link=Link()
         output=RealOutput(registry)
         output.attach(link);output.configure()

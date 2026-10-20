@@ -178,14 +178,14 @@ uruchamiaj skończone próby z ograniczonym prądem. Nie zaczynaj od całej orki
 | HDD | Rezystancja/połączenia cewki, VM, miejsce ruchu ramienia | Pojedynczy HIT, park/settle/strike, brak zakleszczenia i nadmiernego nagrzewania |
 | Speaker / FX | Zgłoszone 3,3 V ATX, baza 330 Ω, pull-up 10 kΩ, szeregowo 56 Ω (moc rezystora do potwierdzenia); pinout S8550 do sprawdzenia | Każdy kanał osobno, brak sprzęgania częstotliwości, prąd, temperatura i nośna PWM |
 
-**FDD5–8 są aktywne tylko w planowaniu/VIRTUAL (`realEnabled:false`) i fizycznie
-niezakwalifikowane.** Nie uruchamiaj ich przed
-indywidualną kontrolą TRACK0, /DS, poziomów, ruchu i parametrów. Po kwalifikacji
-jednej stacji jawny `FDD n ENABLE 1` nie wykonuje HOME; dopiero osobny
+**FDD5–8 są zadeklarowane jako podłączone i aktywne w planowaniu, VIRTUAL oraz
+REAL (`realEnabled:true`, `present:true`).** Parametry fallbacku nie zastępują
+indywidualnej kontroli TRACK0, /DS, poziomów, ruchu i parametrów. Jawny
+`FDD n ENABLE 1` nie wykonuje HOME; dopiero osobny
 `FDD n HOME` rozpoczyna ruch. `FDD ALL HOME` obejmuje też nowe kanały, jeśli
 wcześniej zostały ręcznie włączone. Nie używaj tej komendy zamiast testu jednej
-nowej stacji. Dodatkowe kanały są dostępne w VIRTUAL UI i Laboratory; REAL
-pozostaje zablokowany do jawnej zmiany `realEnabled` po kwalifikacji.
+nowej stacji. Dodatkowe kanały są dostępne w VIRTUAL UI, Laboratory i REAL;
+normalne PLAY wymaga ich potwierdzenia przez `DIAG FDD` i homing TRACK0.
 
 **DVD5–6 są planowane do przyszłych prób, domyślnie wyłączone**. Nie uznawaj
 fallbacku DVD4 za kwalifikację silników. Najpierw sprawdź cztery połączenia wejść
@@ -259,7 +259,7 @@ termicznego, mechanicznego ani potwierdzonego brzmienia.
 HDD wykonuje tylko pojedynczy HIT z czasami i odstępami profilu, bez opcji ciągłej
 lub modulacji. REAL wymaga BLE, logicznego ATX ON, aktywnego profilu, braku Mute
 oraz wcześniej potwierdzonego HOME dla FDD. Lab nie włącza ATX ani nie wykonuje
-automatycznie homingu. Dodatkowe niezakwalifikowane FDD/DVD pozostają zablokowane.
+automatycznie homingu. Wyłączone DVD5–6 pozostają zablokowane.
 
 Lab używa tego samego Playera, Routera i wyjścia. Każdy kanał ma własny termin;
 wspólna pętla wysyła zmiany maksymalnie co 100 ms, w jednym batchu, bez nadrabiania

@@ -1,8 +1,8 @@
 # Aranżacja MIDI i presety
 
-Aktualny opis algorytmów dla **logicznego zestawu z ośmioma FDD i czterema DVD**.
-FDD5–8 są aktywne w aranżacji i VIRTUAL, ale do czasu kwalifikacji zachowują
-`present:false` oraz `realEnabled:false`. DVD5–6 pozostają wyłączone.
+Aktualny opis algorytmów dla **zestawu z ośmioma FDD i czterema DVD**.
+FDD1–8 są aktywne w aranżacji, VIRTUAL i REAL oraz zadeklarowane jako podłączone.
+DVD5–6 pozostają wyłączone.
 Architektura wykonania jest w
 [ARCHITECTURE.md](ARCHITECTURE.md), zakresy i parametry mechaniczne w
 [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md). Historyczne wyniki porównań
