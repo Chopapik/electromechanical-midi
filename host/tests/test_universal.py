@@ -21,7 +21,7 @@ class UniversalTests(unittest.TestCase):
 
     def registry(self, fdd=4, dvd=4, speakers=False):
         r=helpers.MechanicalArrangementTests.registry(self,fdd=fdd,dvd=dvd)
-        r.document['parameters']['arrangementPreset']=PRESET
+        r.document['parameters'].update(arrangementPreset=PRESET,fddFixedToneMs=0)
         for d in r.devices:
             if d['type']=='VHS':d['enabled']=speakers
         return r

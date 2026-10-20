@@ -354,22 +354,154 @@
     "fdd:5": {
       "present": false,
       "profile": "FDD",
-      "quantities": {}
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [100, 410],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "shared octave-down planning window; not an individual drive measurement",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
+        }
+      }
     },
     "fdd:6": {
       "present": false,
       "profile": "FDD",
-      "quantities": {}
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [100, 410],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "shared octave-down planning window; not an individual drive measurement",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
+        }
+      }
     },
     "fdd:7": {
       "present": false,
       "profile": "FDD",
-      "quantities": {}
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [100, 410],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "shared octave-down planning window; not an individual drive measurement",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
+        }
+      }
     },
     "fdd:8": {
       "present": false,
       "profile": "FDD",
-      "quantities": {}
+      "quantities": {
+        "travelSteps": {
+          "value": 72,
+          "unit": "steps",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "reversalIntervalMs": {
+          "value": 5,
+          "unit": "ms",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "executionMinStepUs": {
+          "value": 2439,
+          "unit": "us",
+          "uncertainty": null,
+          "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+          "evidenceType": "DERIVED",
+          "confidence": "LOW"
+        },
+        "musicalHz": {
+          "value": [100, 410],
+          "unit": "Hz",
+          "uncertainty": null,
+          "source": "shared octave-down planning window; not an individual drive measurement",
+          "evidenceType": "HYPOTHESIS",
+          "confidence": "LOW"
+        }
+      }
     },
     "sled:5": {
       "present": false,

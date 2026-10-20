@@ -9,7 +9,8 @@ export function ArrangementPreview({revision,file}:{revision:number;file:string|
   if(file&&open)void fetch('/api/plan').then(r=>{if(!r.ok)throw new Error('Nie można pobrać planu');return r.json()}).then(p=>{if(active)setPlan(p)}).catch(e=>{if(active)setError(String(e))})
   return()=>{active=false}
  },[revision,file,open])
- const unisons=plan?.reinforcements.filter(e=>e.kind==='UNISON')??[]
+ const unisons=plan?.reinforcements.filter(e=>['UNISON','FDD_PAIR_UNISON','FDD_UNISON4'].includes(e.kind))??[]
+ const quadCopies=unisons.filter(e=>e.kind==='FDD_UNISON4')
  return <details className="arrangement-preview" onToggle={e=>setOpen(e.currentTarget.open)}><summary>Arrangement · PerformancePlan</summary>
   {plan?.report.fddAdaptive&&<div aria-label="Diagnostyka Adaptive">
    <p>Odzyskane nuty: {plan.report.fddAdaptive.recoveredNotes} · przywrócone gate: {plan.report.fddAdaptive.restoredGates} · wartościowe pominięte: {plan.report.fddAdaptive.valuableOmittedNotes}</p>
@@ -22,9 +23,9 @@ export function ArrangementPreview({revision,file}:{revision:number;file:string|
   {plan?.report.fddQuality&&<p aria-label="Diagnostyka FDD">FDD: {plan.report.fddQuality.fddNotes} nut · {plan.report.fddQuality.fddSeconds.toFixed(2)} s aktywności · ~{Math.round(plan.report.fddQuality.estimatedSteps)} kroków · ~{plan.report.fddQuality.estimatedReversals} zawróceń · {plan.report.fddQuality.omittedNotes} pominiętych · {plan.report.fddQuality.dvdTakeovers} nut przejętych przez DVD · {plan.report.fddQuality.unisonEvents} UNISON</p>}
   {error&&<p role="alert">{error}</p>}
   {!plan?<p>Wczytaj MIDI, aby zobaczyć plan wykonania.</p>:<>
-   <p>{plan.report.totals.played} nut · {plan.report.totals.dropped} odrzuconych · UNISON ×2: {unisons.length}</p>
+   <p>{plan.report.totals.played} nut · {plan.report.totals.dropped} odrzuconych · kopie unisono: {unisons.length}{quadCopies.length?` · grupy 4×: ${new Set(quadCopies.map(e=>e.sourceId)).size}`:''}</p>
    <p>DVD · sustain; FDD · frazy i akcenty. Czas oznacza planowaną długość wykonania.</p>
-   <div className="arrangement-table"><table><thead><tr><th>Start (s)</th><th>Partia / nuta MIDI</th><th>Instrument</th><th>Czas (s)</th><th>UNISON ×2</th><th>Decyzja</th></tr></thead><tbody>
+   <div className="arrangement-table"><table><thead><tr><th>Start (s)</th><th>Partia / nuta MIDI</th><th>Instrument</th><th>Czas (s)</th><th>Kopie unisono</th><th>Decyzja</th></tr></thead><tbody>
     {plan.events.slice(page*100,(page+1)*100).map(e=><tr key={e.id} className={e.deviceType==='DVD_SLED'?'dvd-note':'fdd-note'}>
      <td>{e.actualStart.toFixed(3)}</td><td>{e.trackName} · {e.playedNote??'—'}</td><td>{e.deviceId??'DROPPED'}</td><td>{e.actualDuration.toFixed(3)}</td>
      <td>{unisons.filter(u=>u.sourceId===e.id).map(u=>`${u.sourceDevice} + ${u.deviceId}`).join(', ')||'—'}</td>

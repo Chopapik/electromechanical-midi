@@ -8,6 +8,9 @@ Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
 Aktualizacja **2026-10-17** obejmuje nową mapę firmware 8 FDD / 6 DVD / 4 HDD / 6 rejestrów / 8 DRV8833,
 oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, niezweryfikowanych.
+Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu i VIRTUAL jako drugą
+grupę 4× unisono. Pozostają niezakwalifikowane dla REAL (`realEnabled:false`);
+host ma przygotowany potwierdzany cykl `DIAG FDD` / TRACK0 / PLAY po kwalifikacji.
 
 ## Bieżące instrukcje
 

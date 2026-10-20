@@ -78,7 +78,7 @@ export function SettingsPage({app}:{app:Runtime}){
                 <option value="balanced">Balanced</option>
                 <option value="instrument_roles">FDD Riffs + DVD Tło</option>
                 <option value="instrument_roles_unison">FDD Riffs + DVD Tło · Pary Unisono</option>
-                <option value="instrument_roles_unison4">4 FDD Unisono · eksperymentalny</option>
+                <option value="instrument_roles_unison4">2×4 FDD Unisono · eksperymentalny</option>
                 <option value="instrument_roles_duet">FDD Riffs + DVD Tło · Pary Dwugłos</option>
                 <option value="fdd_quality">FDD Quality · eksperymentalny</option>
                 <option value="fdd_quality_adaptive">FDD Quality Adaptive · eksperymentalny</option>
@@ -86,10 +86,11 @@ export function SettingsPage({app}:{app:Runtime}){
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
+            <small>Eksperyment globalny FDD: każdy zachowany ton trwa 200 ms; gęstsze ataki są pomijane, aby zostawić 3 ms przerwy.</small>
             {s?.arrangementPreset==='universal'&&<small>Lokalne frazy, wokal i ozdobniki; długie tło DVD. FDD uwzględnia odstęp ataków przed wyborem urządzenia.</small>}
             {s?.arrangementPreset==='instrument_roles'&&<small>FDD: krótkie nuty i zmiany wysokości. DVD: długie tło. PC Speaker: wokal, PC Speaker FX: ozdobniki. Perkusja bez zmian.</small>}
             {s?.arrangementPreset==='instrument_roles_unison'&&<small>FDD1+2 i FDD3+4: dwie partie, każda grana wspólnie tą samą nutą. Pary utrzymują frazy i przejmują aktywne partie podczas pauz. DVD: długie tło.</small>}
-            {s?.arrangementPreset==='instrument_roles_unison4'&&<small>FDD1–4 grają jedną wspólną linię: ta sama nuta, start i długość. Wybór partii śledzi frazę i przejmuje inną podczas pauz. DVD, speakery i perkusja zachowują przydział FDD Riffs + DVD Tło. Mniej niezależnych głosów FDD; pozostałe nuty mogą zostać pominięte.</small>}
+            {s?.arrangementPreset==='instrument_roles_unison4'&&<small>FDD1–4 grają pierwszy głos, a FDD5–8 drugi. Każda grupa gra wewnętrznie tę samą nutę, start i długość; grupy wybierają różne partie i niezależnie śledzą frazy. DVD, speakery i perkusja zachowują przydział FDD Riffs + DVD Tło.</small>}
             {s?.arrangementPreset==='instrument_roles_duet'&&<small>FDD1+2 i FDD3+4: do dwóch różnych nut MIDI z jednej partii na parę. Pojedyncza linia: unisono. DVD: długie tło. Dwie niezależne partie FDD jednocześnie.</small>}
           </div>
           <ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>

@@ -20,6 +20,7 @@ class RealOutput:
         self.homing_devices = ()
         self.homing_deadline = 0.
         self.homing_status_pending = False
+        self.homing_status_requirements = (False, False)
         self.last_ping = 0.
         self.power_seen = False
         self.sent = []
@@ -64,6 +65,7 @@ class RealOutput:
         self.configured = False
         self.homing_devices = ()
         self.homing_status_pending = False
+        self.homing_status_requirements = (False, False)
         self.active_speakers.clear()
         self.speaker_frequencies.clear()
 
@@ -92,6 +94,7 @@ class RealOutput:
             raise OutputError(self.error) from exc
         self.homing_devices = ()
         self.homing_status_pending = False
+        self.homing_status_requirements = (False, False)
         self.active_speakers.clear()
         self.speaker_frequencies.clear()
         self.active = self.unknown = False
@@ -110,7 +113,9 @@ class RealOutput:
             prefix = self.prefix(d['id'])
             if d['lane'] == 'drum:2' and self.link.controller_status.get('speaker_fx') != '1':
                 continue
-            on = d['enabled'] and p is not None and (not strict or d['type']=='FDD')
+            strict_fdd = d['type']=='FDD' and int(d['lane'].split(':')[1]) <= 4
+            on = (d['enabled'] and d.get('realEnabled', d['enabled'])
+                  and p is not None and (not strict or strict_fdd))
             profile = execution_command(p,d['lane']) if p else None
             if on and d['type'] in ('FDD','DVD_SLED','HDD_VCM') and not profile: on=False
             if on and p.get('continuousRotation') and self.link.controller_status.get('dvd_continuous')!='1':
@@ -124,12 +129,20 @@ class RealOutput:
             if self.link.controller_status.get('strict_tracks')!='1': raise OutputError('Firmware bez STRICT TRACKS')
             lines.append('TRACKS SET '+' '.join(str(t if t is not None else -1) for t in routing['tracks']))
         self.write(lines)
+        base_generation = self.link.status_generation
+        extended_generation = getattr(self.link, 'extended_status_generation', 0)
+        extended = any(d['enabled'] and d.get('realEnabled', d['enabled'])
+                       and d['type']=='FDD'
+                       and int(d['lane'].split(':')[1]) > 4 for d in self.registry.devices)
         self.link.status()
+        if extended:
+            self.link.fdd_status()
         deadline=time.monotonic()+3
         while time.monotonic()<deadline:
             response=self.link.poll_lines()
             if any(s.startswith('ERR') for s in response): raise OutputError('; '.join(response))
-            if 'STATUS END' in response:
+            if (self.link.status_generation > base_generation
+                    and (not extended or getattr(self.link, 'extended_status_generation', 0) > extended_generation)):
                 self.configured=True
                 return
             time.sleep(.005)
@@ -138,6 +151,12 @@ class RealOutput:
     def ready(self, commands=(), *, auto_home=False):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
+        blocked = sorted({self.registry.by_id[c.device_id]['name'] for c in commands
+                          if c.kind!='stop' and not self.registry.by_id[c.device_id].get(
+                              'realEnabled', self.registry.by_id[c.device_id]['enabled'])})
+        if blocked:
+            raise OutputError('Urządzenia dostępne tylko w VIRTUAL; przed REAL wymagają '
+                              'kwalifikacji i realEnabled=true: '+', '.join(blocked))
         self.require_power()
         if any(self.registry.by_id[c.device_id]['lane']=='drum:2' and c.kind!='stop' for c in commands) and self.link.controller_status.get('speaker_fx')!='1':
             raise OutputError('Wgraj nowe firmware ESP32: wymagany PC Speaker FX na GPIO 26')
@@ -160,6 +179,7 @@ class RealOutput:
             self.homing_devices=tuple(missing_home)
             self.homing_deadline=time.monotonic()+10 # Existing homing wait limit.
             self.homing_status_pending=False
+            self.homing_status_requirements=(False, False)
             self.homing_query_after=0.
             self.active=True
             self.write([self.prefix(ident)+' HOME' for ident in missing_home])
@@ -172,8 +192,12 @@ class RealOutput:
         if not self.homing_devices: return True
         now=time.monotonic()
         if now>=self.homing_deadline: raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.homing_devices))
-        generation=self.link.status_generation
-        if self.homing_status_pending and generation>self.homing_status_generation:
+        generations=(self.link.status_generation,
+                     getattr(self.link, 'extended_status_generation', 0))
+        require_base,require_extended=self.homing_status_requirements
+        complete=(not require_base or generations[0]>self.homing_status_generation[0]) and (
+                  not require_extended or generations[1]>self.homing_status_generation[1])
+        if self.homing_status_pending and complete:
             self.homing_status_pending=False
             states=[self.link.device_status.get(self.registry.by_id[ident]['lane'].upper(),{}) for ident in self.homing_devices]
             if all(s.get('enabled')=='1' and s.get('homed')=='1' and s.get('homing')=='0' for s in states):
@@ -182,8 +206,16 @@ class RealOutput:
         # Never overlap fragmented BLE STATUS transactions. Player ticks keep
         # STOP responsive and retain watchdog PING while waiting for TRACK0.
         if not self.homing_status_pending and now>=self.homing_query_after:
-            self.homing_status_generation=generation
-            self.link.status()
+            ordinals=[int(self.registry.by_id[ident]['lane'].split(':')[1])
+                      for ident in self.homing_devices]
+            require_base=any(ordinal<=4 for ordinal in ordinals)
+            require_extended=any(ordinal>4 for ordinal in ordinals)
+            self.homing_status_generation=generations
+            self.homing_status_requirements=(require_base,require_extended)
+            if require_base:
+                self.link.status()
+            if require_extended:
+                self.link.fdd_status()
             self.homing_status_pending=True
             self.homing_query_after=now+.2
         return False
@@ -196,6 +228,12 @@ class RealOutput:
         # An offline attempt cannot have started physical motion. Keep genuine
         # write failures conservative: a connected batch may be partially sent.
         if not self.link: raise OutputError('Brak połączenia z ESP32')
+        blocked = sorted({self.registry.by_id[c.device_id]['name'] for c in commands
+                          if c.kind!='stop' and not self.registry.by_id[c.device_id].get(
+                              'realEnabled', self.registry.by_id[c.device_id]['enabled'])})
+        if blocked:
+            raise OutputError('Urządzenia dostępne tylko w VIRTUAL; REAL zablokowany: '
+                              +', '.join(blocked))
         if any(c.kind!='stop' for c in commands): self.require_power()
         lines=[]
         for c in commands:

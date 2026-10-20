@@ -21,7 +21,8 @@ import test_orchestra_link
 from test_runtime import Link
 
 ROOT = Path(__file__).resolve().parents[2]
-EXTRA = {f'fdd-{i}' for i in range(5, 9)} | {f'DVD_STEPPER_{i}' for i in range(5, 7)}
+EXTENDED_FDD = {f'fdd-{i}' for i in range(5, 9)}
+EXTRA = {f'DVD_STEPPER_{i}' for i in range(5, 7)}
 PRESETS = ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'fdd_quality_adaptive',
            'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet','instrument_roles_unison4', 'universal')
 
@@ -41,7 +42,7 @@ class BackendCapacityTests(unittest.TestCase):
         r = self.registry
         self.assertEqual(Counter(d['type'] for d in r.devices), {'FDD':8, 'DVD_SLED':6, 'HDD_VCM':4, 'VHS':2})
         self.assertEqual({d['id'] for d in r.devices if not d['enabled']}, EXTRA)
-        self.assertEqual(sum(d['enabled'] for d in r.devices), 14)
+        self.assertEqual(sum(d['enabled'] for d in r.devices), 18)
         for d in r.catalog():
             with self.subTest(device=d['id']):
                 if d['id'] in EXTRA:
@@ -51,6 +52,12 @@ class BackendCapacityTests(unittest.TestCase):
                     self.assertEqual(instance['quantities'], {})
                 else:
                     self.assertIsNone(d['reason'])
+                if d['id'] in EXTENDED_FDD:
+                    instance = r.profiles.instances[d['lane']]
+                    self.assertIs(instance['present'], False)
+                    self.assertEqual(instance['quantities']['travelSteps']['value'],72)
+                    self.assertEqual(instance['quantities']['executionMinStepUs']['value'],2439)
+                    self.assertEqual(instance['quantities']['travelSteps']['confidence'],'LOW')
         self.assertEqual(r.document['routing']['tracks'], [None]*4)
 
     def test_registry_still_rejects_duplicates_wrong_ordinals_and_overflow(self):
@@ -69,7 +76,7 @@ class BackendCapacityTests(unittest.TestCase):
         config = self.registry.configuration()
         devices = [VirtualDeviceInstance.parse(d) for d in config.devices]
         bound, unmapped = bind_devices(devices, 2)
-        self.assertEqual(len(bound), 14);self.assertEqual(unmapped, [])
+        self.assertEqual(len(bound), 18);self.assertEqual(unmapped, [])
         self.assertFalse(EXTRA & {d.id for d in bound.values()})
         for d in devices: d.enabled = True
         bound, unmapped = bind_devices(devices, 2)
@@ -100,7 +107,7 @@ class BackendCapacityTests(unittest.TestCase):
             for invalid in (0, -1, maximum+1, True, False, '1', 1.0, None):
                 with self.subTest(method=method, invalid=invalid), self.assertRaises(ValueError): fn(invalid, *args)
 
-    def test_configure_disables_new_channels_and_retains_all_hdd_hits(self):
+    def test_configure_keeps_unqualified_extended_fdd_real_disabled_and_retains_all_hdd_hits(self):
         link = Link()
         link.controller_status['speaker_fx'] = '1'
         link.device_status = {k:v for k,v in link.device_status.items()
@@ -108,16 +115,40 @@ class BackendCapacityTests(unittest.TestCase):
         output = RealOutput(self.registry)
         output.attach(link)
         output.configure()
-        for ident in EXTRA:
+        for ident in EXTRA | EXTENDED_FDD:
             prefix = output.prefix(ident)
             self.assertEqual([s for s in link.sent if s.startswith(prefix+' ')], [prefix+' ENABLE 0'])
         for i in range(1,5): self.assertIn(f'HDD {i} ENABLE 1', link.sent)
         self.assertFalse(any('HOME' in s or 'PLAY' in s for s in link.sent))
+        self.assertEqual(link.extended_status_generation, 0)
         link.sent.clear()
         commands = [ExecutionCommand(0,f'hdd_vcm-{i}','hit') for i in range(1,5)]
         output.ready(commands)
         output.dispatch(commands)
         self.assertEqual(link.sent, [f'HDD {i} HIT' for i in range(1,5)])
+
+    def test_qualified_extended_fdd_configure_status_home_and_play_lifecycle(self):
+        document=copy.deepcopy(self.registry.document)
+        for device in document['devices']:
+            if device['id'] in EXTENDED_FDD:
+                device['realEnabled']=True
+        registry=self.registry_for(document)
+        link=Link()
+        output=RealOutput(registry)
+        output.attach(link);output.configure()
+        for ident in EXTENDED_FDD:
+            self.assertIn(output.prefix(ident)+' ENABLE 1',link.sent)
+        self.assertEqual(link.extended_status_generation,1)
+        command=ExecutionCommand(0,'fdd-8','tone',.1,220)
+        link.device_status['FDD:8'].update(homed='0',homing='0')
+        self.assertFalse(output.ready([command],auto_home=True))
+        self.assertIn('FDD 8 HOME',link.sent)
+        self.assertFalse(output.homing_ready())
+        link.device_status['FDD:8'].update(homed='1',homing='0')
+        link.poll_lines()
+        self.assertTrue(output.homing_ready())
+        output.dispatch([command])
+        self.assertIn('FDD 8 PLAY 220.00',link.sent)
 
     def test_strict_tracks_still_has_four_slots_and_disables_new_channels(self):
         self.registry.document['routing'] = {'mode':'STRICT_TRACKS', 'tracks':[0,1,2,3]}
@@ -125,7 +156,7 @@ class BackendCapacityTests(unittest.TestCase):
         output = RealOutput(self.registry)
         output.attach(link);output.configure()
         self.assertIn('TRACKS SET 0 1 2 3', link.sent)
-        for ident in EXTRA:
+        for ident in EXTRA | EXTENDED_FDD:
             prefix = output.prefix(ident)
             self.assertEqual([s for s in link.sent if s.startswith(prefix+' ')], [prefix+' ENABLE 0'])
         self.registry.document['routing']['tracks'] += [4,5,6,7]

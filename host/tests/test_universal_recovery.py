@@ -22,7 +22,8 @@ class RecoveryTests(unittest.TestCase):
     def fixture(self, notes, family='FDD'):
         registry=DeviceRegistry()
         registry.document['parameters']['arrangementPreset']='universal'
-        registry.document['parameters'].update(mechanicalSustain=False,sourceContinuity=False)
+        registry.document['parameters'].update(
+            mechanicalSustain=False,sourceContinuity=False,fddFixedToneMs=0)
         for d in registry.devices:
             d['enabled']=d['id']=={'FDD':'fdd-1','DVD_SLED':'DVD_STEPPER_1','VHS':'pc-speaker-fx'}[family]
         source=self.source([('Part',0,notes)])

@@ -13,7 +13,10 @@ EPS = 1e-9
 
 
 def apply(plan, registry):
-    interval = plan.policy.get('fddMinAttackIntervalMs', MIN_INTERVAL_S*1000)/1000.
+    fixed = float(plan.policy.get('fddFixedToneMs', 0))/1000.
+    release = float(plan.policy.get('releaseGapMs', 0))/1000.
+    interval = max(plan.policy.get('fddMinAttackIntervalMs', MIN_INTERVAL_S*1000)/1000.,
+                   fixed+release if fixed else 0.)
     sources = {e.id: e for e in plan.events}
     types = {d['id']: d['type'] for d in plan.devices}
     lanes = defaultdict(list)
@@ -27,7 +30,8 @@ def apply(plan, registry):
             lanes[e.device_id].append(('extra', i, e.start, e.duration, e.hz,
                                        e.source_id, source.articulation if source else None))
     removed, durations = set(), {}
-    report = {'minAttackIntervalMs': interval*1000, 'suppressedAttacks': 0,
+    report = {'minAttackIntervalMs': interval*1000,
+              'fixedToneMs': fixed*1000 if fixed else 0., 'suppressedAttacks': 0,
               'coalescedRepeats': 0, 'mechanicalVetoes': 0, 'devices': {}}
     for ident, events in sorted(lanes.items()):
         profile = registry.profile(ident)
@@ -40,7 +44,7 @@ def apply(plan, registry):
                 previous = kept[-1]
                 a, b = sources.get(previous[5]), sources.get(event[5])
                 tail = tails.get(previous[:2], previous[2]+previous[3])
-                if (a and b and (a.track, a.channel) == (b.track, b.channel)
+                if (not fixed and a and b and (a.track, a.channel) == (b.track, b.channel)
                         and abs(previous[4]-event[4]) < 1e-6
                         and not previous[6] and not event[6]
                         and a.outcome not in ('SHORTENED', 'STOLEN')
@@ -61,7 +65,8 @@ def apply(plan, registry):
             # Removing attacks changes head travel/reversal phase. Re-evaluate
             # every retained note, and retry the original gate if merging fails.
             selected = None
-            for gate in dict.fromkeys((end-start, duration)):
+            gates = (fixed,) if fixed else dict.fromkeys((end-start, duration))
+            for gate in gates:
                 note = HardwareNote(hz, gate, start)
                 ev = evaluate(profile, note, state)
                 if (ev.authorized and ev.ready_at <= start+1e-8

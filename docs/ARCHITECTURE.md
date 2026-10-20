@@ -1,10 +1,11 @@
 # Architektura i obsługa aplikacji
 
 Katalog i adresacja hosta odpowiadają firmware: **8 FDD, 6 DVD, 4 HDD i 2 speakery**.
-Z 20 wpisów aktywnych pozostaje 14: FDD1–4, DVD1–4, HDD1–4 i oba speakery.
-FDD5–8 i DVD5–6 mają `enabled:false` i `present:false`; nie są fizycznie
-zakwalifikowane ani automatycznie aranżowane. Zmiana pojemności nie zmienia
-presetów ani harmonogramu aktywnego zestawu. STRICT_TRACKS zachowuje cztery sloty.
+Z 20 wpisów 18 uczestniczy w aranżacji i VIRTUAL: FDD1–8, DVD1–4, HDD1–4
+i oba speakery. FDD5–8 zachowują `present:false` i `realEnabled:false`, więc
+nie są uruchamiane w REAL przed kwalifikacją. DVD5–6 mają `enabled:false`.
+Domyślny preset tworzy dwie grupy unisono po cztery FDD. STRICT_TRACKS zachowuje
+cztery sloty i wyłącza FDD5–8 w konfiguracji REAL.
 [Inventory i kwalifikacja](HARDWARE_DEVICES.md#inventory-i-identyfikatory).
 
 ## Jeden harmonogram wykonawczy
@@ -50,17 +51,21 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 
 [REAL](../host/runtime/outputs.py) używa ESP32 BLE, bez automatycznego fallbacku
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
-Konfiguracja jawnie wysyła `FDD 5..8 ENABLE 0` oraz `SLED 5..6 ENABLE 0`,
-bez HOME/PLAY dla tych kanałów; HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
+Konfiguracja jawnie wysyła `FDD 5..8 ENABLE 0` dopóki ich `realEnabled` jest
+fałszywe oraz zawsze `SLED 5..6 ENABLE 0`. Po kwalifikacji i ustawieniu
+`realEnabled:true` wysyła PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
+automatyczny homing TRACK0 czeka na potwierdzenie FDD5–8 przed PLAY.
+HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
 Registry oraz `bind_devices(..., 2)` liczą ordynały również wyłączonych pozycji,
 więc wyłączenie FDD1 nie przenosi FDD2 na kanał 1. OrchestraLink sprawdza
 osobne granice FDD 1–8, SLED 1–6 i HDD 1–4, odrzucając także ID typu bool.
 Wymaga `board=esp32`, protocol 2, `ready=1`, `stop_ack=1`, `hardware_profiles=1`
 oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
 `speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
-STATUS. Firmware zachowuje 17 rekordów STATUS z FDD1–4; dodatkowe kanały
-są widoczne tylko przez osobne `DIAG FDD` / `DIAG SLED`. Dotychczasowy parser hosta ma
-limit 20 linii transakcji. FDD wymagają potwierdzonego HOME. Jawny Play w REAL przygotowuje automatycznie
+STATUS. Firmware zachowuje 17 rekordów STATUS z FDD1–4; host atomowo scala
+osobną transakcję `DIAG FDD` dla FDD5–8, bez zwiększania limitu 20 linii
+podstawowego STATUS. `DIAG SLED` pozostaje diagnostyką. FDD wymagają
+potwierdzonego HOME. Jawny Play w REAL przygotowuje automatycznie
 niewyciszone FDD użyte w planie, jeśli nie mają odniesienia; Player czeka bez
 przesuwania zegara utworu, pozostawiając STOP dostępny. STATUS nie jest wysyłany
 ponownie przed zakończeniem poprzedniej transakcji. Dopiero pełne potwierdzenie
@@ -232,8 +237,9 @@ Zainstaluj `httpx` w środowisku testowym dla testów API; testy natywnego rdzen
 C++ potrzebują lokalnego kompilatora. `npm ci` instaluje frontendowe zależności.
 Generator z `--check` sprawdza zgodność bez zapisywania konfiguracji/nagłówka.
 [Testy pojemności backendu](../host/tests/test_backend_capacity.py) sprawdzają
-20 pozycji / 14 aktywnych, stabilne ordynały wyłączonych kanałów, limity ID,
-jawne ENABLE 0, HIT wszystkich czterech HDD, niezmieniony STATUS i cztery sloty
+20 pozycji / 18 aktywnych w planowaniu, stabilne ordynały kanałów, limity ID,
+bramkę `realEnabled`, pełny cykl DIAG/HOME/PLAY FDD8 na atrapach, HIT wszystkich
+czterech HDD, niezmieniony STATUS i cztery sloty
 STRICT_TRACKS. Dla dziewięciu presetów porównują zdarzenia, artykulację i skompilowany
 timeline z dodatkową nieaktywną pulą oraz bez niej, wyłącznie offline.
 Firmware ma przypięte zależności w [platformio.ini](../firmware/controller/platformio.ini);

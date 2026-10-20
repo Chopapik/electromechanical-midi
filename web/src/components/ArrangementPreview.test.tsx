@@ -18,6 +18,16 @@ describe('Arrangement plan preview',()=>{
   expect(screen.getByText('DVD_STEPPER_1')).toBeTruthy();expect(screen.getByText('4.000')).toBeTruthy()
   expect(screen.getByText('0.250')).toBeTruthy();expect(screen.getByText(/DVD sustain \/ stable phrase · ACCEPTED/)).toBeTruthy()
  })
+ it('shows four-drive unison groups instead of hiding their copies',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({
+   events:[{id:'a',trackName:'Guitar',deviceId:'fdd-1',deviceType:'FDD',playedNote:60,actualStart:0,actualDuration:.2,outcome:'ACCEPTED'}],
+   reinforcements:[2,3,4].map(i=>({sourceId:'a',sourceDevice:'fdd-1',deviceId:`fdd-${i}`,start:0,duration:.2,kind:'FDD_UNISON4'})),
+   report:{totals:{played:1,dropped:0}},
+  })}))
+  render(<ArrangementPreview revision={1} file="song.mid"/>);await open()
+  expect(screen.getByText(/grupy 4×: 1/)).toBeTruthy()
+  expect(screen.getByText(/fdd-1 \+ fdd-2/)).toBeTruthy()
+ })
  it('fetches only when expanded and reloads after a new plan revision',async()=>{
   const fetch=vi.fn().mockResolvedValue({ok:true,json:async()=>null});vi.stubGlobal('fetch',fetch)
   const view=render(<ArrangementPreview revision={1} file="song.mid"/>);expect(fetch).not.toHaveBeenCalled()

@@ -71,6 +71,9 @@ class Laboratory:
             p = self.registry.profile(ident)
             if not d['enabled'] or p is None:
                 raise ValueError('Urządzenie bez zatwierdzonego profilu')
+            if (self.player.router.mode == 'REAL'
+                    and not d.get('realEnabled', d['enabled'])):
+                raise ValueError('Urządzenie dostępne tylko w VIRTUAL; REAL wymaga kwalifikacji')
             if ident in self.player.router.muted:
                 raise ValueError('Urządzenie jest wyciszone — wyłącz Mute w Settings')
             modulation = modulation or {}

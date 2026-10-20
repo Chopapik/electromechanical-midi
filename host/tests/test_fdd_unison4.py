@@ -39,6 +39,25 @@ class FddUnison4Tests(unittest.TestCase):
         self.assertTrue(all(s==signatures[0] for s in signatures))
         return [c for c in timeline.commands if c.kind=='tone' and c.device_id==members[0]]
 
+    def assert_dual_unison(self, plan):
+        first=self.assert_unison(plan,('fdd-1','fdd-2','fdd-3','fdd-4'))
+        second=self.assert_unison(plan,('fdd-5','fdd-6','fdd-7','fdd-8'))
+        self.assertEqual([c.time for c in first],[c.time for c in second])
+        self.assertTrue(all(a.hz!=b.hz for a,b in zip(first,second)))
+        return first,second
+
+    def test_eight_drives_form_two_independent_four_drive_unison_voices(self):
+        r=self.selected(fdd=8,dvd=0)
+        plan=self.plan(self.tracks(),r)
+        first,second=self.assert_dual_unison(plan)
+        self.assertEqual((len(first),len(second)),(8,8))
+        self.assertEqual(len({e.track for e in plan.events if e.played}),2)
+        self.assertEqual(plan.hardware['fddUnison4']['groups'],
+                         [[f'fdd-{i}' for i in range(1,5)],
+                          [f'fdd-{i}' for i in range(5,9)]])
+        self.assertEqual(len(plan.reinforcements),48)
+        self.assert_feasible(plan,r)
+
     def test_four_drives_follow_one_phrase_at_identical_pitch_time_and_duration(self):
         r=self.selected(dvd=0)
         plan=self.plan(self.tracks(),r)
@@ -88,6 +107,20 @@ class FddUnison4Tests(unittest.TestCase):
         self.assertEqual(p.hardware['fddUnison4']['synchronizedVetoes'],1)
         self.assert_feasible(p,r)
 
+    def test_second_group_veto_does_not_remove_valid_first_group(self):
+        r=self.selected(fdd=8,dvd=0)
+        p=self.plan([('A',0,[(0,.15,60)]),('B',1,[(0,.15,67)])],r)
+        second=next(e for e in p.events if e.played and e.device_id=='fdd-5')
+        p.reinforcements=[e for e in p.reinforcements
+                          if not (e.source_id==second.id and e.device_id=='fdd-8')]
+        synchronize_unison4(p,r)
+        commands=compile_plan(p).commands
+        self.assertEqual(sum(c.kind=='tone' and c.device_id in
+                             {'fdd-1','fdd-2','fdd-3','fdd-4'} for c in commands),4)
+        self.assertFalse(any(c.kind=='tone' and c.device_id in
+                             {'fdd-5','fdd-6','fdd-7','fdd-8'} for c in commands))
+        self.assertEqual(p.hardware['fddUnison4']['synchronizedVetoes'],1)
+
     def test_common_gate_is_rechecked_after_per_lane_gate_changes(self):
         r=self.selected(dvd=0);p=self.plan([('A',0,[(0,.15,60)])],r)
         short=p.reinforcements[0].duration/2
@@ -120,6 +153,23 @@ class FddUnison4Tests(unittest.TestCase):
         self.assertEqual(len(plays),4)
         self.assertEqual(len({line.split(' PLAY ')[1] for line in plays}),1)
 
+    def test_real_and_virtual_dispatch_same_two_groups_of_four_attacks(self):
+        r=self.selected(fdd=8,dvd=0)
+        for device in r.devices:
+            if device['type']=='FDD':
+                device['realEnabled']=True
+        tracks=[('A',0,[(0,.15,60)]),('B',1,[(0,.15,67)])]
+        timeline=compile_plan(self.plan(tracks,r))
+        lines=[];packets=[];real=RealOutput(r)
+        real.link=SimpleNamespace(controller_status={'atx':'ON'},send_batch=lines.extend)
+        virtual=VirtualOutput(packets.append)
+        real.dispatch(timeline.commands);virtual.dispatch(timeline.commands,epoch=1)
+        self.assertEqual(packets[0]['commands'],[c.as_dict() for c in timeline.commands])
+        plays=[line for line in lines if ' PLAY ' in line]
+        self.assertEqual(len(plays),8)
+        payloads=[line.split(' PLAY ')[1] for line in plays]
+        self.assertEqual(sorted([payloads.count(value) for value in set(payloads)]),[4,4])
+
     def test_preset_switch_stops_and_rebuilds_without_autoplay(self):
         app=Application(self.selected());app.load(self.source(self.tracks()).path)
         app.set_preset(QUAD_PRESET)
@@ -146,7 +196,7 @@ class FddUnison4Tests(unittest.TestCase):
         app.load(self.source(self.tracks()).path)
         self.assertEqual(app.snapshot()['arrangementPreset'],QUAD_PRESET)
         self.assertEqual(app.player.state,'stopped')
-        self.assert_unison(app.plan)
+        self.assert_dual_unison(app.plan)
 
     def test_chronology_replay_work_grows_linearly_for_four_drive_riffs(self):
         from playback.mechanical_arrangement import _chronology

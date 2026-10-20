@@ -19,6 +19,8 @@ def arrange(source, registry):
     elif routing['mode']=='AUTO':
         plan=allocate(normalize(source), config, hardware_context=profiles)
     else: raise ValueError('Unknown routing mode')
+    from playback.fdd_duration import apply as fix_fdd_duration
+    fix_fdd_duration(plan)
     preserved_articulation = plan.execution_articulation
     tonal,_=resolve(plan)
     plan.execution_articulation={key:asdict(art) for key,art in tonal.items()}
@@ -45,6 +47,7 @@ def arrange(source, registry):
         from playback.universal_recovery import recover
         existing_extras=len(plan.reinforcements)
         recovered = recover(plan, registry, source)
+        fix_fdd_duration(plan)
         if recovered or len(plan.reinforcements)>existing_extras:
             # Existing command sidecars are immutable. Resolve expression for
             # inserted source notes only, keeping prior envelopes/FX/HDD exact.
@@ -68,4 +71,8 @@ def arrange(source, registry):
                     plan.execution_articulation['extra:'+str(index)]=asdict(retarget(art,
                         types[extra.device_id],extra.duration,extra.velocity,
                         extra.start-source_events[extra.source_id].start))
+        # Recovery can add new FDD reservations; apply the same fixed gate and
+        # spacing to the complete final plan.
+        limit_fdd_attacks(plan, registry)
+        synchronize_unison4(plan, registry)
     return plan

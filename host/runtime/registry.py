@@ -24,6 +24,10 @@ class DeviceRegistry:
         self.profiles = HardwareRegistry()
         counts = {}
         for d in self.devices:
+            if (not isinstance(d.get('enabled'), bool)
+                    or not isinstance(d.get('realEnabled', d['enabled']), bool)
+                    or d.get('realEnabled', d['enabled']) and not d['enabled']):
+                raise ValueError('Device enabled flags must be consistent booleans')
             family = {'FDD':'fdd','DVD_SLED':'sled','HDD_VCM':'hdd','VHS':'drum'}[d['type']]
             counts[family] = counts.get(family, 0) + 1
             # Existing allocator uses stable physical ordinals, including disabled devices.

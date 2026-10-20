@@ -1,4 +1,4 @@
-"""Phrase-following FDD pairs, or one experimental FDD1-4 unison group.
+"""Phrase-following FDD pairs, or two experimental four-drive unison groups.
 
 Revoice the FDD pool after the Instrument Roles plan is complete.
 Other actuators retain their allocated notes and reservations.
@@ -34,14 +34,18 @@ def arrange(plan, config, context, pins=None):
     pins = pins or {}
     quad = config.policy['arrangementPreset'] == QUAD_PRESET
     mode = 'unison4' if quad else 'unison' if config.policy['arrangementPreset'] == PRESETS[0] else 'duet'
-    label = 'FDD 4× unisono' if quad else 'FDD pair '+mode
+    label = 'FDD 2×(4× unisono)' if quad else 'FDD pair '+mode
     plan.policy['arrangementPreset'] = config.policy['arrangementPreset']
     bound, _ = bind_devices(config.instances(), 2)
     available = plan.hardware['physicalLanes']
-    pairs = [tuple(bound[lane].id for lane in (f'fdd:{i}', f'fdd:{i+1}')
-                   if lane in bound and bound[lane].id in available) for i in (1, 3)]
     if quad:
-        pairs = [tuple(ident for pair in pairs for ident in pair)]
+        # Stable physical groups: a missing drive never renumbers the remaining
+        # lanes or moves FDD5-8 into the first voice.
+        pairs = [tuple(bound[lane].id for lane in (f'fdd:{i}' for i in range(start, start+4))
+                       if lane in bound and bound[lane].id in available) for start in (1, 5)]
+    else:
+        pairs = [tuple(bound[lane].id for lane in (f'fdd:{i}', f'fdd:{i+1}')
+                       if lane in bound and bound[lane].id in available) for i in (1, 3)]
     devices = {d.id: d for d in bound.values()}
     profiles = {ident: context.profile_for(devices[ident], available[ident])
                 for pair in pairs for ident in pair}
@@ -289,9 +293,10 @@ def arrange(plan, config, context, pins=None):
         'primaryNotes': sum(e.played for e in replacements.values()),
         'unisonCopies': len(extras),
         'notSelected': sum(not e.played for e in replacements.values()),
-        'scope': 'one shared part on FDD1-4; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
+        'scope': 'two independent parts on FDD1-4 and FDD5-8; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
     if quad:
-        plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'], devices=list(pairs[0]))
+        plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'],
+                                           groups=[list(pair) for pair in pairs])
     return plan
 
 
@@ -306,21 +311,29 @@ def synchronize_unison4(plan, registry):
     report = plan.hardware.get('fddUnison4')
     if report is None:  # STRICT_TRACKS deliberately bypasses AUTO presets.
         return
-    members = report['devices']
-    if not members:
+    member_groups = [members for members in report.get('groups', [report.get('devices', [])])
+                     if members]
+    if not member_groups:
         return
     types = {d['id']: d['type'] for d in plan.devices}
     sources = {e.id: e for e in plan.events}
-    groups = defaultdict(list)
+    notes_by_source = defaultdict(list)
     for e in plan.events:
         if e.played and e.device_type == 'FDD':
-            groups[e.id].append((e.device_id, e.actual_start, e.actual_duration, e.played_hz))
+            notes_by_source[e.id].append((e.device_id, e.actual_start, e.actual_duration, e.played_hz))
     for e in plan.reinforcements:
         if types[e.device_id] == 'FDD':
-            groups[e.source_id].append((e.device_id, e.start, e.duration, e.hz))
-    states = {ident: HardwareDeviceState() for ident in members}
+            notes_by_source[e.source_id].append((e.device_id, e.start, e.duration, e.hz))
+    device_group = {ident: index for index, members in enumerate(member_groups) for ident in members}
+    states = {ident: HardwareDeviceState() for members in member_groups for ident in members}
     kept = {}
-    for source_id, notes in sorted(groups.items(), key=lambda x: (min(n[1] for n in x[1]), x[0])):
+    kept_group = {}
+    for source_id, notes in sorted(notes_by_source.items(), key=lambda x: (min(n[1] for n in x[1]), x[0])):
+        indexes = {device_group.get(note[0]) for note in notes}
+        if len(indexes) != 1 or None in indexes:
+            continue
+        group_index = indexes.pop()
+        members = member_groups[group_index]
         if (len(notes) != len(members) or {n[0] for n in notes} != set(members)
                 or len({(n[1], n[3]) for n in notes}) != 1
                 or not sources[source_id].played):
@@ -333,14 +346,15 @@ def synchronize_unison4(plan, registry):
                or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load) for ev in evaluations.values()):
             continue
         kept[source_id] = duration
+        kept_group[source_id] = group_index
         for ident, ev in evaluations.items():
             advance_state(states[ident], registry.profile(ident), note, ev)
     plan.events = [replace(e, actual_duration=kept[e.id]) if e.id in kept else
                    replace(e, device_id=None, device_type=None, actual_duration=0.,
                            sustain_added=0., outcome='DROPPED', reason='FDD_UNISON4_SYNC')
-                   if e.id in groups and e.played and e.device_type == 'FDD' else e for e in plan.events]
+                   if e.id in notes_by_source and e.played and e.device_type == 'FDD' else e for e in plan.events]
     articulation = {k: v for k, v in plan.execution_articulation.items() if not k.startswith('extra:')}
-    for source_id in groups:
+    for source_id in notes_by_source:
         if source_id not in kept:
             articulation.pop(source_id, None)
         elif source_id in articulation:
@@ -360,6 +374,10 @@ def synchronize_unison4(plan, registry):
     plan.execution_articulation = articulation
     for ident, state in states.items():
         plan.hardware['states'][ident] = state.as_dict()
-        plan.hardware['counters'][ident]['playedNotes'] = len(kept)
-    report.update(executedNotes=len(kept), unisonCopies=len(kept)*(len(members)-1),
-                  synchronizedVetoes=len(groups)-len(kept))
+        index = device_group[ident]
+        plan.hardware['counters'][ident]['playedNotes'] = sum(
+            group_index == index for group_index in kept_group.values())
+    report.update(executedNotes=len(kept),
+                  unisonCopies=sum(len(member_groups[index])-1
+                                   for index in kept_group.values()),
+                  synchronizedVetoes=len(notes_by_source)-len(kept))

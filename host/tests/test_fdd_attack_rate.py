@@ -115,13 +115,18 @@ class FddAttackRateTests(unittest.TestCase):
         for value in (0, 119, float('nan'), float('inf'), 1001):
             with self.assertRaises(ValueError):
                 parse_policy({'fddMinAttackIntervalMs': value})
+        self.assertEqual(parse_policy({})['fddFixedToneMs'],0)
+        for value in (-1,float('nan'),float('inf'),5001):
+            with self.assertRaises(ValueError):
+                parse_policy({'fddFixedToneMs':value})
 
     def test_every_preset_and_strict_routing_use_the_common_final_pass(self):
         from midi_source import MidiSource
         from runtime.arranger import arrange
         from test_allocator import write_tracks
         presets = ('balanced', 'fdd_quality', 'fdd_quality_adaptive', 'dvd_lead_low_fdd',
-                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet', 'universal')
+                   'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet',
+                   'instrument_roles_unison4', 'universal')
         with tempfile.TemporaryDirectory() as directory:
             source = MidiSource(write_tracks(Path(directory)/'fast.mid',
                 [('Riff', 0, [(i*.045, i*.045+.03, 57+i%3) for i in range(24)])]))
@@ -134,6 +139,11 @@ class FddAttackRateTests(unittest.TestCase):
                         if strict:
                             r.document['routing'] = {'mode': 'STRICT_TRACKS', 'tracks': [1, None, None, None]}
                         p = arrange(source, r)
-                        self.assertEqual(p.articulation['fddAttackRate']['minAttackIntervalMs'], 120)
+                        self.assertEqual(p.articulation['fddAttackRate']['minAttackIntervalMs'], 203)
+                        self.assertEqual(p.articulation['fddAttackRate']['fixedToneMs'],200)
+                        tones=[c for c in compile_plan(p).commands
+                               if c.kind=='tone' and c.device_id.startswith('fdd-')]
+                        self.assertTrue(tones)
+                        self.assertTrue(all(abs(c.duration-.2)<1e-9 for c in tones))
                         self.assert_rate(p)
                         self.assertEqual(compile_plan(p), compile_plan(arrange(source, r)))

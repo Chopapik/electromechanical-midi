@@ -24,6 +24,7 @@ class Link:
         self.sent=[];self.closed=False;self.fail_stop=False;self.fail_write=False
         self.controller_status={'atx':'ON','board':'esp32','protocol':'2','ready':'1','stop_ack':'1','hardware_profiles':'1','dvd_continuous':'1','strict_tracks':'1'}
         self.status_generation=0
+        self.extended_status_generation=0
         self.device_status={d['lane'].upper() if d['type']!='VHS' else 'VHS':{'enabled':'1','homed':'1','homing':'0'} for d in DeviceRegistry().devices}
         self.lines=[]
     def send_batch(self, lines):
@@ -35,9 +36,11 @@ class Link:
         return True
     def all_stop(self): self.sent.append('ALL STOP')
     def status(self): self.lines.append('STATUS END')
+    def fdd_status(self): self.lines.append('DIAG FDD END')
     def poll_lines(self):
         result,self.lines=self.lines,[]
         if 'STATUS END' in result: self.status_generation+=1
+        if 'DIAG FDD END' in result:self.extended_status_generation+=1
         return result
     def power(self, action):
         self.sent.append('POWER '+action)

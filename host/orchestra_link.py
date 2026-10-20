@@ -29,6 +29,26 @@ def parse_status(lines):
     return result
 
 
+def parse_fdd_diagnostics(lines):
+    """Parse the opt-in FDD5-8 status transaction without weakening STATUS."""
+    if (not lines or lines[0] != 'DIAG FDD BEGIN' or lines[-1] != 'DIAG FDD END'
+            or len(lines) != 6):
+        raise ValueError('incomplete DIAG FDD transaction')
+    result = {}
+    for line in lines[1:-1]:
+        parts = line.split()
+        if len(parts) < 5 or parts[:2] != ['DIAG', 'FDD'] or not parts[2].isdigit():
+            raise ValueError('invalid DIAG FDD record')
+        ordinal = int(parts[2])
+        if ordinal not in range(5, 9) or f'FDD:{ordinal}' in result:
+            raise ValueError('invalid extended FDD ID')
+        result[f'FDD:{ordinal}'] = dict(
+            token.split('=', 1) for token in parts[3:] if '=' in token)
+    if set(result) != {f'FDD:{ordinal}' for ordinal in range(5, 9)}:
+        raise ValueError('incomplete extended FDD inventory')
+    return result
+
+
 class OrchestraLink(FloppyLink):
     protocol_version = 1
     board = 'uno'
@@ -45,6 +65,8 @@ class OrchestraLink(FloppyLink):
         self.status_observed_at = None
         self.controller_status = {}
         self._status_lines = None
+        self.extended_status_generation = 0
+        self._fdd_diagnostic_lines = None
 
     def poll_lines(self):
         lines = super().poll_lines()
@@ -65,9 +87,28 @@ class OrchestraLink(FloppyLink):
                     if status is not None:
                         self.status_generation = getattr(self, "status_generation", 0) + 1
                         self.status_observed_at = time.time()
-                        self.device_status = status['devices']
+                        extended = {key: value for key, value in self.device_status.items()
+                                    if key.startswith('FDD:') and int(key.split(':')[1]) > 4}
+                        self.device_status = {**status['devices'], **extended}
                         self.controller_status = status['controller']
                     self._status_lines = None
+            if line == 'DIAG FDD BEGIN':
+                self._fdd_diagnostic_lines = [line]
+            elif getattr(self, '_fdd_diagnostic_lines', None) is not None:
+                self._fdd_diagnostic_lines.append(line)
+                if len(self._fdd_diagnostic_lines) > 6:
+                    self._fdd_diagnostic_lines = None
+                elif line == 'DIAG FDD END':
+                    try:
+                        devices = parse_fdd_diagnostics(self._fdd_diagnostic_lines)
+                    except ValueError:
+                        devices = None
+                    if devices is not None:
+                        self.device_status.update(devices)
+                        self.extended_status_generation = getattr(
+                            self, 'extended_status_generation', 0) + 1
+                        self.status_observed_at = time.time()
+                    self._fdd_diagnostic_lines = None
         return lines
 
     @staticmethod
@@ -83,6 +124,7 @@ class OrchestraLink(FloppyLink):
     def fdd_play(self, id, hz): self._device('FDD', id, f'PLAY {hz:.2f}')
     def fdd_stop(self, id): self._device('FDD', id, 'STOP')
     def fdd_home(self, id): self._device('FDD', id, 'HOME')
+    def fdd_status(self): self.send('DIAG FDD')
     def hdd_hit(self, id): self._device('HDD', id, 'HIT')
     def hdd_stop(self, id): self._device('HDD', id, 'STOP')
     def sled_play(self, id, hz): self._device('SLED', id, f'PLAY {hz:.2f}')
@@ -133,17 +175,21 @@ class OrchestraLink(FloppyLink):
             return super().wait_homed(timeout, echo)
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
+            base_generation = self.status_generation
+            extended_generation = getattr(self, 'extended_status_generation', 0)
             self.status()
-            complete = False
+            self.fdd_status()
             until = min(deadline, time.monotonic() + .1)
             while time.monotonic() < until:
                 for line in self.poll_lines():
                     echo(line)
                     if line.startswith('ERR'): return False
-                    complete |= line == 'STATUS END'
+                complete = (self.status_generation > base_generation and
+                            getattr(self, 'extended_status_generation', 0) > extended_generation)
                 if complete: break
                 time.sleep(.005)
             fdds = [v for k,v in self.device_status.items() if k.startswith('FDD:') and v.get('enabled') == '1']
-            if complete and any(k.startswith('FDD:') for k in self.device_status) and all(v.get('homed') == '1' and v.get('homing') == '0' for v in fdds):
+            if (complete and any(k.startswith('FDD:') for k in self.device_status)
+                    and all(v.get('homed') == '1' and v.get('homing') == '0' for v in fdds)):
                 return True
         return False

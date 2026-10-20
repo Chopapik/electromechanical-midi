@@ -22,7 +22,7 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
  const running=device?active[device.id]:undefined
  const virtual=s.output.mode==='VIRTUAL'
  const disabled=!app.connected||s.service.busy||!!app.midiLoading
- const blocked=disabled||!device?.enabled||!!device?.reason||s.output.unknown||(!virtual&&(!s.output.connected||s.service.power?.state!=='ON'))||!!device&&s.output.muted.includes(device.id)
+ const blocked=disabled||!device?.enabled||!!device?.reason||s.output.unknown||(!virtual&&(device?.realEnabled===false||!s.output.connected||s.service.power?.state!=='ON'))||!!device&&s.output.muted.includes(device.id)
  const latest=useRef(app);latest.current=app
  const liveKey=JSON.stringify(settings&&{hz:settings.hz,mode:settings.mode,depth:settings.depth,period:settings.period})
  const applied=useRef<string|null>(null)
@@ -45,7 +45,7 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
  const setHz=(hz:number)=>change({hz:Math.round(Math.max(lo,Math.min(hi,hz))*100)/100})
  const position=Math.log(settings.hz/lo)/Math.log(hi/lo)*1000
  const start=()=>void app.send('lab_test',{deviceId:device.id,hz:settings.hz,duration:percussion?1:settings.continuous?null:settings.duration,modulation:{mode:percussion?'off':settings.mode,depth:settings.depth,period:settings.period}})
- const reason=!device.enabled?device.reason??'Urządzenie nieaktywne':s.output.muted.includes(device.id)?'Urządzenie wyciszone w Settings':!virtual&&s.service.power?.state!=='ON'?'Włącz ATX w Settings przed testem REAL':!virtual&&!s.output.connected?'Połącz ESP32 przed testem REAL':null
+ const reason=!device.enabled?device.reason??'Urządzenie nieaktywne':s.output.muted.includes(device.id)?'Urządzenie wyciszone w Settings':!virtual&&device.realEnabled===false?'Urządzenie oczekuje kwalifikacji i realEnabled=true':!virtual&&s.service.power?.state!=='ON'?'Włącz ATX w Settings przed testem REAL':!virtual&&!s.output.connected?'Połącz ESP32 przed testem REAL':null
  return <div className="workstation lab-workstation">
   <header className="top-bar"><div className="lab-top">
    <div><span className="lab-eyebrow">STUDIO / TESTY URZĄDZEŃ</span><h1>Laboratorium</h1></div>

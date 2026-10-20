@@ -1,10 +1,10 @@
 # Urządzenia, ograniczenia i kalibracja
 
 Docelowy firmware obsługuje **8 FDD / 6 DVD / 4 HDD / 2 speakery**,
-6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **14 jest aktywnych**:
-4 FDD, 4 DVD, 4 HDD i oba speakery. Adresacja obejmuje pełną pojemność;
-algorytmy aranżacji i UI pozostają bez zmian.
-FDD5–8 oraz DVD5–6 wymagają osobnej kwalifikacji fizycznej i są domyślnie wyłączone.
+6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **18 uczestniczy
+w planowaniu i VIRTUAL**: 8 FDD, 4 DVD, 4 HDD i oba speakery.
+FDD5–8 wymagają osobnej kwalifikacji fizycznej i mają `realEnabled:false`;
+DVD5–6 pozostają całkowicie wyłączone.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
 niewysłanych na serwer. Kolejność źródeł: aktywne urządzenia w
 [devices.json](../config/devices.json), połączone profile
@@ -20,18 +20,21 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | Urządzenia | ID / lane | Wykonawca i rola |
 | --- | --- | --- |
 | FDD1–4 | `fdd-1`…`fdd-4`, `fdd:1`…`fdd:4` | STEP/DIR, monofoniczne głosy tonalne |
-| FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Wyłączone; profil teoretyczny, niezweryfikowane |
+| FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Aranżacja/VIRTUAL aktywne; REAL zablokowany do kwalifikacji; profil teoretyczny |
 | DVD1–4 | `DVD_STEPPER_1`…`DVD_STEPPER_4`, `sled:1`…`sled:4` | DRV8833, dwie cewki, pełny krok, ciągły obrót |
 | DVD5–6 | `DVD_STEPPER_5`…`DVD_STEPPER_6`, `sled:5`…`sled:6` | Wyłączone; profil teoretyczny, niezweryfikowane |
 | PC Speaker | `vhs-1`, `drum:1` | GPIO25, główny wokal/lead |
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-Aktywne jest 14 z 20 wpisów. Tylko FDD5–8 i DVD5–6 mają `enabled:false`.
-`enabled` oznacza decyzję konfiguracji aplikacji, a `present` w metadanych profili
+W planowaniu aktywne jest 18 z 20 wpisów; tylko DVD5–6 mają `enabled:false`.
+FDD5–8 mają `enabled:true`, lecz `realEnabled:false`. `enabled` oznacza udział
+w aranżacji i VIRTUAL, `realEnabled` dopuszczenie transportu REAL, a `present`
+w metadanych profili
 obecność zadeklarowaną na podstawie potwierdzenia fizycznego, bez automatycznej
-detekcji przewodów ani sprawności. Nowe lane mają `present:false` i puste
-`quantities`: dziedziczą profil teoretyczny, bez cudzych pomiarów. Sam profil
+detekcji przewodów ani sprawności. Nowe lane mają `present:false`; parametry
+wykonawcze 72/5/2439 są oznaczone jako niskiej pewności fallback firmware,
+a nie indywidualne pomiary. Sam profil
 nie kwalifikuje urządzenia. Włączenie wpisu nie zastępuje procedury pomiarowej.
 Ordynał lane jest fizycznym kanałem; pozycje wyłączone też zajmują swój numer.
 Typ `VHS` oraz komendy `VHS`/`VHS2` zachowano dla zgodności obu speakerów.
@@ -67,12 +70,13 @@ Zwykłe STATUS zachowuje FDD1–4 i 17 rekordów. `DIAG FDD` pokazuje FDD5–8
 w osobnej odpowiedzi diagnostycznej, bez poszerzania transakcji hosta.
 
 [Registry](../host/runtime/registry.py), inventory i [OrchestraLink](../host/orchestra_link.py)
-znają osiem kanałów FDD. Domyślne `configure()` jawnie wysyła ENABLE 0 dla
-FDD5–8, bez HOME/PLAY. Cztery aktywne stacje zachowują ustawienia i transpozycje.
+znają osiem kanałów FDD. Dopóki `realEnabled:false`, `configure()` jawnie wysyła
+ENABLE 0 dla FDD5–8, bez HOME/PLAY. Po kwalifikacji i zmianie flagi host wysyła
+PROFILE/ENABLE, atomowo scala `DIAG FDD`, wykonuje potwierdzony homing TRACK0
+i dopiero potem dopuszcza PLAY.
 [STRICT_TRACKS](../host/playback/strict_tracks.py) nadal ma cztery sloty.
-Normalny STATUS nie potwierdza stanu dodatkowych FDD: ich przyszłe uruchamianie
-w aplikacji wymaga osobnej kwalifikacji oraz obsługi potwierdzeń diagnostycznych.
-Obecna zmiana nie aktywuje dodatkowych głosów ani nie zmienia alokatora.
+Normalny STATUS nie zawiera dodatkowych FDD; host używa dla nich osobnej,
+ograniczonej transakcji `DIAG FDD`. Domyślny preset aranżuje dwie grupy 4× FDD.
 
 ## Nowe DVD5–6: firmware i fallback czterech profili
 

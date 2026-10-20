@@ -14,10 +14,10 @@ from test_allocator import write_tracks
 
 
 class FddOctaveExperimentTests(unittest.TestCase):
-    def test_all_four_drives_shift_source_and_working_register(self):
+    def test_all_eight_drives_shift_source_and_working_register(self):
         r = DeviceRegistry()
         active = [d for d in r.devices if d['type']=='FDD' and d['enabled']]
-        self.assertEqual([d['id'] for d in active], [f'fdd-{i}' for i in range(1,5)])
+        self.assertEqual([d['id'] for d in active], [f'fdd-{i}' for i in range(1,9)])
         for d in active:
             self.assertEqual(d['transpose'], -12)
             self.assertEqual(d['overrides']['preferredMinHz']['value'], 100)

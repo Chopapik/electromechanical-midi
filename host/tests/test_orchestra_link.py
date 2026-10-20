@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import unittest
 from unittest.mock import Mock, patch
-from orchestra_link import OrchestraLink, parse_status
+from orchestra_link import OrchestraLink, parse_fdd_diagnostics, parse_status
 from playback.hardware import bind_devices, build_commands
 from playback.orchestra import esp32_startup_config
 from playback.virtual import VirtualDeviceInstance
@@ -18,17 +18,20 @@ class ProtocolTests(unittest.TestCase):
         link.device_status = {}
         link.controller_status = {}
         link._status_lines = None
+        link._fdd_diagnostic_lines = None
+        link.status_generation = 0
+        link.extended_status_generation = 0
         return link
 
     def test_commands(self):
         l = self.link()
         l.fdd_play(4,220); l.fdd_home(3); l.fdd_stop(2)
         l.hdd_hit(4); l.hdd_stop(2); l.sled_play(3,196); l.sled_stop(1)
-        l.vhs_amp(200); l.vhs_freq(164.81); l.vhs_stop(); l.ping(); l.status(); l.all_stop()
+        l.vhs_amp(200); l.vhs_freq(164.81); l.vhs_stop(); l.ping(); l.status(); l.fdd_status(); l.all_stop()
         self.assertEqual([c.args[0] for c in l.send.call_args_list], [
             'FDD 4 PLAY 220.00','FDD 3 HOME','FDD 2 STOP','HDD 4 HIT','HDD 2 STOP',
             'SLED 3 PLAY 196.00','SLED 1 STOP',
-            'VHS AMP 200','VHS FREQ 164.81','VHS STOP','PING','STATUS','ALL STOP'])
+            'VHS AMP 200','VHS FREQ 164.81','VHS STOP','PING','STATUS','DIAG FDD','ALL STOP'])
         for id in (0,9,True,'1'):
             with self.assertRaises(ValueError): l.fdd_home(id)
 
@@ -56,6 +59,26 @@ class ProtocolTests(unittest.TestCase):
             l.poll_lines(); self.assertEqual(l.device_status,{})
             l.poll_lines(); self.assertEqual(l.device_status,parsed['devices'])
             self.assertIsNotNone(l.status_observed_at)
+
+    def test_extended_fdd_status_merges_atomically_with_standard_status(self):
+        base = ['STATUS BEGIN','STATUS CTRL board=esp32 ready=1',
+                'STATUS FDD 1 enabled=1 homed=1 homing=0','STATUS END']
+        diagnostic = ['DIAG FDD BEGIN'] + [
+            f'DIAG FDD {i} enabled=1 homed=1 homing=0 track0=1' for i in range(5,9)
+        ] + ['DIAG FDD END']
+        self.assertEqual(set(parse_fdd_diagnostics(diagnostic)),
+                         {f'FDD:{i}' for i in range(5,9)})
+        l = self.link()
+        with patch('floppy_link.FloppyLink.poll_lines',
+                   side_effect=[diagnostic[:-1], diagnostic[-1:], base]):
+            l.poll_lines()
+            self.assertEqual(l.device_status, {})
+            l.poll_lines()
+            self.assertEqual(l.extended_status_generation, 1)
+            l.poll_lines()
+        self.assertEqual(set(l.device_status), {'FDD:1'} | {f'FDD:{i}' for i in range(5,9)})
+        with self.assertRaises(ValueError):
+            parse_fdd_diagnostics(diagnostic[:-1])
 
     def test_ready_negotiates_v2(self):
         l=self.link();l.protocol_version=1
@@ -85,7 +108,8 @@ class ProtocolTests(unittest.TestCase):
 
     def test_v2_home_requires_status_not_ready(self):
         l=self.link()
-        lines=['STATUS BEGIN','STATUS CTRL board=esp32 ready=1','STATUS FDD 1 enabled=1 homed=1 homing=0','STATUS END']
+        lines=['STATUS BEGIN','STATUS CTRL board=esp32 ready=1','STATUS FDD 1 enabled=1 homed=1 homing=0','STATUS END',
+               'DIAG FDD BEGIN']+[f'DIAG FDD {i} enabled=0 homed=0 homing=0' for i in range(5,9)]+['DIAG FDD END']
         with patch('floppy_link.FloppyLink.poll_lines',return_value=lines):
             self.assertTrue(l.wait_homed(timeout=.2,echo=lambda _:None))
         lines[2]='STATUS FDD 1 enabled=1 homed=0 homing=1'
