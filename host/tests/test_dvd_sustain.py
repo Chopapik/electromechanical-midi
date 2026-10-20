@@ -75,7 +75,7 @@ class DvdSustainTests(unittest.TestCase):
 
     def test_mechanical_veto_preserves_primary(self):
         p=plan([event(i,i*.25) for i in range(3)]); before=list(p.events)
-        with patch('playback.dvd_sustain._chronology', return_value=None):
+        with patch('playback.dvd_sustain.ChronologyCache.check', return_value=None):
             self.assertEqual(self.apply(p)['bridged'],0)
             self.assertEqual(p.events,before)
 
@@ -191,3 +191,39 @@ class DvdSustainTests(unittest.TestCase):
         real.dispatch(timeline.commands)
         self.assertEqual(packets[0]['commands'],[c.as_dict() for c in timeline.commands])
         self.assertEqual(lines,['SLED 1 PLAY 220.00','SLED 1 PLAY 240.00','SLED 1 PLAY 260.00','SLED 1 STOP'])
+
+
+class ChronologyCacheTests(unittest.TestCase):
+    def test_every_extension_matches_full_replay_and_rejects_invalid_future(self):
+        from playback.mechanical_arrangement import ChronologyCache, _chronology
+        profile=DeviceRegistry().profile(DVD)
+        cache=ChronologyCache(profile)
+        events=[event(i,i*.25) for i in range(12)]
+        for i in range(len(events)):
+            events[i]=replace(events[i],actual_duration=.20)
+            self.assertEqual(cache.check(events,[]),_chronology(profile,events,[]))
+        invalid=events+[event(99,4,played_hz=1000000)]
+        self.assertIsNone(cache.check(invalid,[]))
+        self.assertEqual(cache.check(events,[]),_chronology(profile,events,[]))
+        overlapping=list(events);overlapping[0]=replace(overlapping[0],actual_duration=.4)
+        self.assertIsNone(cache.check(overlapping,[]))
+        self.assertEqual(cache.check(events,[]),_chronology(profile,events,[]))
+
+    def test_changed_extra_reservations_cannot_reuse_invalid_cached_tail(self):
+        from playback.mechanical_arrangement import ChronologyCache, _chronology
+        profile=DeviceRegistry().profile(DVD);cache=ChronologyCache(profile)
+        events=[event(i,i*.25) for i in range(8)]
+        extras=[ReinforcementEvent('copy',DVD,3,.1,220,100)]
+        self.assertEqual(cache.check(events,extras),_chronology(profile,events,extras))
+        bad=[replace(extras[0],start=.1)]
+        self.assertIsNone(cache.check(events,bad))
+        self.assertEqual(cache.check(list(reversed(events)),extras),_chronology(profile,events,extras))
+
+    def test_mutable_percussion_history_snapshots_are_independent(self):
+        from playback.mechanical_arrangement import ChronologyCache, _chronology
+        profile=DeviceRegistry().profile('hdd_vcm-1');cache=ChronologyCache(profile)
+        events=[event(i,i*.3,.084,played_hz=None,device_type='HDD_VCM') for i in range(6)]
+        for length in (6,2,4,1,6):
+            trial=events[:length]
+            self.assertEqual(cache.check(trial,[]),_chronology(profile,trial,[]))
+        self.assertEqual(cache.states[0].hit_times,[])

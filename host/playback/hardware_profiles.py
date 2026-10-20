@@ -414,13 +414,22 @@ def advance_sled(state,profile,target,seconds):
     state.position_confidence='LOW';state.physical_state_confidence='LOW'
     # Host estimates need not duplicate the firmware's integer phase accumulator.
     count=max(1,math.ceil(seconds/.005));dt=seconds/count
-    for _ in range(count):
+    for index in range(count):
         v=state.current_step_rate
         direction=state.direction
         if not continuous:
             remaining=travel-state.position if v>=0 else state.position
             if remaining<=braking_distance(v,a)+1:direction=-1 if v>=0 else 1
-        requested=abs(target)*direction;dv=max(-a*dt,min(a*dt,requested-v));new=v+dv
+        requested=abs(target)*direction
+        if continuous and requested==v:
+            # At steady speed the remaining integration steps are identical.
+            # Keep EACH position addition (not multiplication by the count),
+            # preserving the original floating-point projection exactly.
+            displacement=(v+v)*.5*dt
+            for _ in range(count-index):state.position+=displacement
+            state.direction=direction;state.target_step_rate=requested
+            break
+        dv=max(-a*dt,min(a*dt,requested-v));new=v+dv
         position=state.position+(v+new)*.5*dt
         state.position=position if continuous else max(0.,min(travel,position))
         if (v>=0 and new<0) or (v<0 and new>=0):state.travel_reversals+=1

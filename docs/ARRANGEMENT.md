@@ -92,6 +92,13 @@ Szczegóły istotne dla porównań:
   ponieważ mogłyby wymusić niezależne nuty. Ręczne pominięcia i przydziały innych
   rodzin zachowują znaczenie. `hardware.fddUnison4` raportuje członków i liczbę
   wspólnych nut/kopii po filtrze; są to plany, nie pomiary ruchu czy głośności.
+  Wybór kolejnych nut unisono utrzymuje zweryfikowany stan mechaniczny każdego
+  FDD zamiast odtwarzać całą historię przy każdym kandydacie; brak przyszłych
+  stałych rezerwacji jest warunkiem tej ścieżki. Pokrycie przez tło DVD korzysta
+  z indeksu wysokości i czasów. Sustain DVD zachowuje dokładne migawki niezmienionego
+  początku chronologii, a każdą zmienioną nutę i cały dalszy ciąg weryfikuje ponownie.
+  Cache jest lokalny dla jednego profilu i przebiegu aranżacji, bez współdzielenia
+  pomiędzy utworami i bez pomijania końcowej walidacji.
 - Quality (`fdd_quality.py`): preferowany gate 350 ms jest punktem oceny,
   nie sztywnym limitem każdej ważnej nuty. Opcjonalny UNISON wymaga wysokiej
   wartości i wolnego budżetu; nie może wypchnąć primary.

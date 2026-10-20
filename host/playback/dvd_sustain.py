@@ -9,7 +9,7 @@ from collections import defaultdict
 from dataclasses import replace
 from statistics import median
 
-from .mechanical_arrangement import _chronology
+from .mechanical_arrangement import ChronologyCache
 from .instrument_roles import enabled as background_enabled
 
 
@@ -61,6 +61,7 @@ def apply(plan, profiles, source):
             continue
         events.sort(key=lambda e: (e.actual_start, e.id))
         extras = [e for e in plan.reinforcements if e.device_id == ident]
+        chronology = ChronologyCache(profile)
         for current, following in zip(events, events[1:]):
             gap = following.actual_start - current.end
             if not 1e-9 < gap <= ceiling / 1000.:
@@ -121,7 +122,7 @@ def apply(plan, profiles, source):
             trial = [replacements.get(e.id, e) if e.id != current.id else proposal for e in events]
             # Final complete mechanical chronology vetoes extensions, never
             # drops a primary note to make sustain fit.
-            if _chronology(profile, trial, extras) is None:
+            if chronology.check(trial, extras) is None:
                 continue
             replacements[current.id] = proposal
             report['bridged'] += 1

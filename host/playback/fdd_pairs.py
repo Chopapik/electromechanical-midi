@@ -11,7 +11,7 @@ from itertools import permutations
 from .capabilities import capabilities_for
 from .hardware import bind_devices
 from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evaluate, advance_state
-from .instrument_roles import fdd_gate, held_background
+from .instrument_roles import fdd_gate
 from .mechanical_arrangement import _chronology
 from .performance import ReinforcementEvent
 from .tonal_articulation import resolve, retarget
@@ -66,12 +66,35 @@ def arrange(plan, config, context, pins=None):
     if quad and any(e.played and e.device_type == 'FDD' and (e.id in pins or e.rule_id) for e in plan.events):
         raise ValueError('4 FDD Unisono: usuń ręczne przypisania nut do FDD przed eksperymentem')
     candidate_ids = {e.id for e in candidates}
-    covered = {e.id: held_background(replace(e, actual_start=e.start,
-                   actual_duration=e.duration), plan.events) for e in candidates}
+    # A static pitch/start index is equivalent to scanning every DVD event
+    # for every candidate; prefix maxima also handle overlapping background.
+    background = defaultdict(list)
+    for event in plan.events:
+        if event.played and event.device_type == 'DVD_SLED':
+            background[event.note].append((event.actual_start, event.end))
+    coverage = {}
+    for pitch, intervals in background.items():
+        intervals.sort()
+        starts, ends = [], []
+        for start, end in intervals:
+            starts.append(start)
+            ends.append(max(end, ends[-1] if ends else end))
+        coverage[pitch] = starts, ends
+    covered = {}
+    for event in candidates:
+        starts, ends = coverage.get(event.note, ([], []))
+        index = bisect_right(starts, event.start+1e-9)-1
+        covered[event.id] = index >= 0 and ends[index] >= event.start+event.duration-1e-9
     # Manual/lead notes retain their exact reservations, even inside a pair.
     fixed = {ident: [e for e in plan.events if e.played and e.device_id == ident
                      and e.id not in candidate_ids] for ident in profiles}
     accepted = {ident: [] for ident in profiles}
+    # Quad candidates are chronological and have no fixed FDD reservations.
+    # Preserve exactly the state a full chronology replay would produce.
+    if quad:
+        assert not any(fixed.values())
+    accepted_states = {ident: HardwareDeviceState() for ident in profiles}
+    pending_evaluations = {}
     extras = []
     replacements = {}
     owners = [None for _ in pairs]
@@ -116,8 +139,16 @@ def arrange(plan, config, context, pins=None):
                        reason=label)
 
     def feasible(notes):
+        pending_evaluations.clear()
         for ident, note in notes.items():
-            if _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], []) is None:
+            if quad:
+                physical_note = HardwareNote(note.played_hz, note.actual_duration, note.actual_start)
+                ev = evaluate(profiles[ident], physical_note, accepted_states[ident])
+                if (not ev.authorized or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load)
+                        or ev.ready_at > note.actual_start+1e-8):
+                    return False
+                pending_evaluations[ident] = ev
+            elif _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], []) is None:
                 return False
         return True
 
@@ -196,7 +227,11 @@ def arrange(plan, config, context, pins=None):
                 last_pitch[i] = notes[pairs[i][0]].note
                 primary_ids = set()
                 for ident, note in notes.items():
-                    ev = _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], [])[note.id]
+                    ev = (pending_evaluations[ident] if quad else
+                          _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], [])[note.id])
+                    if quad:
+                        advance_state(accepted_states[ident], profiles[ident],
+                                      HardwareNote(note.played_hz, note.actual_duration, note.actual_start), ev)
                     note = replace(note, hardware={**ev.as_dict(), 'lane': available[ident],
                         'selection': {'reason': label, 'pair': i+1,
                                       'part': list(key), 'sourceMidiNote': note.note}})

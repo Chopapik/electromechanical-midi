@@ -147,3 +147,16 @@ class FddUnison4Tests(unittest.TestCase):
         self.assertEqual(app.snapshot()['arrangementPreset'],QUAD_PRESET)
         self.assertEqual(app.player.state,'stopped')
         self.assert_unison(app.plan)
+
+    def test_chronology_replay_work_grows_linearly_for_four_drive_riffs(self):
+        from playback.mechanical_arrangement import _chronology
+        work=[]
+        for count in (32,64):
+            r=self.selected(dvd=0)
+            tracks=[('Riff',0,[(i*.25,i*.25+.15,60+i%3) for i in range(count)])]
+            with patch('playback.fdd_pairs._chronology',wraps=_chronology) as replay:
+                p=self.plan(tracks,r)
+            self.assertEqual(len(self.assert_unison(p)),count)
+            self.assert_feasible(p,r)
+            work.append(sum(len(call.args[1])+len(call.args[2]) for call in replay.call_args_list))
+        self.assertLessEqual(work[1],2*work[0]+16)

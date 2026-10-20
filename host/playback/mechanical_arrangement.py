@@ -3,6 +3,7 @@
 No transport decisions: both outputs consume this same deterministic plan.
 """
 from collections import defaultdict
+from dataclasses import replace
 import statistics
 
 from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evaluate, advance_state
@@ -65,6 +66,44 @@ def _chronology(profile, primaries, extras):
         result[ident] = ev
         advance_state(state,profile,note,ev)
     return result
+
+
+class ChronologyCache:
+    """Reuse an unchanged validated prefix, still check the complete new suffix.
+
+    Local to one profile and planning pass; no global or cross-song cache.
+    Snapshots retain the exact projection, including position and ready_at.
+    """
+    def __init__(self, profile):
+        self.profile = profile
+        self.sequence = []
+        self.values = []
+        self.states = [HardwareDeviceState(position=0. if profile.name=='DVD_SLED' else None)]
+
+    @staticmethod
+    def snapshot(state):
+        return replace(state, hit_times=list(state.hit_times))
+
+    def check(self, primaries, extras):
+        sequence = [(e.actual_start,e.id,HardwareNote(e.played_hz,e.actual_duration,e.actual_start)) for e in primaries]
+        sequence += [(e.start,'extra:'+str(i),HardwareNote(e.hz,e.duration,e.start)) for i,e in enumerate(extras)]
+        sequence.sort(key=lambda x:(x[0],x[1]))
+        common = 0
+        while common < min(len(sequence),len(self.sequence)) and sequence[common] == self.sequence[common]:
+            common += 1
+        self.sequence = self.sequence[:common]
+        self.values = self.values[:common]
+        self.states = self.states[:common+1]
+        state = self.snapshot(self.states[-1])
+        for start, ident, note in sequence[common:]:
+            ev = evaluate(self.profile,note,state)
+            if not ev.authorized or Verdict.BLOCKED in (ev.timing,ev.quality,ev.physical_load) or ev.ready_at>start+1e-8:
+                return None
+            advance_state(state,self.profile,note,ev)
+            self.sequence.append((start,ident,note))
+            self.values.append(ev)
+            self.states.append(self.snapshot(state))
+        return {item[1]:ev for item,ev in zip(self.sequence,self.values)}
 
 
 def add_unison(plan, profiles, priority):
