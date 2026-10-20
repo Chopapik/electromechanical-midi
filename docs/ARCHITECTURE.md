@@ -135,7 +135,11 @@ Stan szyn 74HC595 przy osobnym USB ESP32 pozostaje
 Aplikacja zawsze startuje w REAL, nawet offline. Wybór presetu jest sesyjny:
 restart odczytuje `parameters.arrangementPreset` z JSON (obecnie `instrument_roles_unison4`).
 Zmiana presetu potwierdza STOP, przebudowuje plan i zwiększa rewizję,
-bez autoplay. Inventory/profil zmieniasz w JSON, potem przebudowujesz aplikację;
+bez autoplay. Podczas przygotowywania nowego pliku MIDI przełącznik REAL/VIRTUAL
+pozostaje dostępny i nie czeka w kolejce za obliczaniem aranżacji. Zmiana nadal
+przechodzi przez Player/Router i potwierdzony STOP; zajęty serwis blokuje ją,
+a zakończenie wczytywania nie przywraca starego wyjścia ani nie uruchamia gry.
+Inventory/profil zmieniasz w JSON, potem przebudowujesz aplikację;
 nie ma panelu dodawania urządzeń ani wyboru kontrolera. Mute nie zmienia inventory.
 
 [devices.json](../config/devices.json) definiuje fizyczne lanes, transpozycje,

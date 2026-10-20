@@ -7,13 +7,14 @@ beforeAll(() => Element.setTextMeasurementCanvas({getContext: () => ({
  measureText: (text: string) => ({width:text.length*8,actualBoundingBoxAscent:16,actualBoundingBoxDescent:4}),
 })} as unknown as HTMLCanvasElement))
 const send=vi.fn()
+const loading=vi.hoisted(()=>({value:null as {name:string;stage:'planning'}|null}))
 const firmwareEvents=vi.hoisted(()=>[] as Array<{type:string;seq:number;kind:string;stage?:string;flash?:string;ble?:string;progress?:number;line?:string}>)
 const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orchestra',epoch:0,revision:0,error:null as string|null,audioOwner:null,
   devices:[{id:'fdd-1',name:'FDD #1',type:'FDD',enabled:true,volume:.6,bands:[[200,410]],reason:null}],
   output:{mode:'REAL',connected:false,unknown:false,message:'Brak połączenia z ESP32',muted:[]},
   service:{busy:false,error:null,reset:{available:false,reason:'Brak komendy resetu'},home:{available:false,reason:'Offline'},firmware:{available:false,reason:'Podłącz ESP32 przez USB (CP2102), aby wgrać firmware'}}}
-vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents})}))
-beforeEach(()=>{Object.assign(state,{homing:false});cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
+vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents,midiLoading:loading.value})}))
+beforeEach(()=>{loading.value=null;state.service.busy=false;Object.assign(state,{homing:false});cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
 function mount(path='/'){return render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>)}
 describe('Orchestra UI',()=>{
  it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Offline · ESP32 nie jest połączony')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
@@ -138,4 +139,20 @@ it('offers the experimental four-drive unison preset',()=>{
  expect(screen.getByRole('option',{name:'4 FDD Unisono · eksperymentalny'})).toBeTruthy()
  fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles_unison4'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles_unison4'})
+})
+
+
+it('keeps output selection available while a MIDI arrangement is loading',()=>{
+ loading.value={name:'large.mid',stage:'planning'}
+ mount('/settings')
+ const toggle=screen.getByLabelText('Virtual debug · Web Audio') as HTMLInputElement
+ expect(toggle.disabled).toBe(false)
+ fireEvent.click(toggle)
+ expect(send).toHaveBeenCalledWith('output',{mode:'VIRTUAL'})
+})
+
+it('still blocks output changes during exclusive device service operations',()=>{
+ loading.value={name:'large.mid',stage:'planning'};state.service.busy=true
+ mount('/settings')
+ expect((screen.getByLabelText('Virtual debug · Web Audio') as HTMLInputElement).disabled).toBe(true)
 })

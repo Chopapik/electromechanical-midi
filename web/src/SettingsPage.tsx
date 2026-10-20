@@ -11,6 +11,7 @@ export function SettingsPage({app}:{app:Runtime}){
   const navigate=useNavigate(),s=app.state
   const virtual=s?.output.mode==='VIRTUAL'
   const disabled=!s||!app.connected||s.service.busy||!!app.midiLoading
+  const outputDisabled=!s||!app.connected||s.service.busy
   const events=app.firmwareEvents??[]
   const reverseStart=[...events].reverse().findIndex(event=>event.kind==='status'&&event.stage==='prepare')
   const started=reverseStart<0?-1:events.length-1-reverseStart
@@ -36,7 +37,7 @@ export function SettingsPage({app}:{app:Runtime}){
       <div className="settings-shell settings-body">
         <section className="settings-section">
           <h2>Output</h2>
-          <label><input type="checkbox" checked={virtual} disabled={disabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
+          <label><input type="checkbox" checked={virtual} disabled={outputDisabled} onChange={e=>void app.send('output',{mode:e.target.checked?'VIRTUAL':'REAL'})}/> Virtual debug · Web Audio</label>
         </section>
         <section className="settings-section">
           <h2>Zasilanie ATX</h2>

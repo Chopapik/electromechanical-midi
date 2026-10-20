@@ -122,7 +122,10 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 elif operation=='pause': p.pause()
                 elif operation=='stop': p.stop()
                 elif operation=='seek': p.seek(message['position'])
-                elif operation=='output': p.switch(message['mode'])
+                elif operation=='output':
+                    with p.lock:
+                        if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
+                        p.switch(message['mode'])
                 elif operation=='speaker_waveform': runtime.set_speaker_waveform(message['deviceId'],message['waveform'])
                 elif operation=='speaker_volume': runtime.set_speaker_volume(message['deviceId'],message['output'],message['value'])
                 elif operation=='mute': p.mute(message['deviceId'],message['muted'])
@@ -135,8 +138,14 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 elif operation=='lab_stop': runtime.lab.stop_device(owner,message['deviceId'])
                 elif operation=='service': runtime.service.run(message['operation'],confirmed=message.get('confirmed') is True)
                 else: raise ValueError('Unknown action')
-            async with command_lock:
+            if operation=='output':
+                # File loading plans outside Player's lock. Changing its output
+                # must not wait behind the whole computation; Player.switch
+                # still cancels playback and enforces the existing STOP barrier.
                 await asyncio.to_thread(perform)
+            else:
+                async with command_lock:
+                    await asyncio.to_thread(perform)
             await send_peer(peer,{'type':'ack','requestId':request,'state':await asyncio.to_thread(runtime.snapshot)})
         except Exception as exc:
             with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':str(exc)})
