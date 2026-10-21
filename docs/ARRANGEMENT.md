@@ -258,3 +258,42 @@ nowe porównanie wszystkich 134 plików jest testem regresji pełnej dostępnej
 biblioteki, bez osobnej części odłożonej. Oba zachowują hashe wejść i baseline,
 a nie tylko sumę nut. Raporty wyraźnie oddzielają
 pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
+
+## TODO
+
+- [ ] **Let Down — zbędne impulsy PC Speakera po około 2:55 (175 s).**
+  Użytkownik zgłasza niepotrzebne impulsy i podejrzewa błędny przydział partii
+  pomiędzy którymś DVD a PC Speakerem. Zgłoszenie pozostaje niezweryfikowane;
+  numer DVD, główny speaker/FX oraz tryb REAL/VIRTUAL wymagają ustalenia.
+  Plik odniesienia: `0036-05-radiohead_1997-let_down-[k].mid`.
+  Odtworzyć okolice 2:50–3:10, zaczynając od bieżącego domyślnego presetu
+  `instrument_roles_unison4` i gate FDD 200 ms. Porównać źródłowe nuty/partie
+  z przydziałami `PerformancePlan`, artykulacją i komendami `ExecutionTimeline`
+  dla obu speakerów oraz DVD1–4. Ustalić pochodzenie impulsów i zweryfikować
+  podejrzenie zamiany partii przed zmianą routingu.
+
+- [ ] **Weird Fishes/Arpeggi — zbyt małe wykorzystanie DVD.**
+  Użytkownik zgłasza wyraźnie za mało grania na DVD; przyczyna pozostaje
+  niezweryfikowana. Plik odniesienia: `0082-04-radiohead_2007-weird_fishes-arpegi.mid`.
+  Sprawdzić aktywność DVD1–4 w całym utworze i porównać źródłowe partie tła
+  z alokacją na FDD/speakery oraz powodami pominięcia nut DVD. Zweryfikować,
+  czy dobór głosów, zajętość lub ocena przejść nie ograniczają nadmiernie tła.
+
+- [ ] **PC Speaker i PC Speaker FX — zbyt ciche w każdym utworze.**
+  Obserwacja użytkownika; przyczyna pozostaje nieustalona. Podczas odczytu
+  aplikacja pracowała w REAL, oba kanały miały `realAmplitude: 128`, a ostatnie
+  wysłane komendy potwierdzały `VHS AMP 128` i `VHS2 AMP 128` przed `FREQ`.
+  To maksymalna nastawa aplikacji: symetryczny kwadrat, 50% przewodzenia PNP.
+  Log hosta nie potwierdza rzeczywistego przebiegu ani głośności na głośniku.
+  Osobne poziomy VIRTUAL nie wpływają na REAL. Nie potwierdzono błędu kodu
+  obniżającego nastawę REAL. Porównać samodzielny ton w laboratorium z grą
+  w orkiestrze; sprawdzić tor S8550 / 56 Ω / zasilanie oraz wpływ niskiego
+  rejestru i maskowania przez pozostałe instrumenty. Ocenić osobno VIRTUAL.
+
+- [ ] **HDD — zachować rytmiczne akcenty, ograniczyć nadmierną gęstość uderzeń.**
+  Według odsłuchu użytkownika krótkie uderzenia w rytm brzmią bardzo dobrze
+  w **0:48–1:17**. Zbyt częste uderzenia brzmią źle w **0:34–0:41** oraz
+  **po 1:36**. Tytuł utworu i tryb wyjścia wymagają potwierdzenia.
+  Porównać te fragmenty, gęstość kolejnych/równoczesnych hitów i źródłowe
+  klasy perkusji. Dopracować selekcję akcentów oraz lokalną gęstość HDD,
+  zachowując dobre rytmiczne fragmenty. Przyczyna nie została zweryfikowana.
