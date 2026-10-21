@@ -208,9 +208,12 @@ błędna klasyfikacja w źródle nadal może skierować niewłaściwą partię d
 Mniejsze dropy nie są dowodem lepszego brzmienia.
 
 Najdłuższe ciągłe okresy DVD raportujemy ze skompilowanej osi. Ciągły obrót nie
-potwierdza bezpiecznej pracy termicznej. Proponowane VM 3,3 V wymaga pomiarów
-prądu i temperatury; przy 5 V obserwowano nadmierne grzanie. Testy nie uruchamiają
-silników ani nie zastępują pomiarów fizycznego układu.
+potwierdza bezpiecznej pracy termicznej. Aktualne zgłoszenie użytkownika opisuje
+DVD/HDD przy VM 5 V z dobrym odprowadzaniem ciepła, np. do metalowej obudowy VHS;
+wcześniejsza propozycja 3,3 V i obserwacja grzania przy 5 V pozostają w
+[historii pomiarów](hardware-measurements.md#dvd). Brakuje pomiarów prądu,
+temperatury i czasu dla nowego montażu. Testy nie uruchamiają silników ani nie
+zastępują pomiarów fizycznego układu.
 
 <a id="biblioteka-8-fdd-2026-10-21"></a>
 ## Biblioteka 8 FDD — 2026-10-21

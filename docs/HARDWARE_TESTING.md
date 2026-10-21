@@ -174,9 +174,15 @@ uruchamiaj skończone próby z ograniczonym prądem. Nie zaczynaj od całej orki
 | Urządzenie | Sprawdzenie przed grą | Obserwacje w próbie |
 | --- | --- | --- |
 | FDD | /DS, TRACK0 aktywne LOW i właściwy kanał; jawny HOME | Czy dochodzi do TRACK0, odsuwa się, nie uderza w koniec, nie gubi odniesienia |
-| DVD | Pary cewek, VM, stan wejść mostków, swobodny obrót | Kierunek, rampa, zmiana celu bez STOP, prąd i wzrost temperatury |
-| HDD | Rezystancja/połączenia cewki, VM, miejsce ruchu ramienia | Pojedynczy HIT, park/settle/strike, brak zakleszczenia i nadmiernego nagrzewania |
+| DVD | Pary cewek, VM 5 V, stan wejść mostków, swobodny obrót, kontakt termiczny z elementem odbierającym ciepło (np. metalową obudową VHS) | Kierunek, rampa, zmiana celu bez STOP, prąd i temperatura silnika/sterownika/obudowy |
+| HDD | Rezystancja/połączenia cewki, VM 5 V, miejsce ruchu ramienia, odprowadzanie ciepła do obudowy | Pojedynczy HIT, park/settle/strike, brak zakleszczenia, prąd i temperatura cewki/sterownika/obudowy |
 | Speaker / FX | Zgłoszone 3,3 V ATX, baza 330 Ω, pull-up 10 kΩ, szeregowo 56 Ω (moc rezystora do potwierdzenia); pinout S8550 do sprawdzenia | Każdy kanał osobno, brak sprzęgania częstotliwości, prąd, temperatura i nośna PWM |
+
+Praca DVD/HDD przy 5 V z chłodzeniem jest aktualnym zgłoszeniem użytkownika.
+Przy odtwarzaniu tego montażu zapisz czas próby, temperaturę otoczenia i części,
+prąd oraz sposób mocowania do obudowy. Metalowy case VHS może być jednocześnie
+elementem odprowadzania ciepła i pudłem rezonansowym; ocena brzmienia nie zastępuje
+sprawdzenia temperatury.
 
 **FDD5–8 są zadeklarowane jako podłączone i aktywne w planowaniu, VIRTUAL oraz
 REAL (`realEnabled:true`, `present:true`).** Parametry fallbacku nie zastępują

@@ -31,8 +31,9 @@ opisuje wcześniejszą politykę, nie bieżący efektywny zakres.
 
 | Dowód | Wynik | Ograniczenie |
 | --- | --- | --- |
-| Obserwacja użytkownika przy VM 5 V | Nadmierne nagrzewanie silników DVD | Bez zapisanej temperatury, prądu i czasu; nie wyznacza liczbowego limitu |
-| Proponowane VM 3,3 V | Robocza propozycja zasilania **silników przez DRV8833** | Brak kwalifikacji termicznej/prądowej, także dla sustainu |
+| Wcześniejsza obserwacja użytkownika przy VM 5 V | Nadmierne nagrzewanie silników DVD | Bez zapisanej temperatury, prądu i czasu; nie wyznacza liczbowego limitu |
+| Wcześniej proponowane VM 3,3 V | Robocza propozycja zasilania **silników przez DRV8833** | Historyczna propozycja, bez kwalifikacji termicznej/prądowej |
+| Aktualizacja użytkownika, 2026-10-21: VM 5 V i dobre odprowadzanie ciepła | Zgłoszona poprawna praca DVD; przykład montażu: metalowa obudowa VHS odbierająca ciepło i pełniąca rolę pudła rezonansowego | Brak zapisanej temperatury, prądu, czasu próby oraz szczegółów kontaktu termicznego; wynik dotyczy zgłoszonego montażu |
 | Sweep DVD1 50–500 Hz co 10 Hz, pitchRatio=1 | Pasma 50–120, 180–190, 270–300, 340–470 kroków/s | Jeden silnik, poprzedni tryb z limitem drogi 140 kroków i automatycznym nawrotem; nie aktualna whitelist ciągłego obrotu |
 | Tuner gitarowy, 2026-10-11 | Komenda 200 Hz odczyt ~100 Hz; 500 Hz odczyt ~250 Hz | Możliwa detekcja oktawy/harmonicznej, brak pomiaru widmowego i indywidualnej kwalifikacji DVD1–3 |
 
@@ -68,6 +69,13 @@ To długości komend na jednej lane, **nie fizyczne próby ciągłego grzania**.
 5 V i rezystancję cewki około 23,3 Ω. Nie ma identyfikacji i kompletnych pomiarów
 prądu/temperatury dla wszystkich czterech obecnych VCM. Nie należy przenosić tego
 napięcia na cały zestaw jako zweryfikowanej specyfikacji.
+
+**Aktualizacja użytkownika, 2026-10-21:** zgłoszona poprawna praca HDD przy
+**VM 5 V z dobrym odprowadzaniem ciepła**, np. przez metalową obudowę VHS,
+która służy również jako pudło rezonansowe. To aktualny wariant montażowy
+opisany w głównym schemacie. Nie zapisano prądu, temperatury ani czasu próby;
+obserwacja nie określa uniwersalnego limitu termicznego pozostałych cewek.
+
 Czas fizycznego cyklu i zakres modelu opisują [urządzenia](../HARDWARE_DEVICES.md#hdd-vcm).
 Referencyjne modele rezonansów w [badaniu teoretycznym](orkiestra-model-teoretyczny.md)
 nie są widmem zmierzonym na odzyskanych dyskach.

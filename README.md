@@ -46,7 +46,10 @@ Wybór zatrzymuje odtwarzanie i przebudowuje plan. Opisy i kompromisy:
 - [Uruchamianie sprzętu, testy i awarie](docs/HARDWARE_TESTING.md)
 - [Architektura, obsługa aplikacji i środowisko developerskie](docs/ARCHITECTURE.md)
 
-DVD: proponowane **3,3 V na VM DRV8833**, wymagające pomiaru prądu i temperatury.
+DVD i HDD: użytkownik zgłasza poprawną pracę przy **5 V na VM DRV8833**
+z dobrym odprowadzaniem ciepła, np. do metalowej obudowy VHS pełniącej też
+rolę pudła rezonansowego. To obserwacja tego montażu; prąd, temperatura
+i dopuszczalny czas ciągłej pracy wymagają pomiarów.
 Speakery: zgłoszone połączenie S8550 PNP, 3,3 V, baza 330 Ω z pull-up 10 kΩ
 i szeregowo 56 Ω; moc rezystorów i impedancja głośników wymagają potwierdzenia.
 Szczegóły oraz status dowodów znajdują się w dokumentacji sprzętowej.

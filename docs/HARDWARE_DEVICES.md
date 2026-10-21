@@ -174,10 +174,17 @@ jest względnym, nasycanym licznikiem komend bez czujnika położenia.
 Ciągły obrót zakłada mechanicznie swobodny wirnik; oś ze śrubą i karetką
 mogłaby uderzyć w koniec drogi. Sprawdź faktyczną konstrukcję przed ruchem.
 Nie ma termicznego limitu długości frazy ani czujnika temperatury.
-Proponowane zasilanie silników i brak kwalifikacji ciągłej pracy:
+Użytkownik zgłasza poprawną pracę przy **VM 5 V i dobrym odprowadzaniu ciepła**,
+np. do metalowej obudowy VHS, która jest również pudłem rezonansowym.
+Nie określono zmierzonego prądu, temperatury ani limitu ciągłej pracy.
+Warunki montażu i zasilania:
 [schemat zasilania](HARDWARE_WIRING.md#zasilanie).
 
 ## HDD VCM
+
+Aktualnie zgłoszone zasilanie to **VM 5 V z dobrym odprowadzaniem ciepła**,
+np. przez metalową obudowę VHS. Użytkownik opisuje poprawną pracę tego montażu;
+prąd i temperatura obecnych cewek wymagają pomiarów.
 
 Fizyczny cykl: **40 ms Park → 40 ms Settle → 4 ms Strike → coast**, razem 84 ms.
 Zajęty kanał odrzuca HIT (`ERR BUSY`), bez ukrytej kolejki.

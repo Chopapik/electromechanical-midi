@@ -39,7 +39,7 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 | Skład hosta | 20 wpisów; aktywne 8 FDD + 4 DVD + 4 HDD + 2 speakery; DVD5–6 wyłączone | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
-| Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
+| Zasilanie DVD i HDD | Aktualne zgłoszenie: **VM 5 V z dobrym odprowadzaniem ciepła**, np. do metalowej obudowy VHS pełniącej też rolę rezonatora; brak liczbowej kwalifikacji termicznej | [zasilanie](HARDWARE_WIRING.md#zasilanie), [obserwacje DVD](research/hardware-measurements.md#dvd), [HDD](research/hardware-measurements.md#hdd-vcm) |
 | HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |
 | ATX | GPIO19 → S8050 → PS_ON#, stan logiczny, brak PWR_OK/ADC; upload przez potwierdzone OFF | [połączenia](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on), [procedura](HARDWARE_TESTING.md#firmware-i-sama-logika) |
 | UI i wyjście | `/` i `/settings`, ESP32 BLE, wspólny ExecutionTimeline, VIRTUAL Web Audio | [runtime](../host/runtime/application.py), [UI](../web/src/App.tsx) |

@@ -30,8 +30,8 @@ zasileniem odpowiedniej części. Nie ma zatwierdzonej listy konkretnych modeli 
 | ESP32 | USB płytki developerskiej | Nie łącz dodatniej szyny zasilania ESP32 z dodatnią szyną ATX |
 | 6 × SN74HC595N i pull-upy logiczne | 3,3 V z ATX, wspólna masa z ESP32 USB | Osobna szyna logiki; nie łącz jej z pinem 3V3/5V/VIN zasilanej USB płytki ESP32 |
 | FDD | Osobne 5 V do złącza zasilania napędu | Bieżące założenie układu; sprawdź model i orientację wtyku |
-| DVD stepper | Proponowane 3,3 V **na VM DRV8833 #1–6** | Robocze napięcie zasilania silników, wymaga pomiaru temperatury i prądu; brak potwierdzonego limitu ciągłej pracy |
-| HDD VCM | Osobne VM DRV8833 #7–8, do ustalenia | Brak zweryfikowanego napięcia/prądu dla kompletu cewek; zapis testu 5 V i ~23,3 Ω znajduje się w [badaniach](research/hardware-measurements.md#hdd-vcm) |
+| DVD stepper | 5 V **na VM DRV8833 #1–6** | Użytkownik zgłasza poprawną pracę przy dobrym odprowadzaniu ciepła; warunki montażu poniżej, brak zmierzonego limitu ciągłej pracy |
+| HDD VCM | 5 V **na VM DRV8833 #7–8** | Użytkownik zgłasza poprawną pracę przy dobrym odprowadzaniu ciepła; prąd i temperatura kompletu cewek wymagają pomiarów, [obserwacje](research/hardware-measurements.md#hdd-vcm) |
 | PC Speaker / FX | 3,3 V ATX | S8550 PNP, baza 330 Ω + pull-up 10 kΩ, szeregowo z głośnikiem 56 Ω (moc rezystora do potwierdzenia); połączenie zgłoszone, bez pomiarów; nie zasilać głośnika z GPIO |
 
 W teście samej logiki zasil ESP32 przez USB, a rejestry ze sprawdzonej szyny
@@ -44,7 +44,18 @@ Dodaj odsprzęganie zasilania przy układach: 100 nF przy każdym 74HC595 oraz
 kondensatory VM zgodne z dokumentacją konkretnego modułu DRV8833 i długością
 przewodów. To zalecenia projektowe producentów, nie wynik pomiaru tej instalacji.
 Zasilacze, przekroje, zabezpieczenia i nastawy ograniczenia prądu wymagają doboru
-po identyfikacji obciążeń. Samo 3,3 V nie dowodzi bezpiecznego prądu DVD.
+po identyfikacji obciążeń.
+
+DVD i HDD przy **5 V wymagają dobrego odprowadzania ciepła**. Według aktualnego
+zgłoszenia użytkownika taki montaż działa poprawnie. Przykładem jest metalowa
+obudowa VHS, która odbiera ciepło i równocześnie pełni funkcję pudła rezonansowego.
+Mocowanie powinno zapewniać kontakt termiczny części nagrzewających się z metalem
+oraz izolację elektryczną połączeń i płytek. Zdolność obudowy do wzmacniania
+dźwięku nie określa jej wydajności chłodzenia.
+Nie zapisano temperatury, prądu ani czasu próby tego montażu; zgłoszenie nie
+wyznacza uniwersalnego bezpiecznego czasu pracy wszystkich odzyskanych silników.
+5 V dotyczy obwodów VM silników; logika 74HC595 i zasilanie speakerów pozostają
+przy 3,3 V zgodnie z osobnymi wierszami tabeli.
 
 ## Sterowanie ATX przez PS_ON#
 
