@@ -1,0 +1,4461 @@
+{
+  "files": 134,
+  "verifiedTimelines": 134,
+  "devices": {
+    "DVD_STEPPER_1": {
+      "notes": 37246,
+      "seconds": 25941.54908529167,
+      "stops": 14880,
+      "activeSongs": 134,
+      "longestContinuous": 366.9966666666666
+    },
+    "DVD_STEPPER_2": {
+      "notes": 33465,
+      "seconds": 24024.084993016288,
+      "stops": 11647,
+      "activeSongs": 134,
+      "longestContinuous": 154.79141900000002
+    },
+    "DVD_STEPPER_3": {
+      "notes": 31903,
+      "seconds": 21957.377567318887,
+      "stops": 10555,
+      "activeSongs": 129,
+      "longestContinuous": 149.32207290000002
+    },
+    "DVD_STEPPER_4": {
+      "notes": 29144,
+      "seconds": 20167.10602014076,
+      "stops": 8607,
+      "activeSongs": 127,
+      "longestContinuous": 167.96999999999997
+    }
+  },
+  "songs": [
+    {
+      "file": "Coldplay - The Scientist.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 15,
+          "seconds": 12.893505625,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 6.884252375
+        },
+        "DVD_STEPPER_2": {
+          "notes": 5,
+          "seconds": 4.004625624999999,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 3.328700375
+        },
+        "DVD_STEPPER_3": {
+          "notes": 16,
+          "seconds": 14.00924525,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 14.00924525
+        },
+        "DVD_STEPPER_4": {
+          "notes": 16,
+          "seconds": 14.00924525,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 14.00924525
+        }
+      }
+    },
+    {
+      "file": "Every breath you take.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 239,
+          "seconds": 191.6005822499999,
+          "stops": 84,
+          "activeSongs": 1,
+          "longestContinuous": 12.529213125000005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 209,
+          "seconds": 181.64130525000002,
+          "stops": 81,
+          "activeSongs": 1,
+          "longestContinuous": 22.616836000000006
+        },
+        "DVD_STEPPER_3": {
+          "notes": 178,
+          "seconds": 181.4253801249999,
+          "stops": 68,
+          "activeSongs": 1,
+          "longestContinuous": 25.952118374999998
+        },
+        "DVD_STEPPER_4": {
+          "notes": 174,
+          "seconds": 158.63771212499995,
+          "stops": 75,
+          "activeSongs": 1,
+          "longestContinuous": 13.125007874999994
+        }
+      }
+    },
+    {
+      "file": "One_Republic_Counting_stars.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 334,
+          "seconds": 225.12410815833326,
+          "stops": 102,
+          "activeSongs": 1,
+          "longestContinuous": 27.53686964166667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 160,
+          "seconds": 221.84625859999994,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 31.471293641666648
+        },
+        "DVD_STEPPER_3": {
+          "notes": 176,
+          "seconds": 216.2449173666665,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 21.63523364166666
+        },
+        "DVD_STEPPER_4": {
+          "notes": 133,
+          "seconds": 210.52126760833323,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 35.36883241666666
+        }
+      }
+    },
+    {
+      "file": "The Police - Message in a Bottle.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 356,
+          "seconds": 271.71666666666636,
+          "stops": 170,
+          "activeSongs": 1,
+          "longestContinuous": 17.54166666666667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 350,
+          "seconds": 269.00399999999985,
+          "stops": 192,
+          "activeSongs": 1,
+          "longestContinuous": 15.991666666666674
+        },
+        "DVD_STEPPER_3": {
+          "notes": 509,
+          "seconds": 257.27333333333297,
+          "stops": 213,
+          "activeSongs": 1,
+          "longestContinuous": 9.616666666666667
+        },
+        "DVD_STEPPER_4": {
+          "notes": 509,
+          "seconds": 253.62599999999964,
+          "stops": 214,
+          "activeSongs": 1,
+          "longestContinuous": 18.96666666666666
+        }
+      }
+    },
+    {
+      "file": "coldplaythe_scientist.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 529,
+          "seconds": 293.5652306916665,
+          "stops": 101,
+          "activeSongs": 1,
+          "longestContinuous": 19.069436816666666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 485,
+          "seconds": 300.7780504000001,
+          "stops": 58,
+          "activeSongs": 1,
+          "longestContinuous": 21.687491324999996
+        },
+        "DVD_STEPPER_3": {
+          "notes": 489,
+          "seconds": 296.45976624166656,
+          "stops": 74,
+          "activeSongs": 1,
+          "longestContinuous": 66.61802890833333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 475,
+          "seconds": 294.9263614750001,
+          "stops": 78,
+          "activeSongs": 1,
+          "longestContinuous": 34.95137490833332
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0001-01-radiohead_1993-you.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 311,
+          "seconds": 200.465722075,
+          "stops": 118,
+          "activeSongs": 1,
+          "longestContinuous": 49.620404925
+        },
+        "DVD_STEPPER_2": {
+          "notes": 345,
+          "seconds": 195.87481755000007,
+          "stops": 93,
+          "activeSongs": 1,
+          "longestContinuous": 23.445431100000008
+        },
+        "DVD_STEPPER_3": {
+          "notes": 368,
+          "seconds": 175.87711029999997,
+          "stops": 124,
+          "activeSongs": 1,
+          "longestContinuous": 16.3545291
+        },
+        "DVD_STEPPER_4": {
+          "notes": 294,
+          "seconds": 177.07483635000003,
+          "stops": 45,
+          "activeSongs": 1,
+          "longestContinuous": 30.536333100000007
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0002-02-radiohead_1993-creep-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 298,
+          "seconds": 208.1167265083333,
+          "stops": 96,
+          "activeSongs": 1,
+          "longestContinuous": 13.676590316666648
+        },
+        "DVD_STEPPER_2": {
+          "notes": 282,
+          "seconds": 207.92273790000004,
+          "stops": 104,
+          "activeSongs": 1,
+          "longestContinuous": 22.154826316666664
+        },
+        "DVD_STEPPER_3": {
+          "notes": 299,
+          "seconds": 201.94177718333333,
+          "stops": 110,
+          "activeSongs": 1,
+          "longestContinuous": 21.828740316666682
+        },
+        "DVD_STEPPER_4": {
+          "notes": 246,
+          "seconds": 198.37713548333318,
+          "stops": 60,
+          "activeSongs": 1,
+          "longestContinuous": 24.437428316666665
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0003-03-radiohead_1993-how_do_you.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 377,
+          "seconds": 109.14029624999995,
+          "stops": 110,
+          "activeSongs": 1,
+          "longestContinuous": 9.7212740625
+        },
+        "DVD_STEPPER_2": {
+          "notes": 256,
+          "seconds": 104.43646312499999,
+          "stops": 92,
+          "activeSongs": 1,
+          "longestContinuous": 16.2077540625
+        },
+        "DVD_STEPPER_3": {
+          "notes": 203,
+          "seconds": 98.88637406249998,
+          "stops": 50,
+          "activeSongs": 1,
+          "longestContinuous": 12.086136562500002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 190,
+          "seconds": 93.01173131249998,
+          "stops": 61,
+          "activeSongs": 1,
+          "longestContinuous": 9.721274062499994
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0004-04-radiohead_1993-stop_whispering.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 455,
+          "seconds": 311.58335027499993,
+          "stops": 202,
+          "activeSongs": 1,
+          "longestContinuous": 29.50788353333334
+        },
+        "DVD_STEPPER_2": {
+          "notes": 482,
+          "seconds": 299.4264517916665,
+          "stops": 209,
+          "activeSongs": 1,
+          "longestContinuous": 11.757655075000002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 481,
+          "seconds": 287.1804052916666,
+          "stops": 146,
+          "activeSongs": 1,
+          "longestContinuous": 51.6767594333333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 440,
+          "seconds": 287.5990593583333,
+          "stops": 128,
+          "activeSongs": 1,
+          "longestContinuous": 40.36910293333335
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0005-05-radiohead_1993-thinking_about_you.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 523,
+          "seconds": 151.27896532083335,
+          "stops": 220,
+          "activeSongs": 1,
+          "longestContinuous": 6.911056770833335
+        },
+        "DVD_STEPPER_2": {
+          "notes": 170,
+          "seconds": 153.46714375833332,
+          "stops": 43,
+          "activeSongs": 1,
+          "longestContinuous": 27.677880924999997
+        },
+        "DVD_STEPPER_3": {
+          "notes": 116,
+          "seconds": 153.52483605833336,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 42.5657162375
+        },
+        "DVD_STEPPER_4": {
+          "notes": 111,
+          "seconds": 153.53925913333333,
+          "stops": 33,
+          "activeSongs": 1,
+          "longestContinuous": 24.104180237500003
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0006-06-radiohead_1993-anyone_can_play_guitar.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 375,
+          "seconds": 169.07529720000002,
+          "stops": 155,
+          "activeSongs": 1,
+          "longestContinuous": 13.016419599999992
+        },
+        "DVD_STEPPER_2": {
+          "notes": 400,
+          "seconds": 171.23647679999985,
+          "stops": 106,
+          "activeSongs": 1,
+          "longestContinuous": 17.166081799999972
+        },
+        "DVD_STEPPER_3": {
+          "notes": 421,
+          "seconds": 159.48156766666645,
+          "stops": 149,
+          "activeSongs": 1,
+          "longestContinuous": 10.258201799999995
+        },
+        "DVD_STEPPER_4": {
+          "notes": 379,
+          "seconds": 151.9059259333332,
+          "stops": 64,
+          "activeSongs": 1,
+          "longestContinuous": 28.0163876
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0007-07-radiohead_1993-ripcord.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 476,
+          "seconds": 122.30126005416675,
+          "stops": 103,
+          "activeSongs": 1,
+          "longestContinuous": 6.457375904166668
+        },
+        "DVD_STEPPER_2": {
+          "notes": 543,
+          "seconds": 141.45603413749996,
+          "stops": 80,
+          "activeSongs": 1,
+          "longestContinuous": 10.391061037500002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 307,
+          "seconds": 86.12873232499993,
+          "stops": 42,
+          "activeSongs": 1,
+          "longestContinuous": 6.035383849999988
+        },
+        "DVD_STEPPER_4": {
+          "notes": 258,
+          "seconds": 75.85495688750005,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 6.035383849999988
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0008-08-radiohead_1993-vegetable.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 372,
+          "seconds": 165.7800355875,
+          "stops": 182,
+          "activeSongs": 1,
+          "longestContinuous": 6.3365376166666465
+        },
+        "DVD_STEPPER_2": {
+          "notes": 322,
+          "seconds": 167.66584302916675,
+          "stops": 125,
+          "activeSongs": 1,
+          "longestContinuous": 13.831728925000007
+        },
+        "DVD_STEPPER_3": {
+          "notes": 323,
+          "seconds": 161.65202652291657,
+          "stops": 121,
+          "activeSongs": 1,
+          "longestContinuous": 13.831728925000007
+        },
+        "DVD_STEPPER_4": {
+          "notes": 364,
+          "seconds": 156.94469061249998,
+          "stops": 122,
+          "activeSongs": 1,
+          "longestContinuous": 6.908652925000013
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0009-09-radiohead_1993-prove_yourself.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 326,
+          "seconds": 118.95283951250006,
+          "stops": 112,
+          "activeSongs": 1,
+          "longestContinuous": 8.562479449999998
+        },
+        "DVD_STEPPER_2": {
+          "notes": 356,
+          "seconds": 125.4104133,
+          "stops": 99,
+          "activeSongs": 1,
+          "longestContinuous": 10.705331450000003
+        },
+        "DVD_STEPPER_3": {
+          "notes": 361,
+          "seconds": 122.11577835000001,
+          "stops": 68,
+          "activeSongs": 1,
+          "longestContinuous": 16.06246145
+        },
+        "DVD_STEPPER_4": {
+          "notes": 362,
+          "seconds": 121.0354238,
+          "stops": 64,
+          "activeSongs": 1,
+          "longestContinuous": 22.491017450000015
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0010-10-radiohead_1993-i_can't.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 567,
+          "seconds": 209.76620279999983,
+          "stops": 264,
+          "activeSongs": 1,
+          "longestContinuous": 6.90624907916667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 607,
+          "seconds": 211.12677954166685,
+          "stops": 230,
+          "activeSongs": 1,
+          "longestContinuous": 9.221152616666672
+        },
+        "DVD_STEPPER_3": {
+          "notes": 672,
+          "seconds": 221.8124704249998,
+          "stops": 221,
+          "activeSongs": 1,
+          "longestContinuous": 18.451920616666655
+        },
+        "DVD_STEPPER_4": {
+          "notes": 596,
+          "seconds": 227.1970850916666,
+          "stops": 139,
+          "activeSongs": 1,
+          "longestContinuous": 11.528844616666674
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0011-11-radiohead_1993-lurgee.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 283,
+          "seconds": 182.70579099999995,
+          "stops": 108,
+          "activeSongs": 1,
+          "longestContinuous": 19.995088041666648
+        },
+        "DVD_STEPPER_2": {
+          "notes": 266,
+          "seconds": 182.94108500000002,
+          "stops": 90,
+          "activeSongs": 1,
+          "longestContinuous": 12.348033041666667
+        },
+        "DVD_STEPPER_3": {
+          "notes": 217,
+          "seconds": 183.17637900000003,
+          "stops": 72,
+          "activeSongs": 1,
+          "longestContinuous": 34.70096304166668
+        },
+        "DVD_STEPPER_4": {
+          "notes": 258,
+          "seconds": 183.02932024999996,
+          "stops": 102,
+          "activeSongs": 1,
+          "longestContinuous": 19.700970541666663
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0012-12-radiohead_1993-blow_out.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 562,
+          "seconds": 247.82793281666665,
+          "stops": 97,
+          "activeSongs": 1,
+          "longestContinuous": 21.233566733333333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 582,
+          "seconds": 254.26517313333335,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 68.07770783333336
+        },
+        "DVD_STEPPER_3": {
+          "notes": 593,
+          "seconds": 240.01920265000015,
+          "stops": 83,
+          "activeSongs": 1,
+          "longestContinuous": 68.07770783333336
+        },
+        "DVD_STEPPER_4": {
+          "notes": 624,
+          "seconds": 252.33696873333324,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 68.07770783333336
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0013-13-radiohead_1993-pop_is_dead.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 214,
+          "seconds": 89.39991059999998,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 7.921420650000002
+        },
+        "DVD_STEPPER_2": {
+          "notes": 195,
+          "seconds": 76.571352,
+          "stops": 40,
+          "activeSongs": 1,
+          "longestContinuous": 8.34999165
+        },
+        "DVD_STEPPER_3": {
+          "notes": 228,
+          "seconds": 82.32134625,
+          "stops": 35,
+          "activeSongs": 1,
+          "longestContinuous": 8.20713465
+        },
+        "DVD_STEPPER_4": {
+          "notes": 241,
+          "seconds": 83.78563049999998,
+          "stops": 30,
+          "activeSongs": 1,
+          "longestContinuous": 11.13570315
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0014-14-radiohead_1993-inside_my_head.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 363,
+          "seconds": 88.54687500000217,
+          "stops": 350,
+          "activeSongs": 1,
+          "longestContinuous": 5.620312500000011
+        },
+        "DVD_STEPPER_2": {
+          "notes": 65,
+          "seconds": 28.64531250000019,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 7.307812500000011
+        },
+        "DVD_STEPPER_3": {
+          "notes": 21,
+          "seconds": 20.60156250000003,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 11.995312500000011
+        },
+        "DVD_STEPPER_4": {
+          "notes": 16,
+          "seconds": 18.534375000000026,
+          "stops": 6,
+          "activeSongs": 1,
+          "longestContinuous": 10.495312500000011
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0015-04-radiohead_1994-banana_co.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 204,
+          "seconds": 133.18358475000002,
+          "stops": 56,
+          "activeSongs": 1,
+          "longestContinuous": 19.990364625000012
+        },
+        "DVD_STEPPER_2": {
+          "notes": 230,
+          "seconds": 136.55114550000008,
+          "stops": 62,
+          "activeSongs": 1,
+          "longestContinuous": 12.29806462500001
+        },
+        "DVD_STEPPER_3": {
+          "notes": 227,
+          "seconds": 133.64089200000006,
+          "stops": 37,
+          "activeSongs": 1,
+          "longestContinuous": 24.605744625
+        },
+        "DVD_STEPPER_4": {
+          "notes": 242,
+          "seconds": 132.59684175000007,
+          "stops": 53,
+          "activeSongs": 1,
+          "longestContinuous": 9.221144625000008
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0016-08-radiohead_1994-creep_(acoustic).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 512,
+          "seconds": 227.45870111249985,
+          "stops": 301,
+          "activeSongs": 1,
+          "longestContinuous": 2.0517836625000143
+        },
+        "DVD_STEPPER_2": {
+          "notes": 178,
+          "seconds": 122.74094868750012,
+          "stops": 173,
+          "activeSongs": 1,
+          "longestContinuous": 1.6339269375000072
+        },
+        "DVD_STEPPER_3": {
+          "notes": 196,
+          "seconds": 131.58022556249995,
+          "stops": 173,
+          "activeSongs": 1,
+          "longestContinuous": 1.6160698125000295
+        },
+        "DVD_STEPPER_4": {
+          "notes": 298,
+          "seconds": 167.7248322750001,
+          "stops": 148,
+          "activeSongs": 1,
+          "longestContinuous": 2.716068712500004
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0017-02-radiohead_1994-the_trickster_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 544,
+          "seconds": 246.24278785000004,
+          "stops": 325,
+          "activeSongs": 1,
+          "longestContinuous": 22.095347600000025
+        },
+        "DVD_STEPPER_2": {
+          "notes": 608,
+          "seconds": 228.83595722083345,
+          "stops": 337,
+          "activeSongs": 1,
+          "longestContinuous": 25.253235599999982
+        },
+        "DVD_STEPPER_3": {
+          "notes": 604,
+          "seconds": 223.58787665416654,
+          "stops": 288,
+          "activeSongs": 1,
+          "longestContinuous": 28.608491600000008
+        },
+        "DVD_STEPPER_4": {
+          "notes": 571,
+          "seconds": 210.86440372083317,
+          "stops": 308,
+          "activeSongs": 1,
+          "longestContinuous": 43.6084596
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0018-06-radiohead_1994-lozenge_of_love_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 123,
+          "seconds": 105.80661257083335,
+          "stops": 51,
+          "activeSongs": 1,
+          "longestContinuous": 7.835202200000005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 17,
+          "seconds": 16.957114416666684,
+          "stops": 11,
+          "activeSongs": 1,
+          "longestContinuous": 5.3981685041666765
+        },
+        "DVD_STEPPER_3": {
+          "notes": 1,
+          "seconds": 5.352401920833344,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 5.352401920833344
+        },
+        "DVD_STEPPER_4": {
+          "notes": 1,
+          "seconds": 5.306635337500012,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 5.306635337500012
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0019-07-radiohead_1994-you_never_wash_up_after_yourself_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 185,
+          "seconds": 178.40276861250013,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 13.703509762500005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 196,
+          "seconds": 154.649304075,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 13.703509762500005
+        },
+        "DVD_STEPPER_3": {
+          "notes": 250,
+          "seconds": 142.82078587499998,
+          "stops": 10,
+          "activeSongs": 1,
+          "longestContinuous": 27.417733762500006
+        },
+        "DVD_STEPPER_4": {
+          "notes": 252,
+          "seconds": 137.0243833875,
+          "stops": 11,
+          "activeSongs": 1,
+          "longestContinuous": 27.417733762500006
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0020-01-radiohead_1995-planet_telex.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 158,
+          "seconds": 266.66624,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 266.66624
+        },
+        "DVD_STEPPER_2": {
+          "notes": 294,
+          "seconds": 264.371577,
+          "stops": 7,
+          "activeSongs": 1,
+          "longestContinuous": 154.79141900000002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 308,
+          "seconds": 255.20792500000002,
+          "stops": 38,
+          "activeSongs": 1,
+          "longestContinuous": 54.79157900000001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 262,
+          "seconds": 259.79125100000005,
+          "stops": 18,
+          "activeSongs": 1,
+          "longestContinuous": 159.99974400000002
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0021-02-radiohead_1995-the_bends.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 501,
+          "seconds": 185.4106475833332,
+          "stops": 193,
+          "activeSongs": 1,
+          "longestContinuous": 6.488872666666666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 464,
+          "seconds": 182.34587743749992,
+          "stops": 180,
+          "activeSongs": 1,
+          "longestContinuous": 7.988868916666661
+        },
+        "DVD_STEPPER_3": {
+          "notes": 487,
+          "seconds": 179.2604407291666,
+          "stops": 106,
+          "activeSongs": 1,
+          "longestContinuous": 19.988838916666662
+        },
+        "DVD_STEPPER_4": {
+          "notes": 442,
+          "seconds": 170.5060180208332,
+          "stops": 126,
+          "activeSongs": 1,
+          "longestContinuous": 8.516645374999996
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0022-03-radiohead_1995-high_and_dry-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 418,
+          "seconds": 242.95699002916663,
+          "stops": 125,
+          "activeSongs": 1,
+          "longestContinuous": 41.35276763333333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 575,
+          "seconds": 230.1827469479169,
+          "stops": 137,
+          "activeSongs": 1,
+          "longestContinuous": 28.374145800000008
+        },
+        "DVD_STEPPER_3": {
+          "notes": 581,
+          "seconds": 221.01886673749996,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 16.36379296666668
+        },
+        "DVD_STEPPER_4": {
+          "notes": 504,
+          "seconds": 216.12927848750007,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 26.703768300000007
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0023-04-radiohead_1995-fake_plastic_trees-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 335,
+          "seconds": 280.1036967499999,
+          "stops": 70,
+          "activeSongs": 1,
+          "longestContinuous": 136.19482849999997
+        },
+        "DVD_STEPPER_2": {
+          "notes": 446,
+          "seconds": 244.25083124999983,
+          "stops": 108,
+          "activeSongs": 1,
+          "longestContinuous": 26.080728499999992
+        },
+        "DVD_STEPPER_3": {
+          "notes": 366,
+          "seconds": 208.32561674999985,
+          "stops": 130,
+          "activeSongs": 1,
+          "longestContinuous": 27.840450250000004
+        },
+        "DVD_STEPPER_4": {
+          "notes": 371,
+          "seconds": 173.64567082500002,
+          "stops": 106,
+          "activeSongs": 1,
+          "longestContinuous": 15.069318499999994
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0024-05-radiohead_1995-bones.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 202,
+          "seconds": 147.92786489166664,
+          "stops": 78,
+          "activeSongs": 1,
+          "longestContinuous": 4.896633962500005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 164,
+          "seconds": 126.82931001249989,
+          "stops": 41,
+          "activeSongs": 1,
+          "longestContinuous": 8.069710462500012
+        },
+        "DVD_STEPPER_3": {
+          "notes": 155,
+          "seconds": 127.56969452916661,
+          "stops": 41,
+          "activeSongs": 1,
+          "longestContinuous": 16.723555462499988
+        },
+        "DVD_STEPPER_4": {
+          "notes": 133,
+          "seconds": 121.08292616249996,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 15.569709462500015
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0025-06-radiohead_1995-(nice_dream)-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 523,
+          "seconds": 213.07836587916674,
+          "stops": 182,
+          "activeSongs": 1,
+          "longestContinuous": 16.031944145833336
+        },
+        "DVD_STEPPER_2": {
+          "notes": 682,
+          "seconds": 208.56374532916652,
+          "stops": 212,
+          "activeSongs": 1,
+          "longestContinuous": 12.19474264583333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 778,
+          "seconds": 215.92787047499996,
+          "stops": 185,
+          "activeSongs": 1,
+          "longestContinuous": 13.590088645833333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 790,
+          "seconds": 218.35246182499998,
+          "stops": 153,
+          "activeSongs": 1,
+          "longestContinuous": 20.217982145833332
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0026-07-radiohead_1995-just-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 551,
+          "seconds": 205.4127372499999,
+          "stops": 225,
+          "activeSongs": 1,
+          "longestContinuous": 4.777640516666679
+        },
+        "DVD_STEPPER_2": {
+          "notes": 538,
+          "seconds": 200.00323608124992,
+          "stops": 182,
+          "activeSongs": 1,
+          "longestContinuous": 10.873693168750009
+        },
+        "DVD_STEPPER_3": {
+          "notes": 586,
+          "seconds": 195.05087989999984,
+          "stops": 207,
+          "activeSongs": 1,
+          "longestContinuous": 7.172162016666668
+        },
+        "DVD_STEPPER_4": {
+          "notes": 486,
+          "seconds": 195.1135935583333,
+          "stops": 168,
+          "activeSongs": 1,
+          "longestContinuous": 10.25083251666669
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0027-08-radiohead_1995-my_iron_lung-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 335,
+          "seconds": 212.81205509166665,
+          "stops": 207,
+          "activeSongs": 1,
+          "longestContinuous": 19.12288195833333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 360,
+          "seconds": 220.3396369041667,
+          "stops": 147,
+          "activeSongs": 1,
+          "longestContinuous": 15.638087854166656
+        },
+        "DVD_STEPPER_3": {
+          "notes": 353,
+          "seconds": 205.5951357000001,
+          "stops": 125,
+          "activeSongs": 1,
+          "longestContinuous": 8.931059854166676
+        },
+        "DVD_STEPPER_4": {
+          "notes": 327,
+          "seconds": 183.37749471666692,
+          "stops": 99,
+          "activeSongs": 1,
+          "longestContinuous": 10.789574958333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0029-10-radiohead_1995-black_star.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 471,
+          "seconds": 219.6944371875,
+          "stops": 153,
+          "activeSongs": 1,
+          "longestContinuous": 12.074928937500005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 434,
+          "seconds": 188.96397918749997,
+          "stops": 160,
+          "activeSongs": 1,
+          "longestContinuous": 6.407426437500007
+        },
+        "DVD_STEPPER_3": {
+          "notes": 463,
+          "seconds": 185.92429104374992,
+          "stops": 159,
+          "activeSongs": 1,
+          "longestContinuous": 40.41244143750001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 397,
+          "seconds": 177.4920095437499,
+          "stops": 156,
+          "activeSongs": 1,
+          "longestContinuous": 9.020774812500001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0030-11-radiohead_1995-sulk.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 299,
+          "seconds": 157.76725196875006,
+          "stops": 182,
+          "activeSongs": 1,
+          "longestContinuous": 37.883613849999996
+        },
+        "DVD_STEPPER_2": {
+          "notes": 253,
+          "seconds": 148.823971775,
+          "stops": 76,
+          "activeSongs": 1,
+          "longestContinuous": 17.989190349999998
+        },
+        "DVD_STEPPER_3": {
+          "notes": 223,
+          "seconds": 115.84949113125005,
+          "stops": 63,
+          "activeSongs": 1,
+          "longestContinuous": 17.98919035
+        },
+        "DVD_STEPPER_4": {
+          "notes": 158,
+          "seconds": 86.66705602500004,
+          "stops": 41,
+          "activeSongs": 1,
+          "longestContinuous": 26.515371850000008
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 123,
+          "seconds": 237.73401846250005,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 41.737260408333334
+        },
+        "DVD_STEPPER_2": {
+          "notes": 135,
+          "seconds": 231.40159336666665,
+          "stops": 40,
+          "activeSongs": 1,
+          "longestContinuous": 51.73724640833333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 88,
+          "seconds": 199.01295509583335,
+          "stops": 16,
+          "activeSongs": 1,
+          "longestContinuous": 79.56329440833332
+        },
+        "DVD_STEPPER_4": {
+          "notes": 87,
+          "seconds": 147.99967598333336,
+          "stops": 23,
+          "activeSongs": 1,
+          "longestContinuous": 85.21353200000001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0032-01-radiohead_1997-airbag-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 335,
+          "seconds": 230.422388625,
+          "stops": 146,
+          "activeSongs": 1,
+          "longestContinuous": 14.270819062499996
+        },
+        "DVD_STEPPER_2": {
+          "notes": 216,
+          "seconds": 238.1708927812499,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 34.270799062500004
+        },
+        "DVD_STEPPER_3": {
+          "notes": 347,
+          "seconds": 192.85546190625018,
+          "stops": 141,
+          "activeSongs": 1,
+          "longestContinuous": 16.933018781249984
+        },
+        "DVD_STEPPER_4": {
+          "notes": 202,
+          "seconds": 148.13378043749984,
+          "stops": 76,
+          "activeSongs": 1,
+          "longestContinuous": 26.413664062500004
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0033-02-radiohead_1997-paranoid_android-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 702,
+          "seconds": 347.76507981458354,
+          "stops": 364,
+          "activeSongs": 1,
+          "longestContinuous": 124.89034800000002
+        },
+        "DVD_STEPPER_2": {
+          "notes": 810,
+          "seconds": 321.37999384166704,
+          "stops": 387,
+          "activeSongs": 1,
+          "longestContinuous": 38.69339103333334
+        },
+        "DVD_STEPPER_3": {
+          "notes": 650,
+          "seconds": 315.8225508333335,
+          "stops": 284,
+          "activeSongs": 1,
+          "longestContinuous": 48.49928133333333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 557,
+          "seconds": 281.2219852312499,
+          "stops": 214,
+          "activeSongs": 1,
+          "longestContinuous": 54.181231275000016
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0034-03-radiohead_1997-subterranean_homesick_alien.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 220,
+          "seconds": 240.3040531333332,
+          "stops": 116,
+          "activeSongs": 1,
+          "longestContinuous": 27.61836213333333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 202,
+          "seconds": 240.73971006666656,
+          "stops": 109,
+          "activeSongs": 1,
+          "longestContinuous": 16.56575413333333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 164,
+          "seconds": 222.39755186666648,
+          "stops": 65,
+          "activeSongs": 1,
+          "longestContinuous": 63.934074133333326
+        },
+        "DVD_STEPPER_4": {
+          "notes": 149,
+          "seconds": 198.18860306666664,
+          "stops": 58,
+          "activeSongs": 1,
+          "longestContinuous": 28.407834133333328
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 258,
+          "seconds": 255.44521465625004,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 31.72722355
+        },
+        "DVD_STEPPER_2": {
+          "notes": 274,
+          "seconds": 255.73343715625003,
+          "stops": 31,
+          "activeSongs": 1,
+          "longestContinuous": 27.26442055000001
+        },
+        "DVD_STEPPER_3": {
+          "notes": 274,
+          "seconds": 256.67558445625014,
+          "stops": 37,
+          "activeSongs": 1,
+          "longestContinuous": 27.26442055
+        },
+        "DVD_STEPPER_4": {
+          "notes": 242,
+          "seconds": 252.69211955625008,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 27.26442055
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0036-05-radiohead_1997-let_down-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 352,
+          "seconds": 282.6644339729166,
+          "stops": 140,
+          "activeSongs": 1,
+          "longestContinuous": 15.515123479166675
+        },
+        "DVD_STEPPER_2": {
+          "notes": 357,
+          "seconds": 279.33435576458356,
+          "stops": 130,
+          "activeSongs": 1,
+          "longestContinuous": 30.16354847916668
+        },
+        "DVD_STEPPER_3": {
+          "notes": 336,
+          "seconds": 285.08764626249996,
+          "stops": 117,
+          "activeSongs": 1,
+          "longestContinuous": 20.7572087708333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 352,
+          "seconds": 269.9798304937499,
+          "stops": 112,
+          "activeSongs": 1,
+          "longestContinuous": 14.343249479166658
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0037-06-radiohead_1997-karma_police-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 282,
+          "seconds": 239.85329954999995,
+          "stops": 113,
+          "activeSongs": 1,
+          "longestContinuous": 16.01666332500001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 332,
+          "seconds": 251.99617075833328,
+          "stops": 98,
+          "activeSongs": 1,
+          "longestContinuous": 19.181932625
+        },
+        "DVD_STEPPER_3": {
+          "notes": 392,
+          "seconds": 228.71908750416668,
+          "stops": 144,
+          "activeSongs": 1,
+          "longestContinuous": 10.367258625
+        },
+        "DVD_STEPPER_4": {
+          "notes": 329,
+          "seconds": 222.05635419583334,
+          "stops": 134,
+          "activeSongs": 1,
+          "longestContinuous": 8.784623975000002
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0038-07-radiohead_1997-fitter_happier.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 8,
+          "seconds": 71.97219343333333,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 69.47566665416667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 8,
+          "seconds": 70.20136080833333,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 69.37150002916667
+        },
+        "DVD_STEPPER_3": {
+          "notes": 10,
+          "seconds": 28.670127420833342,
+          "stops": 10,
+          "activeSongs": 1,
+          "longestContinuous": 12.86110596666667
+        },
+        "DVD_STEPPER_4": {
+          "notes": 9,
+          "seconds": 21.218741512500014,
+          "stops": 9,
+          "activeSongs": 1,
+          "longestContinuous": 2.496526779166672
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0039-08-radiohead_1997-electioneering.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 677,
+          "seconds": 190.0786115833331,
+          "stops": 302,
+          "activeSongs": 1,
+          "longestContinuous": 4.75964316666667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 613,
+          "seconds": 178.22721183333329,
+          "stops": 301,
+          "activeSongs": 1,
+          "longestContinuous": 6.178094083333349
+        },
+        "DVD_STEPPER_3": {
+          "notes": 625,
+          "seconds": 173.7485378333335,
+          "stops": 312,
+          "activeSongs": 1,
+          "longestContinuous": 3.085828166666687
+        },
+        "DVD_STEPPER_4": {
+          "notes": 621,
+          "seconds": 180.2027255833334,
+          "stops": 241,
+          "activeSongs": 1,
+          "longestContinuous": 6.175948166666672
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0040-09-radiohead_1997-climbing_up_the_walls-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 194,
+          "seconds": 249.7804719562501,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 49.22887447916666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 155,
+          "seconds": 257.67042831041664,
+          "stops": 23,
+          "activeSongs": 1,
+          "longestContinuous": 129.15558831458335
+        },
+        "DVD_STEPPER_3": {
+          "notes": 170,
+          "seconds": 225.76916188750002,
+          "stops": 110,
+          "activeSongs": 1,
+          "longestContinuous": 28.881485166666664
+        },
+        "DVD_STEPPER_4": {
+          "notes": 167,
+          "seconds": 232.77912713125005,
+          "stops": 53,
+          "activeSongs": 1,
+          "longestContinuous": 50.471230166666686
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0041-10-radiohead_1997-no_surprises-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 300,
+          "seconds": 221.91425072291673,
+          "stops": 100,
+          "activeSongs": 1,
+          "longestContinuous": 16.584324229166654
+        },
+        "DVD_STEPPER_2": {
+          "notes": 318,
+          "seconds": 221.20526521041668,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 19.160163770833307
+        },
+        "DVD_STEPPER_3": {
+          "notes": 344,
+          "seconds": 221.28258203124992,
+          "stops": 103,
+          "activeSongs": 1,
+          "longestContinuous": 14.30841977083331
+        },
+        "DVD_STEPPER_4": {
+          "notes": 311,
+          "seconds": 219.72324991666684,
+          "stops": 82,
+          "activeSongs": 1,
+          "longestContinuous": 15.587502624999992
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0042-11-radiohead_1997-lucky-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 325,
+          "seconds": 241.91472758749998,
+          "stops": 103,
+          "activeSongs": 1,
+          "longestContinuous": 20.672389287499996
+        },
+        "DVD_STEPPER_2": {
+          "notes": 298,
+          "seconds": 236.30032671249992,
+          "stops": 121,
+          "activeSongs": 1,
+          "longestContinuous": 70.16931269999999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 337,
+          "seconds": 190.5922624750002,
+          "stops": 104,
+          "activeSongs": 1,
+          "longestContinuous": 9.048840875000025
+        },
+        "DVD_STEPPER_4": {
+          "notes": 231,
+          "seconds": 173.596923525,
+          "stops": 67,
+          "activeSongs": 1,
+          "longestContinuous": 38.21230463750001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0043-12-radiohead_1997-the_tourist-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 229,
+          "seconds": 293.96935264791654,
+          "stops": 106,
+          "activeSongs": 1,
+          "longestContinuous": 44.98570782708333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 149,
+          "seconds": 292.5782671749999,
+          "stops": 73,
+          "activeSongs": 1,
+          "longestContinuous": 21.635712300000023
+        },
+        "DVD_STEPPER_3": {
+          "notes": 169,
+          "seconds": 269.9844958583335,
+          "stops": 69,
+          "activeSongs": 1,
+          "longestContinuous": 26.013958308333315
+        },
+        "DVD_STEPPER_4": {
+          "notes": 132,
+          "seconds": 257.3485792854168,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 99.33836680833335
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 389,
+          "seconds": 218.38464387499994,
+          "stops": 71,
+          "activeSongs": 1,
+          "longestContinuous": 8.949578875000014
+        },
+        "DVD_STEPPER_2": {
+          "notes": 401,
+          "seconds": 220.70721987499996,
+          "stops": 59,
+          "activeSongs": 1,
+          "longestContinuous": 18.112866999999994
+        },
+        "DVD_STEPPER_3": {
+          "notes": 398,
+          "seconds": 219.38670637499993,
+          "stops": 68,
+          "activeSongs": 1,
+          "longestContinuous": 23.67737199999999
+        },
+        "DVD_STEPPER_4": {
+          "notes": 386,
+          "seconds": 217.6326292499999,
+          "stops": 54,
+          "activeSongs": 1,
+          "longestContinuous": 30.209616999999994
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0045-02-radiohead_2000-kid_a.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 205,
+          "seconds": 216.67229107500017,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 72.73666383750006
+        },
+        "DVD_STEPPER_2": {
+          "notes": 164,
+          "seconds": 220.19109339375004,
+          "stops": 36,
+          "activeSongs": 1,
+          "longestContinuous": 21.763255837500026
+        },
+        "DVD_STEPPER_3": {
+          "notes": 177,
+          "seconds": 215.7026580375,
+          "stops": 63,
+          "activeSongs": 1,
+          "longestContinuous": 22.294228837500015
+        },
+        "DVD_STEPPER_4": {
+          "notes": 179,
+          "seconds": 205.18386166875004,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 24.949093837500016
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0046-03-radiohead_2000-the_national_anthem.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 66,
+          "seconds": 223.9259887875,
+          "stops": 41,
+          "activeSongs": 1,
+          "longestContinuous": 79.33598028749998
+        },
+        "DVD_STEPPER_2": {
+          "notes": 58,
+          "seconds": 200.26207979999998,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 62.9425552875
+        },
+        "DVD_STEPPER_3": {
+          "notes": 253,
+          "seconds": 175.3522705125002,
+          "stops": 247,
+          "activeSongs": 1,
+          "longestContinuous": 28.18849428750002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 3,
+          "seconds": 118.0080698625,
+          "stops": 3,
+          "activeSongs": 1,
+          "longestContinuous": 73.4343472875
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0047-05-radiohead_2000-treefingers.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 25,
+          "seconds": 146.62645085,
+          "stops": 9,
+          "activeSongs": 1,
+          "longestContinuous": 62.871098983333326
+        },
+        "DVD_STEPPER_2": {
+          "notes": 27,
+          "seconds": 157.16137193333333,
+          "stops": 4,
+          "activeSongs": 1,
+          "longestContinuous": 102.17235898333332
+        },
+        "DVD_STEPPER_3": {
+          "notes": 28,
+          "seconds": 141.44086793333332,
+          "stops": 4,
+          "activeSongs": 1,
+          "longestContinuous": 62.87109898333334
+        },
+        "DVD_STEPPER_4": {
+          "notes": 25,
+          "seconds": 126.93215278333335,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 20.94975498333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0048-06-radiohead_2000-optimistic-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 643,
+          "seconds": 288.41791105833335,
+          "stops": 299,
+          "activeSongs": 1,
+          "longestContinuous": 10.042130312500035
+        },
+        "DVD_STEPPER_2": {
+          "notes": 689,
+          "seconds": 281.5835849083333,
+          "stops": 259,
+          "activeSongs": 1,
+          "longestContinuous": 10.09831006249999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 707,
+          "seconds": 258.8438961458332,
+          "stops": 229,
+          "activeSongs": 1,
+          "longestContinuous": 13.811690499999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 693,
+          "seconds": 235.42701448124984,
+          "stops": 213,
+          "activeSongs": 1,
+          "longestContinuous": 23.002461166666663
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0049-07-radiohead_2000-in_limbo.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 79,
+          "seconds": 84.39221162499999,
+          "stops": 31,
+          "activeSongs": 1,
+          "longestContinuous": 29.401094875
+        },
+        "DVD_STEPPER_2": {
+          "notes": 130,
+          "seconds": 125.57652199999993,
+          "stops": 21,
+          "activeSongs": 1,
+          "longestContinuous": 37.401014875
+        },
+        "DVD_STEPPER_3": {
+          "notes": 65,
+          "seconds": 70.17013162499998,
+          "stops": 37,
+          "activeSongs": 1,
+          "longestContinuous": 5.401334875000003
+        },
+        "DVD_STEPPER_4": {
+          "notes": 15,
+          "seconds": 32.853838124999925,
+          "stops": 15,
+          "activeSongs": 1,
+          "longestContinuous": 2.1902558750000054
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0050-08-radiohead_2000-idioteque.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 87,
+          "seconds": 227.78124199999996,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 99.99396525
+        },
+        "DVD_STEPPER_2": {
+          "notes": 84,
+          "seconds": 220.40085149999996,
+          "stops": 6,
+          "activeSongs": 1,
+          "longestContinuous": 58.037695249999985
+        },
+        "DVD_STEPPER_3": {
+          "notes": 101,
+          "seconds": 217.63999849999996,
+          "stops": 29,
+          "activeSongs": 1,
+          "longestContinuous": 73.90716524999999
+        },
+        "DVD_STEPPER_4": {
+          "notes": 87,
+          "seconds": 216.865546625,
+          "stops": 9,
+          "activeSongs": 1,
+          "longestContinuous": 54.559455249999985
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0051-09-radiohead_2000-morning_bell-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 215,
+          "seconds": 186.174849225,
+          "stops": 90,
+          "activeSongs": 1,
+          "longestContinuous": 12.660072716666662
+        },
+        "DVD_STEPPER_2": {
+          "notes": 264,
+          "seconds": 247.51093109791668,
+          "stops": 29,
+          "activeSongs": 1,
+          "longestContinuous": 86.55506635833333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 249,
+          "seconds": 203.87889477083334,
+          "stops": 40,
+          "activeSongs": 1,
+          "longestContinuous": 69.01903595208333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 273,
+          "seconds": 245.41149692916662,
+          "stops": 28,
+          "activeSongs": 1,
+          "longestContinuous": 68.80791745208333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 101,
+          "seconds": 178.97930232291665,
+          "stops": 20,
+          "activeSongs": 1,
+          "longestContinuous": 78.59880992499998
+        },
+        "DVD_STEPPER_2": {
+          "notes": 56,
+          "seconds": 179.41865120000003,
+          "stops": 20,
+          "activeSongs": 1,
+          "longestContinuous": 48.52032479999999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 44,
+          "seconds": 180.11489309791665,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 59.83040479999999
+        },
+        "DVD_STEPPER_4": {
+          "notes": 78,
+          "seconds": 180.08995170625002,
+          "stops": 16,
+          "activeSongs": 1,
+          "longestContinuous": 39.97316744999998
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0053-01-radiohead_2001-packt_like_sardines_in_a_crushd_tin_box-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 221,
+          "seconds": 173.8812816729167,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 14.447769854166665
+        },
+        "DVD_STEPPER_2": {
+          "notes": 243,
+          "seconds": 162.11923878541668,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 30.11541742708333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 152,
+          "seconds": 70.24387229374996,
+          "stops": 71,
+          "activeSongs": 1,
+          "longestContinuous": 15.174676412500006
+        },
+        "DVD_STEPPER_4": {
+          "notes": 50,
+          "seconds": 56.79611300833335,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 15.174676412500006
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0054-02-radiohead_2001-pyramid_song.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 232,
+          "seconds": 278.61901279166653,
+          "stops": 10,
+          "activeSongs": 1,
+          "longestContinuous": 73.11903847916666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 239,
+          "seconds": 283.0713931875,
+          "stops": 15,
+          "activeSongs": 1,
+          "longestContinuous": 53.11904097916667
+        },
+        "DVD_STEPPER_3": {
+          "notes": 253,
+          "seconds": 283.02377414583333,
+          "stops": 17,
+          "activeSongs": 1,
+          "longestContinuous": 62.261896979166664
+        },
+        "DVD_STEPPER_4": {
+          "notes": 271,
+          "seconds": 283.1666312708333,
+          "stops": 11,
+          "activeSongs": 1,
+          "longestContinuous": 54.83332647916666
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0055-04-radiohead_2001-you_and_whose_army-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 178,
+          "seconds": 170.00945776041672,
+          "stops": 75,
+          "activeSongs": 1,
+          "longestContinuous": 18.783135439583333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 173,
+          "seconds": 162.62347243333332,
+          "stops": 75,
+          "activeSongs": 1,
+          "longestContinuous": 9.218968533333324
+        },
+        "DVD_STEPPER_3": {
+          "notes": 176,
+          "seconds": 171.24237843333324,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 20.14868253333333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 151,
+          "seconds": 163.9849587875,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 13.386694604166667
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0056-05-radiohead_2001-i_might_be_wrong.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 379,
+          "seconds": 129.08074403125013,
+          "stops": 257,
+          "activeSongs": 1,
+          "longestContinuous": 31.123670322916666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 121,
+          "seconds": 102.63629637500004,
+          "stops": 92,
+          "activeSongs": 1,
+          "longestContinuous": 36.21798532291666
+        },
+        "DVD_STEPPER_3": {
+          "notes": 34,
+          "seconds": 90.35097839583324,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 36.21798532291666
+        },
+        "DVD_STEPPER_4": {
+          "notes": 85,
+          "seconds": 36.1755326979167,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 26.02935532291667
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0057-06-radiohead_2001-knives_out-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 332,
+          "seconds": 231.02829629999997,
+          "stops": 139,
+          "activeSongs": 1,
+          "longestContinuous": 20.083369899999994
+        },
+        "DVD_STEPPER_2": {
+          "notes": 272,
+          "seconds": 222.14469320000006,
+          "stops": 132,
+          "activeSongs": 1,
+          "longestContinuous": 7.5597059000000115
+        },
+        "DVD_STEPPER_3": {
+          "notes": 230,
+          "seconds": 210.00137039999996,
+          "stops": 117,
+          "activeSongs": 1,
+          "longestContinuous": 6.977209899999991
+        },
+        "DVD_STEPPER_4": {
+          "notes": 284,
+          "seconds": 206.7966657000001,
+          "stops": 111,
+          "activeSongs": 1,
+          "longestContinuous": 11.345929899999987
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0058-08-radiohead_2001-dollars_and_cents.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 222,
+          "seconds": 195.70544291666658,
+          "stops": 148,
+          "activeSongs": 1,
+          "longestContinuous": 20.792990774999993
+        },
+        "DVD_STEPPER_2": {
+          "notes": 289,
+          "seconds": 150.12054245833315,
+          "stops": 208,
+          "activeSongs": 1,
+          "longestContinuous": 20.5670874
+        },
+        "DVD_STEPPER_3": {
+          "notes": 210,
+          "seconds": 148.07024845833334,
+          "stops": 123,
+          "activeSongs": 1,
+          "longestContinuous": 21.660042774999994
+        },
+        "DVD_STEPPER_4": {
+          "notes": 304,
+          "seconds": 117.00815917499997,
+          "stops": 217,
+          "activeSongs": 1,
+          "longestContinuous": 17.324782775000017
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0059-09-radiohead_2001-hunting_bears.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 15,
+          "seconds": 66.79575393125,
+          "stops": 6,
+          "activeSongs": 1,
+          "longestContinuous": 59.91357164375
+        },
+        "DVD_STEPPER_2": {
+          "notes": 9,
+          "seconds": 26.56000952291665,
+          "stops": 6,
+          "activeSongs": 1,
+          "longestContinuous": 13.145427652083342
+        },
+        "DVD_STEPPER_3": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0060-11-radiohead_2001-life_in_a_glass_house-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 220,
+          "seconds": 238.14435926874995,
+          "stops": 59,
+          "activeSongs": 1,
+          "longestContinuous": 65.83597891666665
+        },
+        "DVD_STEPPER_2": {
+          "notes": 204,
+          "seconds": 224.77090612916678,
+          "stops": 55,
+          "activeSongs": 1,
+          "longestContinuous": 29.697209100000002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 203,
+          "seconds": 229.29408335208336,
+          "stops": 55,
+          "activeSongs": 1,
+          "longestContinuous": 39.872190475
+        },
+        "DVD_STEPPER_4": {
+          "notes": 202,
+          "seconds": 237.28296042083338,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 37.661098650000014
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0061-04-radiohead_2001-like_spinning_plates_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 156,
+          "seconds": 213.7686123750001,
+          "stops": 50,
+          "activeSongs": 1,
+          "longestContinuous": 26.613480045833327
+        },
+        "DVD_STEPPER_2": {
+          "notes": 160,
+          "seconds": 212.82710808333343,
+          "stops": 54,
+          "activeSongs": 1,
+          "longestContinuous": 29.993752045833332
+        },
+        "DVD_STEPPER_3": {
+          "notes": 134,
+          "seconds": 207.4474686958333,
+          "stops": 37,
+          "activeSongs": 1,
+          "longestContinuous": 25.557145045833323
+        },
+        "DVD_STEPPER_4": {
+          "notes": 133,
+          "seconds": 209.56094846666676,
+          "stops": 42,
+          "activeSongs": 1,
+          "longestContinuous": 21.96560604583334
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0062-08-radiohead_2001-true_love_waits_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 665,
+          "seconds": 287.9114051250006,
+          "stops": 328,
+          "activeSongs": 1,
+          "longestContinuous": 24.176562500000017
+        },
+        "DVD_STEPPER_2": {
+          "notes": 1059,
+          "seconds": 283.7499051250025,
+          "stops": 553,
+          "activeSongs": 1,
+          "longestContinuous": 18.556250000000006
+        },
+        "DVD_STEPPER_3": {
+          "notes": 793,
+          "seconds": 283.1485301250025,
+          "stops": 401,
+          "activeSongs": 1,
+          "longestContinuous": 18.176562500000003
+        },
+        "DVD_STEPPER_4": {
+          "notes": 1004,
+          "seconds": 280.4597176250031,
+          "stops": 499,
+          "activeSongs": 1,
+          "longestContinuous": 18.176562500000003
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0063-01-radiohead_2003-2+2=5-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 343,
+          "seconds": 178.48396712500008,
+          "stops": 95,
+          "activeSongs": 1,
+          "longestContinuous": 64.62071490000001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 375,
+          "seconds": 177.40117509375003,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 31.1979429
+        },
+        "DVD_STEPPER_3": {
+          "notes": 447,
+          "seconds": 105.93283850000013,
+          "stops": 152,
+          "activeSongs": 1,
+          "longestContinuous": 13.307028349999996
+        },
+        "DVD_STEPPER_4": {
+          "notes": 294,
+          "seconds": 107.82796247500018,
+          "stops": 86,
+          "activeSongs": 1,
+          "longestContinuous": 14.137564100000006
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0064-02-radiohead_2003-sit_down_stand_up-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 146,
+          "seconds": 197.6280174,
+          "stops": 81,
+          "activeSongs": 1,
+          "longestContinuous": 70.00282574999997
+        },
+        "DVD_STEPPER_2": {
+          "notes": 172,
+          "seconds": 227.48202674999993,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 81.92084174999997
+        },
+        "DVD_STEPPER_3": {
+          "notes": 142,
+          "seconds": 178.57005457499994,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 104.26712174999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 117,
+          "seconds": 190.53628079999996,
+          "stops": 36,
+          "activeSongs": 1,
+          "longestContinuous": 81.92084174999997
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0065-03-radiohead_2003-sail_to_the_moon.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 180,
+          "seconds": 252.36425258541672,
+          "stops": 20,
+          "activeSongs": 1,
+          "longestContinuous": 46.77009793750011
+        },
+        "DVD_STEPPER_2": {
+          "notes": 194,
+          "seconds": 249.91517217291664,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 29.08955056041666
+        },
+        "DVD_STEPPER_3": {
+          "notes": 183,
+          "seconds": 250.45464005000008,
+          "stops": 19,
+          "activeSongs": 1,
+          "longestContinuous": 43.92101325000013
+        },
+        "DVD_STEPPER_4": {
+          "notes": 183,
+          "seconds": 248.40173703750014,
+          "stops": 21,
+          "activeSongs": 1,
+          "longestContinuous": 48.493064560416656
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0066-04-radiohead_2003-backdrift-[intro].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 26,
+          "seconds": 2.5872382750000025,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 0.1963079625000006
+        },
+        "DVD_STEPPER_2": {
+          "notes": 5,
+          "seconds": 0.47818606250000073,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 0.09563721250000157
+        },
+        "DVD_STEPPER_3": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0067-05-radiohead_2003-go_to_sleep-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 487,
+          "seconds": 174.46873705000004,
+          "stops": 237,
+          "activeSongs": 1,
+          "longestContinuous": 39.165231875
+        },
+        "DVD_STEPPER_2": {
+          "notes": 435,
+          "seconds": 167.36805486875,
+          "stops": 252,
+          "activeSongs": 1,
+          "longestContinuous": 4.463487668749991
+        },
+        "DVD_STEPPER_3": {
+          "notes": 452,
+          "seconds": 153.85779244375001,
+          "stops": 212,
+          "activeSongs": 1,
+          "longestContinuous": 4.541481875000002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 383,
+          "seconds": 129.84037590624996,
+          "stops": 183,
+          "activeSongs": 1,
+          "longestContinuous": 4.277153168750004
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0068-06-radiohead-2003-where_i_end_and_you_begin.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 185,
+          "seconds": 235.85794605416652,
+          "stops": 113,
+          "activeSongs": 1,
+          "longestContinuous": 52.69822396250001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 231,
+          "seconds": 220.3169192583331,
+          "stops": 133,
+          "activeSongs": 1,
+          "longestContinuous": 46.310615962499995
+        },
+        "DVD_STEPPER_3": {
+          "notes": 190,
+          "seconds": 223.22353710833335,
+          "stops": 80,
+          "activeSongs": 1,
+          "longestContinuous": 28.2980739625
+        },
+        "DVD_STEPPER_4": {
+          "notes": 155,
+          "seconds": 226.40522138749998,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 44.229991962499994
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0069-07-radiohead-2003-we_suck_young_blood-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 156,
+          "seconds": 284.09308997708337,
+          "stops": 28,
+          "activeSongs": 1,
+          "longestContinuous": 52.42592240000002
+        },
+        "DVD_STEPPER_2": {
+          "notes": 159,
+          "seconds": 279.8612993958334,
+          "stops": 22,
+          "activeSongs": 1,
+          "longestContinuous": 114.69572272916662
+        },
+        "DVD_STEPPER_3": {
+          "notes": 166,
+          "seconds": 274.9402385895833,
+          "stops": 48,
+          "activeSongs": 1,
+          "longestContinuous": 45.133746460416674
+        },
+        "DVD_STEPPER_4": {
+          "notes": 228,
+          "seconds": 279.6978638874999,
+          "stops": 30,
+          "activeSongs": 1,
+          "longestContinuous": 39.67653943333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0070-08-radiohead_2003-the_gloaming.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 134,
+          "seconds": 120.88161962500001,
+          "stops": 133,
+          "activeSongs": 1,
+          "longestContinuous": 1.3533031416666574
+        },
+        "DVD_STEPPER_2": {
+          "notes": 14,
+          "seconds": 42.585378875,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 14.449633683333332
+        },
+        "DVD_STEPPER_3": {
+          "notes": 2,
+          "seconds": 14.555756691666673,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 14.449633683333332
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0071-09-radiohead_2003-there_there-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 451,
+          "seconds": 259.7469646229166,
+          "stops": 234,
+          "activeSongs": 1,
+          "longestContinuous": 11.152902075000014
+        },
+        "DVD_STEPPER_2": {
+          "notes": 414,
+          "seconds": 272.97229260000006,
+          "stops": 143,
+          "activeSongs": 1,
+          "longestContinuous": 49.34674173333332
+        },
+        "DVD_STEPPER_3": {
+          "notes": 389,
+          "seconds": 285.38221701666663,
+          "stops": 119,
+          "activeSongs": 1,
+          "longestContinuous": 51.217436170833366
+        },
+        "DVD_STEPPER_4": {
+          "notes": 358,
+          "seconds": 230.3359336687501,
+          "stops": 86,
+          "activeSongs": 1,
+          "longestContinuous": 47.23849879583332
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0072-10-radiohead_2003-i_will.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 73,
+          "seconds": 115.47483218749998,
+          "stops": 25,
+          "activeSongs": 1,
+          "longestContinuous": 15.638784583333333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 65,
+          "seconds": 113.43273333333335,
+          "stops": 24,
+          "activeSongs": 1,
+          "longestContinuous": 25.02004864583334
+        },
+        "DVD_STEPPER_3": {
+          "notes": 66,
+          "seconds": 112.31095489583335,
+          "stops": 17,
+          "activeSongs": 1,
+          "longestContinuous": 23.816036145833337
+        },
+        "DVD_STEPPER_4": {
+          "notes": 67,
+          "seconds": 115.99322645833334,
+          "stops": 11,
+          "activeSongs": 1,
+          "longestContinuous": 28.882922083333327
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0073-11-radiohead_2003-a_punchup_at_a_wedding-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 528,
+          "seconds": 258.2707987916666,
+          "stops": 268,
+          "activeSongs": 1,
+          "longestContinuous": 8.627447766666666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 484,
+          "seconds": 244.4651562395829,
+          "stops": 240,
+          "activeSongs": 1,
+          "longestContinuous": 12.088863302083336
+        },
+        "DVD_STEPPER_3": {
+          "notes": 296,
+          "seconds": 255.71561757916655,
+          "stops": 104,
+          "activeSongs": 1,
+          "longestContinuous": 48.55785667500001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 417,
+          "seconds": 224.9110838270835,
+          "stops": 191,
+          "activeSongs": 1,
+          "longestContinuous": 37.84312315833333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0074-12-radiohead_2003-myxomatosis.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 183,
+          "seconds": 139.5866653375,
+          "stops": 99,
+          "activeSongs": 1,
+          "longestContinuous": 12.073480466666666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 91,
+          "seconds": 150.43804631666666,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 32.36419596666664
+        },
+        "DVD_STEPPER_3": {
+          "notes": 182,
+          "seconds": 103.10535278541661,
+          "stops": 73,
+          "activeSongs": 1,
+          "longestContinuous": 19.379652279166663
+        },
+        "DVD_STEPPER_4": {
+          "notes": 197,
+          "seconds": 100.23666777916671,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 36.944749279166665
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0075-13-radiohead_2003-scatterbrain-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 174,
+          "seconds": 168.89777399583352,
+          "stops": 118,
+          "activeSongs": 1,
+          "longestContinuous": 11.750698400000005
+        },
+        "DVD_STEPPER_2": {
+          "notes": 126,
+          "seconds": 184.5777761541667,
+          "stops": 40,
+          "activeSongs": 1,
+          "longestContinuous": 70.10169067499999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 126,
+          "seconds": 177.96894629166658,
+          "stops": 51,
+          "activeSongs": 1,
+          "longestContinuous": 28.417539199999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 119,
+          "seconds": 173.80762177499994,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 39.55315519999999
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0076-14-radiohead_2003-a_wolf_at_the_door.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 177,
+          "seconds": 191.85656490000008,
+          "stops": 54,
+          "activeSongs": 1,
+          "longestContinuous": 14.695480799999984
+        },
+        "DVD_STEPPER_2": {
+          "notes": 183,
+          "seconds": 191.76106949999982,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 15.992776799999998
+        },
+        "DVD_STEPPER_3": {
+          "notes": 178,
+          "seconds": 193.21872570000002,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 26.3711448
+        },
+        "DVD_STEPPER_4": {
+          "notes": 172,
+          "seconds": 192.20551950000004,
+          "stops": 64,
+          "activeSongs": 1,
+          "longestContinuous": 19.28196270000001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0077-04-radiohead_2004-paperbag_writer.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 145,
+          "seconds": 137.42310283333327,
+          "stops": 128,
+          "activeSongs": 1,
+          "longestContinuous": 9.358842166666662
+        },
+        "DVD_STEPPER_2": {
+          "notes": 69,
+          "seconds": 115.65081333333336,
+          "stops": 50,
+          "activeSongs": 1,
+          "longestContinuous": 7.450018666666665
+        },
+        "DVD_STEPPER_3": {
+          "notes": 78,
+          "seconds": 32.1989026666667,
+          "stops": 73,
+          "activeSongs": 1,
+          "longestContinuous": 5.109698666666645
+        },
+        "DVD_STEPPER_4": {
+          "notes": 17,
+          "seconds": 2.3208173333333804,
+          "stops": 17,
+          "activeSongs": 1,
+          "longestContinuous": 0.13651866666668866
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0078-06-radiohead_2004-i_am_citizen_insane.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 118,
+          "seconds": 163.07433997708335,
+          "stops": 89,
+          "activeSongs": 1,
+          "longestContinuous": 19.284987745833334
+        },
+        "DVD_STEPPER_2": {
+          "notes": 81,
+          "seconds": 139.4395867125,
+          "stops": 48,
+          "activeSongs": 1,
+          "longestContinuous": 38.43027774583333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 120,
+          "seconds": 181.18075786666665,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 133.1010059958333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 28,
+          "seconds": 74.79914400833334,
+          "stops": 7,
+          "activeSongs": 1,
+          "longestContinuous": 43.22476068333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0079-01-radiohead_2007-15_step-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 98,
+          "seconds": 172.8087681375,
+          "stops": 51,
+          "activeSongs": 1,
+          "longestContinuous": 25.52890046250002
+        },
+        "DVD_STEPPER_2": {
+          "notes": 64,
+          "seconds": 108.82527450000008,
+          "stops": 55,
+          "activeSongs": 1,
+          "longestContinuous": 31.911790462500022
+        },
+        "DVD_STEPPER_3": {
+          "notes": 27,
+          "seconds": 97.12896903750003,
+          "stops": 22,
+          "activeSongs": 1,
+          "longestContinuous": 31.911790462500022
+        },
+        "DVD_STEPPER_4": {
+          "notes": 19,
+          "seconds": 67.07885482500001,
+          "stops": 14,
+          "activeSongs": 1,
+          "longestContinuous": 10.209964462499983
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 571,
+          "seconds": 197.17016422083333,
+          "stops": 329,
+          "activeSongs": 1,
+          "longestContinuous": 17.136863633333334
+        },
+        "DVD_STEPPER_2": {
+          "notes": 456,
+          "seconds": 188.37459643333327,
+          "stops": 259,
+          "activeSongs": 1,
+          "longestContinuous": 22.851135633333342
+        },
+        "DVD_STEPPER_3": {
+          "notes": 427,
+          "seconds": 160.5404722,
+          "stops": 254,
+          "activeSongs": 1,
+          "longestContinuous": 9.994023633333342
+        },
+        "DVD_STEPPER_4": {
+          "notes": 469,
+          "seconds": 147.36726553333338,
+          "stops": 251,
+          "activeSongs": 1,
+          "longestContinuous": 20.529712633333347
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0081-03-radiohead_2007-nude.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 194,
+          "seconds": 172.05949325833333,
+          "stops": 100,
+          "activeSongs": 1,
+          "longestContinuous": 18.044281458333337
+        },
+        "DVD_STEPPER_2": {
+          "notes": 114,
+          "seconds": 169.76051939999996,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 29.2256876
+        },
+        "DVD_STEPPER_3": {
+          "notes": 137,
+          "seconds": 168.30626807500008,
+          "stops": 43,
+          "activeSongs": 1,
+          "longestContinuous": 29.193429666666667
+        },
+        "DVD_STEPPER_4": {
+          "notes": 137,
+          "seconds": 182.36266252500002,
+          "stops": 56,
+          "activeSongs": 1,
+          "longestContinuous": 29.161171733333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0082-04-radiohead_2007-weird_fishes-arpegi.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 604,
+          "seconds": 140.83522586666663,
+          "stops": 601,
+          "activeSongs": 1,
+          "longestContinuous": 16.177597066666692
+        },
+        "DVD_STEPPER_2": {
+          "notes": 148,
+          "seconds": 31.48348546666675,
+          "stops": 148,
+          "activeSongs": 1,
+          "longestContinuous": 0.585525066666662
+        },
+        "DVD_STEPPER_3": {
+          "notes": 27,
+          "seconds": 5.358541199999934,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 0.3881570666666505
+        },
+        "DVD_STEPPER_4": {
+          "notes": 2,
+          "seconds": 0.3815781333333348,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 0.1907890666666674
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0083-05-radiohead_2007-all_i_need.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 117,
+          "seconds": 192.41296339583326,
+          "stops": 73,
+          "activeSongs": 1,
+          "longestContinuous": 15.997182229166665
+        },
+        "DVD_STEPPER_2": {
+          "notes": 115,
+          "seconds": 199.09394670833333,
+          "stops": 65,
+          "activeSongs": 1,
+          "longestContinuous": 18.663842229166665
+        },
+        "DVD_STEPPER_3": {
+          "notes": 95,
+          "seconds": 132.85800118750012,
+          "stops": 36,
+          "activeSongs": 1,
+          "longestContinuous": 20.663837229166667
+        },
+        "DVD_STEPPER_4": {
+          "notes": 89,
+          "seconds": 141.5246461875,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 23.997162229166676
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0084-06-radiohead_2007-faust_arp.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 125,
+          "seconds": 105.70290802916668,
+          "stops": 70,
+          "activeSongs": 1,
+          "longestContinuous": 14.740545249999997
+        },
+        "DVD_STEPPER_2": {
+          "notes": 90,
+          "seconds": 92.55650252916669,
+          "stops": 51,
+          "activeSongs": 1,
+          "longestContinuous": 20.136237249999994
+        },
+        "DVD_STEPPER_3": {
+          "notes": 68,
+          "seconds": 57.44754707916667,
+          "stops": 50,
+          "activeSongs": 1,
+          "longestContinuous": 5.390383045833346
+        },
+        "DVD_STEPPER_4": {
+          "notes": 29,
+          "seconds": 32.29619983750001,
+          "stops": 28,
+          "activeSongs": 1,
+          "longestContinuous": 13.394747249999995
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0085-07-radiohead_2007-reckoner-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 337,
+          "seconds": 247.45742327499997,
+          "stops": 162,
+          "activeSongs": 1,
+          "longestContinuous": 31.690828575000012
+        },
+        "DVD_STEPPER_2": {
+          "notes": 262,
+          "seconds": 231.18243644999987,
+          "stops": 75,
+          "activeSongs": 1,
+          "longestContinuous": 20.370148574999973
+        },
+        "DVD_STEPPER_3": {
+          "notes": 222,
+          "seconds": 225.5362473,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 65.41937954999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 294,
+          "seconds": 222.61817219999995,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 46.54922107499999
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0086-08-radiohead_2007-house_of_cards.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 348,
+          "seconds": 299.26733713333334,
+          "stops": 76,
+          "activeSongs": 1,
+          "longestContinuous": 16.908313066666665
+        },
+        "DVD_STEPPER_2": {
+          "notes": 380,
+          "seconds": 257.4850935333332,
+          "stops": 120,
+          "activeSongs": 1,
+          "longestContinuous": 11.000697066666646
+        },
+        "DVD_STEPPER_3": {
+          "notes": 232,
+          "seconds": 227.7923023999999,
+          "stops": 138,
+          "activeSongs": 1,
+          "longestContinuous": 60.14132106666668
+        },
+        "DVD_STEPPER_4": {
+          "notes": 214,
+          "seconds": 178.74118773333316,
+          "stops": 131,
+          "activeSongs": 1,
+          "longestContinuous": 25.769737066666664
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 443,
+          "seconds": 219.07609633124986,
+          "stops": 201,
+          "activeSongs": 1,
+          "longestContinuous": 13.05734641250001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 388,
+          "seconds": 223.683946975,
+          "stops": 168,
+          "activeSongs": 1,
+          "longestContinuous": 26.469104412500002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 510,
+          "seconds": 213.66033433124974,
+          "stops": 195,
+          "activeSongs": 1,
+          "longestContinuous": 8.46470165000001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 404,
+          "seconds": 195.37907877499993,
+          "stops": 120,
+          "activeSongs": 1,
+          "longestContinuous": 14.111757650000015
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0088-10-radiohead_2007-videotape.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 352,
+          "seconds": 283.616235525,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 255.5740917625
+        },
+        "DVD_STEPPER_2": {
+          "notes": 257,
+          "seconds": 281.19091638749995,
+          "stops": 11,
+          "activeSongs": 1,
+          "longestContinuous": 109.08091976249997
+        },
+        "DVD_STEPPER_3": {
+          "notes": 187,
+          "seconds": 223.88909917499993,
+          "stops": 14,
+          "activeSongs": 1,
+          "longestContinuous": 81.02903576249997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 180,
+          "seconds": 140.21071881249998,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 127.78217576249999
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0089-02-radiohead_2007-down_is_the_new_up.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 229,
+          "seconds": 242.07703065000004,
+          "stops": 86,
+          "activeSongs": 1,
+          "longestContinuous": 43.35222937500001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 161,
+          "seconds": 145.48394542500003,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 29.356788825000024
+        },
+        "DVD_STEPPER_3": {
+          "notes": 156,
+          "seconds": 143.8998561,
+          "stops": 56,
+          "activeSongs": 1,
+          "longestContinuous": 60.020394525
+        },
+        "DVD_STEPPER_4": {
+          "notes": 148,
+          "seconds": 139.45667872500002,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 47.715861375
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0090-03-radiohead_2007-go_slowly.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 8,
+          "seconds": 183.99791666666667,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 183.99791666666667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 95,
+          "seconds": 183.87500000000006,
+          "stops": 14,
+          "activeSongs": 1,
+          "longestContinuous": 105.99166666666666
+        },
+        "DVD_STEPPER_3": {
+          "notes": 159,
+          "seconds": 181.72708333333344,
+          "stops": 34,
+          "activeSongs": 1,
+          "longestContinuous": 37.98958333333333
+        },
+        "DVD_STEPPER_4": {
+          "notes": 169,
+          "seconds": 181.71250000000015,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 15.997916666666669
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0091-05-radiohead_2007-last_flowers.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 228,
+          "seconds": 224.20000000000002,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 86.9921875
+        },
+        "DVD_STEPPER_2": {
+          "notes": 211,
+          "seconds": 139.4375,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 92.9921875
+        },
+        "DVD_STEPPER_3": {
+          "notes": 213,
+          "seconds": 149.21875,
+          "stops": 4,
+          "activeSongs": 1,
+          "longestContinuous": 92.9921875
+        },
+        "DVD_STEPPER_4": {
+          "notes": 161,
+          "seconds": 148.82837500000005,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 41.24843750000002
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0092-07-radiohead_2007-bangers_and_mash.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 180,
+          "seconds": 133.03184093750016,
+          "stops": 83,
+          "activeSongs": 1,
+          "longestContinuous": 43.62675433333334
+        },
+        "DVD_STEPPER_2": {
+          "notes": 162,
+          "seconds": 70.9429548,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 9.763226333333336
+        },
+        "DVD_STEPPER_3": {
+          "notes": 130,
+          "seconds": 64.78009573333334,
+          "stops": 30,
+          "activeSongs": 1,
+          "longestContinuous": 23.62681833333332
+        },
+        "DVD_STEPPER_4": {
+          "notes": 105,
+          "seconds": 61.33503099999999,
+          "stops": 3,
+          "activeSongs": 1,
+          "longestContinuous": 23.62681833333332
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0093-08-radiohead_2007-4_minutes_warning.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 219,
+          "seconds": 185.24999999999994,
+          "stops": 72,
+          "activeSongs": 1,
+          "longestContinuous": 8.979166666666657
+        },
+        "DVD_STEPPER_2": {
+          "notes": 133,
+          "seconds": 124.79166666666639,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 14.229166666666657
+        },
+        "DVD_STEPPER_3": {
+          "notes": 128,
+          "seconds": 133.54166666666654,
+          "stops": 31,
+          "activeSongs": 1,
+          "longestContinuous": 11.979166666666657
+        },
+        "DVD_STEPPER_4": {
+          "notes": 100,
+          "seconds": 80.4583333333333,
+          "stops": 20,
+          "activeSongs": 1,
+          "longestContinuous": 16.479166666666657
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0094-01-radiohead_2011-bloom.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 316,
+          "seconds": 201.66798014999998,
+          "stops": 183,
+          "activeSongs": 1,
+          "longestContinuous": 24.54088455
+        },
+        "DVD_STEPPER_2": {
+          "notes": 254,
+          "seconds": 170.45592045000006,
+          "stops": 150,
+          "activeSongs": 1,
+          "longestContinuous": 22.086341550000004
+        },
+        "DVD_STEPPER_3": {
+          "notes": 237,
+          "seconds": 166.9741057500001,
+          "stops": 136,
+          "activeSongs": 1,
+          "longestContinuous": 6.540902549999998
+        },
+        "DVD_STEPPER_4": {
+          "notes": 198,
+          "seconds": 140.6090412,
+          "stops": 117,
+          "activeSongs": 1,
+          "longestContinuous": 4.768177049999991
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0095-03-radiohead_2011-little_by_little.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 287,
+          "seconds": 253.38793665000003,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 52.426073849999995
+        },
+        "DVD_STEPPER_2": {
+          "notes": 312,
+          "seconds": 249.71298104999997,
+          "stops": 88,
+          "activeSongs": 1,
+          "longestContinuous": 38.59999035
+        },
+        "DVD_STEPPER_3": {
+          "notes": 310,
+          "seconds": 243.02272185000015,
+          "stops": 85,
+          "activeSongs": 1,
+          "longestContinuous": 12.513040349999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 305,
+          "seconds": 242.49559154999994,
+          "stops": 58,
+          "activeSongs": 1,
+          "longestContinuous": 36.51303435
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0096-04-radiohead_2011-feral.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 70,
+          "seconds": 41.010892708333394,
+          "stops": 70,
+          "activeSongs": 1,
+          "longestContinuous": 2.2040367708333335
+        },
+        "DVD_STEPPER_2": {
+          "notes": 32,
+          "seconds": 27.514614166666664,
+          "stops": 32,
+          "activeSongs": 1,
+          "longestContinuous": 9.704011770833333
+        },
+        "DVD_STEPPER_3": {
+          "notes": 18,
+          "seconds": 9.893349375000001,
+          "stops": 18,
+          "activeSongs": 1,
+          "longestContinuous": 0.5496305208333396
+        },
+        "DVD_STEPPER_4": {
+          "notes": 16,
+          "seconds": 8.79408833333332,
+          "stops": 16,
+          "activeSongs": 1,
+          "longestContinuous": 0.5496305208333467
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0097-05-radiohead_2011-lotus_flower.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 266,
+          "seconds": 258.1229166666667,
+          "stops": 61,
+          "activeSongs": 1,
+          "longestContinuous": 45.99791666666667
+        },
+        "DVD_STEPPER_2": {
+          "notes": 25,
+          "seconds": 75.46458333333322,
+          "stops": 17,
+          "activeSongs": 1,
+          "longestContinuous": 31.99791666666667
+        },
+        "DVD_STEPPER_3": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0098-06-radiohead_2011-codex.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 205,
+          "seconds": 248.03201829999995,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 174.18934774583335
+        },
+        "DVD_STEPPER_2": {
+          "notes": 224,
+          "seconds": 240.61876739583332,
+          "stops": 78,
+          "activeSongs": 1,
+          "longestContinuous": 27.810456987500004
+        },
+        "DVD_STEPPER_3": {
+          "notes": 177,
+          "seconds": 244.95944062499996,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 20.068528987500002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 185,
+          "seconds": 239.42925241666663,
+          "stops": 59,
+          "activeSongs": 1,
+          "longestContinuous": 21.770140245833318
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0099-08-radiohead_2011-separator.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 111,
+          "seconds": 198.09550671249994,
+          "stops": 78,
+          "activeSongs": 1,
+          "longestContinuous": 6.4240917249999825
+        },
+        "DVD_STEPPER_2": {
+          "notes": 109,
+          "seconds": 190.89239899999998,
+          "stops": 65,
+          "activeSongs": 1,
+          "longestContinuous": 5.620522225000002
+        },
+        "DVD_STEPPER_3": {
+          "notes": 74,
+          "seconds": 162.38800312499993,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 8.031230725
+        },
+        "DVD_STEPPER_4": {
+          "notes": 55,
+          "seconds": 135.56217465000003,
+          "stops": 53,
+          "activeSongs": 1,
+          "longestContinuous": 4.281239724999978
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0100-01-radiohead_2016-burn_the_witch.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 516,
+          "seconds": 186.3833333333335,
+          "stops": 409,
+          "activeSongs": 1,
+          "longestContinuous": 25.583333333333314
+        },
+        "DVD_STEPPER_2": {
+          "notes": 120,
+          "seconds": 202.9333333333333,
+          "stops": 28,
+          "activeSongs": 1,
+          "longestContinuous": 97.78333333333332
+        },
+        "DVD_STEPPER_3": {
+          "notes": 340,
+          "seconds": 122.1500000000002,
+          "stops": 219,
+          "activeSongs": 1,
+          "longestContinuous": 25.583333333333314
+        },
+        "DVD_STEPPER_4": {
+          "notes": 135,
+          "seconds": 63.883333333333184,
+          "stops": 79,
+          "activeSongs": 1,
+          "longestContinuous": 8.18333333333333
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0101-02-radiohead_2016-daydreaming.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 184,
+          "seconds": 278.8440000000002,
+          "stops": 46,
+          "activeSongs": 1,
+          "longestContinuous": 73.37
+        },
+        "DVD_STEPPER_2": {
+          "notes": 263,
+          "seconds": 262.60899999999987,
+          "stops": 66,
+          "activeSongs": 1,
+          "longestContinuous": 52.745
+        },
+        "DVD_STEPPER_3": {
+          "notes": 192,
+          "seconds": 251.8649999999999,
+          "stops": 37,
+          "activeSongs": 1,
+          "longestContinuous": 91.17000000000002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 148,
+          "seconds": 311.94,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 167.96999999999997
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0102-03-radiohead_2016-decks_dark.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 148,
+          "seconds": 239.98547430000008,
+          "stops": 31,
+          "activeSongs": 1,
+          "longestContinuous": 184.4855298
+        },
+        "DVD_STEPPER_2": {
+          "notes": 110,
+          "seconds": 210.79264635000007,
+          "stops": 47,
+          "activeSongs": 1,
+          "longestContinuous": 58.271370299999994
+        },
+        "DVD_STEPPER_3": {
+          "notes": 115,
+          "seconds": 169.8186873000002,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 61.69993830000001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 103,
+          "seconds": 161.23898080000015,
+          "stops": 32,
+          "activeSongs": 1,
+          "longestContinuous": 67.6999323
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0103-04-radiohead_2016-desert_island_disk.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 227,
+          "seconds": 141.44544275833331,
+          "stops": 124,
+          "activeSongs": 1,
+          "longestContinuous": 12.8045443875
+        },
+        "DVD_STEPPER_2": {
+          "notes": 168,
+          "seconds": 124.46362599166662,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 21.2590891375
+        },
+        "DVD_STEPPER_3": {
+          "notes": 172,
+          "seconds": 103.52271864583331,
+          "stops": 65,
+          "activeSongs": 1,
+          "longestContinuous": 8.713635637500001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 103,
+          "seconds": 69.1636306,
+          "stops": 43,
+          "activeSongs": 1,
+          "longestContinuous": 7.0772721375
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0104-05-radiohead_2016-ful_stop.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 614,
+          "seconds": 369.19333333333327,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 366.9966666666666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 140,
+          "seconds": 167.8033333333336,
+          "stops": 119,
+          "activeSongs": 1,
+          "longestContinuous": 76.79666666666665
+        },
+        "DVD_STEPPER_3": {
+          "notes": 18,
+          "seconds": 59.54999999999996,
+          "stops": 15,
+          "activeSongs": 1,
+          "longestContinuous": 38.39666666666666
+        },
+        "DVD_STEPPER_4": {
+          "notes": 2,
+          "seconds": 1.7933333333333792,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 1.3966666666667038
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0105-06-radiohead_2016-glass_eyes.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 104,
+          "seconds": 142.34220458333334,
+          "stops": 12,
+          "activeSongs": 1,
+          "longestContinuous": 67.9875
+        },
+        "DVD_STEPPER_2": {
+          "notes": 72,
+          "seconds": 152.47970458333336,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 152.47970458333336
+        },
+        "DVD_STEPPER_3": {
+          "notes": 59,
+          "seconds": 151.13820458333342,
+          "stops": 22,
+          "activeSongs": 1,
+          "longestContinuous": 27.487499999999997
+        },
+        "DVD_STEPPER_4": {
+          "notes": 70,
+          "seconds": 151.45470458333335,
+          "stops": 3,
+          "activeSongs": 1,
+          "longestContinuous": 80.2375
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0106-07-radiohead_2016-identikit.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 267,
+          "seconds": 196.43223600000002,
+          "stops": 194,
+          "activeSongs": 1,
+          "longestContinuous": 9.310801500000025
+        },
+        "DVD_STEPPER_2": {
+          "notes": 147,
+          "seconds": 123.10460662499996,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 26.523622125000003
+        },
+        "DVD_STEPPER_3": {
+          "notes": 115,
+          "seconds": 74.3715472500001,
+          "stops": 64,
+          "activeSongs": 1,
+          "longestContinuous": 3.989860875000005
+        },
+        "DVD_STEPPER_4": {
+          "notes": 38,
+          "seconds": 10.601340750000006,
+          "stops": 23,
+          "activeSongs": 1,
+          "longestContinuous": 6.439182750000015
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0107-08-radiohead_2016-the_numbers.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 299,
+          "seconds": 238.77525000000216,
+          "stops": 212,
+          "activeSongs": 1,
+          "longestContinuous": 14.990625000000023
+        },
+        "DVD_STEPPER_2": {
+          "notes": 269,
+          "seconds": 237.9187500000017,
+          "stops": 162,
+          "activeSongs": 1,
+          "longestContinuous": 10.490625000000023
+        },
+        "DVD_STEPPER_3": {
+          "notes": 280,
+          "seconds": 233.51250000000135,
+          "stops": 132,
+          "activeSongs": 1,
+          "longestContinuous": 16.490625000000023
+        },
+        "DVD_STEPPER_4": {
+          "notes": 222,
+          "seconds": 168.6877500000013,
+          "stops": 108,
+          "activeSongs": 1,
+          "longestContinuous": 23.428125000000023
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0108-09-radiohead_2016-present_tense.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 283,
+          "seconds": 249.7996253,
+          "stops": 59,
+          "activeSongs": 1,
+          "longestContinuous": 88.41039370000001
+        },
+        "DVD_STEPPER_2": {
+          "notes": 199,
+          "seconds": 248.88383719999993,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 35.04205269999999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 242,
+          "seconds": 251.0838339000001,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 32.199951700000014
+        },
+        "DVD_STEPPER_4": {
+          "notes": 213,
+          "seconds": 251.29435990000005,
+          "stops": 22,
+          "activeSongs": 1,
+          "longestContinuous": 115.0945642
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0109-10-radiohead_2016-tinker_tailor_soldier_sailor_rich_man_poor_man_beggar_man_thief.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 173,
+          "seconds": 234.7775430000001,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 197.32202490000003
+        },
+        "DVD_STEPPER_2": {
+          "notes": 162,
+          "seconds": 240.49975950000004,
+          "stops": 15,
+          "activeSongs": 1,
+          "longestContinuous": 143.98874490000003
+        },
+        "DVD_STEPPER_3": {
+          "notes": 161,
+          "seconds": 249.85530570000003,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 149.32207290000002
+        },
+        "DVD_STEPPER_4": {
+          "notes": 45,
+          "seconds": 80.56658609999998,
+          "stops": 9,
+          "activeSongs": 1,
+          "longestContinuous": 31.988856900000002
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0110-11-radiohead_2016-true_love_waits.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 178,
+          "seconds": 164.38254970000006,
+          "stops": 77,
+          "activeSongs": 1,
+          "longestContinuous": 6.428565000000006
+        },
+        "DVD_STEPPER_2": {
+          "notes": 148,
+          "seconds": 129.49987049999996,
+          "stops": 130,
+          "activeSongs": 1,
+          "longestContinuous": 4.228567199999986
+        },
+        "DVD_STEPPER_3": {
+          "notes": 129,
+          "seconds": 121.77130679999998,
+          "stops": 93,
+          "activeSongs": 1,
+          "longestContinuous": 4.228567200000015
+        },
+        "DVD_STEPPER_4": {
+          "notes": 88,
+          "seconds": 92.71419299999997,
+          "stops": 67,
+          "activeSongs": 1,
+          "longestContinuous": 4.228567199999986
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0111-radiohead_1993-yes_i_am.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 548,
+          "seconds": 227.1598566666666,
+          "stops": 92,
+          "activeSongs": 1,
+          "longestContinuous": 29.705614999999995
+        },
+        "DVD_STEPPER_2": {
+          "notes": 562,
+          "seconds": 223.30010803710937,
+          "stops": 81,
+          "activeSongs": 1,
+          "longestContinuous": 14.117519999999999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 527,
+          "seconds": 216.54350601888015,
+          "stops": 76,
+          "activeSongs": 1,
+          "longestContinuous": 9.408680000000004
+        },
+        "DVD_STEPPER_4": {
+          "notes": 553,
+          "seconds": 212.38134577799468,
+          "stops": 80,
+          "activeSongs": 1,
+          "longestContinuous": 27.646809999999988
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0112-radiohead_1995-maquiladora.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 378,
+          "seconds": 138.49746083333335,
+          "stops": 43,
+          "activeSongs": 1,
+          "longestContinuous": 11.769015000000003
+        },
+        "DVD_STEPPER_2": {
+          "notes": 381,
+          "seconds": 135.68682000000004,
+          "stops": 42,
+          "activeSongs": 1,
+          "longestContinuous": 11.996780000000001
+        },
+        "DVD_STEPPER_3": {
+          "notes": 309,
+          "seconds": 123.51396625,
+          "stops": 45,
+          "activeSongs": 1,
+          "longestContinuous": 13.8429
+        },
+        "DVD_STEPPER_4": {
+          "notes": 312,
+          "seconds": 127.55535374999994,
+          "stops": 52,
+          "activeSongs": 1,
+          "longestContinuous": 11.76901500000001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0113-radiohead_1995-nobody_does_it_better.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 286,
+          "seconds": 187.8781708333334,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 29.441767916666663
+        },
+        "DVD_STEPPER_2": {
+          "notes": 340,
+          "seconds": 195.5198766666667,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 32.999395
+        },
+        "DVD_STEPPER_3": {
+          "notes": 282,
+          "seconds": 185.80682041666662,
+          "stops": 36,
+          "activeSongs": 1,
+          "longestContinuous": 31.49942250000001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 292,
+          "seconds": 188.1837541731771,
+          "stops": 19,
+          "activeSongs": 1,
+          "longestContinuous": 36.460870000000014
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0114-radiohead_1996-bishop's_robes.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 76,
+          "seconds": 192.45236250000002,
+          "stops": 18,
+          "activeSongs": 1,
+          "longestContinuous": 50.66615999999999
+        },
+        "DVD_STEPPER_2": {
+          "notes": 64,
+          "seconds": 186.8844725000001,
+          "stops": 15,
+          "activeSongs": 1,
+          "longestContinuous": 47.66619
+        },
+        "DVD_STEPPER_3": {
+          "notes": 69,
+          "seconds": 192.5237475000001,
+          "stops": 19,
+          "activeSongs": 1,
+          "longestContinuous": 35.666309999999996
+        },
+        "DVD_STEPPER_4": {
+          "notes": 93,
+          "seconds": 173.53557,
+          "stops": 23,
+          "activeSongs": 1,
+          "longestContinuous": 57.66609000000001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0115-radiohead_1996-lift.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 346,
+          "seconds": 182.89439750000003,
+          "stops": 68,
+          "activeSongs": 1,
+          "longestContinuous": 35.52742249999999
+        },
+        "DVD_STEPPER_2": {
+          "notes": 381,
+          "seconds": 183.92817749999998,
+          "stops": 79,
+          "activeSongs": 1,
+          "longestContinuous": 20.4443
+        },
+        "DVD_STEPPER_3": {
+          "notes": 399,
+          "seconds": 178.86062250000003,
+          "stops": 88,
+          "activeSongs": 1,
+          "longestContinuous": 51.832815
+        },
+        "DVD_STEPPER_4": {
+          "notes": 377,
+          "seconds": 170.99089750000005,
+          "stops": 79,
+          "activeSongs": 1,
+          "longestContinuous": 43.38845499999999
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0116-radiohead_1996-talk_show_host.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 362,
+          "seconds": 180.79471249999983,
+          "stops": 235,
+          "activeSongs": 1,
+          "longestContinuous": 19.482612499999995
+        },
+        "DVD_STEPPER_2": {
+          "notes": 246,
+          "seconds": 172.71832500000008,
+          "stops": 159,
+          "activeSongs": 1,
+          "longestContinuous": 9.655100000000004
+        },
+        "DVD_STEPPER_3": {
+          "notes": 239,
+          "seconds": 139.08288749999986,
+          "stops": 139,
+          "activeSongs": 1,
+          "longestContinuous": 19.99984999999998
+        },
+        "DVD_STEPPER_4": {
+          "notes": 181,
+          "seconds": 133.59568750000003,
+          "stops": 106,
+          "activeSongs": 1,
+          "longestContinuous": 17.241249999999994
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0117-radiohead_1997-lull.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 114,
+          "seconds": 129.90967499999996,
+          "stops": 7,
+          "activeSongs": 1,
+          "longestContinuous": 50.89245
+        },
+        "DVD_STEPPER_2": {
+          "notes": 136,
+          "seconds": 129.10610999999997,
+          "stops": 17,
+          "activeSongs": 1,
+          "longestContinuous": 54.10671000000001
+        },
+        "DVD_STEPPER_3": {
+          "notes": 106,
+          "seconds": 124.82042999999999,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 28.660484999999994
+        },
+        "DVD_STEPPER_4": {
+          "notes": 115,
+          "seconds": 121.07045999999998,
+          "stops": 10,
+          "activeSongs": 1,
+          "longestContinuous": 35.62471500000001
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0118-radiohead_1997-melatonin.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 57,
+          "seconds": 100.45000000000002,
+          "stops": 12,
+          "activeSongs": 1,
+          "longestContinuous": 17.49583333333333
+        },
+        "DVD_STEPPER_2": {
+          "notes": 43,
+          "seconds": 114.44583333333335,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 30.995833333333334
+        },
+        "DVD_STEPPER_3": {
+          "notes": 33,
+          "seconds": 106.93333333333335,
+          "stops": 16,
+          "activeSongs": 1,
+          "longestContinuous": 13.995833333333337
+        },
+        "DVD_STEPPER_4": {
+          "notes": 16,
+          "seconds": 53.9666666666667,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 13.995833333333337
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0119-radiohead_1997-nude_(big_ideas).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 153,
+          "seconds": 258.17304250000007,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 22.298073950000003
+        },
+        "DVD_STEPPER_2": {
+          "notes": 375,
+          "seconds": 251.22112034999998,
+          "stops": 119,
+          "activeSongs": 1,
+          "longestContinuous": 43.82210954166665
+        },
+        "DVD_STEPPER_3": {
+          "notes": 339,
+          "seconds": 240.1730449000001,
+          "stops": 86,
+          "activeSongs": 1,
+          "longestContinuous": 50.168262541666664
+        },
+        "DVD_STEPPER_4": {
+          "notes": 292,
+          "seconds": 217.87497095,
+          "stops": 114,
+          "activeSongs": 1,
+          "longestContinuous": 20.759612616666658
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0120-radiohead_1997-pearly.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 151,
+          "seconds": 134.86866000000003,
+          "stops": 101,
+          "activeSongs": 1,
+          "longestContinuous": 16.923060000000007
+        },
+        "DVD_STEPPER_2": {
+          "notes": 108,
+          "seconds": 132.05114999999998,
+          "stops": 55,
+          "activeSongs": 1,
+          "longestContinuous": 32.30766
+        },
+        "DVD_STEPPER_3": {
+          "notes": 54,
+          "seconds": 145.89728999999997,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 58.71789
+        },
+        "DVD_STEPPER_4": {
+          "notes": 65,
+          "seconds": 118.20500999999993,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 17.692289999999986
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0121-radiohead_1997-polyethylene_part_1&2-[k].mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 325,
+          "seconds": 239.49289108333332,
+          "stops": 12,
+          "activeSongs": 1,
+          "longestContinuous": 208.30115079166666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 267,
+          "seconds": 230.50285241666663,
+          "stops": 12,
+          "activeSongs": 1,
+          "longestContinuous": 153.49138493749996
+        },
+        "DVD_STEPPER_3": {
+          "notes": 247,
+          "seconds": 231.00739883333333,
+          "stops": 12,
+          "activeSongs": 1,
+          "longestContinuous": 131.88315424999996
+        },
+        "DVD_STEPPER_4": {
+          "notes": 225,
+          "seconds": 207.1419718333333,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 115.20080881249999
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0122-radiohead_1998-how_i_made_my_millions.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 76,
+          "seconds": 159.99367999999998,
+          "stops": 13,
+          "activeSongs": 1,
+          "longestContinuous": 77.41919999999999
+        },
+        "DVD_STEPPER_2": {
+          "notes": 140,
+          "seconds": 158.70935999999998,
+          "stops": 7,
+          "activeSongs": 1,
+          "longestContinuous": 34.83864
+        },
+        "DVD_STEPPER_3": {
+          "notes": 136,
+          "seconds": 125.11904000000011,
+          "stops": 24,
+          "activeSongs": 1,
+          "longestContinuous": 43.225719999999995
+        },
+        "DVD_STEPPER_4": {
+          "notes": 39,
+          "seconds": 90.3224,
+          "stops": 6,
+          "activeSongs": 1,
+          "longestContinuous": 26.12898
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0123-radiohead_1998-big_boots_(man-o-war).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 256,
+          "seconds": 217.68908999999996,
+          "stops": 14,
+          "activeSongs": 1,
+          "longestContinuous": 104.61228
+        },
+        "DVD_STEPPER_2": {
+          "notes": 243,
+          "seconds": 125.19218250000006,
+          "stops": 34,
+          "activeSongs": 1,
+          "longestContinuous": 27.307664999999986
+        },
+        "DVD_STEPPER_3": {
+          "notes": 236,
+          "seconds": 120.1921875,
+          "stops": 14,
+          "activeSongs": 1,
+          "longestContinuous": 27.69228000000001
+        },
+        "DVD_STEPPER_4": {
+          "notes": 197,
+          "seconds": 128.6507175,
+          "stops": 27,
+          "activeSongs": 1,
+          "longestContinuous": 26.153819999999996
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0124-radiohead_1998-rabbit_in_your_headlights.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 66,
+          "seconds": 134.09804560833334,
+          "stops": 48,
+          "activeSongs": 1,
+          "longestContinuous": 9.20889505416666
+        },
+        "DVD_STEPPER_2": {
+          "notes": 61,
+          "seconds": 147.40219550625005,
+          "stops": 44,
+          "activeSongs": 1,
+          "longestContinuous": 9.753415066666662
+        },
+        "DVD_STEPPER_3": {
+          "notes": 59,
+          "seconds": 158.50071902708342,
+          "stops": 49,
+          "activeSongs": 1,
+          "longestContinuous": 12.130125058333306
+        },
+        "DVD_STEPPER_4": {
+          "notes": 57,
+          "seconds": 148.9214552666667,
+          "stops": 41,
+          "activeSongs": 1,
+          "longestContinuous": 9.753415066666662
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0125-radiohead_2001-fog_(alligators_in_new_york_sewers).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 108,
+          "seconds": 56.25,
+          "stops": 91,
+          "activeSongs": 1,
+          "longestContinuous": 2.25
+        },
+        "DVD_STEPPER_2": {
+          "notes": 104,
+          "seconds": 51.5625,
+          "stops": 82,
+          "activeSongs": 1,
+          "longestContinuous": 2.25
+        },
+        "DVD_STEPPER_3": {
+          "notes": 34,
+          "seconds": 15.1875,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 2.0625
+        },
+        "DVD_STEPPER_4": {
+          "notes": 38,
+          "seconds": 23.0625,
+          "stops": 38,
+          "activeSongs": 1,
+          "longestContinuous": 2.25
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 847,
+          "seconds": 330.6650125000002,
+          "stops": 299,
+          "activeSongs": 1,
+          "longestContinuous": 33.809490000000004
+        },
+        "DVD_STEPPER_2": {
+          "notes": 784,
+          "seconds": 326.4206260416667,
+          "stops": 225,
+          "activeSongs": 1,
+          "longestContinuous": 33.809490000000004
+        },
+        "DVD_STEPPER_3": {
+          "notes": 657,
+          "seconds": 227.09615041666675,
+          "stops": 256,
+          "activeSongs": 1,
+          "longestContinuous": 11.800000000000011
+        },
+        "DVD_STEPPER_4": {
+          "notes": 497,
+          "seconds": 184.69837416666678,
+          "stops": 122,
+          "activeSongs": 1,
+          "longestContinuous": 15.218238750000012
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0127-radiohead_2004-arpeggi.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 333,
+          "seconds": 63.294,
+          "stops": 168,
+          "activeSongs": 1,
+          "longestContinuous": 1.3125
+        },
+        "DVD_STEPPER_2": {
+          "notes": 148,
+          "seconds": 28.6875,
+          "stops": 148,
+          "activeSongs": 1,
+          "longestContinuous": 1.125
+        },
+        "DVD_STEPPER_3": {
+          "notes": 26,
+          "seconds": 4.875,
+          "stops": 26,
+          "activeSongs": 1,
+          "longestContinuous": 0.1875
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0128-radiohead_2005-i_want_none_of_this.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 121,
+          "seconds": 178.5,
+          "stops": 7,
+          "activeSongs": 1,
+          "longestContinuous": 63.5
+        },
+        "DVD_STEPPER_2": {
+          "notes": 118,
+          "seconds": 182.0,
+          "stops": 8,
+          "activeSongs": 1,
+          "longestContinuous": 79.25
+        },
+        "DVD_STEPPER_3": {
+          "notes": 108,
+          "seconds": 184.25,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 59.25
+        },
+        "DVD_STEPPER_4": {
+          "notes": 82,
+          "seconds": 177.25,
+          "stops": 5,
+          "activeSongs": 1,
+          "longestContinuous": 80.75
+        }
+      }
+    },
+    {
+      "file": "radiohead-midi/0129-radiohead_2008-house_of_cards_(live).mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 63,
+          "seconds": 39.31359705,
+          "stops": 57,
+          "activeSongs": 1,
+          "longestContinuous": 2.168179649999999
+        },
+        "DVD_STEPPER_2": {
+          "notes": 45,
+          "seconds": 27.55906335000002,
+          "stops": 39,
+          "activeSongs": 1,
+          "longestContinuous": 2.168179649999999
+        },
+        "DVD_STEPPER_3": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    },
+    {
+      "file": "sony-playstation-startup.mid",
+      "devices": {
+        "DVD_STEPPER_1": {
+          "notes": 2,
+          "seconds": 13.95348,
+          "stops": 1,
+          "activeSongs": 1,
+          "longestContinuous": 13.95348
+        },
+        "DVD_STEPPER_2": {
+          "notes": 3,
+          "seconds": 8.720925000000001,
+          "stops": 2,
+          "activeSongs": 1,
+          "longestContinuous": 7.6744140000000005
+        },
+        "DVD_STEPPER_3": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        },
+        "DVD_STEPPER_4": {
+          "notes": 0,
+          "seconds": 0,
+          "stops": 0,
+          "activeSongs": 0,
+          "longestContinuous": 0.0
+        }
+      }
+    }
+  ],
+  "scope": "Planned compiled ExecutionTimeline commands for all 134 MIDI; no physical playback or motor measurements.",
+  "sourceReport": "reports/library-8fdd-experiment.json",
+  "sourceReportSha256": "1d2823f48181c37beb73ee3aa8142b38e674d09e46882ff9b2e7cddcf9c793ee"
+}

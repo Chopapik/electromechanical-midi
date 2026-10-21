@@ -1,0 +1,5422 @@
+{
+  "scope": "offline planning and compiled timelines; acoustic and thermal performance unmeasured",
+  "summary": {
+    "files": 134,
+    "uniqueMidi": 134,
+    "allPhysicalChecksPass": true,
+    "songsWithMoreSourceAttacks": 127,
+    "songsWithMoreSourceDuration": 134,
+    "sourceAttackRegressions": [
+      "radiohead-midi/0054-02-radiohead_2001-pyramid_song.mid"
+    ],
+    "sourceDurationRegressions": [],
+    "leadCoverageRegressions": [],
+    "bassCoverageRegressions": [
+      "radiohead-midi/0001-01-radiohead_1993-you.mid",
+      "radiohead-midi/0007-07-radiohead_1993-ripcord.mid",
+      "radiohead-midi/0009-09-radiohead_1993-prove_yourself.mid",
+      "radiohead-midi/0011-11-radiohead_1993-lurgee.mid",
+      "radiohead-midi/0029-10-radiohead_1995-black_star.mid",
+      "radiohead-midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "radiohead-midi/0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "radiohead-midi/0049-07-radiohead_2000-in_limbo.mid",
+      "radiohead-midi/0054-02-radiohead_2001-pyramid_song.mid",
+      "radiohead-midi/0066-04-radiohead_2003-backdrift-[intro].mid",
+      "radiohead-midi/0095-03-radiohead_2011-little_by_little.mid"
+    ],
+    "before": {
+      "playedTonal": 201709,
+      "droppedTonal": 203819,
+      "playedDrums": 171466,
+      "hddHits": 171466,
+      "dvdStops": 30108,
+      "unrepresentedPartWindows": 3175,
+      "meanSourceVoiceDurationCoverage": 0.6230163805970149,
+      "meanLeadCoverage": 0.978033671641791,
+      "meanBassCoverage": 0.7228668432835821,
+      "kickSnareHits": 64749,
+      "dvdLongestContinuousSeconds": 283.405,
+      "dvdWorkSeconds": 77122.261,
+      "totalPlanningSeconds": 655.96,
+      "maxPlanningSeconds": 20.776
+    },
+    "after": {
+      "playedTonal": 320851,
+      "droppedTonal": 84677,
+      "playedDrums": 171433,
+      "hddHits": 171433,
+      "dvdStops": 45689,
+      "unrepresentedPartWindows": 540,
+      "meanSourceVoiceDurationCoverage": 0.7586812388059702,
+      "meanLeadCoverage": 1.0,
+      "meanBassCoverage": 0.8537395597014925,
+      "kickSnareHits": 66959,
+      "dvdLongestContinuousSeconds": 366.997,
+      "dvdWorkSeconds": 92090.117,
+      "totalPlanningSeconds": 826.832,
+      "maxPlanningSeconds": 29.581
+    }
+  },
+  "songs": [
+    {
+      "file": "Coldplay - The Scientist.mid",
+      "sha256": "9e711509438cb419f99d5f7ec708b9224d03a13cb00f748c613523950f1af57e",
+      "before": {
+        "playedTonal": 121,
+        "droppedTonal": 2,
+        "sourceVoiceDurationCoverage": 0.983535,
+        "weightedOnsetCoverage": 0.982705,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 6,
+        "dvdWorkSeconds": 44.917,
+        "dvdLongestContinuousSeconds": 14.009,
+        "planningSeconds": 0.085
+      },
+      "after": {
+        "playedTonal": 123,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.997544,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 6,
+        "dvdWorkSeconds": 44.917,
+        "dvdLongestContinuousSeconds": 14.009,
+        "planningSeconds": 0.168
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "Every breath you take.mid",
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "before": {
+        "playedTonal": 2051,
+        "droppedTonal": 376,
+        "sourceVoiceDurationCoverage": 0.758836,
+        "weightedOnsetCoverage": 0.851193,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.941469,
+        "unrepresentedPartWindows": 14,
+        "playedDrums": 1111,
+        "hddHits": 1111,
+        "dvdStops": 279,
+        "dvdWorkSeconds": 699.761,
+        "dvdLongestContinuousSeconds": 28.814,
+        "planningSeconds": 3.309
+      },
+      "after": {
+        "playedTonal": 2374,
+        "droppedTonal": 53,
+        "sourceVoiceDurationCoverage": 0.805966,
+        "weightedOnsetCoverage": 0.979729,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.957659,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1111,
+        "hddHits": 1111,
+        "dvdStops": 308,
+        "dvdWorkSeconds": 713.305,
+        "dvdLongestContinuousSeconds": 25.952,
+        "planningSeconds": 6.254
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 509,
+      "kickSnareHitsAfter": 509
+    },
+    {
+      "file": "One_Republic_Counting_stars.mid",
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "before": {
+        "playedTonal": 2689,
+        "droppedTonal": 2399,
+        "sourceVoiceDurationCoverage": 0.571002,
+        "weightedOnsetCoverage": 0.560034,
+        "leadCoverage": 0.998498,
+        "bassCoverage": 0.587224,
+        "unrepresentedPartWindows": 53,
+        "playedDrums": 2418,
+        "hddHits": 2418,
+        "dvdStops": 179,
+        "dvdWorkSeconds": 852.265,
+        "dvdLongestContinuousSeconds": 40.287,
+        "planningSeconds": 7.127
+      },
+      "after": {
+        "playedTonal": 3554,
+        "droppedTonal": 1534,
+        "sourceVoiceDurationCoverage": 0.624419,
+        "weightedOnsetCoverage": 0.72281,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.911548,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 2418,
+        "hddHits": 2418,
+        "dvdStops": 263,
+        "dvdWorkSeconds": 873.737,
+        "dvdLongestContinuousSeconds": 35.369,
+        "planningSeconds": 11.845
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 622,
+      "kickSnareHitsAfter": 720
+    },
+    {
+      "file": "The Police - Message in a Bottle.mid",
+      "sha256": "5bc05b4fc8fdd69a1b934916996706381cbdae0b9fe21336f668aef928e87a83",
+      "before": {
+        "playedTonal": 2491,
+        "droppedTonal": 2504,
+        "sourceVoiceDurationCoverage": 0.514432,
+        "weightedOnsetCoverage": 0.54389,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.586957,
+        "unrepresentedPartWindows": 109,
+        "playedDrums": 2616,
+        "hddHits": 2616,
+        "dvdStops": 415,
+        "dvdWorkSeconds": 809.846,
+        "dvdLongestContinuousSeconds": 23.942,
+        "planningSeconds": 7.13
+      },
+      "after": {
+        "playedTonal": 3994,
+        "droppedTonal": 1001,
+        "sourceVoiceDurationCoverage": 0.677109,
+        "weightedOnsetCoverage": 0.810932,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.886957,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 2616,
+        "hddHits": 2616,
+        "dvdStops": 789,
+        "dvdWorkSeconds": 1051.62,
+        "dvdLongestContinuousSeconds": 18.967,
+        "planningSeconds": 14.579
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1061,
+      "kickSnareHitsAfter": 1064
+    },
+    {
+      "file": "coldplaythe_scientist.mid",
+      "sha256": "65c1d0aa5fa55af435b6cda74ecc9e3dd77b51fae1e2b428c140b737628c2744",
+      "before": {
+        "playedTonal": 2536,
+        "droppedTonal": 3215,
+        "sourceVoiceDurationCoverage": 0.448978,
+        "weightedOnsetCoverage": 0.450218,
+        "leadCoverage": 0.922222,
+        "bassCoverage": 0.151515,
+        "unrepresentedPartWindows": 88,
+        "playedDrums": 1178,
+        "hddHits": 1178,
+        "dvdStops": 491,
+        "dvdWorkSeconds": 1131.33,
+        "dvdLongestContinuousSeconds": 29.861,
+        "planningSeconds": 8.913
+      },
+      "after": {
+        "playedTonal": 4263,
+        "droppedTonal": 1488,
+        "sourceVoiceDurationCoverage": 0.518159,
+        "weightedOnsetCoverage": 0.753287,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.922078,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1178,
+        "hddHits": 1178,
+        "dvdStops": 311,
+        "dvdWorkSeconds": 1185.729,
+        "dvdLongestContinuousSeconds": 66.618,
+        "planningSeconds": 21.319
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0001-01-radiohead_1993-you.mid",
+      "sha256": "e64932ccf5abe2ecfefa5ee00c18853cbed183575df76eeb58121c4a52256b0b",
+      "before": {
+        "playedTonal": 2321,
+        "droppedTonal": 2656,
+        "sourceVoiceDurationCoverage": 0.49534,
+        "weightedOnsetCoverage": 0.469886,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.652095,
+        "unrepresentedPartWindows": 34,
+        "playedDrums": 1161,
+        "hddHits": 1161,
+        "dvdStops": 333,
+        "dvdWorkSeconds": 692.065,
+        "dvdLongestContinuousSeconds": 25.082,
+        "planningSeconds": 6.64
+      },
+      "after": {
+        "playedTonal": 2969,
+        "droppedTonal": 2008,
+        "sourceVoiceDurationCoverage": 0.591887,
+        "weightedOnsetCoverage": 0.600906,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.593807,
+        "unrepresentedPartWindows": 11,
+        "playedDrums": 1161,
+        "hddHits": 1161,
+        "dvdStops": 380,
+        "dvdWorkSeconds": 749.292,
+        "dvdLongestContinuousSeconds": 49.62,
+        "planningSeconds": 8.538
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 577,
+      "kickSnareHitsAfter": 577
+    },
+    {
+      "file": "radiohead-midi/0002-02-radiohead_1993-creep-[k].mid",
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "before": {
+        "playedTonal": 1441,
+        "droppedTonal": 1818,
+        "sourceVoiceDurationCoverage": 0.617401,
+        "weightedOnsetCoverage": 0.506592,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.757009,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 1266,
+        "hddHits": 1266,
+        "dvdStops": 266,
+        "dvdWorkSeconds": 704.52,
+        "dvdLongestContinuousSeconds": 13.677,
+        "planningSeconds": 3.669
+      },
+      "after": {
+        "playedTonal": 2535,
+        "droppedTonal": 724,
+        "sourceVoiceDurationCoverage": 0.731266,
+        "weightedOnsetCoverage": 0.815568,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.969626,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1266,
+        "hddHits": 1266,
+        "dvdStops": 370,
+        "dvdWorkSeconds": 816.358,
+        "dvdLongestContinuousSeconds": 24.437,
+        "planningSeconds": 11.306
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 549,
+      "kickSnareHitsAfter": 549
+    },
+    {
+      "file": "radiohead-midi/0003-03-radiohead_1993-how_do_you.mid",
+      "sha256": "a46879887806eac7f19cfd51e51dffc4e39c2f629d66835d805b1decbd2595be",
+      "before": {
+        "playedTonal": 975,
+        "droppedTonal": 2196,
+        "sourceVoiceDurationCoverage": 0.399878,
+        "weightedOnsetCoverage": 0.326865,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.464198,
+        "unrepresentedPartWindows": 22,
+        "playedDrums": 1116,
+        "hddHits": 1116,
+        "dvdStops": 77,
+        "dvdWorkSeconds": 290.186,
+        "dvdLongestContinuousSeconds": 12.965,
+        "planningSeconds": 2.817
+      },
+      "after": {
+        "playedTonal": 2229,
+        "droppedTonal": 942,
+        "sourceVoiceDurationCoverage": 0.604327,
+        "weightedOnsetCoverage": 0.702709,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.718519,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 1116,
+        "hddHits": 1116,
+        "dvdStops": 313,
+        "dvdWorkSeconds": 405.475,
+        "dvdLongestContinuousSeconds": 16.208,
+        "planningSeconds": 7.415
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 570,
+      "kickSnareHitsAfter": 570
+    },
+    {
+      "file": "radiohead-midi/0004-04-radiohead_1993-stop_whispering.mid",
+      "sha256": "f5c7393bed9175930ab93ebfe09b1082c010b0df840eb32bee8a024436f11fb0",
+      "before": {
+        "playedTonal": 3236,
+        "droppedTonal": 4919,
+        "sourceVoiceDurationCoverage": 0.485826,
+        "weightedOnsetCoverage": 0.399029,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.718876,
+        "unrepresentedPartWindows": 39,
+        "playedDrums": 2691,
+        "hddHits": 2691,
+        "dvdStops": 562,
+        "dvdWorkSeconds": 924.401,
+        "dvdLongestContinuousSeconds": 29.523,
+        "planningSeconds": 10.096
+      },
+      "after": {
+        "playedTonal": 5719,
+        "droppedTonal": 2436,
+        "sourceVoiceDurationCoverage": 0.674087,
+        "weightedOnsetCoverage": 0.700011,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.771084,
+        "unrepresentedPartWindows": 25,
+        "playedDrums": 2691,
+        "hddHits": 2691,
+        "dvdStops": 685,
+        "dvdWorkSeconds": 1185.789,
+        "dvdLongestContinuousSeconds": 51.677,
+        "planningSeconds": 19.099
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 874,
+      "kickSnareHitsAfter": 874
+    },
+    {
+      "file": "radiohead-midi/0005-05-radiohead_1993-thinking_about_you.mid",
+      "sha256": "a08c2139af1e31ec4ceb0d2fa5696ae9842c9ad26093496c53e82ebec1c062ce",
+      "before": {
+        "playedTonal": 1919,
+        "droppedTonal": 5403,
+        "sourceVoiceDurationCoverage": 0.367984,
+        "weightedOnsetCoverage": 0.273323,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.236427,
+        "unrepresentedPartWindows": 51,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 179,
+        "dvdWorkSeconds": 608.443,
+        "dvdLongestContinuousSeconds": 71.853,
+        "planningSeconds": 5.499
+      },
+      "after": {
+        "playedTonal": 3039,
+        "droppedTonal": 4283,
+        "sourceVoiceDurationCoverage": 0.452153,
+        "weightedOnsetCoverage": 0.420101,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.469352,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 335,
+        "dvdWorkSeconds": 611.81,
+        "dvdLongestContinuousSeconds": 42.566,
+        "planningSeconds": 7.792
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0006-06-radiohead_1993-anyone_can_play_guitar.mid",
+      "sha256": "7df97b6c1f577b047260b7731d8c092cdcc8cd6fb2dc9f57c4be0cd60b8ef38a",
+      "before": {
+        "playedTonal": 2049,
+        "droppedTonal": 4633,
+        "sourceVoiceDurationCoverage": 0.361424,
+        "weightedOnsetCoverage": 0.331408,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.523585,
+        "unrepresentedPartWindows": 36,
+        "playedDrums": 1438,
+        "hddHits": 1438,
+        "dvdStops": 259,
+        "dvdWorkSeconds": 576.25,
+        "dvdLongestContinuousSeconds": 15.977,
+        "planningSeconds": 8.269
+      },
+      "after": {
+        "playedTonal": 3457,
+        "droppedTonal": 3225,
+        "sourceVoiceDurationCoverage": 0.463659,
+        "weightedOnsetCoverage": 0.519429,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.693396,
+        "unrepresentedPartWindows": 7,
+        "playedDrums": 1439,
+        "hddHits": 1439,
+        "dvdStops": 474,
+        "dvdWorkSeconds": 651.699,
+        "dvdLongestContinuousSeconds": 28.016,
+        "planningSeconds": 12.848
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 684,
+      "kickSnareHitsAfter": 684
+    },
+    {
+      "file": "radiohead-midi/0007-07-radiohead_1993-ripcord.mid",
+      "sha256": "779f77bb1172554ad5e8fcab3ba2b50a9f01bb9883aa2df6c87f91e6de96be6e",
+      "before": {
+        "playedTonal": 1629,
+        "droppedTonal": 2286,
+        "sourceVoiceDurationCoverage": 0.467201,
+        "weightedOnsetCoverage": 0.438753,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1475,
+        "hddHits": 1475,
+        "dvdStops": 94,
+        "dvdWorkSeconds": 129.586,
+        "dvdLongestContinuousSeconds": 6.029,
+        "planningSeconds": 3.803
+      },
+      "after": {
+        "playedTonal": 3599,
+        "droppedTonal": 316,
+        "sourceVoiceDurationCoverage": 0.8473,
+        "weightedOnsetCoverage": 0.920842,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.873547,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1475,
+        "hddHits": 1475,
+        "dvdStops": 264,
+        "dvdWorkSeconds": 425.741,
+        "dvdLongestContinuousSeconds": 10.391,
+        "planningSeconds": 12.101
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 786,
+      "kickSnareHitsAfter": 786
+    },
+    {
+      "file": "radiohead-midi/0008-08-radiohead_1993-vegetable.mid",
+      "sha256": "981cb285acf86b6d4e74d1a3f80a184a0604c0e023a92fac4383f47419fc1cb2",
+      "before": {
+        "playedTonal": 1994,
+        "droppedTonal": 2233,
+        "sourceVoiceDurationCoverage": 0.480245,
+        "weightedOnsetCoverage": 0.489115,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.740741,
+        "unrepresentedPartWindows": 20,
+        "playedDrums": 1083,
+        "hddHits": 1083,
+        "dvdStops": 496,
+        "dvdWorkSeconds": 553.769,
+        "dvdLongestContinuousSeconds": 16.428,
+        "planningSeconds": 4.022
+      },
+      "after": {
+        "playedTonal": 2887,
+        "droppedTonal": 1340,
+        "sourceVoiceDurationCoverage": 0.606215,
+        "weightedOnsetCoverage": 0.692057,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.793981,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 1083,
+        "hddHits": 1083,
+        "dvdStops": 550,
+        "dvdWorkSeconds": 652.043,
+        "dvdLongestContinuousSeconds": 13.832,
+        "planningSeconds": 7.595
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 485,
+      "kickSnareHitsAfter": 485
+    },
+    {
+      "file": "radiohead-midi/0009-09-radiohead_1993-prove_yourself.mid",
+      "sha256": "0cce6d7b28c63207c1835d2b6234484c8f255c5df046707eb543db84ab00da8c",
+      "before": {
+        "playedTonal": 2213,
+        "droppedTonal": 3001,
+        "sourceVoiceDurationCoverage": 0.409419,
+        "weightedOnsetCoverage": 0.435085,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.759615,
+        "unrepresentedPartWindows": 36,
+        "playedDrums": 741,
+        "hddHits": 741,
+        "dvdStops": 251,
+        "dvdWorkSeconds": 470.489,
+        "dvdLongestContinuousSeconds": 16.598,
+        "planningSeconds": 5.887
+      },
+      "after": {
+        "playedTonal": 2963,
+        "droppedTonal": 2251,
+        "sourceVoiceDurationCoverage": 0.509791,
+        "weightedOnsetCoverage": 0.570545,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.570513,
+        "unrepresentedPartWindows": 22,
+        "playedDrums": 741,
+        "hddHits": 741,
+        "dvdStops": 343,
+        "dvdWorkSeconds": 487.514,
+        "dvdLongestContinuousSeconds": 22.491,
+        "planningSeconds": 8.037
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 324,
+      "kickSnareHitsAfter": 324
+    },
+    {
+      "file": "radiohead-midi/0010-10-radiohead_1993-i_can't.mid",
+      "sha256": "e1e032bfd5c2bcbd97d60a327202bba97bfe3b3b85c70a80d9152d0c96cb7e42",
+      "before": {
+        "playedTonal": 2841,
+        "droppedTonal": 4063,
+        "sourceVoiceDurationCoverage": 0.41441,
+        "weightedOnsetCoverage": 0.434641,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.665714,
+        "unrepresentedPartWindows": 65,
+        "playedDrums": 1377,
+        "hddHits": 1377,
+        "dvdStops": 368,
+        "dvdWorkSeconds": 540.38,
+        "dvdLongestContinuousSeconds": 23.067,
+        "planningSeconds": 8.193
+      },
+      "after": {
+        "playedTonal": 5163,
+        "droppedTonal": 1741,
+        "sourceVoiceDurationCoverage": 0.67401,
+        "weightedOnsetCoverage": 0.746739,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.772857,
+        "unrepresentedPartWindows": 13,
+        "playedDrums": 1377,
+        "hddHits": 1377,
+        "dvdStops": 854,
+        "dvdWorkSeconds": 869.903,
+        "dvdLongestContinuousSeconds": 18.452,
+        "planningSeconds": 23.032
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 706,
+      "kickSnareHitsAfter": 706
+    },
+    {
+      "file": "radiohead-midi/0011-11-radiohead_1993-lurgee.mid",
+      "sha256": "cc4e7d90a7df8202b6872f4fed4a34bdebef2a4bdba68bdfa74c60349caaff4a",
+      "before": {
+        "playedTonal": 1845,
+        "droppedTonal": 2889,
+        "sourceVoiceDurationCoverage": 0.448164,
+        "weightedOnsetCoverage": 0.389734,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.742287,
+        "unrepresentedPartWindows": 31,
+        "playedDrums": 1082,
+        "hddHits": 1082,
+        "dvdStops": 325,
+        "dvdWorkSeconds": 612.965,
+        "dvdLongestContinuousSeconds": 14.995,
+        "planningSeconds": 4.033
+      },
+      "after": {
+        "playedTonal": 3304,
+        "droppedTonal": 1430,
+        "sourceVoiceDurationCoverage": 0.65219,
+        "weightedOnsetCoverage": 0.69793,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.735027,
+        "unrepresentedPartWindows": 26,
+        "playedDrums": 1082,
+        "hddHits": 1082,
+        "dvdStops": 372,
+        "dvdWorkSeconds": 731.853,
+        "dvdLongestContinuousSeconds": 34.701,
+        "planningSeconds": 10.657
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 473,
+      "kickSnareHitsAfter": 473
+    },
+    {
+      "file": "radiohead-midi/0012-12-radiohead_1993-blow_out.mid",
+      "sha256": "1f519ce015c37d7e7c3a63b66dff37e989a742b14a00301b47030da8acb825da",
+      "before": {
+        "playedTonal": 3025,
+        "droppedTonal": 4185,
+        "sourceVoiceDurationCoverage": 0.442841,
+        "weightedOnsetCoverage": 0.444501,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.509142,
+        "unrepresentedPartWindows": 116,
+        "playedDrums": 1868,
+        "hddHits": 1868,
+        "dvdStops": 267,
+        "dvdWorkSeconds": 672.012,
+        "dvdLongestContinuousSeconds": 31.526,
+        "planningSeconds": 9.778
+      },
+      "after": {
+        "playedTonal": 5507,
+        "droppedTonal": 1703,
+        "sourceVoiceDurationCoverage": 0.671475,
+        "weightedOnsetCoverage": 0.764027,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.523207,
+        "unrepresentedPartWindows": 39,
+        "playedDrums": 1868,
+        "hddHits": 1868,
+        "dvdStops": 283,
+        "dvdWorkSeconds": 994.449,
+        "dvdLongestContinuousSeconds": 68.078,
+        "planningSeconds": 19.838
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 864,
+      "kickSnareHitsAfter": 864
+    },
+    {
+      "file": "radiohead-midi/0013-13-radiohead_1993-pop_is_dead.mid",
+      "sha256": "e0bc91c130cd169b3ed636adb21e957f83a5f6bb8a41e883e8100982236091d3",
+      "before": {
+        "playedTonal": 1125,
+        "droppedTonal": 1119,
+        "sourceVoiceDurationCoverage": 0.490151,
+        "weightedOnsetCoverage": 0.505664,
+        "leadCoverage": 0.973333,
+        "bassCoverage": 0.905775,
+        "unrepresentedPartWindows": 14,
+        "playedDrums": 842,
+        "hddHits": 842,
+        "dvdStops": 34,
+        "dvdWorkSeconds": 142.114,
+        "dvdLongestContinuousSeconds": 8.136,
+        "planningSeconds": 1.855
+      },
+      "after": {
+        "playedTonal": 2089,
+        "droppedTonal": 155,
+        "sourceVoiceDurationCoverage": 0.815715,
+        "weightedOnsetCoverage": 0.931822,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.975684,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 842,
+        "hddHits": 842,
+        "dvdStops": 149,
+        "dvdWorkSeconds": 332.078,
+        "dvdLongestContinuousSeconds": 11.136,
+        "planningSeconds": 4.363
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 418,
+      "kickSnareHitsAfter": 418
+    },
+    {
+      "file": "radiohead-midi/0014-14-radiohead_1993-inside_my_head.mid",
+      "sha256": "91dd1cd17d3c4b7bf97b67c117eddf36108f322883447c61438640bd151da729",
+      "before": {
+        "playedTonal": 1366,
+        "droppedTonal": 831,
+        "sourceVoiceDurationCoverage": 0.563597,
+        "weightedOnsetCoverage": 0.620157,
+        "leadCoverage": 0.99509,
+        "bassCoverage": 0.534371,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1415,
+        "hddHits": 1415,
+        "dvdStops": 14,
+        "dvdWorkSeconds": 61.247,
+        "dvdLongestContinuousSeconds": 11.995,
+        "planningSeconds": 2.446
+      },
+      "after": {
+        "playedTonal": 2026,
+        "droppedTonal": 171,
+        "sourceVoiceDurationCoverage": 0.812735,
+        "weightedOnsetCoverage": 0.924178,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1415,
+        "hddHits": 1415,
+        "dvdStops": 410,
+        "dvdWorkSeconds": 156.328,
+        "dvdLongestContinuousSeconds": 11.995,
+        "planningSeconds": 3.726
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 766,
+      "kickSnareHitsAfter": 766
+    },
+    {
+      "file": "radiohead-midi/0015-04-radiohead_1994-banana_co.mid",
+      "sha256": "948943ee28e174ab99a1acb6fcac116464df7f980b47e9fa0acc7117c08087e1",
+      "before": {
+        "playedTonal": 1161,
+        "droppedTonal": 2213,
+        "sourceVoiceDurationCoverage": 0.361778,
+        "weightedOnsetCoverage": 0.367568,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.769608,
+        "unrepresentedPartWindows": 20,
+        "playedDrums": 452,
+        "hddHits": 452,
+        "dvdStops": 233,
+        "dvdWorkSeconds": 437.778,
+        "dvdLongestContinuousSeconds": 12.49,
+        "planningSeconds": 2.901
+      },
+      "after": {
+        "playedTonal": 1977,
+        "droppedTonal": 1397,
+        "sourceVoiceDurationCoverage": 0.503902,
+        "weightedOnsetCoverage": 0.59621,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.794118,
+        "unrepresentedPartWindows": 7,
+        "playedDrums": 452,
+        "hddHits": 452,
+        "dvdStops": 208,
+        "dvdWorkSeconds": 535.972,
+        "dvdLongestContinuousSeconds": 24.606,
+        "planningSeconds": 4.189
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 150,
+      "kickSnareHitsAfter": 150
+    },
+    {
+      "file": "radiohead-midi/0016-08-radiohead_1994-creep_(acoustic).mid",
+      "sha256": "e6b2de76774ec7f05a8ba183dc997ad7541931028f4207160334dffc74dca1cc",
+      "before": {
+        "playedTonal": 1580,
+        "droppedTonal": 2172,
+        "sourceVoiceDurationCoverage": 0.531938,
+        "weightedOnsetCoverage": 0.421727,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.393296,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 692,
+        "dvdWorkSeconds": 487.0,
+        "dvdLongestContinuousSeconds": 1.652,
+        "planningSeconds": 2.405
+      },
+      "after": {
+        "playedTonal": 3505,
+        "droppedTonal": 247,
+        "sourceVoiceDurationCoverage": 0.879384,
+        "weightedOnsetCoverage": 0.934445,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.931006,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 795,
+        "dvdWorkSeconds": 649.505,
+        "dvdLongestContinuousSeconds": 2.716,
+        "planningSeconds": 9.706
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0017-02-radiohead_1994-the_trickster_(live).mid",
+      "sha256": "e4f8d46ef5d36d06e51af298cc616203684c7174ea55126272c7712bc7771a50",
+      "before": {
+        "playedTonal": 1715,
+        "droppedTonal": 3679,
+        "sourceVoiceDurationCoverage": 0.506261,
+        "weightedOnsetCoverage": 0.322623,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.549563,
+        "unrepresentedPartWindows": 30,
+        "playedDrums": 1697,
+        "hddHits": 1697,
+        "dvdStops": 204,
+        "dvdWorkSeconds": 550.015,
+        "dvdLongestContinuousSeconds": 31.766,
+        "planningSeconds": 5.551
+      },
+      "after": {
+        "playedTonal": 4206,
+        "droppedTonal": 1188,
+        "sourceVoiceDurationCoverage": 0.791166,
+        "weightedOnsetCoverage": 0.782143,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.790087,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1697,
+        "hddHits": 1697,
+        "dvdStops": 1258,
+        "dvdWorkSeconds": 909.531,
+        "dvdLongestContinuousSeconds": 43.608,
+        "planningSeconds": 12.693
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 807,
+      "kickSnareHitsAfter": 807
+    },
+    {
+      "file": "radiohead-midi/0018-06-radiohead_1994-lozenge_of_love_(live).mid",
+      "sha256": "70c4b2e5aeb0f1ab1d19a251e2e553388cbdf556a68df7d4b90efe3477096f24",
+      "before": {
+        "playedTonal": 604,
+        "droppedTonal": 196,
+        "sourceVoiceDurationCoverage": 0.806801,
+        "weightedOnsetCoverage": 0.748554,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.723164,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 62,
+        "dvdWorkSeconds": 139.259,
+        "dvdLongestContinuousSeconds": 7.835,
+        "planningSeconds": 0.676
+      },
+      "after": {
+        "playedTonal": 800,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.947189,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 64,
+        "dvdWorkSeconds": 133.423,
+        "dvdLongestContinuousSeconds": 7.835,
+        "planningSeconds": 0.912
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0019-07-radiohead_1994-you_never_wash_up_after_yourself_(live).mid",
+      "sha256": "4288b76fd2d722b1ae414506784442478e17f72851d8d7cdf1942bc474177cf7",
+      "before": {
+        "playedTonal": 1423,
+        "droppedTonal": 784,
+        "sourceVoiceDurationCoverage": 0.631366,
+        "weightedOnsetCoverage": 0.658916,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 521,
+        "hddHits": 521,
+        "dvdStops": 276,
+        "dvdWorkSeconds": 442.112,
+        "dvdLongestContinuousSeconds": 27.418,
+        "planningSeconds": 1.564
+      },
+      "after": {
+        "playedTonal": 2179,
+        "droppedTonal": 28,
+        "sourceVoiceDurationCoverage": 0.820838,
+        "weightedOnsetCoverage": 0.987959,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 521,
+        "hddHits": 521,
+        "dvdStops": 116,
+        "dvdWorkSeconds": 612.897,
+        "dvdLongestContinuousSeconds": 27.418,
+        "planningSeconds": 3.582
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 262,
+      "kickSnareHitsAfter": 262
+    },
+    {
+      "file": "radiohead-midi/0020-01-radiohead_1995-planet_telex.mid",
+      "sha256": "e98715f1d378d44d48a7dd6c01949db2e850a396c9c84985d9d3e1198ad7b104",
+      "before": {
+        "playedTonal": 2156,
+        "droppedTonal": 1704,
+        "sourceVoiceDurationCoverage": 0.605847,
+        "weightedOnsetCoverage": 0.570631,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.99564,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 1945,
+        "hddHits": 1945,
+        "dvdStops": 57,
+        "dvdWorkSeconds": 957.29,
+        "dvdLongestContinuousSeconds": 146.666,
+        "planningSeconds": 4.79
+      },
+      "after": {
+        "playedTonal": 3184,
+        "droppedTonal": 676,
+        "sourceVoiceDurationCoverage": 0.701186,
+        "weightedOnsetCoverage": 0.829583,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.997093,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1945,
+        "hddHits": 1945,
+        "dvdStops": 64,
+        "dvdWorkSeconds": 1046.037,
+        "dvdLongestContinuousSeconds": 266.666,
+        "planningSeconds": 5.492
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1064,
+      "kickSnareHitsAfter": 1064
+    },
+    {
+      "file": "radiohead-midi/0021-02-radiohead_1995-the_bends.mid",
+      "sha256": "ee6a377355ed0e3595c405fe5a96b2c551f2a395005e853fdc15db90fbfff928",
+      "before": {
+        "playedTonal": 2453,
+        "droppedTonal": 3065,
+        "sourceVoiceDurationCoverage": 0.4409,
+        "weightedOnsetCoverage": 0.450574,
+        "leadCoverage": 0.992883,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 1181,
+        "hddHits": 1181,
+        "dvdStops": 435,
+        "dvdWorkSeconds": 492.736,
+        "dvdLongestContinuousSeconds": 9.989,
+        "planningSeconds": 5.623
+      },
+      "after": {
+        "playedTonal": 3637,
+        "droppedTonal": 1881,
+        "sourceVoiceDurationCoverage": 0.598009,
+        "weightedOnsetCoverage": 0.666827,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 1181,
+        "hddHits": 1181,
+        "dvdStops": 605,
+        "dvdWorkSeconds": 717.523,
+        "dvdLongestContinuousSeconds": 19.989,
+        "planningSeconds": 10.869
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 538,
+      "kickSnareHitsAfter": 538
+    },
+    {
+      "file": "radiohead-midi/0022-03-radiohead_1995-high_and_dry-[k].mid",
+      "sha256": "be6a0107f5592614286009c0255b610a23c6e5b9e950ac767a1ad7e1f15335a9",
+      "before": {
+        "playedTonal": 1684,
+        "droppedTonal": 4492,
+        "sourceVoiceDurationCoverage": 0.406844,
+        "weightedOnsetCoverage": 0.291747,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.625912,
+        "unrepresentedPartWindows": 39,
+        "playedDrums": 1225,
+        "hddHits": 1225,
+        "dvdStops": 267,
+        "dvdWorkSeconds": 513.68,
+        "dvdLongestContinuousSeconds": 41.353,
+        "planningSeconds": 5.795
+      },
+      "after": {
+        "playedTonal": 4483,
+        "droppedTonal": 1693,
+        "sourceVoiceDurationCoverage": 0.68475,
+        "weightedOnsetCoverage": 0.731801,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.669708,
+        "unrepresentedPartWindows": 20,
+        "playedDrums": 1225,
+        "hddHits": 1225,
+        "dvdStops": 399,
+        "dvdWorkSeconds": 910.288,
+        "dvdLongestContinuousSeconds": 41.353,
+        "planningSeconds": 15.953
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 477,
+      "kickSnareHitsAfter": 477
+    },
+    {
+      "file": "radiohead-midi/0023-04-radiohead_1995-fake_plastic_trees-[k].mid",
+      "sha256": "eeb1a97cdde6ece920bcdf82e362192adee80615bd050b5004c2fe8f98856bc7",
+      "before": {
+        "playedTonal": 1672,
+        "droppedTonal": 2239,
+        "sourceVoiceDurationCoverage": 0.546489,
+        "weightedOnsetCoverage": 0.453492,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.913043,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 688,
+        "hddHits": 688,
+        "dvdStops": 391,
+        "dvdWorkSeconds": 608.172,
+        "dvdLongestContinuousSeconds": 31.79,
+        "planningSeconds": 2.972
+      },
+      "after": {
+        "playedTonal": 3712,
+        "droppedTonal": 199,
+        "sourceVoiceDurationCoverage": 0.859155,
+        "weightedOnsetCoverage": 0.947533,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.972332,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 688,
+        "hddHits": 688,
+        "dvdStops": 414,
+        "dvdWorkSeconds": 906.326,
+        "dvdLongestContinuousSeconds": 136.195,
+        "planningSeconds": 8.122
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 202,
+      "kickSnareHitsAfter": 202
+    },
+    {
+      "file": "radiohead-midi/0024-05-radiohead_1995-bones.mid",
+      "sha256": "b0eaa237ff7a3f6e0f6dcea40adbe6f91dae7eec42f6ffabb9eb1f6b3fe547b3",
+      "before": {
+        "playedTonal": 1288,
+        "droppedTonal": 492,
+        "sourceVoiceDurationCoverage": 0.674609,
+        "weightedOnsetCoverage": 0.766483,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.995465,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 1437,
+        "hddHits": 1437,
+        "dvdStops": 254,
+        "dvdWorkSeconds": 430.332,
+        "dvdLongestContinuousSeconds": 8.07,
+        "planningSeconds": 1.979
+      },
+      "after": {
+        "playedTonal": 1636,
+        "droppedTonal": 144,
+        "sourceVoiceDurationCoverage": 0.803837,
+        "weightedOnsetCoverage": 0.933145,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1437,
+        "hddHits": 1437,
+        "dvdStops": 199,
+        "dvdWorkSeconds": 523.41,
+        "dvdLongestContinuousSeconds": 16.724,
+        "planningSeconds": 2.656
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 453,
+      "kickSnareHitsAfter": 453
+    },
+    {
+      "file": "radiohead-midi/0025-06-radiohead_1995-(nice_dream)-[k].mid",
+      "sha256": "90dc1a80def4c2f8e9944bb8449f8e1a26b6a9a8be05dd0cc6045c8cf19c11e5",
+      "before": {
+        "playedTonal": 1948,
+        "droppedTonal": 5828,
+        "sourceVoiceDurationCoverage": 0.363626,
+        "weightedOnsetCoverage": 0.252504,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.650667,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1119,
+        "hddHits": 1119,
+        "dvdStops": 425,
+        "dvdWorkSeconds": 466.987,
+        "dvdLongestContinuousSeconds": 8.881,
+        "planningSeconds": 6.966
+      },
+      "after": {
+        "playedTonal": 5508,
+        "droppedTonal": 2268,
+        "sourceVoiceDurationCoverage": 0.693766,
+        "weightedOnsetCoverage": 0.718434,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.989333,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1119,
+        "hddHits": 1119,
+        "dvdStops": 732,
+        "dvdWorkSeconds": 855.922,
+        "dvdLongestContinuousSeconds": 20.218,
+        "planningSeconds": 18.694
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 556,
+      "kickSnareHitsAfter": 556
+    },
+    {
+      "file": "radiohead-midi/0026-07-radiohead_1995-just-[k].mid",
+      "sha256": "8453058c3ab17210496d2f31f9b40227476acd9a4387879676aaf4466b6225de",
+      "before": {
+        "playedTonal": 2092,
+        "droppedTonal": 4860,
+        "sourceVoiceDurationCoverage": 0.387137,
+        "weightedOnsetCoverage": 0.322055,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.589744,
+        "unrepresentedPartWindows": 44,
+        "playedDrums": 1243,
+        "hddHits": 1243,
+        "dvdStops": 448,
+        "dvdWorkSeconds": 498.279,
+        "dvdLongestContinuousSeconds": 10.874,
+        "planningSeconds": 7.3
+      },
+      "after": {
+        "playedTonal": 4627,
+        "droppedTonal": 2325,
+        "sourceVoiceDurationCoverage": 0.608303,
+        "weightedOnsetCoverage": 0.677279,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.754579,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1243,
+        "hddHits": 1243,
+        "dvdStops": 782,
+        "dvdWorkSeconds": 795.58,
+        "dvdLongestContinuousSeconds": 10.874,
+        "planningSeconds": 13.624
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 620,
+      "kickSnareHitsAfter": 620
+    },
+    {
+      "file": "radiohead-midi/0027-08-radiohead_1995-my_iron_lung-[k].mid",
+      "sha256": "a4f1b71a938ce921f1393c495c4dd746eaea905e2f647e82191ebfa716e4ad63",
+      "before": {
+        "playedTonal": 1914,
+        "droppedTonal": 1367,
+        "sourceVoiceDurationCoverage": 0.643789,
+        "weightedOnsetCoverage": 0.608619,
+        "leadCoverage": 0.99639,
+        "bassCoverage": 0.701416,
+        "unrepresentedPartWindows": 52,
+        "playedDrums": 1522,
+        "hddHits": 1522,
+        "dvdStops": 250,
+        "dvdWorkSeconds": 546.652,
+        "dvdLongestContinuousSeconds": 19.123,
+        "planningSeconds": 4.529
+      },
+      "after": {
+        "playedTonal": 3104,
+        "droppedTonal": 177,
+        "sourceVoiceDurationCoverage": 0.862488,
+        "weightedOnsetCoverage": 0.948479,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.97426,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 1522,
+        "hddHits": 1522,
+        "dvdStops": 578,
+        "dvdWorkSeconds": 822.124,
+        "dvdLongestContinuousSeconds": 19.123,
+        "planningSeconds": 7.002
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 753,
+      "kickSnareHitsAfter": 753
+    },
+    {
+      "file": "radiohead-midi/0029-10-radiohead_1995-black_star.mid",
+      "sha256": "f5f7ba835fb0313f20b5341e6bf628d58894cf5fa7e1eb6f0fc480bd6c709957",
+      "before": {
+        "playedTonal": 1756,
+        "droppedTonal": 1648,
+        "sourceVoiceDurationCoverage": 0.560329,
+        "weightedOnsetCoverage": 0.540644,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 1137,
+        "hddHits": 1137,
+        "dvdStops": 493,
+        "dvdWorkSeconds": 574.038,
+        "dvdLongestContinuousSeconds": 12.075,
+        "planningSeconds": 3.923
+      },
+      "after": {
+        "playedTonal": 3259,
+        "droppedTonal": 145,
+        "sourceVoiceDurationCoverage": 0.772547,
+        "weightedOnsetCoverage": 0.9592,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.972789,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1137,
+        "hddHits": 1137,
+        "dvdStops": 628,
+        "dvdWorkSeconds": 772.075,
+        "dvdLongestContinuousSeconds": 40.412,
+        "planningSeconds": 7.351
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 558,
+      "kickSnareHitsAfter": 558
+    },
+    {
+      "file": "radiohead-midi/0030-11-radiohead_1995-sulk.mid",
+      "sha256": "22088eab592ddfd6ed30f96e0bd90442d27c19711197da57b9d30ca440af3203",
+      "before": {
+        "playedTonal": 1148,
+        "droppedTonal": 1300,
+        "sourceVoiceDurationCoverage": 0.576303,
+        "weightedOnsetCoverage": 0.502578,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.684211,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1674,
+        "hddHits": 1674,
+        "dvdStops": 122,
+        "dvdWorkSeconds": 314.583,
+        "dvdLongestContinuousSeconds": 45.462,
+        "planningSeconds": 2.72
+      },
+      "after": {
+        "playedTonal": 2257,
+        "droppedTonal": 191,
+        "sourceVoiceDurationCoverage": 0.860192,
+        "weightedOnsetCoverage": 0.917787,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.909774,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1674,
+        "hddHits": 1674,
+        "dvdStops": 362,
+        "dvdWorkSeconds": 509.108,
+        "dvdLongestContinuousSeconds": 37.884,
+        "planningSeconds": 3.646
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 476,
+      "kickSnareHitsAfter": 476
+    },
+    {
+      "file": "radiohead-midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "before": {
+        "playedTonal": 1703,
+        "droppedTonal": 126,
+        "sourceVoiceDurationCoverage": 0.784393,
+        "weightedOnsetCoverage": 0.936376,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 27,
+        "playedDrums": 1769,
+        "hddHits": 1769,
+        "dvdStops": 148,
+        "dvdWorkSeconds": 820.23,
+        "dvdLongestContinuousSeconds": 124.781,
+        "planningSeconds": 3.402
+      },
+      "after": {
+        "playedTonal": 1801,
+        "droppedTonal": 28,
+        "sourceVoiceDurationCoverage": 0.789944,
+        "weightedOnsetCoverage": 0.986583,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.990521,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1769,
+        "hddHits": 1769,
+        "dvdStops": 136,
+        "dvdWorkSeconds": 816.148,
+        "dvdLongestContinuousSeconds": 85.214,
+        "planningSeconds": 3.814
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 456,
+      "kickSnareHitsAfter": 466
+    },
+    {
+      "file": "radiohead-midi/0032-01-radiohead_1997-airbag-[k].mid",
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "before": {
+        "playedTonal": 1808,
+        "droppedTonal": 1823,
+        "sourceVoiceDurationCoverage": 0.651866,
+        "weightedOnsetCoverage": 0.501671,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.557292,
+        "unrepresentedPartWindows": 28,
+        "playedDrums": 3178,
+        "hddHits": 3178,
+        "dvdStops": 270,
+        "dvdWorkSeconds": 678.15,
+        "dvdLongestContinuousSeconds": 36.057,
+        "planningSeconds": 7.106
+      },
+      "after": {
+        "playedTonal": 3227,
+        "droppedTonal": 404,
+        "sourceVoiceDurationCoverage": 0.785192,
+        "weightedOnsetCoverage": 0.888224,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.921875,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 3188,
+        "hddHits": 3188,
+        "dvdStops": 429,
+        "dvdWorkSeconds": 809.583,
+        "dvdLongestContinuousSeconds": 34.271,
+        "planningSeconds": 8.803
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1110,
+      "kickSnareHitsAfter": 1280
+    },
+    {
+      "file": "radiohead-midi/0033-02-radiohead_1997-paranoid_android-[k].mid",
+      "sha256": "aa8324e99320213f907bf484651566a29f5369cc9277da3469a04c6adcc9e2e3",
+      "before": {
+        "playedTonal": 2635,
+        "droppedTonal": 6026,
+        "sourceVoiceDurationCoverage": 0.403904,
+        "weightedOnsetCoverage": 0.307438,
+        "leadCoverage": 0.995614,
+        "bassCoverage": 0.566009,
+        "unrepresentedPartWindows": 95,
+        "playedDrums": 2709,
+        "hddHits": 2709,
+        "dvdStops": 417,
+        "dvdWorkSeconds": 780.77,
+        "dvdLongestContinuousSeconds": 38.697,
+        "planningSeconds": 16.247
+      },
+      "after": {
+        "playedTonal": 6425,
+        "droppedTonal": 2236,
+        "sourceVoiceDurationCoverage": 0.690971,
+        "weightedOnsetCoverage": 0.743489,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.816388,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2685,
+        "hddHits": 2685,
+        "dvdStops": 1249,
+        "dvdWorkSeconds": 1266.19,
+        "dvdLongestContinuousSeconds": 124.89,
+        "planningSeconds": 29.581
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1023,
+      "kickSnareHitsAfter": 1023
+    },
+    {
+      "file": "radiohead-midi/0034-03-radiohead_1997-subterranean_homesick_alien.mid",
+      "sha256": "b556c6d1513e4d56999321c8452c3ac5eb11f191eda88db7f0ce2ee47aa8f644",
+      "before": {
+        "playedTonal": 1386,
+        "droppedTonal": 465,
+        "sourceVoiceDurationCoverage": 0.62491,
+        "weightedOnsetCoverage": 0.747484,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.760684,
+        "unrepresentedPartWindows": 12,
+        "playedDrums": 1380,
+        "hddHits": 1380,
+        "dvdStops": 229,
+        "dvdWorkSeconds": 853.89,
+        "dvdLongestContinuousSeconds": 71.039,
+        "planningSeconds": 2.87
+      },
+      "after": {
+        "playedTonal": 1775,
+        "droppedTonal": 76,
+        "sourceVoiceDurationCoverage": 0.695017,
+        "weightedOnsetCoverage": 0.960528,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.931624,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 1380,
+        "hddHits": 1380,
+        "dvdStops": 348,
+        "dvdWorkSeconds": 901.63,
+        "dvdLongestContinuousSeconds": 63.934,
+        "planningSeconds": 4.12
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 639,
+      "kickSnareHitsAfter": 639
+    },
+    {
+      "file": "radiohead-midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid",
+      "sha256": "8c0c0223dcdbc577545429df843a27738f262f1e62c6e07c21776e225d0d7d66",
+      "before": {
+        "playedTonal": 1546,
+        "droppedTonal": 1096,
+        "sourceVoiceDurationCoverage": 0.592652,
+        "weightedOnsetCoverage": 0.582536,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.770833,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 328,
+        "hddHits": 328,
+        "dvdStops": 154,
+        "dvdWorkSeconds": 1020.208,
+        "dvdLongestContinuousSeconds": 51.562,
+        "planningSeconds": 4.475
+      },
+      "after": {
+        "playedTonal": 2540,
+        "droppedTonal": 102,
+        "sourceVoiceDurationCoverage": 0.630724,
+        "weightedOnsetCoverage": 0.967721,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.9375,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 328,
+        "hddHits": 328,
+        "dvdStops": 153,
+        "dvdWorkSeconds": 1020.546,
+        "dvdLongestContinuousSeconds": 31.727,
+        "planningSeconds": 5.217
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 132,
+      "kickSnareHitsAfter": 132
+    },
+    {
+      "file": "radiohead-midi/0036-05-radiohead_1997-let_down-[k].mid",
+      "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+      "before": {
+        "playedTonal": 2907,
+        "droppedTonal": 2350,
+        "sourceVoiceDurationCoverage": 0.462144,
+        "weightedOnsetCoverage": 0.56801,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.831826,
+        "unrepresentedPartWindows": 28,
+        "playedDrums": 2021,
+        "hddHits": 2021,
+        "dvdStops": 526,
+        "dvdWorkSeconds": 1034.92,
+        "dvdLongestContinuousSeconds": 22.253,
+        "planningSeconds": 8.82
+      },
+      "after": {
+        "playedTonal": 3851,
+        "droppedTonal": 1406,
+        "sourceVoiceDurationCoverage": 0.572804,
+        "weightedOnsetCoverage": 0.744927,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.943942,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 2021,
+        "hddHits": 2021,
+        "dvdStops": 499,
+        "dvdWorkSeconds": 1117.066,
+        "dvdLongestContinuousSeconds": 30.164,
+        "planningSeconds": 9.452
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 451,
+      "kickSnareHitsAfter": 451
+    },
+    {
+      "file": "radiohead-midi/0037-06-radiohead_1997-karma_police-[k].mid",
+      "sha256": "486253a317a26e2a580cd00a745e8d13777aa59de9f42b26003d1eee6df74133",
+      "before": {
+        "playedTonal": 2071,
+        "droppedTonal": 2467,
+        "sourceVoiceDurationCoverage": 0.514753,
+        "weightedOnsetCoverage": 0.495528,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.524664,
+        "unrepresentedPartWindows": 35,
+        "playedDrums": 821,
+        "hddHits": 821,
+        "dvdStops": 517,
+        "dvdWorkSeconds": 843.663,
+        "dvdLongestContinuousSeconds": 12.811,
+        "planningSeconds": 5.721
+      },
+      "after": {
+        "playedTonal": 3330,
+        "droppedTonal": 1208,
+        "sourceVoiceDurationCoverage": 0.624081,
+        "weightedOnsetCoverage": 0.752374,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.789238,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 821,
+        "hddHits": 821,
+        "dvdStops": 489,
+        "dvdWorkSeconds": 942.625,
+        "dvdLongestContinuousSeconds": 19.182,
+        "planningSeconds": 8.358
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 300,
+      "kickSnareHitsAfter": 300
+    },
+    {
+      "file": "radiohead-midi/0038-07-radiohead_1997-fitter_happier.mid",
+      "sha256": "8cefed0f5be45e150cf8bd870dbe6931ea273d66a78e6d58a696a750b6f1e756",
+      "before": {
+        "playedTonal": 134,
+        "droppedTonal": 39,
+        "sourceVoiceDurationCoverage": 0.707514,
+        "weightedOnsetCoverage": 0.771499,
+        "leadCoverage": 0.721805,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 21,
+        "dvdWorkSeconds": 180.927,
+        "dvdLongestContinuousSeconds": 49.866,
+        "planningSeconds": 0.056
+      },
+      "after": {
+        "playedTonal": 173,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.73611,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 23,
+        "dvdWorkSeconds": 192.062,
+        "dvdLongestContinuousSeconds": 69.476,
+        "planningSeconds": 0.092
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0039-08-radiohead_1997-electioneering.mid",
+      "sha256": "d63e99b7a3faa361a5356579b144b618eef4cdae7aec2b8a1d6203481f09b0b7",
+      "before": {
+        "playedTonal": 2124,
+        "droppedTonal": 5407,
+        "sourceVoiceDurationCoverage": 0.319224,
+        "weightedOnsetCoverage": 0.297201,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.381378,
+        "unrepresentedPartWindows": 21,
+        "playedDrums": 1210,
+        "hddHits": 1210,
+        "dvdStops": 576,
+        "dvdWorkSeconds": 396.554,
+        "dvdLongestContinuousSeconds": 4.76,
+        "planningSeconds": 7.83
+      },
+      "after": {
+        "playedTonal": 4870,
+        "droppedTonal": 2661,
+        "sourceVoiceDurationCoverage": 0.612528,
+        "weightedOnsetCoverage": 0.653449,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.55102,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 1210,
+        "hddHits": 1210,
+        "dvdStops": 1156,
+        "dvdWorkSeconds": 722.257,
+        "dvdLongestContinuousSeconds": 6.178,
+        "planningSeconds": 17.502
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 698,
+      "kickSnareHitsAfter": 698
+    },
+    {
+      "file": "radiohead-midi/0040-09-radiohead_1997-climbing_up_the_walls-[k].mid",
+      "sha256": "eabc334c82e6958d905675b9511989b686eb01c1d97da1fb29670517b8faaf8e",
+      "before": {
+        "playedTonal": 1237,
+        "droppedTonal": 623,
+        "sourceVoiceDurationCoverage": 0.609509,
+        "weightedOnsetCoverage": 0.674603,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.671533,
+        "unrepresentedPartWindows": 53,
+        "playedDrums": 1348,
+        "hddHits": 1348,
+        "dvdStops": 258,
+        "dvdWorkSeconds": 852.675,
+        "dvdLongestContinuousSeconds": 33.444,
+        "planningSeconds": 3.443
+      },
+      "after": {
+        "playedTonal": 1662,
+        "droppedTonal": 198,
+        "sourceVoiceDurationCoverage": 0.703848,
+        "weightedOnsetCoverage": 0.902285,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.973236,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 1347,
+        "hddHits": 1347,
+        "dvdStops": 235,
+        "dvdWorkSeconds": 965.999,
+        "dvdLongestContinuousSeconds": 129.156,
+        "planningSeconds": 4.594
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 166,
+      "kickSnareHitsAfter": 166
+    },
+    {
+      "file": "radiohead-midi/0041-10-radiohead_1997-no_surprises-[k].mid",
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "before": {
+        "playedTonal": 1851,
+        "droppedTonal": 2841,
+        "sourceVoiceDurationCoverage": 0.461188,
+        "weightedOnsetCoverage": 0.432821,
+        "leadCoverage": 0.92,
+        "bassCoverage": 0.568314,
+        "unrepresentedPartWindows": 98,
+        "playedDrums": 740,
+        "hddHits": 740,
+        "dvdStops": 391,
+        "dvdWorkSeconds": 767.29,
+        "dvdLongestContinuousSeconds": 15.067,
+        "planningSeconds": 4.634
+      },
+      "after": {
+        "playedTonal": 3046,
+        "droppedTonal": 1646,
+        "sourceVoiceDurationCoverage": 0.582935,
+        "weightedOnsetCoverage": 0.678245,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.767442,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 740,
+        "hddHits": 740,
+        "dvdStops": 376,
+        "dvdWorkSeconds": 884.125,
+        "dvdLongestContinuousSeconds": 19.16,
+        "planningSeconds": 6.355
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 410,
+      "kickSnareHitsAfter": 410
+    },
+    {
+      "file": "radiohead-midi/0042-11-radiohead_1997-lucky-[k].mid",
+      "sha256": "616f2c7fdda123c942fe94329d227eee2e4015f64da3b1a6903da430b6abaf49",
+      "before": {
+        "playedTonal": 1833,
+        "droppedTonal": 2031,
+        "sourceVoiceDurationCoverage": 0.458309,
+        "weightedOnsetCoverage": 0.492014,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.770053,
+        "unrepresentedPartWindows": 19,
+        "playedDrums": 1268,
+        "hddHits": 1268,
+        "dvdStops": 360,
+        "dvdWorkSeconds": 715.424,
+        "dvdLongestContinuousSeconds": 69.866,
+        "planningSeconds": 5.013
+      },
+      "after": {
+        "playedTonal": 2640,
+        "droppedTonal": 1224,
+        "sourceVoiceDurationCoverage": 0.554388,
+        "weightedOnsetCoverage": 0.696485,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.935829,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 1268,
+        "hddHits": 1268,
+        "dvdStops": 395,
+        "dvdWorkSeconds": 842.404,
+        "dvdLongestContinuousSeconds": 70.169,
+        "planningSeconds": 6.931
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 319,
+      "kickSnareHitsAfter": 319
+    },
+    {
+      "file": "radiohead-midi/0043-12-radiohead_1997-the_tourist-[k].mid",
+      "sha256": "529c04959f3d7de8e1205cab273a23dc2a908af4cc4eda4bd47dd4625fe66069",
+      "before": {
+        "playedTonal": 1632,
+        "droppedTonal": 471,
+        "sourceVoiceDurationCoverage": 0.713249,
+        "weightedOnsetCoverage": 0.775916,
+        "leadCoverage": 0.990826,
+        "bassCoverage": 0.778182,
+        "unrepresentedPartWindows": 9,
+        "playedDrums": 1271,
+        "hddHits": 1271,
+        "dvdStops": 259,
+        "dvdWorkSeconds": 1090.493,
+        "dvdLongestContinuousSeconds": 82.781,
+        "planningSeconds": 3.596
+      },
+      "after": {
+        "playedTonal": 1904,
+        "droppedTonal": 199,
+        "sourceVoiceDurationCoverage": 0.763294,
+        "weightedOnsetCoverage": 0.908985,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.981818,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1271,
+        "hddHits": 1271,
+        "dvdStops": 300,
+        "dvdWorkSeconds": 1113.881,
+        "dvdLongestContinuousSeconds": 99.338,
+        "planningSeconds": 5.145
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 438,
+      "kickSnareHitsAfter": 438
+    },
+    {
+      "file": "radiohead-midi/0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "sha256": "77309b18d07c1b3b9b6bed3964c2dc8ca0a2a9961307ebef17d87d59389b2a7c",
+      "before": {
+        "playedTonal": 2204,
+        "droppedTonal": 340,
+        "sourceVoiceDurationCoverage": 0.749248,
+        "weightedOnsetCoverage": 0.864477,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.998035,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 480,
+        "hddHits": 480,
+        "dvdStops": 427,
+        "dvdWorkSeconds": 799.048,
+        "dvdLongestContinuousSeconds": 22.468,
+        "planningSeconds": 4.787
+      },
+      "after": {
+        "playedTonal": 2473,
+        "droppedTonal": 71,
+        "sourceVoiceDurationCoverage": 0.857001,
+        "weightedOnsetCoverage": 0.971788,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.994106,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 480,
+        "hddHits": 480,
+        "dvdStops": 252,
+        "dvdWorkSeconds": 876.111,
+        "dvdLongestContinuousSeconds": 30.21,
+        "planningSeconds": 8.367
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 480,
+      "kickSnareHitsAfter": 480
+    },
+    {
+      "file": "radiohead-midi/0045-02-radiohead_2000-kid_a.mid",
+      "sha256": "163db355cc29260c2a1937965abaf8f809d89e77d19651daebdb3c53850d46cf",
+      "before": {
+        "playedTonal": 1203,
+        "droppedTonal": 264,
+        "sourceVoiceDurationCoverage": 0.664681,
+        "weightedOnsetCoverage": 0.823421,
+        "leadCoverage": 0.956897,
+        "bassCoverage": 0.848101,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2246,
+        "hddHits": 2246,
+        "dvdStops": 168,
+        "dvdWorkSeconds": 854.275,
+        "dvdLongestContinuousSeconds": 47.781,
+        "planningSeconds": 3.988
+      },
+      "after": {
+        "playedTonal": 1379,
+        "droppedTonal": 88,
+        "sourceVoiceDurationCoverage": 0.696022,
+        "weightedOnsetCoverage": 0.94482,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.974684,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2246,
+        "hddHits": 2246,
+        "dvdStops": 195,
+        "dvdWorkSeconds": 857.75,
+        "dvdLongestContinuousSeconds": 72.737,
+        "planningSeconds": 4.926
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1497,
+      "kickSnareHitsAfter": 1497
+    },
+    {
+      "file": "radiohead-midi/0046-03-radiohead_2000-the_national_anthem.mid",
+      "sha256": "07227a13983380b1df08b205532b40ce2c889a43f57db26f3510110f4bc67c4f",
+      "before": {
+        "playedTonal": 1448,
+        "droppedTonal": 80,
+        "sourceVoiceDurationCoverage": 0.869383,
+        "weightedOnsetCoverage": 0.951557,
+        "leadCoverage": 0.977011,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1881,
+        "hddHits": 1881,
+        "dvdStops": 258,
+        "dvdWorkSeconds": 707.884,
+        "dvdLongestContinuousSeconds": 79.336,
+        "planningSeconds": 3.028
+      },
+      "after": {
+        "playedTonal": 1493,
+        "droppedTonal": 35,
+        "sourceVoiceDurationCoverage": 0.88232,
+        "weightedOnsetCoverage": 0.978898,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1881,
+        "hddHits": 1881,
+        "dvdStops": 299,
+        "dvdWorkSeconds": 717.548,
+        "dvdLongestContinuousSeconds": 79.336,
+        "planningSeconds": 4.929
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1049,
+      "kickSnareHitsAfter": 1049
+    },
+    {
+      "file": "radiohead-midi/0047-05-radiohead_2000-treefingers.mid",
+      "sha256": "4163a3369d4888f61ab8ea0d4b4f25d5739903a1b6e467b0e0731a270d0d13ef",
+      "before": {
+        "playedTonal": 155,
+        "droppedTonal": 7,
+        "sourceVoiceDurationCoverage": 0.873703,
+        "weightedOnsetCoverage": 0.95679,
+        "leadCoverage": 0.942857,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 33,
+        "dvdWorkSeconds": 572.128,
+        "dvdLongestContinuousSeconds": 73.351,
+        "planningSeconds": 0.12
+      },
+      "after": {
+        "playedTonal": 161,
+        "droppedTonal": 1,
+        "sourceVoiceDurationCoverage": 0.881581,
+        "weightedOnsetCoverage": 0.993827,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 30,
+        "dvdWorkSeconds": 572.161,
+        "dvdLongestContinuousSeconds": 102.172,
+        "planningSeconds": 0.484
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0048-06-radiohead_2000-optimistic-[k].mid",
+      "sha256": "265a37e13d9ca1706de0642fcc1c96abd08736d61a842545f6748fd015d23033",
+      "before": {
+        "playedTonal": 2189,
+        "droppedTonal": 4779,
+        "sourceVoiceDurationCoverage": 0.37741,
+        "weightedOnsetCoverage": 0.342182,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.601379,
+        "unrepresentedPartWindows": 75,
+        "playedDrums": 2139,
+        "hddHits": 2139,
+        "dvdStops": 290,
+        "dvdWorkSeconds": 382.022,
+        "dvdLongestContinuousSeconds": 6.072,
+        "planningSeconds": 9.304
+      },
+      "after": {
+        "playedTonal": 5544,
+        "droppedTonal": 1424,
+        "sourceVoiceDurationCoverage": 0.77616,
+        "weightedOnsetCoverage": 0.802933,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.791724,
+        "unrepresentedPartWindows": 8,
+        "playedDrums": 2139,
+        "hddHits": 2139,
+        "dvdStops": 1000,
+        "dvdWorkSeconds": 1064.272,
+        "dvdLongestContinuousSeconds": 23.002,
+        "planningSeconds": 19.894
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 939,
+      "kickSnareHitsAfter": 939
+    },
+    {
+      "file": "radiohead-midi/0049-07-radiohead_2000-in_limbo.mid",
+      "sha256": "a912ef58e1de55af2a9871561410d77b932f53ee67171e9233db83f63c7bd809",
+      "before": {
+        "playedTonal": 1420,
+        "droppedTonal": 15,
+        "sourceVoiceDurationCoverage": 0.734045,
+        "weightedOnsetCoverage": 0.988334,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1052,
+        "hddHits": 1052,
+        "dvdStops": 83,
+        "dvdWorkSeconds": 294.385,
+        "dvdLongestContinuousSeconds": 37.401,
+        "planningSeconds": 1.713
+      },
+      "after": {
+        "playedTonal": 1420,
+        "droppedTonal": 15,
+        "sourceVoiceDurationCoverage": 0.755155,
+        "weightedOnsetCoverage": 0.985489,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.918919,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 1052,
+        "hddHits": 1052,
+        "dvdStops": 104,
+        "dvdWorkSeconds": 312.993,
+        "dvdLongestContinuousSeconds": 37.401,
+        "planningSeconds": 2.097
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 396,
+      "kickSnareHitsAfter": 396
+    },
+    {
+      "file": "radiohead-midi/0050-08-radiohead_2000-idioteque.mid",
+      "sha256": "ce19521f7feb85da2bb4799bd16597b9c1c845153f907ab9b78e707658798f39",
+      "before": {
+        "playedTonal": 1627,
+        "droppedTonal": 826,
+        "sourceVoiceDurationCoverage": 0.713593,
+        "weightedOnsetCoverage": 0.673314,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.861111,
+        "unrepresentedPartWindows": 16,
+        "playedDrums": 2536,
+        "hddHits": 2536,
+        "dvdStops": 44,
+        "dvdWorkSeconds": 881.114,
+        "dvdLongestContinuousSeconds": 77.385,
+        "planningSeconds": 5.802
+      },
+      "after": {
+        "playedTonal": 2310,
+        "droppedTonal": 143,
+        "sourceVoiceDurationCoverage": 0.739934,
+        "weightedOnsetCoverage": 0.9456,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2536,
+        "hddHits": 2536,
+        "dvdStops": 52,
+        "dvdWorkSeconds": 882.688,
+        "dvdLongestContinuousSeconds": 99.994,
+        "planningSeconds": 7.535
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1041,
+      "kickSnareHitsAfter": 1041
+    },
+    {
+      "file": "radiohead-midi/0051-09-radiohead_2000-morning_bell-[k].mid",
+      "sha256": "03adf5c5e76ac7e09796ebd6bcca1e3e5a43c1dd10f67702d3ee87eef6ccafdb",
+      "before": {
+        "playedTonal": 2374,
+        "droppedTonal": 294,
+        "sourceVoiceDurationCoverage": 0.889773,
+        "weightedOnsetCoverage": 0.894983,
+        "leadCoverage": 0.993631,
+        "bassCoverage": 0.960265,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 2043,
+        "hddHits": 2043,
+        "dvdStops": 188,
+        "dvdWorkSeconds": 856.27,
+        "dvdLongestContinuousSeconds": 70.497,
+        "planningSeconds": 7.692
+      },
+      "after": {
+        "playedTonal": 2545,
+        "droppedTonal": 123,
+        "sourceVoiceDurationCoverage": 0.923434,
+        "weightedOnsetCoverage": 0.955249,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.992053,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2043,
+        "hddHits": 2043,
+        "dvdStops": 187,
+        "dvdWorkSeconds": 882.976,
+        "dvdLongestContinuousSeconds": 86.555,
+        "planningSeconds": 7.425
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 816,
+      "kickSnareHitsAfter": 816
+    },
+    {
+      "file": "radiohead-midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid",
+      "sha256": "d2d8c6d3f3fd5ceca622e314805a734fca6999ab7ea671c43ca1b3222635285c",
+      "before": {
+        "playedTonal": 712,
+        "droppedTonal": 1622,
+        "sourceVoiceDurationCoverage": 0.580897,
+        "weightedOnsetCoverage": 0.428365,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 60,
+        "dvdWorkSeconds": 719.414,
+        "dvdLongestContinuousSeconds": 97.306,
+        "planningSeconds": 1.904
+      },
+      "after": {
+        "playedTonal": 1564,
+        "droppedTonal": 770,
+        "sourceVoiceDurationCoverage": 0.655585,
+        "weightedOnsetCoverage": 0.730842,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 4,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 69,
+        "dvdWorkSeconds": 718.603,
+        "dvdLongestContinuousSeconds": 78.599,
+        "planningSeconds": 1.897
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0053-01-radiohead_2001-packt_like_sardines_in_a_crushd_tin_box-[k].mid",
+      "sha256": "710b3c562ef7cd02f7d23d5ef5257f28637d7a11c0ba59fa45e51ca78cd8e042",
+      "before": {
+        "playedTonal": 2099,
+        "droppedTonal": 1891,
+        "sourceVoiceDurationCoverage": 0.721485,
+        "weightedOnsetCoverage": 0.685463,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.399151,
+        "unrepresentedPartWindows": 81,
+        "playedDrums": 1694,
+        "hddHits": 1694,
+        "dvdStops": 143,
+        "dvdWorkSeconds": 415.648,
+        "dvdLongestContinuousSeconds": 18.458,
+        "planningSeconds": 20.776
+      },
+      "after": {
+        "playedTonal": 2788,
+        "droppedTonal": 1202,
+        "sourceVoiceDurationCoverage": 0.861437,
+        "weightedOnsetCoverage": 0.825285,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.719745,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1694,
+        "hddHits": 1694,
+        "dvdStops": 246,
+        "dvdWorkSeconds": 463.041,
+        "dvdLongestContinuousSeconds": 30.115,
+        "planningSeconds": 21.771
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 843,
+      "kickSnareHitsAfter": 933
+    },
+    {
+      "file": "radiohead-midi/0054-02-radiohead_2001-pyramid_song.mid",
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "before": {
+        "playedTonal": 1786,
+        "droppedTonal": 135,
+        "sourceVoiceDurationCoverage": 0.666697,
+        "weightedOnsetCoverage": 0.928016,
+        "leadCoverage": 0.971154,
+        "bassCoverage": 0.986254,
+        "unrepresentedPartWindows": 26,
+        "playedDrums": 582,
+        "hddHits": 582,
+        "dvdStops": 14,
+        "dvdWorkSeconds": 1133.381,
+        "dvdLongestContinuousSeconds": 283.405,
+        "planningSeconds": 5.07
+      },
+      "after": {
+        "playedTonal": 1712,
+        "droppedTonal": 209,
+        "sourceVoiceDurationCoverage": 0.681822,
+        "weightedOnsetCoverage": 0.892222,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.928522,
+        "unrepresentedPartWindows": 23,
+        "playedDrums": 582,
+        "hddHits": 582,
+        "dvdStops": 53,
+        "dvdWorkSeconds": 1127.881,
+        "dvdLongestContinuousSeconds": 73.119,
+        "planningSeconds": 3.734
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 281,
+      "kickSnareHitsAfter": 281
+    },
+    {
+      "file": "radiohead-midi/0055-04-radiohead_2001-you_and_whose_army-[k].mid",
+      "sha256": "161040d97741cc5c4793daa69ceea8c88eb1d50abc6710b884313898f9a6b04b",
+      "before": {
+        "playedTonal": 1188,
+        "droppedTonal": 599,
+        "sourceVoiceDurationCoverage": 0.528146,
+        "weightedOnsetCoverage": 0.6472,
+        "leadCoverage": 0.958678,
+        "bassCoverage": 0.945578,
+        "unrepresentedPartWindows": 34,
+        "playedDrums": 283,
+        "hddHits": 283,
+        "dvdStops": 268,
+        "dvdWorkSeconds": 656.808,
+        "dvdLongestContinuousSeconds": 10.704,
+        "planningSeconds": 1.873
+      },
+      "after": {
+        "playedTonal": 1420,
+        "droppedTonal": 367,
+        "sourceVoiceDurationCoverage": 0.568271,
+        "weightedOnsetCoverage": 0.779042,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.965986,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 283,
+        "hddHits": 283,
+        "dvdStops": 268,
+        "dvdWorkSeconds": 667.86,
+        "dvdLongestContinuousSeconds": 20.149,
+        "planningSeconds": 2.318
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 121,
+      "kickSnareHitsAfter": 121
+    },
+    {
+      "file": "radiohead-midi/0056-05-radiohead_2001-i_might_be_wrong.mid",
+      "sha256": "acc3055039f43ba3976d311fa010733e7449f6e83d30d9571fe824e4f1170f30",
+      "before": {
+        "playedTonal": 1484,
+        "droppedTonal": 1573,
+        "sourceVoiceDurationCoverage": 0.760621,
+        "weightedOnsetCoverage": 0.513838,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.525316,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 2063,
+        "hddHits": 2063,
+        "dvdStops": 51,
+        "dvdWorkSeconds": 275.521,
+        "dvdLongestContinuousSeconds": 36.218,
+        "planningSeconds": 4.569
+      },
+      "after": {
+        "playedTonal": 2074,
+        "droppedTonal": 983,
+        "sourceVoiceDurationCoverage": 0.884429,
+        "weightedOnsetCoverage": 0.70941,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.972574,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2063,
+        "hddHits": 2063,
+        "dvdStops": 424,
+        "dvdWorkSeconds": 358.244,
+        "dvdLongestContinuousSeconds": 36.218,
+        "planningSeconds": 4.117
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 645,
+      "kickSnareHitsAfter": 656
+    },
+    {
+      "file": "radiohead-midi/0057-06-radiohead_2001-knives_out-[k].mid",
+      "sha256": "7dceb146c7af96b4d40cb38ddf4b4a48df2bdc67eb5d3b7f5713785d57b5563e",
+      "before": {
+        "playedTonal": 2211,
+        "droppedTonal": 1265,
+        "sourceVoiceDurationCoverage": 0.580055,
+        "weightedOnsetCoverage": 0.667285,
+        "leadCoverage": 0.970149,
+        "bassCoverage": 0.866548,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 1823,
+        "hddHits": 1823,
+        "dvdStops": 554,
+        "dvdWorkSeconds": 736.495,
+        "dvdLongestContinuousSeconds": 6.103,
+        "planningSeconds": 5.977
+      },
+      "after": {
+        "playedTonal": 3198,
+        "droppedTonal": 278,
+        "sourceVoiceDurationCoverage": 0.759713,
+        "weightedOnsetCoverage": 0.929785,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.994662,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1823,
+        "hddHits": 1823,
+        "dvdStops": 499,
+        "dvdWorkSeconds": 869.971,
+        "dvdLongestContinuousSeconds": 20.083,
+        "planningSeconds": 5.495
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 702,
+      "kickSnareHitsAfter": 702
+    },
+    {
+      "file": "radiohead-midi/0058-08-radiohead_2001-dollars_and_cents.mid",
+      "sha256": "5dd71eef6121405258a58cbd424c0ffe547e24e5c69c96a21ff2dcbdd82a2c70",
+      "before": {
+        "playedTonal": 2154,
+        "droppedTonal": 1849,
+        "sourceVoiceDurationCoverage": 0.610744,
+        "weightedOnsetCoverage": 0.563831,
+        "leadCoverage": 0.98951,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 24,
+        "playedDrums": 1946,
+        "hddHits": 1946,
+        "dvdStops": 75,
+        "dvdWorkSeconds": 388.59,
+        "dvdLongestContinuousSeconds": 27.729,
+        "planningSeconds": 7.746
+      },
+      "after": {
+        "playedTonal": 3946,
+        "droppedTonal": 57,
+        "sourceVoiceDurationCoverage": 0.902497,
+        "weightedOnsetCoverage": 0.985216,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1946,
+        "hddHits": 1946,
+        "dvdStops": 696,
+        "dvdWorkSeconds": 610.904,
+        "dvdLongestContinuousSeconds": 21.66,
+        "planningSeconds": 6.78
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 26,
+      "kickSnareHitsAfter": 26
+    },
+    {
+      "file": "radiohead-midi/0059-09-radiohead_2001-hunting_bears.mid",
+      "sha256": "2d172589d56f47c797be44707c2ed55ffd68e868201d952f6491e2c4f7828571",
+      "before": {
+        "playedTonal": 101,
+        "droppedTonal": 9,
+        "sourceVoiceDurationCoverage": 0.772225,
+        "weightedOnsetCoverage": 0.92755,
+        "leadCoverage": 0.884615,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 9,
+        "dvdWorkSeconds": 93.46,
+        "dvdLongestContinuousSeconds": 86.934,
+        "planningSeconds": 0.063
+      },
+      "after": {
+        "playedTonal": 110,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.772329,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 12,
+        "dvdWorkSeconds": 93.356,
+        "dvdLongestContinuousSeconds": 59.914,
+        "planningSeconds": 0.062
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0060-11-radiohead_2001-life_in_a_glass_house-[k].mid",
+      "sha256": "9cd803df51e1c64a0bad5b906fcf0a76c90323d9f175d0741568d3e0a31fd78e",
+      "before": {
+        "playedTonal": 1658,
+        "droppedTonal": 585,
+        "sourceVoiceDurationCoverage": 0.684919,
+        "weightedOnsetCoverage": 0.768074,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.941964,
+        "unrepresentedPartWindows": 24,
+        "playedDrums": 504,
+        "hddHits": 504,
+        "dvdStops": 250,
+        "dvdWorkSeconds": 893.15,
+        "dvdLongestContinuousSeconds": 24.109,
+        "planningSeconds": 5.21
+      },
+      "after": {
+        "playedTonal": 2118,
+        "droppedTonal": 125,
+        "sourceVoiceDurationCoverage": 0.738479,
+        "weightedOnsetCoverage": 0.948251,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 6,
+        "playedDrums": 504,
+        "hddHits": 504,
+        "dvdStops": 215,
+        "dvdWorkSeconds": 929.492,
+        "dvdLongestContinuousSeconds": 65.836,
+        "planningSeconds": 4.732
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 283,
+      "kickSnareHitsAfter": 283
+    },
+    {
+      "file": "radiohead-midi/0061-04-radiohead_2001-like_spinning_plates_(live).mid",
+      "sha256": "f25b11a21857a0505ae5ffd88e2229eafc52130e5cc62a0896b06b62e7143bdb",
+      "before": {
+        "playedTonal": 1404,
+        "droppedTonal": 103,
+        "sourceVoiceDurationCoverage": 0.479301,
+        "weightedOnsetCoverage": 0.947422,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.993151,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 300,
+        "dvdWorkSeconds": 777.251,
+        "dvdLongestContinuousSeconds": 15.205,
+        "planningSeconds": 1.73
+      },
+      "after": {
+        "playedTonal": 1454,
+        "droppedTonal": 53,
+        "sourceVoiceDurationCoverage": 0.525879,
+        "weightedOnsetCoverage": 0.974407,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 183,
+        "dvdWorkSeconds": 843.604,
+        "dvdLongestContinuousSeconds": 29.994,
+        "planningSeconds": 1.977
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0062-08-radiohead_2001-true_love_waits_(live).mid",
+      "sha256": "17e2467e8cd95434b6a4e509710c79d957098e98f13c37ceaeb43e59cf1969c1",
+      "before": {
+        "playedTonal": 2029,
+        "droppedTonal": 6760,
+        "sourceVoiceDurationCoverage": 0.369869,
+        "weightedOnsetCoverage": 0.233764,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.203611,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 573,
+        "dvdWorkSeconds": 743.539,
+        "dvdLongestContinuousSeconds": 5.997,
+        "planningSeconds": 7.968
+      },
+      "after": {
+        "playedTonal": 6487,
+        "droppedTonal": 2302,
+        "sourceVoiceDurationCoverage": 0.638994,
+        "weightedOnsetCoverage": 0.738531,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.799917,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 1781,
+        "dvdWorkSeconds": 1135.27,
+        "dvdLongestContinuousSeconds": 24.177,
+        "planningSeconds": 19.13
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0063-01-radiohead_2003-2+2=5-[k].mid",
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "before": {
+        "playedTonal": 1693,
+        "droppedTonal": 3152,
+        "sourceVoiceDurationCoverage": 0.461475,
+        "weightedOnsetCoverage": 0.361785,
+        "leadCoverage": 0.993174,
+        "bassCoverage": 0.24507,
+        "unrepresentedPartWindows": 34,
+        "playedDrums": 1569,
+        "hddHits": 1569,
+        "dvdStops": 281,
+        "dvdWorkSeconds": 458.501,
+        "dvdLongestContinuousSeconds": 29.386,
+        "planningSeconds": 6.733
+      },
+      "after": {
+        "playedTonal": 3174,
+        "droppedTonal": 1671,
+        "sourceVoiceDurationCoverage": 0.615131,
+        "weightedOnsetCoverage": 0.660153,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.515493,
+        "unrepresentedPartWindows": 4,
+        "playedDrums": 1569,
+        "hddHits": 1569,
+        "dvdStops": 424,
+        "dvdWorkSeconds": 569.646,
+        "dvdLongestContinuousSeconds": 64.621,
+        "planningSeconds": 7.784
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 499,
+      "kickSnareHitsAfter": 499
+    },
+    {
+      "file": "radiohead-midi/0064-02-radiohead_2003-sit_down_stand_up-[k].mid",
+      "sha256": "14012c9c0c5705807725c3bead4a2c7ed0ede5619461dad235cc6bb5f4dd7659",
+      "before": {
+        "playedTonal": 2250,
+        "droppedTonal": 1065,
+        "sourceVoiceDurationCoverage": 0.621613,
+        "weightedOnsetCoverage": 0.655645,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.605996,
+        "unrepresentedPartWindows": 80,
+        "playedDrums": 3550,
+        "hddHits": 3550,
+        "dvdStops": 296,
+        "dvdWorkSeconds": 743.292,
+        "dvdLongestContinuousSeconds": 46.167,
+        "planningSeconds": 10.726
+      },
+      "after": {
+        "playedTonal": 2583,
+        "droppedTonal": 732,
+        "sourceVoiceDurationCoverage": 0.74763,
+        "weightedOnsetCoverage": 0.75928,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.618844,
+        "unrepresentedPartWindows": 24,
+        "playedDrums": 3556,
+        "hddHits": 3556,
+        "dvdStops": 211,
+        "dvdWorkSeconds": 794.216,
+        "dvdLongestContinuousSeconds": 104.267,
+        "planningSeconds": 6.754
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 743,
+      "kickSnareHitsAfter": 846
+    },
+    {
+      "file": "radiohead-midi/0065-03-radiohead_2003-sail_to_the_moon.mid",
+      "sha256": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+      "before": {
+        "playedTonal": 1353,
+        "droppedTonal": 162,
+        "sourceVoiceDurationCoverage": 0.603968,
+        "weightedOnsetCoverage": 0.902127,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.956907,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 477,
+        "hddHits": 477,
+        "dvdStops": 94,
+        "dvdWorkSeconds": 991.705,
+        "dvdLongestContinuousSeconds": 70.053,
+        "planningSeconds": 3.049
+      },
+      "after": {
+        "playedTonal": 1459,
+        "droppedTonal": 56,
+        "sourceVoiceDurationCoverage": 0.635802,
+        "weightedOnsetCoverage": 0.967782,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.983523,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 477,
+        "hddHits": 477,
+        "dvdStops": 87,
+        "dvdWorkSeconds": 1001.136,
+        "dvdLongestContinuousSeconds": 48.493,
+        "planningSeconds": 2.78
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 124,
+      "kickSnareHitsAfter": 124
+    },
+    {
+      "file": "radiohead-midi/0066-04-radiohead_2003-backdrift-[intro].mid",
+      "sha256": "0be5d1651dde3c356cf350e6e6acbd0939bdc93d873ac7dde17544d02a3ce751",
+      "before": {
+        "playedTonal": 229,
+        "droppedTonal": 396,
+        "sourceVoiceDurationCoverage": 0.377301,
+        "weightedOnsetCoverage": 0.367169,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.691176,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 268,
+        "hddHits": 268,
+        "dvdStops": 0,
+        "dvdWorkSeconds": 0.0,
+        "dvdLongestContinuousSeconds": 0.0,
+        "planningSeconds": 0.707
+      },
+      "after": {
+        "playedTonal": 569,
+        "droppedTonal": 56,
+        "sourceVoiceDurationCoverage": 0.912175,
+        "weightedOnsetCoverage": 0.910509,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.661765,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 268,
+        "hddHits": 268,
+        "dvdStops": 31,
+        "dvdWorkSeconds": 3.065,
+        "dvdLongestContinuousSeconds": 0.196,
+        "planningSeconds": 0.675
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 70,
+      "kickSnareHitsAfter": 70
+    },
+    {
+      "file": "radiohead-midi/0067-05-radiohead_2003-go_to_sleep-[k].mid",
+      "sha256": "c13d8318345a12556e42e07f8d4b1e4eb80c53ca61a3ae7b24f07ed6d9306341",
+      "before": {
+        "playedTonal": 1569,
+        "droppedTonal": 3486,
+        "sourceVoiceDurationCoverage": 0.476623,
+        "weightedOnsetCoverage": 0.326909,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.519849,
+        "unrepresentedPartWindows": 35,
+        "playedDrums": 1229,
+        "hddHits": 1229,
+        "dvdStops": 383,
+        "dvdWorkSeconds": 342.429,
+        "dvdLongestContinuousSeconds": 6.124,
+        "planningSeconds": 7.963
+      },
+      "after": {
+        "playedTonal": 3520,
+        "droppedTonal": 1535,
+        "sourceVoiceDurationCoverage": 0.77129,
+        "weightedOnsetCoverage": 0.701977,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.818526,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1229,
+        "hddHits": 1229,
+        "dvdStops": 884,
+        "dvdWorkSeconds": 625.535,
+        "dvdLongestContinuousSeconds": 39.165,
+        "planningSeconds": 8.509
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 704,
+      "kickSnareHitsAfter": 704
+    },
+    {
+      "file": "radiohead-midi/0068-06-radiohead-2003-where_i_end_and_you_begin.mid",
+      "sha256": "f54991424a09ecd3b55a7e59c14c17d079ad786fb4363c87d7041d3c9053fccf",
+      "before": {
+        "playedTonal": 2052,
+        "droppedTonal": 2506,
+        "sourceVoiceDurationCoverage": 0.564147,
+        "weightedOnsetCoverage": 0.474401,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.76862,
+        "unrepresentedPartWindows": 59,
+        "playedDrums": 2839,
+        "hddHits": 2839,
+        "dvdStops": 89,
+        "dvdWorkSeconds": 834.178,
+        "dvdLongestContinuousSeconds": 109.307,
+        "planningSeconds": 16.523
+      },
+      "after": {
+        "playedTonal": 3765,
+        "droppedTonal": 793,
+        "sourceVoiceDurationCoverage": 0.635086,
+        "weightedOnsetCoverage": 0.840107,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.844091,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2839,
+        "hddHits": 2839,
+        "dvdStops": 378,
+        "dvdWorkSeconds": 905.804,
+        "dvdLongestContinuousSeconds": 52.698,
+        "planningSeconds": 10.066
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1883,
+      "kickSnareHitsAfter": 1883
+    },
+    {
+      "file": "radiohead-midi/0069-07-radiohead-2003-we_suck_young_blood-[k].mid",
+      "sha256": "af3f57f17338975d41522a4a860040c4822a6971cd1e1afd2e8f93c4870caaf5",
+      "before": {
+        "playedTonal": 1219,
+        "droppedTonal": 191,
+        "sourceVoiceDurationCoverage": 0.683292,
+        "weightedOnsetCoverage": 0.867177,
+        "leadCoverage": 0.983333,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 35,
+        "playedDrums": 833,
+        "hddHits": 833,
+        "dvdStops": 152,
+        "dvdWorkSeconds": 1087.933,
+        "dvdLongestContinuousSeconds": 108.548,
+        "planningSeconds": 4.022
+      },
+      "after": {
+        "playedTonal": 1308,
+        "droppedTonal": 102,
+        "sourceVoiceDurationCoverage": 0.711572,
+        "weightedOnsetCoverage": 0.925946,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 833,
+        "hddHits": 833,
+        "dvdStops": 128,
+        "dvdWorkSeconds": 1118.592,
+        "dvdLongestContinuousSeconds": 114.696,
+        "planningSeconds": 3.008
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 198,
+      "kickSnareHitsAfter": 199
+    },
+    {
+      "file": "radiohead-midi/0070-08-radiohead_2003-the_gloaming.mid",
+      "sha256": "d17e2544d26e675966eac7adcaaff5be5b5aae65f94787336eadd2d7bc66bacd",
+      "before": {
+        "playedTonal": 1098,
+        "droppedTonal": 414,
+        "sourceVoiceDurationCoverage": 0.864011,
+        "weightedOnsetCoverage": 0.738838,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.888889,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1095,
+        "hddHits": 1095,
+        "dvdStops": 100,
+        "dvdWorkSeconds": 167.506,
+        "dvdLongestContinuousSeconds": 14.45,
+        "planningSeconds": 4.526
+      },
+      "after": {
+        "playedTonal": 1318,
+        "droppedTonal": 194,
+        "sourceVoiceDurationCoverage": 0.959139,
+        "weightedOnsetCoverage": 0.858325,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1095,
+        "hddHits": 1095,
+        "dvdStops": 140,
+        "dvdWorkSeconds": 178.023,
+        "dvdLongestContinuousSeconds": 14.45,
+        "planningSeconds": 3.417
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 436,
+      "kickSnareHitsAfter": 436
+    },
+    {
+      "file": "radiohead-midi/0071-09-radiohead_2003-there_there-[k].mid",
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "before": {
+        "playedTonal": 2680,
+        "droppedTonal": 1354,
+        "sourceVoiceDurationCoverage": 0.635395,
+        "weightedOnsetCoverage": 0.65119,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.879536,
+        "unrepresentedPartWindows": 4,
+        "playedDrums": 4447,
+        "hddHits": 4447,
+        "dvdStops": 432,
+        "dvdWorkSeconds": 786.835,
+        "dvdLongestContinuousSeconds": 45.338,
+        "planningSeconds": 17.422
+      },
+      "after": {
+        "playedTonal": 3373,
+        "droppedTonal": 661,
+        "sourceVoiceDurationCoverage": 0.763578,
+        "weightedOnsetCoverage": 0.84195,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.95791,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 4447,
+        "hddHits": 4447,
+        "dvdStops": 582,
+        "dvdWorkSeconds": 1048.437,
+        "dvdLongestContinuousSeconds": 51.217,
+        "planningSeconds": 11.297
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 846,
+      "kickSnareHitsAfter": 847
+    },
+    {
+      "file": "radiohead-midi/0072-10-radiohead_2003-i_will.mid",
+      "sha256": "07f2d5234e743265e35f7418f7f649a4436bbcc87b647a9677edf3e17f8e9c0d",
+      "before": {
+        "playedTonal": 566,
+        "droppedTonal": 18,
+        "sourceVoiceDurationCoverage": 0.758063,
+        "weightedOnsetCoverage": 0.968518,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 94,
+        "dvdWorkSeconds": 444.073,
+        "dvdLongestContinuousSeconds": 35.706,
+        "planningSeconds": 0.793
+      },
+      "after": {
+        "playedTonal": 582,
+        "droppedTonal": 2,
+        "sourceVoiceDurationCoverage": 0.782737,
+        "weightedOnsetCoverage": 0.99633,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 77,
+        "dvdWorkSeconds": 457.212,
+        "dvdLongestContinuousSeconds": 28.883,
+        "planningSeconds": 0.579
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0073-11-radiohead_2003-a_punchup_at_a_wedding-[k].mid",
+      "sha256": "3f2561b774ff7f1dc4bfee9c64ba659328baed7a61f6b3fef9d7a607d1becafe",
+      "before": {
+        "playedTonal": 2468,
+        "droppedTonal": 2060,
+        "sourceVoiceDurationCoverage": 0.613324,
+        "weightedOnsetCoverage": 0.556247,
+        "leadCoverage": 0.992565,
+        "bassCoverage": 0.476357,
+        "unrepresentedPartWindows": 264,
+        "playedDrums": 1436,
+        "hddHits": 1436,
+        "dvdStops": 615,
+        "dvdWorkSeconds": 839.301,
+        "dvdLongestContinuousSeconds": 12.127,
+        "planningSeconds": 11.788
+      },
+      "after": {
+        "playedTonal": 3550,
+        "droppedTonal": 978,
+        "sourceVoiceDurationCoverage": 0.735589,
+        "weightedOnsetCoverage": 0.797778,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.817863,
+        "unrepresentedPartWindows": 72,
+        "playedDrums": 1436,
+        "hddHits": 1436,
+        "dvdStops": 803,
+        "dvdWorkSeconds": 983.363,
+        "dvdLongestContinuousSeconds": 48.558,
+        "planningSeconds": 12.197
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 504,
+      "kickSnareHitsAfter": 504
+    },
+    {
+      "file": "radiohead-midi/0074-12-radiohead_2003-myxomatosis.mid",
+      "sha256": "43ee700dcfb15479daf6001f8e0ee21d78dbffde965b3cf6a54790d49dbd5d63",
+      "before": {
+        "playedTonal": 913,
+        "droppedTonal": 578,
+        "sourceVoiceDurationCoverage": 0.566286,
+        "weightedOnsetCoverage": 0.624705,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.985037,
+        "unrepresentedPartWindows": 113,
+        "playedDrums": 2425,
+        "hddHits": 2425,
+        "dvdStops": 35,
+        "dvdWorkSeconds": 239.423,
+        "dvdLongestContinuousSeconds": 90.511,
+        "planningSeconds": 3.682
+      },
+      "after": {
+        "playedTonal": 1488,
+        "droppedTonal": 3,
+        "sourceVoiceDurationCoverage": 0.826079,
+        "weightedOnsetCoverage": 0.997809,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2425,
+        "hddHits": 2425,
+        "dvdStops": 271,
+        "dvdWorkSeconds": 493.367,
+        "dvdLongestContinuousSeconds": 36.945,
+        "planningSeconds": 3.233
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 903,
+      "kickSnareHitsAfter": 906
+    },
+    {
+      "file": "radiohead-midi/0075-13-radiohead_2003-scatterbrain-[k].mid",
+      "sha256": "ade84e57f05c01ceeaef30d47a4a81c3e10e4b876d3727d3fd8199e8c5a96c52",
+      "before": {
+        "playedTonal": 1039,
+        "droppedTonal": 10,
+        "sourceVoiceDurationCoverage": 0.870028,
+        "weightedOnsetCoverage": 0.990889,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.991071,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1829,
+        "hddHits": 1829,
+        "dvdStops": 290,
+        "dvdWorkSeconds": 698.588,
+        "dvdLongestContinuousSeconds": 30.313,
+        "planningSeconds": 2.967
+      },
+      "after": {
+        "playedTonal": 1049,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.880369,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1829,
+        "hddHits": 1829,
+        "dvdStops": 248,
+        "dvdWorkSeconds": 705.252,
+        "dvdLongestContinuousSeconds": 70.102,
+        "planningSeconds": 2.215
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 669,
+      "kickSnareHitsAfter": 669
+    },
+    {
+      "file": "radiohead-midi/0076-14-radiohead_2003-a_wolf_at_the_door.mid",
+      "sha256": "55461f8409deea548d720c86795e1e9e63651d4ff6cef1ec11b75f0ec3d75efc",
+      "before": {
+        "playedTonal": 1345,
+        "droppedTonal": 1111,
+        "sourceVoiceDurationCoverage": 0.439571,
+        "weightedOnsetCoverage": 0.54734,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.625828,
+        "unrepresentedPartWindows": 46,
+        "playedDrums": 784,
+        "hddHits": 784,
+        "dvdStops": 196,
+        "dvdWorkSeconds": 722.236,
+        "dvdLongestContinuousSeconds": 29.398,
+        "planningSeconds": 3.685
+      },
+      "after": {
+        "playedTonal": 1774,
+        "droppedTonal": 682,
+        "sourceVoiceDurationCoverage": 0.492392,
+        "weightedOnsetCoverage": 0.720962,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.824503,
+        "unrepresentedPartWindows": 17,
+        "playedDrums": 784,
+        "hddHits": 784,
+        "dvdStops": 236,
+        "dvdWorkSeconds": 769.042,
+        "dvdLongestContinuousSeconds": 26.371,
+        "planningSeconds": 2.992
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 294,
+      "kickSnareHitsAfter": 294
+    },
+    {
+      "file": "radiohead-midi/0077-04-radiohead_2004-paperbag_writer.mid",
+      "sha256": "e910c9e221741edf83d39cac024e7e171a7903ffd3a99634a708bb769c372e30",
+      "before": {
+        "playedTonal": 695,
+        "droppedTonal": 226,
+        "sourceVoiceDurationCoverage": 0.903156,
+        "weightedOnsetCoverage": 0.758871,
+        "leadCoverage": 0.993421,
+        "bassCoverage": 0.644444,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2500,
+        "hddHits": 2500,
+        "dvdStops": 112,
+        "dvdWorkSeconds": 263.371,
+        "dvdLongestContinuousSeconds": 9.359,
+        "planningSeconds": 3.876
+      },
+      "after": {
+        "playedTonal": 921,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.98001,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2500,
+        "hddHits": 2500,
+        "dvdStops": 268,
+        "dvdWorkSeconds": 287.594,
+        "dvdLongestContinuousSeconds": 9.359,
+        "planningSeconds": 2.454
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 291,
+      "kickSnareHitsAfter": 356
+    },
+    {
+      "file": "radiohead-midi/0078-06-radiohead_2004-i_am_citizen_insane.mid",
+      "sha256": "f9e6b9f88598a97000f52d0e95bb495272cc58c2be98e130ae42c889d6bc7fc4",
+      "before": {
+        "playedTonal": 1032,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.978703,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1492,
+        "hddHits": 1492,
+        "dvdStops": 166,
+        "dvdWorkSeconds": 545.339,
+        "dvdLongestContinuousSeconds": 62.851,
+        "planningSeconds": 2.026
+      },
+      "after": {
+        "playedTonal": 1032,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.991652,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1492,
+        "hddHits": 1492,
+        "dvdStops": 146,
+        "dvdWorkSeconds": 558.494,
+        "dvdLongestContinuousSeconds": 133.101,
+        "planningSeconds": 1.323
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 374,
+      "kickSnareHitsAfter": 414
+    },
+    {
+      "file": "radiohead-midi/0079-01-radiohead_2007-15_step-[k].mid",
+      "sha256": "c3bec792de58440ac6adefe68c7be0dc075bfce82066ebcfa73e862b0df4d6de",
+      "before": {
+        "playedTonal": 788,
+        "droppedTonal": 334,
+        "sourceVoiceDurationCoverage": 0.751094,
+        "weightedOnsetCoverage": 0.727887,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.716724,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2478,
+        "hddHits": 2478,
+        "dvdStops": 89,
+        "dvdWorkSeconds": 432.906,
+        "dvdLongestContinuousSeconds": 31.912,
+        "planningSeconds": 4.633
+      },
+      "after": {
+        "playedTonal": 1110,
+        "droppedTonal": 12,
+        "sourceVoiceDurationCoverage": 0.847263,
+        "weightedOnsetCoverage": 0.985639,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.96587,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2478,
+        "hddHits": 2478,
+        "dvdStops": 142,
+        "dvdWorkSeconds": 445.842,
+        "dvdLongestContinuousSeconds": 31.912,
+        "planningSeconds": 2.501
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1241,
+      "kickSnareHitsAfter": 1421
+    },
+    {
+      "file": "radiohead-midi/0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "before": {
+        "playedTonal": 1743,
+        "droppedTonal": 5747,
+        "sourceVoiceDurationCoverage": 0.433396,
+        "weightedOnsetCoverage": 0.236153,
+        "leadCoverage": 0.981013,
+        "bassCoverage": 0.414236,
+        "unrepresentedPartWindows": 138,
+        "playedDrums": 1874,
+        "hddHits": 1874,
+        "dvdStops": 126,
+        "dvdWorkSeconds": 320.321,
+        "dvdLongestContinuousSeconds": 17.137,
+        "planningSeconds": 11.072
+      },
+      "after": {
+        "playedTonal": 4033,
+        "droppedTonal": 3457,
+        "sourceVoiceDurationCoverage": 0.748476,
+        "weightedOnsetCoverage": 0.531548,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.693116,
+        "unrepresentedPartWindows": 39,
+        "playedDrums": 1874,
+        "hddHits": 1874,
+        "dvdStops": 1093,
+        "dvdWorkSeconds": 693.452,
+        "dvdLongestContinuousSeconds": 22.851,
+        "planningSeconds": 8.637
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 842,
+      "kickSnareHitsAfter": 842
+    },
+    {
+      "file": "radiohead-midi/0081-03-radiohead_2007-nude.mid",
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "before": {
+        "playedTonal": 1055,
+        "droppedTonal": 980,
+        "sourceVoiceDurationCoverage": 0.500708,
+        "weightedOnsetCoverage": 0.507991,
+        "leadCoverage": 0.678571,
+        "bassCoverage": 0.709474,
+        "unrepresentedPartWindows": 15,
+        "playedDrums": 784,
+        "hddHits": 784,
+        "dvdStops": 254,
+        "dvdWorkSeconds": 647.934,
+        "dvdLongestContinuousSeconds": 29.258,
+        "planningSeconds": 2.642
+      },
+      "after": {
+        "playedTonal": 1464,
+        "droppedTonal": 571,
+        "sourceVoiceDurationCoverage": 0.583509,
+        "weightedOnsetCoverage": 0.718443,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.905263,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 784,
+        "hddHits": 784,
+        "dvdStops": 248,
+        "dvdWorkSeconds": 692.489,
+        "dvdLongestContinuousSeconds": 29.226,
+        "planningSeconds": 1.948
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 261,
+      "kickSnareHitsAfter": 261
+    },
+    {
+      "file": "radiohead-midi/0082-04-radiohead_2007-weird_fishes-arpegi.mid",
+      "sha256": "441b44a841c48ef9c9925649adfde3740217a6a0117e1521a3e2836e417c8cce",
+      "before": {
+        "playedTonal": 1664,
+        "droppedTonal": 1929,
+        "sourceVoiceDurationCoverage": 0.533933,
+        "weightedOnsetCoverage": 0.495194,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.504505,
+        "unrepresentedPartWindows": 76,
+        "playedDrums": 2289,
+        "hddHits": 2289,
+        "dvdStops": 7,
+        "dvdWorkSeconds": 23.446,
+        "dvdLongestContinuousSeconds": 16.178,
+        "planningSeconds": 6.72
+      },
+      "after": {
+        "playedTonal": 3339,
+        "droppedTonal": 254,
+        "sourceVoiceDurationCoverage": 0.928464,
+        "weightedOnsetCoverage": 0.939019,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 2289,
+        "hddHits": 2289,
+        "dvdStops": 778,
+        "dvdWorkSeconds": 178.059,
+        "dvdLongestContinuousSeconds": 16.178,
+        "planningSeconds": 7.233
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 945,
+      "kickSnareHitsAfter": 945
+    },
+    {
+      "file": "radiohead-midi/0083-05-radiohead_2007-all_i_need.mid",
+      "sha256": "d1f1954bbb60aeab8a54c80a45a55d2008debd907b933ac3bee926720bb9d3b0",
+      "before": {
+        "playedTonal": 787,
+        "droppedTonal": 266,
+        "sourceVoiceDurationCoverage": 0.627858,
+        "weightedOnsetCoverage": 0.745652,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.892857,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 1144,
+        "hddHits": 1144,
+        "dvdStops": 272,
+        "dvdWorkSeconds": 634.996,
+        "dvdLongestContinuousSeconds": 21.331,
+        "planningSeconds": 3.198
+      },
+      "after": {
+        "playedTonal": 940,
+        "droppedTonal": 113,
+        "sourceVoiceDurationCoverage": 0.663607,
+        "weightedOnsetCoverage": 0.894177,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1144,
+        "hddHits": 1144,
+        "dvdStops": 201,
+        "dvdWorkSeconds": 665.89,
+        "dvdLongestContinuousSeconds": 23.997,
+        "planningSeconds": 2.805
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 463,
+      "kickSnareHitsAfter": 463
+    },
+    {
+      "file": "radiohead-midi/0084-06-radiohead_2007-faust_arp.mid",
+      "sha256": "770095b6d0063608e06aa34d9a3000b8359df7f9db53e521df269357c1f2b922",
+      "before": {
+        "playedTonal": 849,
+        "droppedTonal": 221,
+        "sourceVoiceDurationCoverage": 0.791736,
+        "weightedOnsetCoverage": 0.797163,
+        "leadCoverage": 0.991304,
+        "bassCoverage": 0.94,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 140,
+        "dvdWorkSeconds": 251.429,
+        "dvdLongestContinuousSeconds": 20.136,
+        "planningSeconds": 1.152
+      },
+      "after": {
+        "playedTonal": 1067,
+        "droppedTonal": 3,
+        "sourceVoiceDurationCoverage": 0.921411,
+        "weightedOnsetCoverage": 0.997235,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 199,
+        "dvdWorkSeconds": 288.003,
+        "dvdLongestContinuousSeconds": 20.136,
+        "planningSeconds": 1.016
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0085-07-radiohead_2007-reckoner-[k].mid",
+      "sha256": "9db449b977ac482c711e149d8049ec3c40ad54ab4cb52b4595447822411a3a8a",
+      "before": {
+        "playedTonal": 1806,
+        "droppedTonal": 2970,
+        "sourceVoiceDurationCoverage": 0.415481,
+        "weightedOnsetCoverage": 0.37787,
+        "leadCoverage": 0.941176,
+        "bassCoverage": 0.483607,
+        "unrepresentedPartWindows": 42,
+        "playedDrums": 3258,
+        "hddHits": 3258,
+        "dvdStops": 228,
+        "dvdWorkSeconds": 686.486,
+        "dvdLongestContinuousSeconds": 49.804,
+        "planningSeconds": 11.811
+      },
+      "after": {
+        "playedTonal": 3326,
+        "droppedTonal": 1450,
+        "sourceVoiceDurationCoverage": 0.595263,
+        "weightedOnsetCoverage": 0.699529,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.762295,
+        "unrepresentedPartWindows": 8,
+        "playedDrums": 3258,
+        "hddHits": 3258,
+        "dvdStops": 350,
+        "dvdWorkSeconds": 926.794,
+        "dvdLongestContinuousSeconds": 65.419,
+        "planningSeconds": 7.759
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 647,
+      "kickSnareHitsAfter": 1034
+    },
+    {
+      "file": "radiohead-midi/0086-08-radiohead_2007-house_of_cards.mid",
+      "sha256": "d98730d50269e54f4160f289addc8764badd14509e644ba3dea0d3298f43a7b9",
+      "before": {
+        "playedTonal": 1886,
+        "droppedTonal": 1277,
+        "sourceVoiceDurationCoverage": 0.7254,
+        "weightedOnsetCoverage": 0.614376,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.991525,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1802,
+        "hddHits": 1802,
+        "dvdStops": 394,
+        "dvdWorkSeconds": 871.539,
+        "dvdLongestContinuousSeconds": 57.993,
+        "planningSeconds": 6.196
+      },
+      "after": {
+        "playedTonal": 2718,
+        "droppedTonal": 445,
+        "sourceVoiceDurationCoverage": 0.863324,
+        "weightedOnsetCoverage": 0.865796,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1802,
+        "hddHits": 1802,
+        "dvdStops": 465,
+        "dvdWorkSeconds": 963.286,
+        "dvdLongestContinuousSeconds": 60.141,
+        "planningSeconds": 5.138
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 656,
+      "kickSnareHitsAfter": 656
+    },
+    {
+      "file": "radiohead-midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "before": {
+        "playedTonal": 2203,
+        "droppedTonal": 3176,
+        "sourceVoiceDurationCoverage": 0.435823,
+        "weightedOnsetCoverage": 0.419965,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.411504,
+        "unrepresentedPartWindows": 66,
+        "playedDrums": 2082,
+        "hddHits": 2082,
+        "dvdStops": 562,
+        "dvdWorkSeconds": 678.653,
+        "dvdLongestContinuousSeconds": 13.057,
+        "planningSeconds": 9.84
+      },
+      "after": {
+        "playedTonal": 3579,
+        "droppedTonal": 1800,
+        "sourceVoiceDurationCoverage": 0.575251,
+        "weightedOnsetCoverage": 0.678999,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.628319,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 2082,
+        "hddHits": 2082,
+        "dvdStops": 684,
+        "dvdWorkSeconds": 851.799,
+        "dvdLongestContinuousSeconds": 26.469,
+        "planningSeconds": 8.749
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 808,
+      "kickSnareHitsAfter": 808
+    },
+    {
+      "file": "radiohead-midi/0088-10-radiohead_2007-videotape.mid",
+      "sha256": "454bb4054fd63ef0609d48965c0dbfc7b57018b0aedf8e75d44bc4846d3544cf",
+      "before": {
+        "playedTonal": 1342,
+        "droppedTonal": 25,
+        "sourceVoiceDurationCoverage": 0.79658,
+        "weightedOnsetCoverage": 0.981762,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1803,
+        "hddHits": 1803,
+        "dvdStops": 30,
+        "dvdWorkSeconds": 889.966,
+        "dvdLongestContinuousSeconds": 168.302,
+        "planningSeconds": 6.735
+      },
+      "after": {
+        "playedTonal": 1352,
+        "droppedTonal": 15,
+        "sourceVoiceDurationCoverage": 0.836112,
+        "weightedOnsetCoverage": 0.989377,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1803,
+        "hddHits": 1803,
+        "dvdStops": 32,
+        "dvdWorkSeconds": 928.907,
+        "dvdLongestContinuousSeconds": 255.574,
+        "planningSeconds": 3.427
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 663,
+      "kickSnareHitsAfter": 796
+    },
+    {
+      "file": "radiohead-midi/0089-02-radiohead_2007-down_is_the_new_up.mid",
+      "sha256": "eba6977a270ebb4bffb010a6935640f10429f809733a70cf7b6b2b5acc0039e9",
+      "before": {
+        "playedTonal": 1402,
+        "droppedTonal": 560,
+        "sourceVoiceDurationCoverage": 0.740835,
+        "weightedOnsetCoverage": 0.732545,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1846,
+        "hddHits": 1846,
+        "dvdStops": 148,
+        "dvdWorkSeconds": 657.79,
+        "dvdLongestContinuousSeconds": 74.17,
+        "planningSeconds": 4.219
+      },
+      "after": {
+        "playedTonal": 1678,
+        "droppedTonal": 284,
+        "sourceVoiceDurationCoverage": 0.770298,
+        "weightedOnsetCoverage": 0.862012,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1846,
+        "hddHits": 1846,
+        "dvdStops": 246,
+        "dvdWorkSeconds": 670.918,
+        "dvdLongestContinuousSeconds": 60.02,
+        "planningSeconds": 2.621
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 962,
+      "kickSnareHitsAfter": 962
+    },
+    {
+      "file": "radiohead-midi/0090-03-radiohead_2007-go_slowly.mid",
+      "sha256": "ecfce2c0941ccce07ec5e63d0f509ff74ed75f9f07fbd83edb4d967531b9eb2b",
+      "before": {
+        "playedTonal": 1070,
+        "droppedTonal": 851,
+        "sourceVoiceDurationCoverage": 0.56683,
+        "weightedOnsetCoverage": 0.568244,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 111,
+        "dvdWorkSeconds": 699.771,
+        "dvdLongestContinuousSeconds": 183.998,
+        "planningSeconds": 2.109
+      },
+      "after": {
+        "playedTonal": 1480,
+        "droppedTonal": 441,
+        "sourceVoiceDurationCoverage": 0.647759,
+        "weightedOnsetCoverage": 0.780359,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 93,
+        "dvdWorkSeconds": 731.313,
+        "dvdLongestContinuousSeconds": 183.998,
+        "planningSeconds": 1.929
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0091-05-radiohead_2007-last_flowers.mid",
+      "sha256": "af2ed20ab0120f51bbff3953e48c84f73e3b87efc8562865a8f2a232b1bbb9e1",
+      "before": {
+        "playedTonal": 1298,
+        "droppedTonal": 699,
+        "sourceVoiceDurationCoverage": 0.609678,
+        "weightedOnsetCoverage": 0.648121,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.488136,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 76,
+        "dvdWorkSeconds": 577.569,
+        "dvdLongestContinuousSeconds": 71.998,
+        "planningSeconds": 2.097
+      },
+      "after": {
+        "playedTonal": 1800,
+        "droppedTonal": 197,
+        "sourceVoiceDurationCoverage": 0.711327,
+        "weightedOnsetCoverage": 0.901346,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.900847,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 28,
+        "dvdWorkSeconds": 661.685,
+        "dvdLongestContinuousSeconds": 92.992,
+        "planningSeconds": 2.337
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0092-07-radiohead_2007-bangers_and_mash.mid",
+      "sha256": "a53a247b0f8fe03e77e13234b3132b8a1f98461954e4b209e092244994600498",
+      "before": {
+        "playedTonal": 1638,
+        "droppedTonal": 764,
+        "sourceVoiceDurationCoverage": 0.661849,
+        "weightedOnsetCoverage": 0.699137,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.960976,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1636,
+        "hddHits": 1636,
+        "dvdStops": 199,
+        "dvdWorkSeconds": 260.655,
+        "dvdLongestContinuousSeconds": 43.627,
+        "planningSeconds": 4.388
+      },
+      "after": {
+        "playedTonal": 2093,
+        "droppedTonal": 309,
+        "sourceVoiceDurationCoverage": 0.80539,
+        "weightedOnsetCoverage": 0.880372,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.995122,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1636,
+        "hddHits": 1636,
+        "dvdStops": 182,
+        "dvdWorkSeconds": 330.09,
+        "dvdLongestContinuousSeconds": 43.627,
+        "planningSeconds": 3.344
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 957,
+      "kickSnareHitsAfter": 957
+    },
+    {
+      "file": "radiohead-midi/0093-08-radiohead_2007-4_minutes_warning.mid",
+      "sha256": "5e7cfb72712b4a224f6fe0bd7ea075660d7a9499e2ec2730b80a9091c564bf92",
+      "before": {
+        "playedTonal": 885,
+        "droppedTonal": 95,
+        "sourceVoiceDurationCoverage": 0.793982,
+        "weightedOnsetCoverage": 0.905659,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 7,
+        "playedDrums": 616,
+        "hddHits": 616,
+        "dvdStops": 162,
+        "dvdWorkSeconds": 514.187,
+        "dvdLongestContinuousSeconds": 17.479,
+        "planningSeconds": 1.932
+      },
+      "after": {
+        "playedTonal": 958,
+        "droppedTonal": 22,
+        "sourceVoiceDurationCoverage": 0.839685,
+        "weightedOnsetCoverage": 0.97815,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 616,
+        "hddHits": 616,
+        "dvdStops": 169,
+        "dvdWorkSeconds": 524.042,
+        "dvdLongestContinuousSeconds": 16.479,
+        "planningSeconds": 1.417
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0094-01-radiohead_2011-bloom.mid",
+      "sha256": "ff01241322d61e124f03a726b167f0623916b891947c035571d924a8dd4410f6",
+      "before": {
+        "playedTonal": 2115,
+        "droppedTonal": 1100,
+        "sourceVoiceDurationCoverage": 0.672465,
+        "weightedOnsetCoverage": 0.664983,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.895299,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 2330,
+        "hddHits": 2330,
+        "dvdStops": 578,
+        "dvdWorkSeconds": 605.827,
+        "dvdLongestContinuousSeconds": 13.086,
+        "planningSeconds": 6.183
+      },
+      "after": {
+        "playedTonal": 3194,
+        "droppedTonal": 21,
+        "sourceVoiceDurationCoverage": 0.880401,
+        "weightedOnsetCoverage": 0.993467,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.982906,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 2330,
+        "hddHits": 2330,
+        "dvdStops": 586,
+        "dvdWorkSeconds": 679.707,
+        "dvdLongestContinuousSeconds": 24.541,
+        "planningSeconds": 4.46
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1836,
+      "kickSnareHitsAfter": 1836
+    },
+    {
+      "file": "radiohead-midi/0095-03-radiohead_2011-little_by_little.mid",
+      "sha256": "da2220adbd67957b9e943d567a65b8863f90c7b4f34ad23f86e33d7e79baa90a",
+      "before": {
+        "playedTonal": 2169,
+        "droppedTonal": 444,
+        "sourceVoiceDurationCoverage": 0.681266,
+        "weightedOnsetCoverage": 0.834575,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.868239,
+        "unrepresentedPartWindows": 7,
+        "playedDrums": 3325,
+        "hddHits": 3325,
+        "dvdStops": 331,
+        "dvdWorkSeconds": 775.948,
+        "dvdLongestContinuousSeconds": 47.209,
+        "planningSeconds": 8.562
+      },
+      "after": {
+        "playedTonal": 2488,
+        "droppedTonal": 125,
+        "sourceVoiceDurationCoverage": 0.811255,
+        "weightedOnsetCoverage": 0.950322,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.865465,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 3325,
+        "hddHits": 3325,
+        "dvdStops": 277,
+        "dvdWorkSeconds": 988.619,
+        "dvdLongestContinuousSeconds": 52.426,
+        "planningSeconds": 5.953
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 407,
+      "kickSnareHitsAfter": 407
+    },
+    {
+      "file": "radiohead-midi/0096-04-radiohead_2011-feral.mid",
+      "sha256": "5f1e2b3acdbf6baeb82fa4ff57e73c3838bb62e324321fc7547a4d2e53d2649a",
+      "before": {
+        "playedTonal": 775,
+        "droppedTonal": 15,
+        "sourceVoiceDurationCoverage": 0.806235,
+        "weightedOnsetCoverage": 0.986627,
+        "leadCoverage": 0.975,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 3108,
+        "hddHits": 3108,
+        "dvdStops": 161,
+        "dvdWorkSeconds": 100.954,
+        "dvdLongestContinuousSeconds": 9.704,
+        "planningSeconds": 5.415
+      },
+      "after": {
+        "playedTonal": 790,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.81942,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 3108,
+        "hddHits": 3108,
+        "dvdStops": 136,
+        "dvdWorkSeconds": 87.213,
+        "dvdLongestContinuousSeconds": 9.704,
+        "planningSeconds": 2.349
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 337,
+      "kickSnareHitsAfter": 1088
+    },
+    {
+      "file": "radiohead-midi/0097-05-radiohead_2011-lotus_flower.mid",
+      "sha256": "7345684ba84ca5dead87505a93a8a11f1be655bd56f9e9c6e4ab08eb8bc3469e",
+      "before": {
+        "playedTonal": 427,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.935635,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2220,
+        "hddHits": 2220,
+        "dvdStops": 76,
+        "dvdWorkSeconds": 308.592,
+        "dvdLongestContinuousSeconds": 45.998,
+        "planningSeconds": 2.737
+      },
+      "after": {
+        "playedTonal": 427,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.974315,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2220,
+        "hddHits": 2220,
+        "dvdStops": 78,
+        "dvdWorkSeconds": 333.588,
+        "dvdLongestContinuousSeconds": 45.998,
+        "planningSeconds": 1.407
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 962,
+      "kickSnareHitsAfter": 962
+    },
+    {
+      "file": "radiohead-midi/0098-06-radiohead_2011-codex.mid",
+      "sha256": "af93dab3e5803769c77d00ae6bd2d624ddc502b3ac59d545d5cade7ee9519e70",
+      "before": {
+        "playedTonal": 1185,
+        "droppedTonal": 553,
+        "sourceVoiceDurationCoverage": 0.75223,
+        "weightedOnsetCoverage": 0.778519,
+        "leadCoverage": 0.983871,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 3,
+        "playedDrums": 354,
+        "hddHits": 354,
+        "dvdStops": 200,
+        "dvdWorkSeconds": 976.289,
+        "dvdLongestContinuousSeconds": 174.189,
+        "planningSeconds": 3.402
+      },
+      "after": {
+        "playedTonal": 1533,
+        "droppedTonal": 205,
+        "sourceVoiceDurationCoverage": 0.777052,
+        "weightedOnsetCoverage": 0.926505,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 354,
+        "hddHits": 354,
+        "dvdStops": 194,
+        "dvdWorkSeconds": 973.039,
+        "dvdLongestContinuousSeconds": 174.189,
+        "planningSeconds": 2.463
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 354,
+      "kickSnareHitsAfter": 354
+    },
+    {
+      "file": "radiohead-midi/0099-08-radiohead_2011-separator.mid",
+      "sha256": "d87fb3e9127673bf0b50228cdae83b39b8c5ea4dd02ec2d3134a39517e25d257",
+      "before": {
+        "playedTonal": 1366,
+        "droppedTonal": 226,
+        "sourceVoiceDurationCoverage": 0.853037,
+        "weightedOnsetCoverage": 0.859005,
+        "leadCoverage": 0.993103,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 2592,
+        "hddHits": 2592,
+        "dvdStops": 180,
+        "dvdWorkSeconds": 644.323,
+        "dvdLongestContinuousSeconds": 9.371,
+        "planningSeconds": 4.458
+      },
+      "after": {
+        "playedTonal": 1592,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.945296,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2592,
+        "hddHits": 2592,
+        "dvdStops": 235,
+        "dvdWorkSeconds": 686.938,
+        "dvdLongestContinuousSeconds": 8.031,
+        "planningSeconds": 2.451
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1008,
+      "kickSnareHitsAfter": 1008
+    },
+    {
+      "file": "radiohead-midi/0100-01-radiohead_2016-burn_the_witch.mid",
+      "sha256": "1a45c8ec816a0e7a948501f98ae5ac7d343a04d43f0230d59be003e23e80b2ee",
+      "before": {
+        "playedTonal": 1279,
+        "droppedTonal": 1678,
+        "sourceVoiceDurationCoverage": 0.60536,
+        "weightedOnsetCoverage": 0.460449,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.398844,
+        "unrepresentedPartWindows": 50,
+        "playedDrums": 488,
+        "hddHits": 488,
+        "dvdStops": 68,
+        "dvdWorkSeconds": 336.667,
+        "dvdLongestContinuousSeconds": 67.983,
+        "planningSeconds": 3.584
+      },
+      "after": {
+        "playedTonal": 2932,
+        "droppedTonal": 25,
+        "sourceVoiceDurationCoverage": 0.971308,
+        "weightedOnsetCoverage": 0.99128,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 488,
+        "hddHits": 488,
+        "dvdStops": 735,
+        "dvdWorkSeconds": 575.35,
+        "dvdLongestContinuousSeconds": 97.783,
+        "planningSeconds": 5.555
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0101-02-radiohead_2016-daydreaming.mid",
+      "sha256": "7286e374b204543827896cd4bf1cc7415c8755dd03d0fe11f17bfffa1b23a314",
+      "before": {
+        "playedTonal": 1674,
+        "droppedTonal": 336,
+        "sourceVoiceDurationCoverage": 0.642815,
+        "weightedOnsetCoverage": 0.834358,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 201,
+        "dvdWorkSeconds": 1103.635,
+        "dvdLongestContinuousSeconds": 110.37,
+        "planningSeconds": 6.827
+      },
+      "after": {
+        "playedTonal": 1999,
+        "droppedTonal": 11,
+        "sourceVoiceDurationCoverage": 0.699771,
+        "weightedOnsetCoverage": 0.994485,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 151,
+        "dvdWorkSeconds": 1105.258,
+        "dvdLongestContinuousSeconds": 167.97,
+        "planningSeconds": 6.913
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0102-03-radiohead_2016-decks_dark.mid",
+      "sha256": "7e68b519d75fef9371e1d669b2e5a24bf60e6c6f13fe0d8dbf97c125bb3ca72a",
+      "before": {
+        "playedTonal": 1433,
+        "droppedTonal": 646,
+        "sourceVoiceDurationCoverage": 0.646584,
+        "weightedOnsetCoverage": 0.719536,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.972477,
+        "unrepresentedPartWindows": 2,
+        "playedDrums": 1318,
+        "hddHits": 1318,
+        "dvdStops": 121,
+        "dvdWorkSeconds": 757.485,
+        "dvdLongestContinuousSeconds": 184.486,
+        "planningSeconds": 3.699
+      },
+      "after": {
+        "playedTonal": 1992,
+        "droppedTonal": 87,
+        "sourceVoiceDurationCoverage": 0.68343,
+        "weightedOnsetCoverage": 0.961431,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1318,
+        "hddHits": 1318,
+        "dvdStops": 154,
+        "dvdWorkSeconds": 781.836,
+        "dvdLongestContinuousSeconds": 184.486,
+        "planningSeconds": 3.127
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 443,
+      "kickSnareHitsAfter": 443
+    },
+    {
+      "file": "radiohead-midi/0103-04-radiohead_2016-desert_island_disk.mid",
+      "sha256": "bbc95afbccd593b66c0e8b38b30e13dcc62ddf912fbabe5e17496fb1fcbc00c1",
+      "before": {
+        "playedTonal": 1233,
+        "droppedTonal": 278,
+        "sourceVoiceDurationCoverage": 0.809477,
+        "weightedOnsetCoverage": 0.822343,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.763001,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 629,
+        "hddHits": 629,
+        "dvdStops": 332,
+        "dvdWorkSeconds": 445.882,
+        "dvdLongestContinuousSeconds": 21.259,
+        "planningSeconds": 2.106
+      },
+      "after": {
+        "playedTonal": 1499,
+        "droppedTonal": 12,
+        "sourceVoiceDurationCoverage": 0.907635,
+        "weightedOnsetCoverage": 0.992331,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.98977,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 629,
+        "hddHits": 629,
+        "dvdStops": 323,
+        "dvdWorkSeconds": 438.595,
+        "dvdLongestContinuousSeconds": 21.259,
+        "planningSeconds": 2.046
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 91,
+      "kickSnareHitsAfter": 91
+    },
+    {
+      "file": "radiohead-midi/0104-05-radiohead_2016-ful_stop.mid",
+      "sha256": "fc35c1167e0511a172a58d31778bb3ab217761f6ea03d6610067aad913d49853",
+      "before": {
+        "playedTonal": 1815,
+        "droppedTonal": 3358,
+        "sourceVoiceDurationCoverage": 0.628606,
+        "weightedOnsetCoverage": 0.394523,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.947798,
+        "unrepresentedPartWindows": 10,
+        "playedDrums": 2429,
+        "hddHits": 2429,
+        "dvdStops": 178,
+        "dvdWorkSeconds": 514.807,
+        "dvdLongestContinuousSeconds": 124.797,
+        "planningSeconds": 13.024
+      },
+      "after": {
+        "playedTonal": 4739,
+        "droppedTonal": 434,
+        "sourceVoiceDurationCoverage": 0.929239,
+        "weightedOnsetCoverage": 0.924004,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2429,
+        "hddHits": 2429,
+        "dvdStops": 138,
+        "dvdWorkSeconds": 598.34,
+        "dvdLongestContinuousSeconds": 366.997,
+        "planningSeconds": 14.504
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1119,
+      "kickSnareHitsAfter": 1119
+    },
+    {
+      "file": "radiohead-midi/0105-06-radiohead_2016-glass_eyes.mid",
+      "sha256": "d31156689aff821fe4d9766b6104985712ee0277b7dcd570a77e5546d8a1cd41",
+      "before": {
+        "playedTonal": 731,
+        "droppedTonal": 47,
+        "sourceVoiceDurationCoverage": 0.545864,
+        "weightedOnsetCoverage": 0.95167,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 38,
+        "dvdWorkSeconds": 597.494,
+        "dvdLongestContinuousSeconds": 80.237,
+        "planningSeconds": 1.07
+      },
+      "after": {
+        "playedTonal": 746,
+        "droppedTonal": 32,
+        "sourceVoiceDurationCoverage": 0.562977,
+        "weightedOnsetCoverage": 0.967095,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 38,
+        "dvdWorkSeconds": 597.415,
+        "dvdLongestContinuousSeconds": 152.48,
+        "planningSeconds": 0.806
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0106-07-radiohead_2016-identikit.mid",
+      "sha256": "a551e16fe12cf4bc10450d93af1bca170a1e71dfee1f4f06029d39c0b93330e0",
+      "before": {
+        "playedTonal": 1181,
+        "droppedTonal": 557,
+        "sourceVoiceDurationCoverage": 0.766016,
+        "weightedOnsetCoverage": 0.688783,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.697947,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1286,
+        "hddHits": 1286,
+        "dvdStops": 201,
+        "dvdWorkSeconds": 317.554,
+        "dvdLongestContinuousSeconds": 25.932,
+        "planningSeconds": 2.734
+      },
+      "after": {
+        "playedTonal": 1738,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.947273,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1286,
+        "hddHits": 1286,
+        "dvdStops": 330,
+        "dvdWorkSeconds": 404.51,
+        "dvdLongestContinuousSeconds": 26.524,
+        "planningSeconds": 2.381
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 807,
+      "kickSnareHitsAfter": 807
+    },
+    {
+      "file": "radiohead-midi/0107-08-radiohead_2016-the_numbers.mid",
+      "sha256": "6f000f2069ad50579a33c0b6673435719592d00153bd3a98d8582a57f7a5d9fe",
+      "before": {
+        "playedTonal": 1848,
+        "droppedTonal": 604,
+        "sourceVoiceDurationCoverage": 0.686417,
+        "weightedOnsetCoverage": 0.751522,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.797297,
+        "unrepresentedPartWindows": 11,
+        "playedDrums": 1281,
+        "hddHits": 1281,
+        "dvdStops": 484,
+        "dvdWorkSeconds": 826.838,
+        "dvdLongestContinuousSeconds": 24.741,
+        "planningSeconds": 4.614
+      },
+      "after": {
+        "playedTonal": 2308,
+        "droppedTonal": 144,
+        "sourceVoiceDurationCoverage": 0.779023,
+        "weightedOnsetCoverage": 0.941304,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.972973,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1281,
+        "hddHits": 1281,
+        "dvdStops": 614,
+        "dvdWorkSeconds": 878.894,
+        "dvdLongestContinuousSeconds": 23.428,
+        "planningSeconds": 3.649
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 389,
+      "kickSnareHitsAfter": 389
+    },
+    {
+      "file": "radiohead-midi/0108-09-radiohead_2016-present_tense.mid",
+      "sha256": "228e184fe57cd7ac6276065448312bfefa30aa055ca2b67eaae148ddd6d4acbd",
+      "before": {
+        "playedTonal": 1438,
+        "droppedTonal": 71,
+        "sourceVoiceDurationCoverage": 0.86418,
+        "weightedOnsetCoverage": 0.952949,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.997012,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2329,
+        "hddHits": 2329,
+        "dvdStops": 178,
+        "dvdWorkSeconds": 987.988,
+        "dvdLongestContinuousSeconds": 77.831,
+        "planningSeconds": 5.454
+      },
+      "after": {
+        "playedTonal": 1509,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.907742,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 2329,
+        "hddHits": 2329,
+        "dvdStops": 151,
+        "dvdWorkSeconds": 1001.062,
+        "dvdLongestContinuousSeconds": 115.095,
+        "planningSeconds": 3.466
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0109-10-radiohead_2016-tinker_tailor_soldier_sailor_rich_man_poor_man_beggar_man_thief.mid",
+      "sha256": "00b39fe64be5b430da609005c4b148aa4ffae3238bb683e3077532551820e57e",
+      "before": {
+        "playedTonal": 839,
+        "droppedTonal": 82,
+        "sourceVoiceDurationCoverage": 0.919709,
+        "weightedOnsetCoverage": 0.917747,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 778,
+        "hddHits": 778,
+        "dvdStops": 39,
+        "dvdWorkSeconds": 799.233,
+        "dvdLongestContinuousSeconds": 197.322,
+        "planningSeconds": 2.458
+      },
+      "after": {
+        "playedTonal": 921,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.939829,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 778,
+        "hddHits": 778,
+        "dvdStops": 42,
+        "dvdWorkSeconds": 805.699,
+        "dvdLongestContinuousSeconds": 197.322,
+        "planningSeconds": 2.147
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1,
+      "kickSnareHitsAfter": 1
+    },
+    {
+      "file": "radiohead-midi/0110-11-radiohead_2016-true_love_waits.mid",
+      "sha256": "bd89b7c97856f4770f5483ac7c31a122f54824c9faf0ab8a58b872b62c24514d",
+      "before": {
+        "playedTonal": 683,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.981439,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 222,
+        "dvdWorkSeconds": 530.299,
+        "dvdLongestContinuousSeconds": 7.229,
+        "planningSeconds": 1.003
+      },
+      "after": {
+        "playedTonal": 683,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.982541,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 367,
+        "dvdWorkSeconds": 508.368,
+        "dvdLongestContinuousSeconds": 6.429,
+        "planningSeconds": 0.458
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0111-radiohead_1993-yes_i_am.mid",
+      "sha256": "9a3767103faf1aaa05074ee6ee4e34a789131a0a6fe287dccca0598f57f72d0e",
+      "before": {
+        "playedTonal": 2039,
+        "droppedTonal": 2953,
+        "sourceVoiceDurationCoverage": 0.435997,
+        "weightedOnsetCoverage": 0.40892,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.57315,
+        "unrepresentedPartWindows": 69,
+        "playedDrums": 2068,
+        "hddHits": 2068,
+        "dvdStops": 308,
+        "dvdWorkSeconds": 399.839,
+        "dvdLongestContinuousSeconds": 7.353,
+        "planningSeconds": 7.333
+      },
+      "after": {
+        "playedTonal": 4363,
+        "droppedTonal": 629,
+        "sourceVoiceDurationCoverage": 0.803078,
+        "weightedOnsetCoverage": 0.873459,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.932874,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 2068,
+        "hddHits": 2068,
+        "dvdStops": 329,
+        "dvdWorkSeconds": 879.385,
+        "dvdLongestContinuousSeconds": 29.706,
+        "planningSeconds": 5.357
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 646,
+      "kickSnareHitsAfter": 646
+    },
+    {
+      "file": "radiohead-midi/0112-radiohead_1995-maquiladora.mid",
+      "sha256": "44794f0950572eadbdb489e31ded42bf1753ab9a128dc10a6ef2de5c5a0a23ef",
+      "before": {
+        "playedTonal": 1568,
+        "droppedTonal": 1735,
+        "sourceVoiceDurationCoverage": 0.446656,
+        "weightedOnsetCoverage": 0.478334,
+        "leadCoverage": 0.722513,
+        "bassCoverage": 0.771186,
+        "unrepresentedPartWindows": 19,
+        "playedDrums": 988,
+        "hddHits": 988,
+        "dvdStops": 225,
+        "dvdWorkSeconds": 238.149,
+        "dvdLongestContinuousSeconds": 7.384,
+        "planningSeconds": 3.706
+      },
+      "after": {
+        "playedTonal": 2964,
+        "droppedTonal": 339,
+        "sourceVoiceDurationCoverage": 0.719171,
+        "weightedOnsetCoverage": 0.894063,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.997881,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 988,
+        "hddHits": 988,
+        "dvdStops": 182,
+        "dvdWorkSeconds": 525.254,
+        "dvdLongestContinuousSeconds": 13.843,
+        "planningSeconds": 2.884
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 364,
+      "kickSnareHitsAfter": 364
+    },
+    {
+      "file": "radiohead-midi/0113-radiohead_1995-nobody_does_it_better.mid",
+      "sha256": "addba84778e1095c2df501212276326747bd8742841232343b5d70ad755c2ec9",
+      "before": {
+        "playedTonal": 1468,
+        "droppedTonal": 1382,
+        "sourceVoiceDurationCoverage": 0.562888,
+        "weightedOnsetCoverage": 0.513775,
+        "leadCoverage": 0.955446,
+        "bassCoverage": 0.676364,
+        "unrepresentedPartWindows": 14,
+        "playedDrums": 701,
+        "hddHits": 701,
+        "dvdStops": 131,
+        "dvdWorkSeconds": 686.87,
+        "dvdLongestContinuousSeconds": 201.227,
+        "planningSeconds": 3.178
+      },
+      "after": {
+        "playedTonal": 2448,
+        "droppedTonal": 402,
+        "sourceVoiceDurationCoverage": 0.651116,
+        "weightedOnsetCoverage": 0.858315,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.989091,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 701,
+        "hddHits": 701,
+        "dvdStops": 108,
+        "dvdWorkSeconds": 757.389,
+        "dvdLongestContinuousSeconds": 36.461,
+        "planningSeconds": 2.361
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 312,
+      "kickSnareHitsAfter": 312
+    },
+    {
+      "file": "radiohead-midi/0114-radiohead_1996-bishop's_robes.mid",
+      "sha256": "4de801209be094d838f50a52f58f06bf730da3e651f053e632d84ca1c9b58e41",
+      "before": {
+        "playedTonal": 508,
+        "droppedTonal": 47,
+        "sourceVoiceDurationCoverage": 0.749875,
+        "weightedOnsetCoverage": 0.915707,
+        "leadCoverage": 0.943182,
+        "bassCoverage": 0.988636,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 80,
+        "dvdWorkSeconds": 702.262,
+        "dvdLongestContinuousSeconds": 54.999,
+        "planningSeconds": 0.401
+      },
+      "after": {
+        "playedTonal": 533,
+        "droppedTonal": 22,
+        "sourceVoiceDurationCoverage": 0.798936,
+        "weightedOnsetCoverage": 0.960567,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 75,
+        "dvdWorkSeconds": 745.396,
+        "dvdLongestContinuousSeconds": 57.666,
+        "planningSeconds": 0.57
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0115-radiohead_1996-lift.mid",
+      "sha256": "2475ffc1218a9d19c4aaed7d8bd29274ae1b390937753c0fd7209cd4da30f623",
+      "before": {
+        "playedTonal": 1243,
+        "droppedTonal": 1925,
+        "sourceVoiceDurationCoverage": 0.53764,
+        "weightedOnsetCoverage": 0.396055,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.755844,
+        "unrepresentedPartWindows": 5,
+        "playedDrums": 1136,
+        "hddHits": 1136,
+        "dvdStops": 326,
+        "dvdWorkSeconds": 463.412,
+        "dvdLongestContinuousSeconds": 7.333,
+        "planningSeconds": 3.407
+      },
+      "after": {
+        "playedTonal": 2416,
+        "droppedTonal": 752,
+        "sourceVoiceDurationCoverage": 0.758912,
+        "weightedOnsetCoverage": 0.763642,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.812987,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1136,
+        "hddHits": 1136,
+        "dvdStops": 314,
+        "dvdWorkSeconds": 716.674,
+        "dvdLongestContinuousSeconds": 51.833,
+        "planningSeconds": 3.451
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 404,
+      "kickSnareHitsAfter": 404
+    },
+    {
+      "file": "radiohead-midi/0116-radiohead_1996-talk_show_host.mid",
+      "sha256": "f27a509ef3a1b149bc766265093cf6b22bd56a1220d018489e50b6808e8185d5",
+      "before": {
+        "playedTonal": 1363,
+        "droppedTonal": 3555,
+        "sourceVoiceDurationCoverage": 0.588953,
+        "weightedOnsetCoverage": 0.282408,
+        "leadCoverage": 0.963855,
+        "bassCoverage": 0.501601,
+        "unrepresentedPartWindows": 39,
+        "playedDrums": 1749,
+        "hddHits": 1749,
+        "dvdStops": 124,
+        "dvdWorkSeconds": 483.272,
+        "dvdLongestContinuousSeconds": 17.241,
+        "planningSeconds": 6.826
+      },
+      "after": {
+        "playedTonal": 2965,
+        "droppedTonal": 1953,
+        "sourceVoiceDurationCoverage": 0.835515,
+        "weightedOnsetCoverage": 0.607272,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.822839,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1724,
+        "hddHits": 1724,
+        "dvdStops": 639,
+        "dvdWorkSeconds": 626.192,
+        "dvdLongestContinuousSeconds": 20.0,
+        "planningSeconds": 4.735
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 1088,
+      "kickSnareHitsAfter": 1089
+    },
+    {
+      "file": "radiohead-midi/0117-radiohead_1997-lull.mid",
+      "sha256": "9245f36d8653108233d02e2a991aa4374e9c0e1e70d19dfc80e3c5e04cf94e07",
+      "before": {
+        "playedTonal": 940,
+        "droppedTonal": 97,
+        "sourceVoiceDurationCoverage": 0.780465,
+        "weightedOnsetCoverage": 0.918224,
+        "leadCoverage": 0.926606,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 349,
+        "hddHits": 349,
+        "dvdStops": 44,
+        "dvdWorkSeconds": 498.478,
+        "dvdLongestContinuousSeconds": 64.553,
+        "planningSeconds": 1.083
+      },
+      "after": {
+        "playedTonal": 1012,
+        "droppedTonal": 25,
+        "sourceVoiceDurationCoverage": 0.839783,
+        "weightedOnsetCoverage": 0.974931,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 349,
+        "hddHits": 349,
+        "dvdStops": 47,
+        "dvdWorkSeconds": 504.907,
+        "dvdLongestContinuousSeconds": 54.107,
+        "planningSeconds": 0.878
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 111,
+      "kickSnareHitsAfter": 111
+    },
+    {
+      "file": "radiohead-midi/0118-radiohead_1997-melatonin.mid",
+      "sha256": "fab5cb0134376aed9c998280838074c1e01aa1abce707f5a42bcb12a22e4ea13",
+      "before": {
+        "playedTonal": 198,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.987416,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 525,
+        "hddHits": 525,
+        "dvdStops": 48,
+        "dvdWorkSeconds": 374.3,
+        "dvdLongestContinuousSeconds": 14.996,
+        "planningSeconds": 0.376
+      },
+      "after": {
+        "playedTonal": 198,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.989403,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 525,
+        "hddHits": 525,
+        "dvdStops": 49,
+        "dvdWorkSeconds": 375.796,
+        "dvdLongestContinuousSeconds": 30.996,
+        "planningSeconds": 0.281
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 300,
+      "kickSnareHitsAfter": 300
+    },
+    {
+      "file": "radiohead-midi/0119-radiohead_1997-nude_(big_ideas).mid",
+      "sha256": "8c181f5d9e428a819f915fec6407da71ea67ec551f28786e62dace2dd80aead1",
+      "before": {
+        "playedTonal": 1514,
+        "droppedTonal": 2179,
+        "sourceVoiceDurationCoverage": 0.510994,
+        "weightedOnsetCoverage": 0.406565,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.804878,
+        "unrepresentedPartWindows": 65,
+        "playedDrums": 1012,
+        "hddHits": 1012,
+        "dvdStops": 261,
+        "dvdWorkSeconds": 759.43,
+        "dvdLongestContinuousSeconds": 22.298,
+        "planningSeconds": 4.472
+      },
+      "after": {
+        "playedTonal": 2624,
+        "droppedTonal": 1069,
+        "sourceVoiceDurationCoverage": 0.669196,
+        "weightedOnsetCoverage": 0.700685,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.987805,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1012,
+        "hddHits": 1012,
+        "dvdStops": 368,
+        "dvdWorkSeconds": 967.442,
+        "dvdLongestContinuousSeconds": 50.168,
+        "planningSeconds": 4.968
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 236,
+      "kickSnareHitsAfter": 236
+    },
+    {
+      "file": "radiohead-midi/0120-radiohead_1997-pearly.mid",
+      "sha256": "8dae045820072f587c6e2ed6f377cbf45f1190a03db2bbb44eef7cc7bc3b8809",
+      "before": {
+        "playedTonal": 1096,
+        "droppedTonal": 71,
+        "sourceVoiceDurationCoverage": 0.853734,
+        "weightedOnsetCoverage": 0.93916,
+        "leadCoverage": 0.987342,
+        "bassCoverage": 0.864,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 1475,
+        "hddHits": 1475,
+        "dvdStops": 140,
+        "dvdWorkSeconds": 525.384,
+        "dvdLongestContinuousSeconds": 18.205,
+        "planningSeconds": 2.356
+      },
+      "after": {
+        "playedTonal": 1167,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.869218,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 1475,
+        "hddHits": 1475,
+        "dvdStops": 222,
+        "dvdWorkSeconds": 531.022,
+        "dvdLongestContinuousSeconds": 58.718,
+        "planningSeconds": 1.767
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 516,
+      "kickSnareHitsAfter": 517
+    },
+    {
+      "file": "radiohead-midi/0121-radiohead_1997-polyethylene_part_1&2-[k].mid",
+      "sha256": "a060d546b52f372eb00a7deb4426bb36f9d76365919adbd84cf52fb80a199f4b",
+      "before": {
+        "playedTonal": 1702,
+        "droppedTonal": 2028,
+        "sourceVoiceDurationCoverage": 0.379599,
+        "weightedOnsetCoverage": 0.464019,
+        "leadCoverage": 0.945783,
+        "bassCoverage": 0.459854,
+        "unrepresentedPartWindows": 109,
+        "playedDrums": 1101,
+        "hddHits": 1101,
+        "dvdStops": 136,
+        "dvdWorkSeconds": 838.926,
+        "dvdLongestContinuousSeconds": 52.403,
+        "planningSeconds": 4.369
+      },
+      "after": {
+        "playedTonal": 2291,
+        "droppedTonal": 1439,
+        "sourceVoiceDurationCoverage": 0.436053,
+        "weightedOnsetCoverage": 0.617651,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.927007,
+        "unrepresentedPartWindows": 44,
+        "playedDrums": 1101,
+        "hddHits": 1101,
+        "dvdStops": 41,
+        "dvdWorkSeconds": 908.145,
+        "dvdLongestContinuousSeconds": 208.301,
+        "planningSeconds": 2.829
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 555,
+      "kickSnareHitsAfter": 555
+    },
+    {
+      "file": "radiohead-midi/0122-radiohead_1998-how_i_made_my_millions.mid",
+      "sha256": "9f504a6fc5c9fd8b868eab10d2cc94a0e8b7176d508dc7817d95787d2512f696",
+      "before": {
+        "playedTonal": 573,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.915688,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 43,
+        "dvdWorkSeconds": 524.193,
+        "dvdLongestContinuousSeconds": 49.032,
+        "planningSeconds": 0.42
+      },
+      "after": {
+        "playedTonal": 573,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.959442,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 50,
+        "dvdWorkSeconds": 534.144,
+        "dvdLongestContinuousSeconds": 77.419,
+        "planningSeconds": 0.339
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0123-radiohead_1998-big_boots_(man-o-war).mid",
+      "sha256": "826a40146f904eab905d8fb431a1a72a2acbd23eb15b9ec4b9392cbc1babbb2f",
+      "before": {
+        "playedTonal": 1365,
+        "droppedTonal": 815,
+        "sourceVoiceDurationCoverage": 0.647734,
+        "weightedOnsetCoverage": 0.622876,
+        "leadCoverage": 0.992248,
+        "bassCoverage": 0.983607,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 849,
+        "hddHits": 849,
+        "dvdStops": 204,
+        "dvdWorkSeconds": 440.769,
+        "dvdLongestContinuousSeconds": 8.269,
+        "planningSeconds": 2.26
+      },
+      "after": {
+        "playedTonal": 2049,
+        "droppedTonal": 131,
+        "sourceVoiceDurationCoverage": 0.822552,
+        "weightedOnsetCoverage": 0.939003,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 849,
+        "hddHits": 849,
+        "dvdStops": 89,
+        "dvdWorkSeconds": 591.724,
+        "dvdLongestContinuousSeconds": 104.612,
+        "planningSeconds": 2.088
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 411,
+      "kickSnareHitsAfter": 411
+    },
+    {
+      "file": "radiohead-midi/0124-radiohead_1998-rabbit_in_your_headlights.mid",
+      "sha256": "f749d4b49bb4d079a955b663a367ce6c63c7b5ba44a6253a5dd2253935b8901e",
+      "before": {
+        "playedTonal": 452,
+        "droppedTonal": 81,
+        "sourceVoiceDurationCoverage": 0.563782,
+        "weightedOnsetCoverage": 0.848531,
+        "leadCoverage": 0.454545,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 721,
+        "hddHits": 721,
+        "dvdStops": 141,
+        "dvdWorkSeconds": 522.664,
+        "dvdLongestContinuousSeconds": 12.13,
+        "planningSeconds": 0.795
+      },
+      "after": {
+        "playedTonal": 533,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.647537,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 721,
+        "hddHits": 721,
+        "dvdStops": 182,
+        "dvdWorkSeconds": 588.922,
+        "dvdLongestContinuousSeconds": 12.13,
+        "planningSeconds": 0.844
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 275,
+      "kickSnareHitsAfter": 275
+    },
+    {
+      "file": "radiohead-midi/0125-radiohead_2001-fog_(alligators_in_new_york_sewers).mid",
+      "sha256": "c05383c3a3af01f7f650f12e4827cfc56cf8a3f8cad44868fc20c518e821df62",
+      "before": {
+        "playedTonal": 696,
+        "droppedTonal": 148,
+        "sourceVoiceDurationCoverage": 0.689094,
+        "weightedOnsetCoverage": 0.81672,
+        "leadCoverage": 0.990148,
+        "bassCoverage": 0.985866,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 128,
+        "dvdWorkSeconds": 87.375,
+        "dvdLongestContinuousSeconds": 2.25,
+        "planningSeconds": 0.672
+      },
+      "after": {
+        "playedTonal": 844,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.84441,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 237,
+        "dvdWorkSeconds": 146.062,
+        "dvdLongestContinuousSeconds": 2.25,
+        "planningSeconds": 0.787
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid",
+      "sha256": "a35f843b908f7f91b0141ded4c630a5f0c8a998b5e57f108bbfd65af4e04b0d8",
+      "before": {
+        "playedTonal": 3291,
+        "droppedTonal": 3554,
+        "sourceVoiceDurationCoverage": 0.568335,
+        "weightedOnsetCoverage": 0.497555,
+        "leadCoverage": 0.90676,
+        "bassCoverage": 0.657143,
+        "unrepresentedPartWindows": 44,
+        "playedDrums": 5906,
+        "hddHits": 5906,
+        "dvdStops": 485,
+        "dvdWorkSeconds": 651.794,
+        "dvdLongestContinuousSeconds": 33.809,
+        "planningSeconds": 18.645
+      },
+      "after": {
+        "playedTonal": 5962,
+        "droppedTonal": 883,
+        "sourceVoiceDurationCoverage": 0.820019,
+        "weightedOnsetCoverage": 0.873323,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.857143,
+        "unrepresentedPartWindows": 7,
+        "playedDrums": 5906,
+        "hddHits": 5906,
+        "dvdStops": 902,
+        "dvdWorkSeconds": 1068.88,
+        "dvdLongestContinuousSeconds": 33.809,
+        "planningSeconds": 12.038
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 2349,
+      "kickSnareHitsAfter": 2511
+    },
+    {
+      "file": "radiohead-midi/0127-radiohead_2004-arpeggi.mid",
+      "sha256": "a0163a8ee0557669e53582b3111ece91b5094a5ac2f04998352dc4da9076d466",
+      "before": {
+        "playedTonal": 825,
+        "droppedTonal": 1005,
+        "sourceVoiceDurationCoverage": 0.452611,
+        "weightedOnsetCoverage": 0.45409,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.501002,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 1,
+        "dvdWorkSeconds": 1.125,
+        "dvdLongestContinuousSeconds": 1.125,
+        "planningSeconds": 1.487
+      },
+      "after": {
+        "playedTonal": 1732,
+        "droppedTonal": 98,
+        "sourceVoiceDurationCoverage": 0.946086,
+        "weightedOnsetCoverage": 0.946659,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.881764,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 342,
+        "dvdWorkSeconds": 96.856,
+        "dvdLongestContinuousSeconds": 1.312,
+        "planningSeconds": 2.179
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0128-radiohead_2005-i_want_none_of_this.mid",
+      "sha256": "989d7b32a91471b4fbccd0b5dfd03b0137d2525e4fb8ab2f5138ef0a9de12241",
+      "before": {
+        "playedTonal": 724,
+        "droppedTonal": 23,
+        "sourceVoiceDurationCoverage": 0.745788,
+        "weightedOnsetCoverage": 0.96921,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 1,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 46,
+        "dvdWorkSeconds": 701.25,
+        "dvdLongestContinuousSeconds": 46.25,
+        "planningSeconds": 1.488
+      },
+      "after": {
+        "playedTonal": 740,
+        "droppedTonal": 7,
+        "sourceVoiceDurationCoverage": 0.779486,
+        "weightedOnsetCoverage": 0.990629,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 25,
+        "dvdWorkSeconds": 722.0,
+        "dvdLongestContinuousSeconds": 80.75,
+        "planningSeconds": 1.113
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "radiohead-midi/0129-radiohead_2008-house_of_cards_(live).mid",
+      "sha256": "8b9f83db5727aa3cfbce9da027529e60c59349bfbd56f378f28ea0c35e3f361e",
+      "before": {
+        "playedTonal": 507,
+        "droppedTonal": 45,
+        "sourceVoiceDurationCoverage": 0.909497,
+        "weightedOnsetCoverage": 0.918478,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.830827,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 95,
+        "dvdWorkSeconds": 66.886,
+        "dvdLongestContinuousSeconds": 2.168,
+        "planningSeconds": 0.296
+      },
+      "after": {
+        "playedTonal": 552,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.948278,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 1.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 96,
+        "dvdWorkSeconds": 66.873,
+        "dvdLongestContinuousSeconds": 2.168,
+        "planningSeconds": 0.403
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    },
+    {
+      "file": "sony-playstation-startup.mid",
+      "sha256": "317bb1aae459983fed30f9faa234fd3d2fe6ae20f71f0d2c241fe936e3bf0f96",
+      "before": {
+        "playedTonal": 55,
+        "droppedTonal": 30,
+        "sourceVoiceDurationCoverage": 0.862884,
+        "weightedOnsetCoverage": 0.691315,
+        "leadCoverage": 0.61039,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 3,
+        "dvdWorkSeconds": 22.674,
+        "dvdLongestContinuousSeconds": 13.953,
+        "planningSeconds": 0.03
+      },
+      "after": {
+        "playedTonal": 85,
+        "droppedTonal": 0,
+        "sourceVoiceDurationCoverage": 0.869621,
+        "weightedOnsetCoverage": 1.0,
+        "leadCoverage": 1.0,
+        "bassCoverage": 0.0,
+        "unrepresentedPartWindows": 0,
+        "playedDrums": 0,
+        "hddHits": 0,
+        "dvdStops": 3,
+        "dvdWorkSeconds": 22.674,
+        "dvdLongestContinuousSeconds": 13.953,
+        "planningSeconds": 0.044
+      },
+      "checks": {
+        "sameConfiguration": true,
+        "mechanicalLimits": true
+      },
+      "kickSnareHitsBefore": 0,
+      "kickSnareHitsAfter": 0
+    }
+  ]
+}
