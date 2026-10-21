@@ -2,10 +2,10 @@
 
 Lokalny odtwarzacz MIDI: Python/FastAPI, React/TypeScript i ESP32-WROOM-32.
 Katalog hosta: **20 urządzeń — 8 FDD, 6 DVD stepper, 4 HDD VCM, 2 PC Speakery**.
-Aktywne pozostaje **14: 4 FDD, 4 DVD, 4 HDD i oba speakery**.
+Aktywne jest **18: 8 FDD, 4 DVD, 4 HDD i oba speakery**.
 Docelowe okablowanie i firmware: **8 FDD + 6 DVD + 4 HDD + 2 speakery / 6 × SN74HC595N / 8 × DRV8833**;
-FDD5–8 i DVD5–6 są w katalogu, lecz pozostają wyłączone i fizycznie niezweryfikowane;
-nie uczestniczą w aranżacji. Nowa mapa przenosi DVD/HDD — wymaga nowego okablowania.
+DVD5–6 pozostają wyłączone. FDD5–8 uczestniczą w aranżacji i są zadeklarowane
+jako podłączone; REAL wymaga homingu i potwierdzenia TRACK0.
 ATX: `/settings` → **Zasilanie ATX**, domyślnie OFF po restarcie ESP32; status jest logiczny, bez pomiaru napięcia.
 REAL steruje przez BLE, VIRTUAL gra przez Web Audio. Oba wykonują jeden
 `ExecutionTimeline`; brzmienie symulacji nie jest pomiarem sprzętu.
@@ -29,8 +29,11 @@ Aplikacja startuje w REAL również offline; samo offline nie przełącza wyjśc
 
 Presety wybierasz w `/settings` → **Aranżacja → Preset aranżacji**:
 Universal, Balanced / Mechanical-Aware, FDD Riffs + DVD Tło, Pary Unisono,
-Pary Dwugłos, **4 FDD Unisono · eksperymentalny**, FDD Quality, FDD Quality Adaptive, DVD Lead + Low FDD.
-Domyślnie uruchamia się **4 FDD Unisono · eksperymentalny**; główny PC Speaker
+Pary Dwugłos, **2×4 FDD Unisono · eksperymentalny**, FDD Quality, FDD Quality Adaptive, DVD Lead + Low FDD.
+Domyślnie uruchamia się **2×4 FDD Unisono · eksperymentalny**: dwa logiczne głosy FDD,
+dobór partii Universal, długie tło DVD, osobne wokal/FX i preferowane role HDD.
+Porównanie całej lokalnej biblioteki: [benchmark](docs/research/universal-arrangement.md#biblioteka-8-fdd-2026-10-21).
+Główny PC Speaker
 ma transpozycję 0, czyli oktawę niżej niż wcześniejsze +12, niezależnie od presetu.
 Wybór zatrzymuje odtwarzanie i przebudowuje plan. Opisy i kompromisy:
 [aranżacja](docs/ARRANGEMENT.md).
@@ -44,7 +47,8 @@ Wybór zatrzymuje odtwarzanie i przebudowuje plan. Opisy i kompromisy:
 - [Architektura, obsługa aplikacji i środowisko developerskie](docs/ARCHITECTURE.md)
 
 DVD: proponowane **3,3 V na VM DRV8833**, wymagające pomiaru prądu i temperatury.
-Zasilanie i rezystory obu sterowników speakerów pozostają do ustalenia.
+Speakery: zgłoszone połączenie S8550 PNP, 3,3 V, baza 330 Ω z pull-up 10 kΩ
+i szeregowo 56 Ω; moc rezystorów i impedancja głośników wymagają potwierdzenia.
 Szczegóły oraz status dowodów znajdują się w dokumentacji sprzętowej.
 
 ## Sprawdzenie oprogramowania

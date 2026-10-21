@@ -211,3 +211,134 @@ Najdłuższe ciągłe okresy DVD raportujemy ze skompilowanej osi. Ciągły obr�
 potwierdza bezpiecznej pracy termicznej. Proponowane VM 3,3 V wymaga pomiarów
 prądu i temperatury; przy 5 V obserwowano nadmierne grzanie. Testy nie uruchamiają
 silników ani nie zastępują pomiarów fizycznego układu.
+
+<a id="biblioteka-8-fdd-2026-10-21"></a>
+## Biblioteka 8 FDD — 2026-10-21
+
+Ten przebieg dotyczy aktualnej konfiguracji: **8 FDD jako dwie grupy unisono,
+4 aktywne DVD, 4 HDD i 2 speakery**. DVD5–6 pozostają wyłączone. Nie należy
+porównywać tych liczb bezpośrednio z historycznym benchmarkiem 149 MIDI powyżej:
+zmieniły się biblioteka, skład oraz preset. W aktualnym folderze
+`/Users/krzysztof/Music/MIDI` znaleziono rekurencyjnie **134 pliki / 134 różne
+SHA-256**; każdy został przeliczony, także pliki poza `radiohead-midi`.
+Nie kopiowano MIDI do repozytorium.
+
+**Snapshot pomiarowy:** poniższe wyniki oraz raport wykorzystania DVD powstały
+przy gate FDD 200 ms. Krótki późniejszy eksperyment ze 100 ms został wycofany;
+bieżące ustawienie ponownie wynosi 200 ms. Pełnego korpusu nie przeliczano
+dla 100 ms.
+
+Baseline to lokalne `main` **`ce6b2b3`**. Oba przebiegi używają tego samego
+`instrument_roles_unison4`, tych samych aktywnych urządzeń, profili, transpozycji
+FDD −12 / 100–205 Hz oraz stałego gate 200 ms. Zapisane ustawienia głośności
+użytkownika są izolowane. Nowy algorytm nie zawiera nazw ani hashy utworów
+w regułach. Ten korpus służył do analizy i regresji; nie stanowi niezależnego
+holdoutu ani odsłuchu VIRTUAL/REAL.
+
+### Co zmieniono
+
+- Dwie logiczne rezerwacje FDD już podczas alokacji Universal, zamiast ośmiu
+  niezależnych głosów redukowanych później. Wspólny gate oraz odstęp ataków
+  obowiązują przed wyborem kandydatów. Każda fizyczna kopia nadal przechodzi
+  walidację, a wyłączone urządzenia nie są samoczynnie aktywowane.
+- Grupy preferują różne partie, lecz mogą zagrać dwa istniejące głosy jednej
+  partii. Nie dublują tej samej źródłowej nuty między grupami. Wewnątrz grupy
+  wszystkie komendy pozostają zgodne.
+- Rezerwy wokalu/FX, pierwszeństwo długiego tła nad krótkimi dodatkami akordu,
+  ochrona trzymanego DVD przed krótką harmonią i kontrola kosztu rampy.
+  Recovery odzyskuje wolne okna DVD/speakerów bez niezależnych nut na FDD.
+- HDD preferują stałe role rytmiczne i zachowują stopę/werbel przed dodatkowymi
+  równoczesnymi uderzeniami. Mogą pożyczać wolny kanał. Energia impulsów,
+  mechanika i limity firmware pozostają bez zmian.
+- Indeks rezerwacji DVD i wyznaczanie najbliższego sąsiada HDD po sortowaniu
+  zastępują powtarzane skanowanie całego planu. Optymalizacja nie ma prawa
+  zmieniać skompilowanych komend. Osobny pełny przebieg z indeksem DVD
+  potwierdził identyczne fingerprinty ExecutionTimeline oraz wszystkie metryki
+  muzyczne dla 134/134 MIDI; różnią się wyłącznie czasy obliczeń.
+
+### Wyniki
+
+| Metryka, 134 MIDI | Baseline | Nowa wersja |
+| --- | ---: | ---: |
+| Zagrane źródłowe nuty tonalne | 201709 | 320851 |
+| Pominięte źródłowe nuty tonalne | 203819 | 84677 |
+| Średnie pokrycie długości głosów źródłowych | 62,3016% | 75,8681% |
+| Średnie pokrycie ataków sklasyfikowanego leadu | 97,8034% | 100,0000% |
+| Średnie pokrycie ataków sklasyfikowanego basu | 72,2867% | 85,3740% |
+| Okna aktywnej partii bez zachowanego ataku | 3175 | 540 |
+| Źródłowe uderzenia HDD | 171466 | 171433 |
+| Komendy DVD STOP z ExecutionTimeline | 30108 | 45689 |
+| Łączny planowany czas DVD (s) | 77122,261 | 92090,117 |
+| Najdłuższy ciągły odcinek DVD (s) | 283,405 | 366,997 |
+| Konflikty / overlapy / naruszenia ataków FDD | 0 | 0 |
+| Niezgodne grupy unisono w nowym ExecutionTimeline | — | 0 |
+
+Pokrycie długości sumuje unię primary i kontynuacji wewnątrz oryginalnego gate,
+bez zawyżania przez sustain poza NOTE_OFF ani fizyczne kopie unisono. Średnie
+w tabeli są średnimi po plikach. Okna partii to 2 s na track/channel, z głosem
+oddawanym przez źródłowe ataki; nie mierzą pełnej polifonii. Lead/bass oznacza
+wynik heurystycznej klasyfikacji, nie potwierdzony odsłuchem wokal/bas.
+
+**134/134 MIDI zyskały pokrycie długości, 127 zyskało liczbę ataków, 6 zachowało
+liczbę, jedno straciło część ataków.** Nie ma regresji pokrycia leadu.
+Mimo wzrostu średniej, pokrycie ataków basu spadło w 11 plikach; lista jest
+w raporcie porównawczym. To jawne kompromisy przy dwóch logicznych FDD,
+a nie dowód idealnego odtworzenia każdej linii.
+
+| MIDI | Źródłowe nuty przed → po | Pokrycie długości przed → po |
+| --- | ---: | ---: |
+| Bodysnatchers | 1743 → 4033 | 43,34% → 74,85% |
+| No Surprises | 1851 → 3046 | 46,12% → 58,29% |
+| Let Down | 2907 → 3851 | 46,21% → 57,28% |
+| Counting Stars | 2689 → 3554 | 57,10% → 62,44% |
+| Every Breath You Take | 2051 → 2374 | 75,88% → 80,60% |
+| Pyramid Song | 1786 → 1712 | 66,67% → 68,18% |
+
+W Pyramid Song spada liczba ataków sklasyfikowanego basu (1435 → 1351),
+a rośnie lead (202 → 208) i harmonia (149 → 153). Dłuższe zachowane głosy
+podnoszą pokrycie czasu, ale odsłuch musi ocenić koszt utraconych ataków.
+Nie wybieramy osobnego algorytmu na podstawie nazwy utworu.
+
+HDD tracą netto 33 uderzenia na 171466; inny wybór jednoczesnych uderzeń
+może zmienić reset i dostępność następnego kanału. Spadki występują w
+Paranoid Android (24), Climbing Up the Walls (1) i Talk Show Host (25),
+częściowo równoważone odzyskanymi uderzeniami w innych plikach. Priorytety
+rytmu nie znoszą fizycznej zajętości ani nie podnoszą limitów.
+
+**To nie jest optymalizacja samej liczby STOP.** W Bodysnatchers DVD wykonują
+1923 nuty zamiast 205; STOP rośnie 126 → 1093, czas pracy 320,321 → 693,452 s,
+a najdłuższy ciągły odcinek 17,137 → 22,851 s. Więcej reprezentowanych
+rytmicznych głosów oznacza więcej reartykulacji. Nie wydłużamy ich wszystkich
+bezwarunkowo. Najdłuższe 366,997 s w całym korpusie przypada na Ful Stop;
+nie jest to zmierzony bezpieczny czas pracy silnika ani kwalifikacja VM 3,3 V.
+
+### Artefakty i odtworzenie
+
+- [Baseline: pełne metryki i hashe MIDI](../../reports/library-8fdd-baseline.json)
+- [Nowa wersja: pełne metryki i hashe MIDI](../../reports/library-8fdd-experiment.json)
+- [Porównanie, listy regresji i kontrole](../../reports/library-8fdd-comparison.json)
+- [Runner biblioteki](../../scripts/benchmark_orchestra_library.py)
+  i [komparator](../../scripts/compare_orchestra_library.py)
+
+```sh
+mkdir -p /tmp/orchestra-arranger-baseline
+git archive ce6b2b3 | tar -x -C /tmp/orchestra-arranger-baseline
+.venv/bin/python scripts/benchmark_orchestra_library.py \
+  --midi-root /Users/krzysztof/Music/MIDI \
+  --code-root /tmp/orchestra-arranger-baseline --output /tmp/library-before.json
+.venv/bin/python scripts/benchmark_orchestra_library.py \
+  --midi-root /Users/krzysztof/Music/MIDI --output /tmp/library-after.json
+.venv/bin/python scripts/compare_orchestra_library.py \
+  --baseline /tmp/library-before.json --experiment /tmp/library-after.json \
+  --output /tmp/library-comparison.json
+```
+
+Komparator wymaga kompletnego, identycznego zestawu ścieżek i SHA-256,
+identycznej konfiguracji oraz zera konfliktów, nakładania i naruszeń FDD.
+`planningSeconds` obejmuje parsowanie, aranżację, kompilację i dodatkowy audyt
+benchmarku; nie jest pomiarem samego ładowania w przeglądarce. Porównywanie
+czasów przy różnym obciążeniu komputera nie daje gwarancji opóźnienia UI.
+Testy obejmują 757 przypadków Python/C++ oraz 120 frontendowych; build Web
+przechodzi. Nową aranżację zweryfikowano offline, bez uruchamiania ATX,
+silników i bez flashowania firmware. Odsłuch oraz pomiary termiczne pozostają
+osobną weryfikacją.

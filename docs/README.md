@@ -36,7 +36,7 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
-| Skład hosta | 20 wpisów; aktywne 4 FDD + 4 DVD + 4 HDD + 2 speakery | [devices.json](../config/devices.json) |
+| Skład hosta | 20 wpisów; aktywne 8 FDD + 4 DVD + 4 HDD + 2 speakery; DVD5–6 wyłączone | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD | 3,3 V to robocza propozycja na **VM silników**, bez potwierdzonej kwalifikacji termicznej | [obserwacje](research/hardware-measurements.md#dvd) |
@@ -51,8 +51,8 @@ parametrów wykonawczych FDD1. Firmware startuje z nimi wyłączonymi, po czym h
 REAL wysyła PROFILE/ENABLE i sprawdza je przez osobne `DIAG FDD`.
 DVD5–6 używają fallbacku DVD4 i osobnego `DIAG SLED`; również startują wyłączone.
 Zwykłe STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
-Host zna pełne osiem FDD i sześć DVD; dodatkowe sześć kanałów pozostaje
-wyłączonych (`enabled:false`, `present:false`). Pełna pojemność nie oznacza
+Host zna pełne osiem FDD i sześć DVD; DVD5–6 pozostają
+wyłączone (`enabled:false`, `present:false`). Pełna pojemność nie oznacza
 kwalifikacji ani gotowości do automatycznej gry. [Ograniczenia potwierdzeń
 stanu i przyszłej aktywacji](HARDWARE_DEVICES.md#nowe-fdd58-adresacja-i-kwalifikacja).
 Przed flashowaniem i testami logiki odłącz moc i sygnały
@@ -70,7 +70,7 @@ mają osobne miejsce poniżej. AGENTS.md pozostaje instrukcją pracy w repozytor
 - [Pomiary FDD, obserwacja grzania DVD, hipoteza pitchRatio, HDD i speakery](research/hardware-measurements.md)
 - [Eksperyment FDD o oktawę niżej](research/fdd-octave-experiment.md)
 - [Porównania presetów, sustain Bodysnatchers, Airbag i Levels](research/arrangement-benchmarks.md)
-- [Universal: 31 MIDI oraz pełna biblioteka 149 unikalnych plików](research/universal-arrangement.md)
+- [Universal: historyczne 31/149 MIDI oraz aktualne porównanie 134 MIDI dla dwóch grup FDD](research/universal-arrangement.md)
 - [Model teoretyczny i źródła producentów](research/orkiestra-model-teoretyczny.md)
 - [Dryf wykonania: diagnoza](research/diagnostics/mechanical-drift/REPORT.md)
   i [raport poprawki](research/diagnostics/mechanical-drift/FIX_REPORT.md)

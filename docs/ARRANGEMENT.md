@@ -59,7 +59,7 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
-| `instrument_roles_unison4` — 2×4 FDD Unisono · eksperymentalny | FDD1–4 tworzą pierwszy instrument unisono, FDD5–8 drugi; grupy śledzą dwie różne partie, a cztery stacje w grupie mają identyczne Hz, onset i gate; DVD/speakery/HDD zachowują alokację Instrument Roles | Dwie linie zamiast ośmiu niezależnych; świadoma redukcja polifonii, bez gwarancji pełnego MIDI |
+| `instrument_roles_unison4` — 2×4 FDD Unisono · eksperymentalny | Dwa logiczne głosy od początku alokacji Universal: FDD1–4 i FDD5–8; cztery stacje w grupie mają identyczne Hz, onset i gate. DVD preferują długie tło, speakery wokal/FX, HDD role rytmiczne | Dwie linie zamiast ośmiu niezależnych; mogą wykonać dwa różne głosy jednej partii. Gęste MIDI nadal wymaga redukcji |
 | `instrument_roles_duet` — Pary Dwugłos | Te same pary, do dwóch istniejących nut jednej partii; monofoniczna fraza przechodzi w unisono | Nie dopisuje harmonii i nie robi echa 100 ms; w gęstym MIDI nadal możliwe straty partii |
 | `fdd_quality` — FDD Quality | Ważność frazy/akcentu kontra koszt kroków, zawróceń, duty i rest; skracanie gate i ograniczenie extras | Zachowany atak może mieć krótszy sustain |
 | `fdd_quality_adaptive` — FDD Quality Adaptive | Quality jako referencja, lokalna gęstość i tempo sterują odzyskiwaniem wartościowych nut i krótkich gate | Większa aktywność przy szybkich frazach; wspólny limit ataków może ponownie zredukować wynik |
@@ -85,9 +85,18 @@ Szczegóły istotne dla porównań:
 - 2×4 FDD Unisono korzysta z tego samego wyboru właściciela frazy co pary:
   FDD1–4 oraz FDD5–8 są dwiema niezależnymi grupami. Nie grają stałych 440 Hz:
   każda grupa wspólnie wykonuje wybraną sekwencję nut źródłowych, a aktywne grupy
-  nie wybierają tej samej partii. W pauzie właściciela mogą przejąć inną partię,
-  bez zmiany NOTE_ON i bez wymyślania nut. Inne urządzenia zachowują rezerwacje
-  referencyjnego `instrument_roles`; pozostałe presety nie zmieniają zachowania.
+  preferują różne partie. Przy braku drugiej partii mogą wybrać dwa różne
+  istniejące głosy jednej partii; ta sama wykonana wysokość nie zajmuje obu grup
+  w tej partii. W pauzie właściciela mogą przejąć inną partię, bez zmiany NOTE_ON
+  i bez wymyślania nut. Referencją jest `universal` z budżetem dwóch logicznych
+  głosów FDD już podczas pierwszej alokacji, zamiast ośmiu niezależnych stacji
+  redukowanych dopiero na końcu. Fizyczne kopie nadal sprawdzają każdy profil.
+  Stały gate 200 ms jest uwzględniany przed wyborem nut, a nie dopiero po nim.
+  DVD/speakery/HDD zachowują rezerwacje tej referencji podczas revoicingu FDD;
+  późniejszy recovery może dodać źródłowe nuty w wolnych oknach DVD/speakerów.
+  Długie pady mają pierwszeństwo przed dodatkowymi krótkimi tonami akordu;
+  krótka harmonia nie skraca długiego tła. DVD odrzuca kandydatów, których
+  przejście rampy plus minimalny gate przekracza długość nuty.
   Po wspólnym ograniczaniu ataków dodatkowa synchronizacja usuwa niekompletne
   grupy i ponownie sprawdza wspólny gate wobec wszystkich profili. Weto pojedynczej
   stacji usuwa atak jej całej czteroosobowej grupy, ale nie usuwa poprawnego ataku
@@ -127,7 +136,7 @@ W starszych presetach reguła FX wymaga leadu, co najmniej 8 nut, średniego pit
 bez wokalu/basu. Przykład: Counting Stars, okolice 34,5–36,5 s,
 830,61 → 987,77 → 830,61 → 739,99 Hz; [raport](../reports/counting-stars-speakers.json).
 
-Universal rezerwuje również przyszłe wejścia wokalu/FX; poza nimi speakery
+Universal oraz 2×4 FDD Unisono rezerwują również przyszłe wejścia wokalu/FX; poza nimi speakery
 mogą ratować krótkie melodie za szybkie dla silników. Główny wokal może użyć
 FX/motorów podczas polifonii. Długie pady i niskie basy nie zajmują tej puli;
 wyjątek analizy wielogłosu basu dotyczy równoczesnego górnego głosu, nie
@@ -137,6 +146,14 @@ poprzedniej sylaby bez sztucznego blokowania wokalu.
 HDD zachowują osobną pulę perkusyjną z możliwością użycia wolnego kanału;
 semantyka GM kanału 10 i pitched percussion poza tym kanałem są rozróżniane.
 Artykulacja wirtualnego hitu nie zmienia faz fizycznego cyklu.
+W Universal i 2×4 FDD Unisono [percussion_routing.py](../host/playback/percussion_routing.py)
+preferuje role według fizycznej kolejności: HDD1 stopa, HDD2 werbel,
+HDD3 hi-hat, HDD4 tomy/talerze. To miękkie preferencje, nie wyłączne kanały.
+Przy wyłączonych HDD role są przydzielane kolejno dostępnym kanałom.
+Przy równoczesnym przeciążeniu najpierw zachowuje stopę i werbel; zapowiedź
+ich bliskiego wejścia ogranicza pożyczanie ich kanałów. Nie dopisuje uderzeń,
+nie przesuwa źródłowych onsetów i nie zwiększa energii impulsów ani limitów
+resetu/termiki. Wybór perkusji może się zmienić względem starszych wersji.
 
 ## Source Continuity, UNISON i reinforcement
 
@@ -210,7 +227,7 @@ do poprzedniego gate, niedopuszczalny atak może zostać pominięty.
 Pozostałe urządzenia zachowują wykonanie. Koszt muzyczny to uproszczenie riffów;
 regresja Airbag 1:34 jest w [benchmarkach](research/arrangement-benchmarks.md).
 
-## Universal: odzyskiwanie po redukcji FDD
+## Universal i 2×4 FDD: odzyskiwanie po redukcji FDD
 
 [universal.py](../host/playback/universal.py) wybiera głosy według ciągłości fraz,
 rozłożenia akordów i pokrycia partii, z rezerwacjami przyszłych pickupów.
@@ -219,6 +236,8 @@ FDD odstęp i krótkie gate są brane pod uwagę już przy wyborze, DVD preferuj
 pracuje **po** wspólnym ograniczeniu ataków FDD i nie zmienia wcześniej zagranych
 primary, istniejących extras ani ich ekspresji. Każdy dodatek sprawdza z pełną przyszłą
 chronologią i źródłowym końcem, bez nazw utworów w regułach.
+W 2×4 FDD recovery używa wyłącznie DVD i speakerów: nie dodaje niezależnej nuty
+na pojedynczym FDD i nie rozbija zgodności grup unisono.
 
 1. Pominięte tonalne lead/bass/harmony mogą wrócić na wolne urządzenie w oryginalnym
    onset, jeśli spełnią wymagany gate/cykle, zakres, ataki i przyszłe rezerwacje.
@@ -234,6 +253,8 @@ chronologią i źródłowym końcem, bez nazw utworów w regułach.
 
 Deterministyczność i retencja ataków/długości są sprawdzalne programowo;
 „idealne” odtworzenie dowolnej liczby partii na skończonym zestawie monofonicznym
-nie jest możliwe. Benchmark pełnej biblioteki zachowuje development/holdout,
-hashe wejść i baseline, a nie tylko sumę nut. Raporty wyraźnie oddzielają
+nie jest możliwe. Historyczny benchmark zachowuje development/holdout;
+nowe porównanie wszystkich 134 plików jest testem regresji pełnej dostępnej
+biblioteki, bez osobnej części odłożonej. Oba zachowują hashe wejść i baseline,
+a nie tylko sumę nut. Raporty wyraźnie oddzielają
 pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
