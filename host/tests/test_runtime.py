@@ -234,6 +234,20 @@ class WebRuntimeTests(unittest.TestCase):
                 self.assertEqual(lab['devices'],runtime.registry.catalog())
                 self.assertEqual(action('lab_leave')['state']['owner'],'orchestra')
 
+    def test_lab_errors_include_device_and_operation(self):
+        runtime=Application()
+        with tempfile.TemporaryDirectory() as directory,TestClient(create_app(midi_dir=directory,runtime=runtime,connect_on_start=False)) as client:
+            with client.websocket_connect('/ws') as ws:
+                ws.receive_json()
+                for action,label in [('lab_test','uruchomienie testu'),('lab_update','zmiana parametrów'),('lab_stop','zatrzymanie testu')]:
+                    ws.send_json({'action':action,'deviceId':'fdd-1'})
+                    while True:
+                        result=ws.receive_json()
+                        if result['type']=='error':break
+                    self.assertIn(runtime.registry.by_id['fdd-1']['name'],result['message'])
+                    self.assertIn(label,result['message'])
+                    self.assertIn('Laboratory',result['message'])
+
 class SafetyTests(unittest.TestCase):
     def test_virtual_stop_requires_ack_and_wrong_session_cannot_ack(self):
         app=Application();app.player.switch('VIRTUAL');app.virtual.owner='a';app.virtual.active=True

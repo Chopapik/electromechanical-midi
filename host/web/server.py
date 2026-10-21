@@ -148,7 +148,13 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                     await asyncio.to_thread(perform)
             await send_peer(peer,{'type':'ack','requestId':request,'state':await asyncio.to_thread(runtime.snapshot)})
         except Exception as exc:
-            with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':str(exc)})
+            detail=str(exc)
+            lab_action={'lab_test':'uruchomienie testu','lab_update':'zmiana parametrów','lab_stop':'zatrzymanie testu'}.get(operation)
+            if lab_action:
+                ident=message.get('deviceId')
+                device=runtime.registry.by_id.get(ident,{}) if isinstance(ident,str) else {}
+                detail=f"{device.get('name', 'Urządzenie')} · {lab_action}: {detail}"
+            with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':detail})
     command_lock=asyncio.Lock()
     @app.websocket('/ws')
     async def websocket(peer:WebSocket):

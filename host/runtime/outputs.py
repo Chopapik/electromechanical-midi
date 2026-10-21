@@ -148,7 +148,7 @@ class RealOutput:
             time.sleep(.005)
         raise OutputError('Brak potwierdzenia konfiguracji ESP32')
 
-    def ready(self, commands=(), *, auto_home=False):
+    def ready(self, commands=(), *, auto_home=False, require_homed=True):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
         blocked = sorted({self.registry.by_id[c.device_id]['name'] for c in commands
@@ -171,7 +171,7 @@ class RealOutput:
             key=('VHS2' if d['lane']=='drum:2' else 'VHS') if d['type']=='VHS' else d['lane'].upper()
             status=self.link.device_status.get(key,{})
             if status.get('enabled')!='1': raise OutputError(d['name']+': firmware nie potwierdził ENABLE')
-            if d['type']=='FDD' and (status.get('homed')!='1' or status.get('homing')=='1'):
+            if require_homed and d['type']=='FDD' and (status.get('homed')!='1' or status.get('homing')=='1'):
                 if not auto_home: raise OutputError(d['name']+': wymagany homing TRACK0')
                 if d['id'] not in missing_home: missing_home.append(d['id'])
         if missing_home:
@@ -296,8 +296,9 @@ class RealOutput:
         if not self.link: return
         try:
             lines=self.link.poll_lines()
-            if any(s.startswith(('ERR','READY protocol=')) for s in lines):
-                raise OutputError('; '.join(lines))
+            faults = [s for s in lines if s.startswith(('ERR','READY protocol='))]
+            if faults:
+                raise OutputError('; '.join(faults))
             if time.monotonic()-self.last_ping>.3:
                 self.link.ping(); self.last_ping=time.monotonic()
         except Exception as exc:

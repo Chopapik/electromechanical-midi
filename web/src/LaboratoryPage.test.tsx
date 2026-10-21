@@ -43,4 +43,14 @@ describe('Laboratory rack',()=>{
  it('keeps percussion as a single hit and filters devices',()=>{
   mount();fireEvent.click(screen.getByRole('button',{name:'Ustawienia HDD 1'}));expect(screen.queryByRole('button',{name:'∞ Do STOP'})).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Uderz'}));expect(send.mock.calls.at(-1)?.[1]).toMatchObject({deviceId:'hdd-1',duration:1,modulation:{mode:'off'}});fireEvent.change(screen.getByRole('searchbox'),{target:{value:'FDD 2'}});expect(screen.queryByRole('button',{name:'Ustawienia FDD 1'})).toBeNull();expect(screen.getByRole('button',{name:'Ustawienia FDD 2'})).toBeTruthy()
  })
+ it('shows homing and keeps start disabled while allowing stop',()=>{
+  app.state!.output.mode='REAL'
+  app.state!.laboratory!.active['fdd-1']={homing:true,hz:220,currentHz:220,duration:5,mode:'off',depth:0,period:4,elapsed:0,remaining:5}
+  mount()
+  expect(screen.getByText('Homing — oczekiwanie na TRACK0')).toBeTruthy()
+  expect((screen.getByRole('button',{name:'Trwa homing…'}) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.click(screen.getByRole('button',{name:'Stop FDD 1'}))
+  expect(send).toHaveBeenLastCalledWith('lab_stop',{deviceId:'fdd-1'})
+ })
+
 })

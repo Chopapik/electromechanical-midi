@@ -145,7 +145,7 @@ HOME ma timeout 2 s i okres kroku 5 ms. Boot i reconnect nie wykonują HOME.
 Po utracie odniesienia wymagany jest HOME; licznik nie jest enkoderem.
 Play w REAL automatycznie kalibruje potrzebne, niewyciszone FDD bez `homed=1`
 przed uruchomieniem zegara utworu. STOP może przerwać oczekiwanie. Błąd homingu
-blokuje start muzyki. Ręczny HOME w Settings i wymóg HOME w Laboratory pozostają.
+blokuje start muzyki. Ręczny HOME w Settings pozostaje dostępny; Laboratory wykonuje HOME wybranej FDD automatycznie przed testem.
 Wartości wspólne czterem stacjom nie oznaczają indywidualnej kalibracji każdej.
 Długie gate'y i powroty karetki nadal mogą wpływać na brzmienie.
 

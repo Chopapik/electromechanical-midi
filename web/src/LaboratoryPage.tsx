@@ -55,14 +55,14 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
    <section className="lab-device-list" aria-label="Lista urządzeń">
     <div className="lab-list-heading"><h2>Urządzenia <span>{devices.length}</span></h2><p>Wybierz, ustaw, posłuchaj razem.</p><input type="search" aria-label="Szukaj urządzenia" placeholder="Szukaj urządzenia…" value={filter} onChange={e=>setFilter(e.target.value)}/></div>
     {families.map(([type,title])=>{const list=devices.filter(d=>d.type===type&&d.name.toLowerCase().includes(filter.toLowerCase()));return !!list.length&&<div className="lab-family" key={type}><h3>{title}</h3>{list.map(d=>{const live=active[d.id],draft=saved[d.id]??initial(d);return <button key={d.id} className={`lab-device-row ${d.id===device.id?'selected':''} ${live?'playing':''}`} aria-pressed={d.id===device.id} aria-label={`Ustawienia ${d.name}`} onClick={()=>setSelected(d.id)}>
-     <span className="lab-dot"/><span className="lab-device-name">{d.name}<small>{!d.enabled?'Nieaktywne':live?'Gra teraz':'Gotowe'}</small></span><span className="lab-device-pitch">{d.type==='HDD_VCM'?'Uderzenie':`${(live?.currentHz??draft.hz).toFixed(1)} Hz`}<small>{live?(live.remaining===null?'∞ · '+seconds(live.elapsed):seconds(live.remaining)+' do końca'):draft.continuous?'∞ · do STOP':`${draft.duration} s`}</small></span>
+     <span className="lab-dot"/><span className="lab-device-name">{d.name}<small>{!d.enabled?'Nieaktywne':live?.homing?'Homing…':live?'Gra teraz':'Gotowe'}</small></span><span className="lab-device-pitch">{d.type==='HDD_VCM'?'Uderzenie':`${(live?.currentHz??draft.hz).toFixed(1)} Hz`}<small>{live?(live.remaining===null?'∞ · '+seconds(live.elapsed):seconds(live.remaining)+' do końca'):draft.continuous?'∞ · do STOP':`${draft.duration} s`}</small></span>
     </button>})}</div>})}
     {!devices.some(d=>d.name.toLowerCase().includes(filter.toLowerCase()))&&<p className="lab-empty">Brak pasujących urządzeń.</p>}
    </section>
    <aside className="lab-inspector" aria-label={`Panel ${device.name}`}>
     <div className="lab-inspector-title"><div><span className="lab-eyebrow">{percussion?'TEST IMPULSU':'GENERATOR CZĘSTOTLIWOŚCI'}</span><h2>{device.name}</h2></div><SlidersHorizontal size={20}/></div>
-    <div className={`lab-live-state ${running?'on':''}`}><span className="lab-dot"/>{running?`Gra · ${seconds(running.elapsed)}${running.remaining===null?' · bez limitu czasu':` · pozostało ${seconds(running.remaining)}`}`:'Zatrzymane'}<span>{running&&!percussion?`${running.currentHz.toFixed(1)} Hz`:''}</span></div>
-    <div className="lab-transport"><button className="lab-start" disabled={blocked||!percussion&&(!valid||!settings.continuous&&(!Number.isFinite(settings.duration)||settings.duration<.1||settings.duration>3600))||!!running} onClick={start}><Play size={16}/>{percussion?'Uderz':running?'Test aktywny':'Uruchom'}</button><button className="lab-stop" disabled={!app.connected} onClick={()=>void app.send('lab_stop',{deviceId:device.id})}><Square size={16}/>Stop {device.name}</button></div>
+    <div className={`lab-live-state ${running?'on':''}`}><span className="lab-dot"/>{running?.homing?'Homing — oczekiwanie na TRACK0':running?`Gra · ${seconds(running.elapsed)}${running.remaining===null?' · bez limitu czasu':` · pozostało ${seconds(running.remaining)}`}`:'Zatrzymane'}<span>{running&&!percussion?`${running.currentHz.toFixed(1)} Hz`:''}</span></div>
+    <div className="lab-transport"><button className="lab-start" disabled={blocked||!percussion&&(!valid||!settings.continuous&&(!Number.isFinite(settings.duration)||settings.duration<.1||settings.duration>3600))||!!running} onClick={start}><Play size={16}/>{percussion?'Uderz':running?.homing?'Trwa homing…':running?'Test aktywny':'Uruchom'}</button><button className="lab-stop" disabled={!app.connected} onClick={()=>void app.send('lab_stop',{deviceId:device.id})}><Square size={16}/>Stop {device.name}</button></div>
     {!percussion&&<>
      <section className="lab-control-section">
       <div className="lab-frequency"><label htmlFor="lab-hz">Częstotliwość<input id="lab-hz" aria-label="Częstotliwość Hz" type="number" min={lo} max={hi} step="0.01" value={settings.hz} onChange={e=>change({hz:Number(e.target.value)})}/></label><span>Hz <b>{settings.hz>0?note(settings.hz):'—'}</b></span></div>
@@ -93,7 +93,7 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
     {reason&&<p className="lab-notice">{reason}</p>}
     {!valid&&!percussion&&<p className="lab-notice">Ton i cała modulacja muszą mieścić się w jednym dozwolonym paśmie.</p>}
 
-    <p className="lab-help">Wybór innego urządzenia zachowuje ustawienia i nie przerywa testu. Wyjście z laboratorium lub utrata sesji zatrzymuje wszystkie testy. REAL FDD wymaga wcześniejszego homingu w Settings.</p>
+    <p className="lab-help">Wybór innego urządzenia zachowuje ustawienia i nie przerywa testu. Wyjście z laboratorium lub utrata sesji zatrzymuje wszystkie testy. W REAL przycisk Uruchom najpierw parkuje wybraną FDD i czeka na potwierdzenie TRACK0. Czas testu zaczyna się po homingu.</p>
    </aside>
   </main>
   <StatusFooter app={app}/>

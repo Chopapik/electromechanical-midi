@@ -202,7 +202,7 @@ Czeka na kompletny STATUS z `homed=1, homing=0`, dopiero potem uruchamia zegar
 utworu i nuty. Już skalibrowane FDD nie są ponownie parkowane. STOP przerywa
 przygotowanie; błąd czujnika/transportu lub timeout nie uruchamia muzyki.
 ATX musi być wcześniej włączony przez użytkownika; Play nie włącza go automatycznie.
-VIRTUAL nie wykonuje homingu. Laboratory nadal wymaga jawnego HOME.
+VIRTUAL nie wykonuje homingu. Laboratory automatycznie wykonuje HOME wybranej FDD po kliknięciu Uruchom w REAL.
 Ręczne parkowanie pozostaje w `/settings` → **Serwis → Homing TRACK0**
 (obejmuje wszystkie włączone stacje). `homed=1` i aktywne TRACK0 to różne stany. `HOME_FAILED` wymaga sprawdzenia czujnika, /DS, DIR i przewodów;
 nie ponawiaj bez końca uderzającej w ogranicznik karetki.
@@ -243,7 +243,19 @@ zmiana zaznaczenia, wyjście i odświeżenie nie kasują parametrów i nie uruch
 
 Wybierz **Odliczanie** (0,1–3600 s, domyślnie 5 s) lub **∞ Do STOP**, potem
 **Uruchom**. Przejdź do kolejnego urządzenia i uruchom je niezależnie: wcześniejszy
-kanał nadal gra. Lista pokazuje aktualne Hz i czas. **Stop [urządzenie]** zatrzymuje
+kanał nadal gra. W REAL każda FDD przed testem otrzymuje własne STOP i HOME.
+Panel pokazuje oczekiwanie na TRACK0; wymagany jest świeży, kompletny STATUS
+(FDD1–4) lub DIAG FDD (FDD5–8), enabled=1, homed=1, homing=0 i track0=1.
+Czas testu zaczyna się po potwierdzeniu homingu. STOP działa również podczas
+oczekiwania. Błąd, utrata połączenia lub timeout 10 s przerywa sesję bez
+późniejszego automatycznego startu. Aktualizacja Hz podczas testu nie wykonuje
+ponownego HOME. VIRTUAL i inne rodziny nie otrzymują HOME.
+Lista pokazuje aktualne Hz i czas. Stopka sygnalizuje homing wybranych FDD;
+błędy uruchomienia, zmiany parametrów i zatrzymania zawierają nazwę urządzenia.
+Mapuje znane błędy firmware, odrzucenia profilu, restart ESP32 i opóźnienia BLE
+na opisy po polsku. Przy błędzie HOME/timeout pokazuje opis TRACK0. Surowy
+komunikat pozostaje w rozwijanych szczegółach; nieznane kody nie są ukrywane.
+Brak potwierdzenia STOP pozostaje osobnym ostrzeżeniem, niezależnie od opisu błędu. **Stop [urządzenie]** zatrzymuje
 wybrany kanał; **Zatrzymaj wszystko** przerywa całą sesję. **Orkiestra** kończy testy
 bez autoplay. Zmiana czasu dotyczy kolejnego uruchomienia, nie wydłuża aktywnego testu.
 

@@ -69,7 +69,8 @@ niewyciszone FDD użyte w planie, jeśli nie mają odniesienia; Player czeka bez
 przesuwania zegara utworu, pozostawiając STOP dostępny. STATUS nie jest wysyłany
 ponownie przed zakończeniem poprzedniej transakcji. Dopiero pełne potwierdzenie
 homingu pozwala zacząć nuty; błąd/timeout nie wznawia odtwarzania. Boot/reconnect
-same nie wykonują HOME ani Play. Laboratory wymaga ręcznego HOME.
+same nie wykonują HOME ani Play. W Laboratory każde Uruchom dla REAL FDD wykonuje HOME tylko wybranej stacji,
+czeka na świeży STATUS lub DIAG FDD z potwierdzonym TRACK0 i dopiero uruchamia ton.
 USB służy flashowaniu i diagnostyce.
 
 VIRTUAL odbiera ten sam timeline, z wyprzedzeniem 150 ms względem czasu

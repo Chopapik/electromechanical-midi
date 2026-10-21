@@ -14,6 +14,8 @@ class Laboratory:
         self.lease = 0.
         self.history = {}
         self.jobs = {}
+        self.home_query = None
+        self.home_query_after = 0.
         player.laboratory = self
 
     def enter(self, session):
@@ -46,6 +48,7 @@ class Laboratory:
 
     def cancel(self):
         self.jobs.clear()
+        self.home_query = None
 
     def require_session(self, session):
         if session != self.session or self.player.owner != 'lab':
@@ -101,7 +104,20 @@ class Laboratory:
                 if not any(lo*ratio <= hz-depth and hz+depth <= hi*ratio for lo, hi in bands):
                     raise ValueError('Modulacja przekracza przerwę między dozwolonymi pasmami')
             command = ExecutionCommand(0, ident, kind, .5, hz)
-            self.player.router.ready([command])  # ATX, calibration, connection, capabilities.
+            real_fdd = self.player.router.mode == 'REAL' and d['type'] == 'FDD'
+            homing = real_fdd and (not update or previous.get('homing', False))
+            if homing:
+                # Preflight every existing gate except the state we are about to establish.
+                self.player.router.real.ready([command], require_homed=False)
+            else:
+                self.player.router.ready([command])
+            if real_fdd and not update:
+                real = self.player.router.real
+                real.active = True
+                # Stop and home only this lane; other laboratory voices keep playing.
+                real.write([real.prefix(ident)+' STOP', real.prefix(ident)+' HOME'])
+                self.home_query_after = 0.
+            now = self.player.clock()
             if kind == 'hit':
                 duration = max(.1, ev.transition_time)
                 history.hit_times.append(now)
@@ -115,9 +131,11 @@ class Laboratory:
             self.jobs[ident] = dict(hz=hz, duration=duration, start=now,
                                     end=None if duration is None else now+duration,
                                     mode=mode, depth=depth, period=period, kind=kind,
-                                    next=now, last=None, currentHz=hz)
+                                    next=now, last=None, currentHz=hz, homing=homing,
+                                    home_deadline=now+10 if homing else None)
             if previous:
-                self.jobs[ident].update(start=previous['start'], end=previous['end'])
+                self.jobs[ident].update(start=previous['start'], end=previous['end'],
+                                        home_deadline=previous.get('home_deadline'))
             self.touch(session)
 
     def stop_device(self, session, ident):
@@ -136,6 +154,39 @@ class Laboratory:
                 self.player.stop()
             self.touch(session)
 
+    def poll_homing(self, now):
+        real = self.player.router.real
+        link = real.link
+        pending = {ident: job for ident, job in self.jobs.items() if job['homing']}
+        for ident, job in pending.items():
+            if now >= job['home_deadline']:
+                raise ValueError(self.registry.by_id[ident]['name']+': homing TRACK0 nie został potwierdzony')
+        generations = (link.status_generation, getattr(link, 'extended_status_generation', 0))
+        if self.home_query:
+            base, extended, queried = self.home_query
+            complete = (base is None or generations[0] > base) and (extended is None or generations[1] > extended)
+            if not complete:
+                return
+            self.home_query = None
+            for ident, job in queried.items():
+                if pending.get(ident) is not job:
+                    continue  # STOP/restart must not accept an older query's answer.
+                state = link.device_status.get(self.registry.by_id[ident]['lane'].upper(), {})
+                if state.get('enabled') == '1' and state.get('homed') == '1' and state.get('homing') == '0' and state.get('track0') == '1':
+                    job.update(homing=False, start=now, next=now,
+                               end=None if job['duration'] is None else now+job['duration'])
+                    pending.pop(ident)
+        if pending and now >= self.home_query_after:
+            ordinals = [int(self.registry.by_id[ident]['lane'].split(':')[1]) for ident in pending]
+            base = generations[0] if any(n <= 4 for n in ordinals) else None
+            extended = generations[1] if any(n > 4 for n in ordinals) else None
+            self.home_query = (base, extended, dict(pending))
+            self.home_query_after = now+.2
+            if base is not None:
+                link.status()
+            if extended is not None:
+                link.fdd_status()
+
     def tick(self):
         now = self.player.clock()
         if not self.session:
@@ -151,10 +202,13 @@ class Laboratory:
             if not real.link or real.unknown:
                 raise ValueError('Laboratorium: utracono BLE lub stan sprzętu jest nieznany')
             real.require_power()
+            self.poll_homing(now)
         for ident, job in list(self.jobs.items()):
-            if ident in self.player.router.muted or (job['end'] is not None and now >= job['end']):
+            if ident in self.player.router.muted or (not job['homing'] and job['end'] is not None and now >= job['end']):
                 self.player.router.output.stop_device(ident)
                 del self.jobs[ident]
+                continue
+            if job['homing']:
                 continue
             if now < job['next']:
                 continue
@@ -185,6 +239,7 @@ class Laboratory:
     def snapshot(self):
         with self.player.lock:
             now = self.player.clock()
-            return {'active': {ident: {k: j[k] for k in ('hz', 'currentHz', 'duration', 'mode', 'depth', 'period')} |
-                              {'elapsed': max(0, now-j['start']), 'remaining': None if j['end'] is None else max(0, j['end']-now)}
+            return {'active': {ident: {k: j[k] for k in ('hz', 'currentHz', 'duration', 'mode', 'depth', 'period', 'homing')} |
+                              {'elapsed': 0 if j['homing'] else max(0, now-j['start']),
+                               'remaining': j['duration'] if j['homing'] else None if j['end'] is None else max(0, j['end']-now)}
                               for ident, j in self.jobs.items()}}

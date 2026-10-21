@@ -2,7 +2,7 @@ import type {SpeakerWaveform} from './pulseWave'
 import {useEffect,useRef,useState} from 'react'
 import {VirtualOutput,type Command} from './virtualOutput'
 export interface Device {id:string;name:string;type:string;enabled:boolean;realEnabled?:boolean;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform;bands:number[][];labBands?:number[][];reason:string|null;continuousRotation?:boolean}
-export interface LabTest {hz:number;currentHz:number;duration:number|null;mode:'off'|'sine'|'triangle';depth:number;period:number;elapsed:number;remaining:number|null}
+export interface LabTest {homing?:boolean;hz:number;currentHz:number;duration:number|null;mode:'off'|'sine'|'triangle';depth:number;period:number;elapsed:number;remaining:number|null}
 export interface State {
   laboratory?:{active:Record<string,LabTest>};
   activity?:Record<string,Command>; homing?:boolean; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;

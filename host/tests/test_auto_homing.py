@@ -53,10 +53,16 @@ class AutoHomingTests(unittest.TestCase):
         self.assertFalse(self.player.homing);self.assertFalse(any(' HOME' in s for s in self.link.sent))
         self.player.stop();self.player.switch('VIRTUAL');self.app.virtual.owner='browser';self.link.sent.clear()
         self.player.play();self.assertFalse(self.player.homing);self.assertEqual(self.link.sent,[])
-    def test_lab_keeps_explicit_home_requirement(self):
+    def test_lab_homes_selected_drive_before_tone(self):
+        self.player.laboratory=self.app.lab
         self.app.lab.enter('test')
-        with self.assertRaisesRegex(OutputError,'homing TRACK0'):self.app.lab.test('test','fdd-1',220,1)
-        self.assertFalse(any(' HOME' in s for s in self.link.sent))
+        self.app.lab.test('test','fdd-1',220,1)
+        self.assertIn('FDD 1 HOME',self.link.sent)
+        self.assertFalse(any(' PLAY ' in s for s in self.link.sent))
+        self.player.tick()
+        self.link.device_status['FDD:1'].update(homed='1',homing='0',track0='1')
+        self.player.tick()
+        self.assertIn('FDD 1 PLAY 220.00',self.link.sent)
     def test_no_home_or_auto_power_on_when_atx_off(self):
         self.link.controller_status['atx']='OFF'
         with self.assertRaisesRegex(OutputError,'ATX OFF'):self.player.play()
