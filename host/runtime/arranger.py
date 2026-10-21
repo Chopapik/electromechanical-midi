@@ -26,10 +26,19 @@ def arrange(source, registry):
     plan.execution_articulation={key:asdict(art) for key,art in tonal.items()}
     plan.execution_articulation.update(preserved_articulation)
     sources={e.id:e for e in plan.events}
+    from collections import defaultdict
+    percussion=defaultdict(list)
+    gaps={}
+    for e in plan.events:
+        if e.played and e.device_type=='HDD_VCM':percussion[e.device_id].append(e)
+    for events in percussion.values():
+        events.sort(key=lambda e:(e.actual_start,e.id))
+        for i,e in enumerate(events):
+            gaps[e.id]=min((abs(events[j].actual_start-e.actual_start) for j in (i-1,i+1)
+                            if 0<=j<len(events)),default=float('inf'))
     for e in plan.events:
         if e.played and e.device_type=='HDD_VCM':
-            neighbors=[abs(other.actual_start-e.actual_start) for other in plan.events if other.played and other.device_id==e.device_id and other.id!=e.id]
-            art=adapt(classify(e.note,e.channel,e.velocity,e.articulation),min(neighbors,default=float('inf')))
+            art=adapt(classify(e.note,e.channel,e.velocity,e.articulation),gaps[e.id])
             plan.execution_articulation[e.id]=asdict(art)
     types={d['id']:d['type'] for d in plan.devices}
     for i,e in enumerate(plan.reinforcements):
@@ -43,7 +52,7 @@ def arrange(source, registry):
     limit_fdd_attacks(plan, registry)
     from playback.fdd_pairs import synchronize_unison4
     synchronize_unison4(plan, registry)
-    if routing['mode']=='AUTO' and plan.policy.get('arrangementPreset')=='universal':
+    if routing['mode']=='AUTO' and plan.policy.get('arrangementPreset') in ('universal','instrument_roles_unison4'):
         from playback.universal_recovery import recover
         existing_extras=len(plan.reinforcements)
         recovered = recover(plan, registry, source)

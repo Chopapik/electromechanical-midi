@@ -97,15 +97,23 @@ class UniversalTests(unittest.TestCase):
         self.assertEqual({e.track_name for e in p.events if e.played},{'Chord','Counterline'})
         self.assert_feasible(p,r)
 
-    def test_percussion_is_identical_to_instrument_roles(self):
+    def test_percussion_routing_preserves_source_hits_and_timing(self):
         r=DeviceRegistry()
         source=self.source([('Riff',0,[(i*.06,i*.06+.04,60+i%5) for i in range(40)]),
                             ('Drums',9,[(i*.12,i*.12+gate,n) for i in range(20) for gate,n in ((.02,36),(.03,38),(.01,42))])])
         r.document['parameters']['arrangementPreset']='instrument_roles'
-        before=compile_plan(arrange(source,r))
+        old=arrange(source,r);before=compile_plan(old)
         r.document['parameters']['arrangementPreset']=PRESET
-        after=compile_plan(arrange(source,r))
-        self.assertEqual([c for c in before.commands if c.kind=='hit'],[c for c in after.commands if c.kind=='hit'])
+        new=arrange(source,r);after=compile_plan(new)
+        sources={e.id:e for e in new.events}
+        old_hits=[c for c in before.commands if c.kind=='hit']
+        hits=[c for c in after.commands if c.kind=='hit']
+        self.assertGreaterEqual(len(hits),len(old_hits))
+        # At overload, keeping the kick/snare takes precedence over a hat.
+        important=lambda commands:sum(sources[c.source_id].note in (35,36,37,38,39,40) for c in commands)
+        self.assertGreaterEqual(important(hits),important(old_hits))
+        self.assertTrue(all(abs(c.time-sources[c.source_id].start)<1e-8 for c in hits))
+        self.assert_feasible(new,r)
 
     def test_vocal_reservation_prevents_accompaniment_from_taking_main_speaker(self):
         r=self.registry(fdd=0,dvd=0,speakers=True)

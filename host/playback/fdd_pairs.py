@@ -1,7 +1,7 @@
 """Phrase-following FDD pairs, or two experimental four-drive unison groups.
 
-Revoice the FDD pool after the Instrument Roles plan is complete.
-Other actuators retain their allocated notes and reservations.
+Revoice the FDD pool after Instrument Roles (pairs) or Universal (quad groups).
+Other actuators retain their allocated notes and reservations during this pass.
 """
 from bisect import bisect_left, bisect_right
 from collections import Counter, defaultdict
@@ -128,10 +128,11 @@ def arrange(plan, config, context, pins=None):
                                 plan.policy['foldMode'], profile)
         if not fold.in_range:
             return None
-        duration = fdd_gate(_clip(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id])
+        fixed = plan.policy.get('fddFixedToneMs',0)/1000.
+        duration = fixed or fdd_gate(_clip(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id])
         times = attacks[part(event)]
         following = bisect_right(times, event.start+CHORD_WINDOW)
-        if following < len(times):
+        if not fixed and following < len(times):
             # Overlapping source gates must not hide the next riff attack.
             # Keep a short physical release and the existing minimum gate.
             duration = min(duration, max(caps[ident].min_note_s,
@@ -146,6 +147,10 @@ def arrange(plan, config, context, pins=None):
         pending_evaluations.clear()
         for ident, note in notes.items():
             if quad:
+                previous=accepted[ident][-1] if accepted[ident] else None
+                interval=max(plan.policy['fddMinAttackIntervalMs']/1000.,
+                    (plan.policy.get('fddFixedToneMs',0)+plan.policy.get('releaseGapMs',0))/1000.)
+                if previous and note.actual_start-previous.actual_start<interval-1e-9:return False
                 physical_note = HardwareNote(note.played_hz, note.actual_duration, note.actual_start)
                 ev = evaluate(profiles[ident], physical_note, accepted_states[ident])
                 if (not ev.authorized or Verdict.BLOCKED in (ev.timing, ev.quality, ev.physical_load)
@@ -156,7 +161,7 @@ def arrange(plan, config, context, pins=None):
                 return False
         return True
 
-    def choose(pair_index, events):
+    def choose(pair_index, events, forbidden=()):
         pair = pairs[pair_index]
         if not pair:
             return None
@@ -184,6 +189,8 @@ def arrange(plan, config, context, pins=None):
             notes = {ident: playable(e, ident) for ident in pair}
             if any(n is None for n in notes.values()):
                 continue
+            if quad and any(abs(next(iter(notes.values())).played_hz-hz)<1e-6 for hz in forbidden):
+                continue
             if len({n.played_hz for n in notes.values()}) != 1:
                 continue
             if quad and len({(n.actual_start, n.actual_duration) for n in notes.values()}) != 1:
@@ -200,7 +207,8 @@ def arrange(plan, config, context, pins=None):
         # An occupied pair keeps its part until both physical reservations end.
         occupied = {i for i, pair in enumerate(pairs) if any(
             e.actual_start <= now+CHORD_WINDOW and e.end > now+1e-9
-            for ident in pair for e in fixed[ident]+accepted[ident])}
+            for ident in pair for e in ((accepted[ident][-1:] if quad else fixed[ident]+accepted[ident])))}
+        chosen_ids = set()
         represented = {owners[i] for i in occupied if owners[i] is not None}
         # Existing owners get first refusal, avoiding swaps when both attack.
         order = sorted(range(len(pairs)), key=lambda i: (owners[i] not in by_part, i))
@@ -219,12 +227,17 @@ def arrange(plan, config, context, pins=None):
             def rank(key):
                 times = attacks[key]
                 activity = bisect_right(times, now+PHRASE_LOOKAHEAD)-bisect_left(times, now)
-                return (key != owner, -activity,
+                return (not any(e.role=='lead' for e in by_part[key]), key != owner, -activity,
                         -max(e.velocity for e in by_part[key]), key)
-            for key in sorted((k for k in by_part if k not in represented), key=rank):
-                notes = choose(i, by_part[key])
+            part_candidates = (k for k in by_part if quad or k not in represented)
+            for key in sorted(part_candidates, key=lambda k:(k in represented,rank(k))):
+                available_notes=[e for e in by_part[key] if e.id not in chosen_ids]
+                forbidden=[accepted[ident][-1].played_hz for j,pair in enumerate(pairs) if j!=i and owners[j]==key
+                           for ident in pair[:1] if accepted[ident] and accepted[ident][-1].end>now+1e-9]
+                notes = choose(i, available_notes, forbidden)
                 if notes is None:
                     continue
+                chosen_ids.update(n.id for n in notes.values())
                 represented.add(key)
                 changes[i] += int(owner is not None and owner != key)
                 owners[i] = key
@@ -295,8 +308,9 @@ def arrange(plan, config, context, pins=None):
         'notSelected': sum(not e.played for e in replacements.values()),
         'scope': 'two independent parts on FDD1-4 and FDD5-8; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
     if quad:
-        plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'],
-                                           groups=[list(pair) for pair in pairs])
+        plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'],version=2,
+            logicalVoiceBudget=sum(bool(pair) for pair in pairs),
+            groups=[list(pair) for pair in pairs])
     return plan
 
 

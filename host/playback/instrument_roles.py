@@ -117,3 +117,32 @@ def fdd_gate(duration, covered):
     if covered:
         return min(duration, FDD_SHADOW_HOLD_S)
     return min(duration, FDD_MAX_HOLD_S)
+
+
+class BackgroundIndex:
+    """Exact index of allocator DVD reservations, including delayed starts/steals."""
+    def __init__(self):
+        self.rows=defaultdict(list)
+        self.starts=defaultdict(list)
+        self.ends=defaultdict(list)
+
+    def put(self, event):
+        if not event.played or event.device_type!='DVD_SLED':return
+        ident=event.device_id;rows=self.rows[ident]
+        if rows and rows[-1].id==event.id:
+            rows[-1]=event;self.starts[ident][-1]=event.actual_start;self.ends[ident][-1]=event.end
+        else:
+            assert not rows or rows[-1].end<=event.actual_start+1e-8
+            rows.append(event);self.starts[ident].append(event.actual_start);self.ends[ident].append(event.end)
+
+    def covered(self, span):
+        from bisect import bisect_right
+        for ident,rows in self.rows.items():
+            i=bisect_right(self.starts[ident],span.start+1e-9)-1
+            if i>=0 and rows[i].note==span.note and rows[i].end>=span.end-1e-9:return True
+        return False
+
+    def active_priority(self, ident, start, priorities):
+        from bisect import bisect_right
+        i=bisect_right(self.ends[ident],start)
+        return min((priorities[e.id] for e in self.rows[ident][i:]),default=float('inf'))

@@ -17,6 +17,7 @@ def enabled(policy):
 class Phrases:
     def __init__(self, notes, context, source, fx_tracks):
         self.context = context
+        self.fx_tracks = set(fx_tracks)
         self.next_voice = {}
         self.next_part = {}
         self.cadence = {}
@@ -98,6 +99,7 @@ class Phrases:
         # chord tones of an already represented part. Preserve percussion order.
         bands={'lead':0,'bass':1,'percussion':2,'harmony':3}
         return sorted(notes,key=lambda i:(i['span'].start,bands[i['role']],
+            not (i['span'].duration>=.65 and self.context.get(i['id'],{}).get('sustainAffinity',0)>=.35),
             self.rank.get(i['id'],0),0 if i['role']=='percussion' else -i['span'].velocity,
             i['span'].duration if i['role']=='percussion' else -min(i['span'].duration,2.),
             i['track'],i['order']))
@@ -110,8 +112,8 @@ class Phrases:
     def pool(self, item, slots, profiles, lead, fx, accompaniment, fx_tracks, pin):
         if item['role']=='percussion':
             return [s for s in slots.values() if profiles[s.device.id].name=='HDD_PERCUSSION']
+        if item['track'] in fx_tracks:return fx+accompaniment
         if item['role']=='lead': return lead+fx+accompaniment
-        if item['track'] in fx_tracks: return fx+accompaniment
         # Secondary speaker is a melodic relief voice. Long beds and low bass
         # remain on motors; main speaker is available only outside source vocal.
         span=item['span']
@@ -151,6 +153,7 @@ class Phrases:
         if kind=='VHS':
             primary=speaker_role=='lead'
             score=(3.5 if primary else 2.5) if item['role']=='lead' else .25
+            if item['track'] in self.fx_tracks and speaker_role=='fx':score=4.5
             detail.update(reason='reserved melody / secondary melodic relief',universal=True)
         else:
             affinity=base.get('sustainAffinity',0.)
@@ -183,6 +186,6 @@ class Phrases:
         self.routes[kind]+=1
 
     def report(self):
-        return {'version':1,'scope':'source-derived phrases; software planning, not acoustic measurement',
+        return {'version':2,'scope':'source-derived phrases; software planning, not acoustic measurement',
             'routes':dict(self.routes),'fddAttackCandidatesDeferred':self.fdd_rejected,'allocatedByDevice':dict(self.usage),
             'speakerAndMotorFallbacks':self.fallbacks,'synthesizedNotes':0}

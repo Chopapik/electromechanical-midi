@@ -130,16 +130,18 @@ class FddUnison4Tests(unittest.TestCase):
         self.assertTrue(all(c.duration==short for c in tones))
         self.assert_feasible(p,r)
 
-    def test_deterministic_and_non_fdd_allocations_unchanged(self):
+    def test_deterministic_and_existing_background_notes_preserved(self):
         tracks=self.tracks()+[('Pad',4,[(0,3,48),(0,3,55),(0,3,60)])]
         r=self.selected()
         base=self.registry();base.document['parameters']['arrangementPreset']='instrument_roles'
         before=self.plan(tracks,base);p=self.plan(tracks,r);q=self.plan(tracks,r)
         self.assertEqual(compile_plan(p),compile_plan(q))
-        self.assertEqual([e for e in p.events if e.device_type!='FDD' and e.played],
-                         [e for e in before.events if e.device_type!='FDD' and e.played])
-        self.assertEqual([e for e in p.reinforcements if not e.device_id.startswith('fdd-')],
-                         [e for e in before.reinforcements if not e.device_id.startswith('fdd-')])
+        # The two logical FDD voices now participate in allocation up front;
+        # other lanes may recover real notes, but retain the long source bed.
+        old_pad={e.id for e in before.events if e.played and e.track_name=='Pad'}
+        new_pad={e.id for e in p.events if e.played and e.track_name=='Pad'}
+        self.assertLessEqual(old_pad,new_pad)
+        self.assertTrue(all(e.role!='unpitched_effect' for e in p.events if e.played))
         self.assert_feasible(p,r)
 
     def test_real_and_virtual_dispatch_same_four_attacks(self):
@@ -210,3 +212,30 @@ class FddUnison4Tests(unittest.TestCase):
             self.assert_feasible(p,r)
             work.append(sum(len(call.args[1])+len(call.args[2]) for call in replay.call_args_list))
         self.assertLessEqual(work[1],2*work[0]+16)
+
+    def test_two_groups_can_voice_distinct_notes_from_one_polyphonic_part(self):
+        r=self.selected(fdd=8,dvd=0)
+        tracks=[('Chord riff',0,[(i*.3,i*.3+.15,pitch+i%2) for i in range(8) for pitch in (60,67)])]
+        p=self.plan(tracks,r)
+        a,b=self.assert_dual_unison(p)
+        self.assertEqual((len(a),len(b)),(8,8))
+        self.assert_feasible(p,r)
+
+    def test_monophonic_part_is_not_doubled_between_groups(self):
+        r=self.selected(fdd=8,dvd=0)
+        p=self.plan([('Single riff',0,[(i*.3,i*.3+.15,60+i%3) for i in range(8)])],r)
+        commands=compile_plan(p).commands
+        for i in range(8):
+            attacks=[c for c in commands if c.kind=='tone' and abs(c.time-i*.3)<1e-8]
+            self.assertEqual(len(attacks),4)
+
+    def test_fixed_gate_capacity_is_reserved_before_group_selection(self):
+        r=self.selected(fdd=8,dvd=0)
+        r.document['parameters'].update(fddFixedToneMs=200,fddMinAttackIntervalMs=200)
+        tracks=[('A',0,[(i*.25,i*.25+.35,60+i%3) for i in range(12)]),
+                ('B',1,[(i*.25,i*.25+.35,67+i%3) for i in range(12)])]
+        p=arrange(self.source(tracks),r)
+        a,b=self.assert_dual_unison(p)
+        self.assertEqual((len(a),len(b)),(12,12))
+        self.assertTrue(all(abs(c.duration-.2)<1e-8 for c in a+b))
+        self.assert_feasible(p,r)
