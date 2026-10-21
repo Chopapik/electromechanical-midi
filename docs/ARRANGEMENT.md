@@ -294,6 +294,10 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
   Według odsłuchu użytkownika krótkie uderzenia w rytm brzmią bardzo dobrze
   w **0:48–1:17**. Zbyt częste uderzenia brzmią źle w **0:34–0:41** oraz
   **po 1:36**. Tytuł utworu i tryb wyjścia wymagają potwierdzenia.
+  Dodatkowy pozytywny przykład: **The Police — Message in a Bottle, od 0:36**.
+  Według użytkownika HDD grają tam gęsto, ale rytmicznie i przyjemnie.
+  Wykorzystać ten fragment jako odniesienie przy doborze reguł selekcji;
+  sama duża gęstość uderzeń nie powinna automatycznie oznaczać ich redukcji.
   Porównać te fragmenty, gęstość kolejnych/równoczesnych hitów i źródłowe
   klasy perkusji. Dopracować selekcję akcentów oraz lokalną gęstość HDD,
   zachowując dobre rytmiczne fragmenty. Przyczyna nie została zweryfikowana.
