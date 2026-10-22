@@ -345,3 +345,40 @@ Testy obejmują 757 przypadków Python/C++ oraz 120 frontendowych; build Web
 przechodzi. Nową aranżację zweryfikowano offline, bez uruchamiania ATX,
 silników i bez flashowania firmware. Odsłuch oraz pomiary termiczne pozostają
 osobną weryfikacją.
+
+## Wspólny budżet HDD — 2026-10-22
+
+Po analizie przykładów odsłuchowych dodano limit 12 komend HIT łącznie dla
+wszystkich HDD w dowolnym ruchomym oknie jednej sekundy, we wszystkich presetach.
+To wybór muzyczny; nie zastępuje ograniczeń mechanicznych pojedynczej cewki.
+Selekcja przed alokacją chroni stopę i werbel, a drobne dodatki mają osobną
+kategorię `aux`. Końcowy plan obejmuje również kopie HDD i ręczne przypisania;
+kompilator blokuje harmonogram przekraczający budżet. Nie zmieniano firmware,
+impulsów REAL ani artykulacji VIRTUAL.
+
+Porównanie z `f1683b9`, preset `instrument_roles_unison4`, to samo MIDI i konfiguracja:
+
+| Utwór i odcinek | HIT przed → po | Najwięcej HIT w ruchomej sekundzie przed → po |
+| --- | ---: | ---: |
+| Counting Stars, 0:34–0:41 | 111 → 60 | 19 → 12 |
+| Counting Stars, 0:48–1:17 | 178 → 160 | 15 → 12 |
+| Counting Stars, 1:36–1:52 | 254 → 145 | 19 → 12 |
+| Message in a Bottle, 0:36–0:52 | 159 → 156 | 13 → 12 |
+| Message in a Bottle, 0:36–0:40 | 40 → 40 | 11 → 11 |
+| Message in a Bottle, 0:42–0:48 | 60 → 60 | 11 → 11 |
+
+W trzech wskazanych odcinkach Counting Stars oraz w odcinku 0:36–0:52 Police
+zachowano wszystkie wcześniej grane uderzenia stopy i werbla. Komendy tonalne
+obu całych utworów, wraz z artykulacją, mają identyczne skróty przed/po.
+Tytuł Counting Stars został wskazany przez użytkownika jako prawdopodobny;
+tryb oryginalnego odsłuchu nadal nie jest znany. Ocena poprawy brzmienia wymaga
+ponownego odsłuchu, a twardy limit może skrócić również dobre, bardzo gęste przejścia.
+
+Walidacja: 768 testów backendu/C++, w tym przeciążenia, granice okien,
+reinforcement, ręczne przypisania, determinizm i dziewięć presetów. Rekurencyjny
+benchmark objął 142 pliki biblioteki: 141 poprawnie sparsowanych ma maksimum
+12 HIT/s, zero konfliktów mechanicznych, nakładania nut i naruszeń ataków FDD.
+`touhou4.mid` kończy się błędem parsera również w wersji referencyjnej, przed
+zmianą limitera. Liczby komend tonalnych wszystkich 134 plików poprzedniego
+benchmarku pozostały niezmienione. Szczegóły i SHA-256 wejść:
+[raport budżetu HDD](../../reports/hdd-shared-budget.json).

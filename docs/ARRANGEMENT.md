@@ -145,6 +145,17 @@ poprzedniej sylaby bez sztucznego blokowania wokalu.
 HDD zachowują osobną pulę perkusyjną z możliwością użycia wolnego kanału;
 semantyka GM kanału 10 i pitched percussion poza tym kanałem są rozróżniane.
 Artykulacja wirtualnego hitu nie zmienia faz fizycznego cyklu.
+W **każdym presecie** obowiązuje wspólny limit **12 komend HDD HIT w dowolnym
+ruchomym oknie `[t, t + 1 s)`**, łącznie dla wszystkich HDD. To budżet muzyczny,
+nie zmierzony bezpieczny limit cewek. Selekcja przed alokacją chroni stopę i werbel,
+następnie tomy, talerze i hi-hat; drobna perkusja (np. tamburyn i marakasy)
+ma osobną, najniższą kategorię `aux`. Słabsze wcześniejsze dodatki mogą ustąpić
+ważniejszemu późniejszemu akcentowi. Selekcja nie przesuwa NOTE_ON ani nie
+dopisuje uderzeń. Odrzucenia mają powód `HDD_RATE_LIMIT`.
+Końcowy plan uwzględnia też ręczne przypisania i kopie HDD z reinforcement;
+kompilator odrzuca harmonogram przekraczający limit. REAL i VIRTUAL wykonują
+ten sam wybór HIT. Dodatkowe impulsy artykulacji VIRTUAL, np. podwójne uderzenie
+werbla, nie są dodatkowymi komendami HIT i nie wchodzą do tego budżetu.
 W Universal i 2×4 FDD Unisono [percussion_routing.py](../host/playback/percussion_routing.py)
 preferuje role według fizycznej kolejności: HDD1 stopa, HDD2 werbel,
 HDD3 hi-hat, HDD4 tomy/talerze. To miękkie preferencje, nie wyłączne kanały.
@@ -292,11 +303,16 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
 - [ ] **HDD — zachować rytmiczne akcenty, ograniczyć nadmierną gęstość uderzeń.**
   Według odsłuchu użytkownika krótkie uderzenia w rytm brzmią bardzo dobrze
   w **0:48–1:17**. Zbyt częste uderzenia brzmią źle w **0:34–0:41** oraz
-  **po 1:36**. Tytuł utworu i tryb wyjścia wymagają potwierdzenia.
+  **po 1:36**. Według późniejszego wskazania użytkownika prawdopodobnie chodzi
+  o **OneRepublic — Counting Stars**; tytuł nie jest ostatecznie potwierdzony,
+  a tryb wyjścia pozostaje nieznany.
   Dodatkowy pozytywny przykład: **The Police — Message in a Bottle, od 0:36**.
   Według użytkownika HDD grają tam gęsto, ale rytmicznie i przyjemnie.
   Wykorzystać ten fragment jako odniesienie przy doborze reguł selekcji;
   sama duża gęstość uderzeń nie powinna automatycznie oznaczać ich redukcji.
   Porównać te fragmenty, gęstość kolejnych/równoczesnych hitów i źródłowe
   klasy perkusji. Dopracować selekcję akcentów oraz lokalną gęstość HDD,
-  zachowując dobre rytmiczne fragmenty. Przyczyna nie została zweryfikowana.
+  zachowując dobre rytmiczne fragmenty. Analiza offline wskazanego MIDI wykazała
+  dominację drobnych dodatków i częste zmiany ról HDD w gęstych fragmentach.
+  Wprowadzono wspólny limit 12 HIT/s i niższy priorytet `aux`; ocena brzmienia
+  po zmianie nadal wymaga odsłuchu, osobno w REAL i VIRTUAL.

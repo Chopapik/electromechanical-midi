@@ -143,6 +143,9 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                             if s.device.type!='FDD' or ident in representatives}
     accompaniment = [s for s in allocation_slots.values() if profiles[s.device.id].name not in ('VHS', 'HDD_PERCUSSION')]
     from .percussion_routing import Rhythm, priority as drum_priority
+    from .percussion_routing import source_drops, limit_plan, RATE_LIMIT_REASON
+    hdd_rate_drops = source_drops(notes,pins,
+        {ident for ident,p in profiles.items() if p.name=='HDD_PERCUSSION'})
     rhythm = Rhythm(notes,[s for s in slots.values() if profiles[s.device.id].name=='HDD_PERCUSSION'],lanes) if universal_mode else None
     if policy.get('tonalOverflow') == 'adaptive':
         if not policy.get('maxNoteSeconds'):
@@ -179,6 +182,8 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
         span = item['span']; role = item['role']; pin = pins.get(item['id'])
         if pin is not None and pin.device_id is None:
             events.append(_dropped(item, 'MANUAL_DROP', role, None, pin)); continue
+        if item['id'] in hdd_rate_drops:
+            events.append(_dropped(item,RATE_LIMIT_REASON,role,None,pin)); continue
         covered = role_mode and (background_index.covered(span) if background_index is not None else instrument_roles.held_background(span, events))
         pool = ([s for s in slots.values() if profiles[s.device.id].name == 'HDD_PERCUSSION']
                 if role == PERCUSSION else lead if role == LEAD and lead and not low_mode else accompaniment)
@@ -381,6 +386,7 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     if policy.get('sourceContinuity'):
         plan.articulation['sourceContinuity'] = apply_source_continuity(plan, caps, policy['sourceContinuityAmount'])
     plan.expression = capture(source)
+    limit_plan(plan)
     # Recheck FINAL durations after sustain. Mechanical reset/normal notes take priority.
     validate_plan(plan, profiles, lanes, attempts, requested, rejected, excluded, unmapped, denied)
     # Reinforcement remains a post-pass. Never let legacy preview choose physical lanes.

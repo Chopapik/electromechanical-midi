@@ -723,6 +723,9 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     pins = pins or {}
     lead_slots, accompaniment_slots, percussion = _classify_slots(devices)
     notes, events = _partition_effects(_source_notes(source, midi_analysis, policy), pins)
+    from .percussion_routing import source_drops, limit_plan, RATE_LIMIT_REASON
+    hdd_rate_drops = source_drops(notes,pins,
+        {slot.device.id for slot in percussion if slot.device.type=='HDD_VCM'})
 
     # Kazda pula ma wlasny budzet dlugosci nut. Akompaniament nie zjada
     # pojemnosci zarezerwowanej dla melodii i odwrotnie.
@@ -758,6 +761,10 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
         if pin is not None and pin.device_id is None:
             events.append(_dropped(note, 'MANUAL_DROP', note['role'], None, pin))
 
+            continue
+
+        if note['id'] in hdd_rate_drops:
+            events.append(_dropped(note,RATE_LIMIT_REASON,note['role'],None,pin))
             continue
 
         kind = None
@@ -814,5 +821,6 @@ def allocate(source: MidiSource, config: OrchestraConfig, *,
     from .tonal_articulation import capture
     plan.expression = capture(source)
     apply_reinforcement(plan, lambda e: _priority(e.role, e.velocity, e.duration, plan.policy))
+    limit_plan(plan)
 
     return plan

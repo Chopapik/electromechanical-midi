@@ -5,6 +5,9 @@ Only routes existing MIDI hits. No generated strikes or stronger coil settings.
 from bisect import bisect_left
 from collections import defaultdict
 
+MAX_HDD_HITS_PER_SECOND = 12
+RATE_LIMIT_REASON = 'HDD_RATE_LIMIT'
+
 
 def family(note, channel):
     if channel != 9:
@@ -13,13 +16,108 @@ def family(note, channel):
     if note in (37,38,39,40): return 'snare'
     if note in (42,44,46): return 'hat'
     if note in (49,51,52,55,57,59): return 'cymbal'
-    return 'tom'
+    if note in (41,43,45,47,48,50): return 'tom'
+    return 'aux'
 
 
 def priority(item):
     span=item['span']
-    return ({'kick':0,'snare':1,'tom':2,'cymbal':3,'hat':4}[family(span.note,span.channel)],
+    return ({'kick':0,'snare':1,'tom':2,'cymbal':3,'hat':4,'aux':5}[family(span.note,span.channel)],
             -span.velocity,item['track'],item['order'])
+
+
+def _select(rows):
+    """Keep at most 12 hits in any half-open one-second window, across all HDD.
+
+    Offline lookahead may evict a weaker earlier hit for a later kick/snare.
+    No onset is moved. Active storage is bounded by the shared hit budget.
+    """
+    chosen, active = set(), []
+    for token, time, rank in sorted(rows, key=lambda row:(row[1],row[2],row[0])):
+        active = [row for row in active if time-row[1] < 1.]
+        row = (token,time,rank)
+        if len(active) == MAX_HDD_HITS_PER_SECOND:
+            weakest = max(active,key=lambda row:(row[2],row[0]))
+            if (rank,token) >= (weakest[2],weakest[0]):
+                continue
+            active.remove(weakest)
+            chosen.remove(weakest[0])
+        active.append(row)
+        chosen.add(token)
+    return chosen
+
+
+def source_drops(notes, pins, hdd_ids):
+    """Select source accents before low-value hits can consume physical lanes."""
+    if not hdd_ids:
+        return set()
+    rows = []
+    for item in notes:
+        pin = pins.get(item['id'])
+        if item['role'] != 'percussion' or pin is not None and pin.device_id not in hdd_ids:
+            continue
+        span = item['span']
+        rank = (*priority(item)[:2],span.start,item['track'],item['order'],item['id'])
+        rows.append((item['id'],span.start,rank))
+    return {row[0] for row in rows} - _select(rows)
+
+
+def peak_hits(times):
+    """Actual command count in a moving one-second window; no integer bins."""
+    from collections import deque
+    active, peak = deque(), 0
+    for time in sorted(times):
+        while active and time-active[0] >= 1.:
+            active.popleft()
+        active.append(time)
+        peak = max(peak,len(active))
+    return peak
+
+
+def limit_plan(plan):
+    """Cover manual assignments, delayed hits and optional HDD reinforcement too.
+
+    This final pass shares the source selector, preserves tonal events exactly,
+    and records drops in the plan rather than silently filtering one output.
+    """
+    from dataclasses import replace
+    hdd = {d['id'] for d in plan.devices if d['type']=='HDD_VCM'}
+    sources = {e.id:e for e in plan.events}
+    rows = []
+    def rank(event, extra):
+        item = {'span':event,'track':event.track,'order':event.id}
+        return (extra,*priority(item),event.start,event.id)
+    for e in plan.events:
+        if e.played and e.device_id in hdd:
+            rows.append(('event:'+e.id,e.actual_start,rank(e,0)))
+    for i,e in enumerate(plan.reinforcements):
+        if e.device_id in hdd:
+            rows.append(('extra:'+str(i),e.start,rank(sources[e.source_id],1)))
+    chosen = _select(rows)
+    for i,e in enumerate(plan.events):
+        if e.played and e.device_id in hdd and 'event:'+e.id not in chosen:
+            plan.events[i] = replace(e,outcome='DROPPED',reason=RATE_LIMIT_REASON,
+                                     actual_duration=0.,sustain_added=0.)
+            plan.execution_articulation.pop(e.id,None)
+    old_art = plan.execution_articulation
+    plan.execution_articulation = {key:value for key,value in old_art.items() if not key.startswith('extra:')}
+    retained, removed = [], 0
+    for i,e in enumerate(plan.reinforcements):
+        if e.device_id in hdd and 'extra:'+str(i) not in chosen:
+            removed += 1
+            continue
+        if 'extra:'+str(i) in old_art:
+            plan.execution_articulation['extra:'+str(len(retained))] = old_art['extra:'+str(i)]
+        retained.append(e)
+    plan.reinforcements = retained
+    previous = plan.articulation.get('hddRateLimit',{})
+    plan.articulation['hddRateLimit'] = {
+        'maxHitsPerSecond':MAX_HDD_HITS_PER_SECOND,'windowSeconds':1.,
+        'sourceDrops':sum(e.reason==RATE_LIMIT_REASON for e in plan.events),
+        'reinforcementDrops':previous.get('reinforcementDrops',0)+removed,
+        'peakHitsPerSecond':peak_hits(time for token,time,_ in rows if token in chosen),
+        'scope':'shared HDD command budget; excludes virtual articulation impulses',
+    }
 
 
 class Rhythm:
@@ -37,6 +135,7 @@ class Rhythm:
         owner=self.roles.get(ident)
         cost=0. if kind==owner else .2
         if kind=='cymbal' and owner=='tom':cost=.05
+        if kind=='aux' and owner=='tom':cost=.1
         # Borrowing remains possible, but avoid consuming a lane just before
         # its kick/snare attack when another equally feasible lane exists.
         if owner in ('kick','snare') and kind!=owner:

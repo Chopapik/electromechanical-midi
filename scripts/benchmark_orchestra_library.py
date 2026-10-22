@@ -21,6 +21,7 @@ def run(path,relative,code_root,preset):
     from runtime.registry import DeviceRegistry
     from runtime.arranger import arrange
     from runtime.compiler import compile_plan
+    from playback.percussion_routing import peak_hits
     started=time.monotonic()
     row={'file':relative,'sha256':hashlib.sha256(Path(path).read_bytes()).hexdigest()}
     try:
@@ -40,6 +41,7 @@ def run(path,relative,code_root,preset):
         m.update(sourceDrums=len(drums),playedDrums=sum(e.played for e in drums),
             drumDrops=dict(Counter(e.reason for e in drums if not e.played)),
             hddHits=len(hits),hddByDevice=dict(Counter(c.device_id for c in hits)),
+            hddPeakHitsPerSecond=peak_hits(c.time for c in hits),
             drumClassCoverage=dict(Counter(str(e.note) for e in drums if e.played)),
             fddByDevice=dict(Counter(c.device_id for c in timeline.commands if c.kind=='tone' and registry.by_id[c.device_id]['type']=='FDD')),
             fddSourceAttacks=sum(e.played and e.device_type=='FDD' for e in plan.events),

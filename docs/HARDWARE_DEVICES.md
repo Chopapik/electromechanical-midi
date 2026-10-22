@@ -168,6 +168,10 @@ Profil hosta dodatkowo modeluje gęstość: nominalny odstęp 200 ms,
 ciągłe 5 hitów/s i burst 10 hitów/s w oknie 500 ms są założeniami, nie ratingiem
 cewki. Kolejność faz i czas impulsu pochodzą z firmware; parametry brzmienia
 wirtualnego nie zmieniają czasu fizycznego uderzenia.
+Niezależnie od tych ograniczeń pojedynczego kanału, każdy preset stosuje
+[wspólny budżet muzyczny 12 HIT w ruchomej sekundzie](ARRANGEMENT.md#speakery-i-perkusja)
+łącznie dla wszystkich HDD. Nie podnosi on limitów pojedynczej cewki ani nie
+stanowi potwierdzenia bezpieczeństwa termicznego.
 
 Artykulacja MIDI (soft/medium/hard/double/buzz) opisuje proceduralny dźwięk;
 nie dowodzi identycznego gestu fizycznego. Nie ma pomiaru prądu, siły uderzeń,
