@@ -145,6 +145,8 @@ poprzedniej sylaby bez sztucznego blokowania wokalu.
 HDD zachowują osobną pulę perkusyjną z możliwością użycia wolnego kanału;
 semantyka GM kanału 10 i pitched percussion poza tym kanałem są rozróżniane.
 Artykulacja wirtualnego hitu nie zmienia faz fizycznego cyklu.
+Model HDD w VIRTUAL ma dwukrotnie większe wzmocnienie (+6 dB); zachowuje dynamikę
+velocity i artykulację. Nie zmienia to impulsów ani poziomu sterowania REAL.
 W **każdym presecie** obowiązuje wspólny limit **12 komend HDD HIT w dowolnym
 ruchomym oknie `[t, t + 1 s)`**, łącznie dla wszystkich HDD. To budżet muzyczny,
 nie zmierzony bezpieczny limit cewek. Selekcja przed alokacją chroni stopę i werbel,

@@ -120,7 +120,9 @@ export class VirtualOutput {
       }
       // Hardware STEP has no per-note amplitude control. Equal units share the same level.
       const stepper=device?.type==='FDD'||device?.type==='DVD_SLED'
-      const volume=(mechanical ? .22*.6 : .045)*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
+      // Give virtual HDD impacts +6 dB; keep MIDI dynamics and other families unchanged.
+      const familyLevel=mechanical ? .22*.6*(device?.type==='HDD_VCM'?2:1) : .045
+      const volume=familyLevel*(stepper?1:(a?.intensity??(c.velocity/127)**.65))
       const attack=Math.min(mechanical ? .001 : (a?.attack??.003),(end-start)/4)
       gain.gain.setValueAtTime(0,start)
       gain.gain.linearRampToValueAtTime(volume,start+attack)
