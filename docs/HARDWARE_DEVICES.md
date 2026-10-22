@@ -2,7 +2,7 @@
 
 Firmware i host obsługują **18 urządzeń: 8 FDD / 4 DVD / 4 HDD / 2 speakery**,
 6 rejestrów i 6 wykorzystywanych DRV8833 (oznaczenia DRV1–4 i DRV7–8).
-Wszystkie wpisy są aktywne w planowaniu, VIRTUAL i REAL.
+Aktywnych jest 16 wpisów w planowaniu, VIRTUAL i REAL; HDD3–4 są wyłączone.
 FDD5–8 są zadeklarowane jako podłączone. Q32–Q39 pozostają wolne;
 HDD zachowują Q40–Q47, bez zmiany istniejącego okablowania.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
@@ -26,7 +26,10 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-Aktywne jest wszystkich 18 wpisów.
+HDD1–2 są aktywne. HDD3–4 mają `enabled:false`, zachowując profile, adresację
+oraz obsługę firmware. Aranżer nie przydziela im nut ani reinforcement,
+router pomija ich HIT w obu trybach, a konfiguracja REAL wysyła im ENABLE 0.
+Komendy STOP pozostają dozwolone również dla wyłączonych kanałów.
 FDD5–8 mają `enabled:true`, `realEnabled:true` i `present:true`. `enabled` oznacza udział
 w aranżacji i VIRTUAL, `realEnabled` dopuszczenie transportu REAL, a `present`
 w metadanych profili

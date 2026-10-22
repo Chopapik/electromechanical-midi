@@ -123,12 +123,49 @@ def limit_plan(plan):
 class Rhythm:
     def __init__(self, notes, devices, lanes):
         ordered=sorted(devices,key=lambda s:int(lanes[s.device.id].split(':')[-1]))
+        self.two_drive = len(ordered)==2
         self.roles={s.device.id: ('kick','snare','hat','tom')[i%4] for i,s in enumerate(ordered)}
         self.attacks=defaultdict(list)
         for item in notes:
             if item['role']=='percussion':
                 span=item['span'];self.attacks[family(span.note,span.channel)].append(span.start)
         for starts in self.attacks.values():starts.sort()
+
+    def preserves_backbeat(self, item, ident, profile, state, note, evaluation):
+        """With two voices, let fills borrow a lane only if its backbone still fits.
+
+        Replay upcoming owner hits with and without this candidate through the
+        existing mechanical evaluator. Protect only attacks feasible without it;
+        an intrinsically unplayable roll must not reserve a whole lane forever.
+        """
+        owner=self.roles.get(ident)
+        # Kick/snare may borrow either lane. Only optional fills yield to a
+        # future owner: reserving a kick lane must never discard a live snare.
+        if not self.two_drive or family(item['span'].note,item['span'].channel) in ('kick','snare'):
+            return True
+        from dataclasses import replace
+        from .hardware_profiles import HardwareNote,evaluate,advance_state
+        window=max(1.,profile.get('burstWindowMs')/1000.)
+        starts=self.attacks[owner]
+        i=bisect_left(starts,note.start-1e-9)
+        if i==len(starts) or starts[i]>note.start+window:
+            return True
+        recent=[t for t in state.hit_times if t>note.start-window]
+        baseline=replace(state,hit_times=list(recent))
+        proposed=replace(state,hit_times=list(recent))
+        advance_state(proposed,profile,note,evaluation)
+        duration=sum(profile.get(k) for k in ('parkMs','settleMs','strikeMs'))/1000.
+        for j in range(i,len(starts)):
+            start=starts[j]
+            if start>note.start+window:break
+            future=HardwareNote(None,duration,start)
+            before=evaluate(profile,future,baseline)
+            if not before.authorized or before.ready_at>start+1e-9:continue
+            after=evaluate(profile,future,proposed)
+            if not after.authorized or after.ready_at>start+1e-9:return False
+            advance_state(baseline,profile,future,before)
+            advance_state(proposed,profile,future,after)
+        return True
 
     def cost(self, item, ident, arrival, ready_after):
         kind=family(item['span'].note,item['span'].channel)

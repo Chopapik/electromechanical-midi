@@ -1,0 +1,2233 @@
+{
+  "date": "2026-10-22",
+  "scope": "Offline planning and compilation only; physical and acoustic quality unmeasured",
+  "baseline": "Same two enabled HDD and shared 12 HIT/s budget, before two-drive backbeat protection",
+  "baselineImplementationSha256": "458b7891b82a458507b2bf270c2ed555f62e5bfe17566e39b1350f7367b0d1d3",
+  "implementationSha256": "f104da07944720c10e0bff89fa1b5f39b6bd64b982d758b7a85a09a004f56332",
+  "preset": "instrument_roles_unison4",
+  "activeHdd": [
+    "hdd_vcm-1",
+    "hdd_vcm-2"
+  ],
+  "inactiveRetainedHdd": [
+    "hdd_vcm-3",
+    "hdd_vcm-4"
+  ],
+  "catalogDevices": 18,
+  "activeDevices": 16,
+  "sharedMaxHitsPerSecond": 12,
+  "validation": {
+    "testsPassed": 774,
+    "syntheticPresets": 9,
+    "files": 142,
+    "parsedFiles": 141,
+    "unchangedUnreadableFile": "touhou4.mid",
+    "mechanicalConflicts": 0,
+    "overlaps": 0,
+    "fddAttackViolations": 0,
+    "unisonGroupMismatches": 0,
+    "inactiveHddCommands": 0,
+    "maximumRollingPeak": 11,
+    "nonHddMetricsIdenticalFiles": 141
+  },
+  "aggregate": {
+    "hitsBefore": 140755,
+    "hitsAfter": 137057,
+    "percussionNotes35To40Delta": 2143,
+    "filesWithMoreNotes35To40": 48,
+    "filesWithSameNotes35To40": 92,
+    "filesWithFewerNotes35To40": 1,
+    "metricCaveat": "Percussion MIDI notes 35-40 are a coarse backbone proxy, not a listening score; pitched percussion is not relabeled as GM drums."
+  },
+  "listeningReferences": {
+    "One_Republic_Counting_stars.mid": {
+      "before": {
+        "totalHits": 1204,
+        "peak": 10,
+        "windows": [
+          {
+            "window": [
+              34,
+              41
+            ],
+            "hits": 45,
+            "hitsPerSecond": 6.429,
+            "peak": 9,
+            "virtualImpulses": 56,
+            "notes": {
+              "35": 15,
+              "39": 3,
+              "49": 1,
+              "42": 17,
+              "54": 1,
+              "38": 7,
+              "46": 1
+            }
+          },
+          {
+            "window": [
+              48,
+              77
+            ],
+            "hits": 119,
+            "hitsPerSecond": 4.103,
+            "peak": 8,
+            "virtualImpulses": 169,
+            "notes": {
+              "35": 59,
+              "54": 10,
+              "49": 2,
+              "38": 22,
+              "46": 11,
+              "42": 9,
+              "69": 6
+            }
+          },
+          {
+            "window": [
+              96,
+              112
+            ],
+            "hits": 100,
+            "hitsPerSecond": 6.25,
+            "peak": 9,
+            "virtualImpulses": 108,
+            "notes": {
+              "46": 33,
+              "42": 25,
+              "35": 32,
+              "38": 8,
+              "49": 2
+            }
+          }
+        ],
+        "tonalFingerprint": "42a127970bf34a24203094af1b030baee13be9faa1ff08d78a1b5f7f25f527d9",
+        "hddRateLimit": {
+          "maxHitsPerSecond": 12,
+          "windowSeconds": 1.0,
+          "sourceDrops": 1369,
+          "reinforcementDrops": 0,
+          "peakHitsPerSecond": 10,
+          "scope": "shared HDD command budget; excludes virtual articulation impulses"
+        }
+      },
+      "after": {
+        "totalHits": 1204,
+        "peak": 10,
+        "windows": [
+          {
+            "window": [
+              34,
+              41
+            ],
+            "hits": 45,
+            "hitsPerSecond": 6.429,
+            "peak": 9,
+            "virtualImpulses": 56,
+            "notes": {
+              "35": 15,
+              "39": 3,
+              "49": 1,
+              "42": 17,
+              "54": 1,
+              "38": 7,
+              "46": 1
+            }
+          },
+          {
+            "window": [
+              48,
+              77
+            ],
+            "hits": 119,
+            "hitsPerSecond": 4.103,
+            "peak": 8,
+            "virtualImpulses": 169,
+            "notes": {
+              "35": 59,
+              "54": 10,
+              "49": 2,
+              "38": 22,
+              "46": 11,
+              "42": 9,
+              "69": 6
+            }
+          },
+          {
+            "window": [
+              96,
+              112
+            ],
+            "hits": 100,
+            "hitsPerSecond": 6.25,
+            "peak": 9,
+            "virtualImpulses": 119,
+            "notes": {
+              "46": 33,
+              "42": 14,
+              "35": 32,
+              "38": 19,
+              "49": 2
+            }
+          }
+        ],
+        "tonalFingerprint": "42a127970bf34a24203094af1b030baee13be9faa1ff08d78a1b5f7f25f527d9",
+        "hddRateLimit": {
+          "maxHitsPerSecond": 12,
+          "windowSeconds": 1.0,
+          "sourceDrops": 1369,
+          "reinforcementDrops": 0,
+          "peakHitsPerSecond": 10,
+          "scope": "shared HDD command budget; excludes virtual articulation impulses"
+        }
+      },
+      "tonalCommandsIdentical": true
+    },
+    "The Police - Message in a Bottle.mid": {
+      "before": {
+        "totalHits": 2309,
+        "peak": 12,
+        "windows": [
+          {
+            "window": [
+              36,
+              52
+            ],
+            "hits": 154,
+            "hitsPerSecond": 9.625,
+            "peak": 10,
+            "virtualImpulses": 183,
+            "notes": {
+              "35": 57,
+              "42": 26,
+              "40": 23,
+              "46": 3,
+              "47": 2,
+              "51": 22,
+              "59": 18,
+              "49": 1,
+              "57": 1,
+              "55": 1
+            }
+          },
+          {
+            "window": [
+              36,
+              40
+            ],
+            "hits": 40,
+            "hitsPerSecond": 10.0,
+            "peak": 10,
+            "virtualImpulses": 45,
+            "notes": {
+              "35": 15,
+              "42": 20,
+              "40": 5
+            }
+          },
+          {
+            "window": [
+              42,
+              48
+            ],
+            "hits": 60,
+            "hitsPerSecond": 10.0,
+            "peak": 10,
+            "virtualImpulses": 68,
+            "notes": {
+              "40": 8,
+              "59": 14,
+              "51": 15,
+              "35": 22,
+              "49": 1
+            }
+          }
+        ],
+        "tonalFingerprint": "5e5269fb9f3c7264286fea8888fca62fe26cd7d08ebc16c9e81129e5edb0ae1e",
+        "hddRateLimit": {
+          "maxHitsPerSecond": 12,
+          "windowSeconds": 1.0,
+          "sourceDrops": 25,
+          "reinforcementDrops": 0,
+          "peakHitsPerSecond": 12,
+          "scope": "shared HDD command budget; excludes virtual articulation impulses"
+        }
+      },
+      "after": {
+        "totalHits": 2307,
+        "peak": 11,
+        "windows": [
+          {
+            "window": [
+              36,
+              52
+            ],
+            "hits": 154,
+            "hitsPerSecond": 9.625,
+            "peak": 10,
+            "virtualImpulses": 183,
+            "notes": {
+              "35": 57,
+              "42": 26,
+              "40": 23,
+              "46": 3,
+              "47": 1,
+              "57": 2,
+              "51": 22,
+              "59": 18,
+              "49": 1,
+              "55": 1
+            }
+          },
+          {
+            "window": [
+              36,
+              40
+            ],
+            "hits": 40,
+            "hitsPerSecond": 10.0,
+            "peak": 10,
+            "virtualImpulses": 45,
+            "notes": {
+              "35": 15,
+              "42": 20,
+              "40": 5
+            }
+          },
+          {
+            "window": [
+              42,
+              48
+            ],
+            "hits": 60,
+            "hitsPerSecond": 10.0,
+            "peak": 10,
+            "virtualImpulses": 68,
+            "notes": {
+              "40": 8,
+              "59": 14,
+              "51": 15,
+              "35": 22,
+              "49": 1
+            }
+          }
+        ],
+        "tonalFingerprint": "5e5269fb9f3c7264286fea8888fca62fe26cd7d08ebc16c9e81129e5edb0ae1e",
+        "hddRateLimit": {
+          "maxHitsPerSecond": 12,
+          "windowSeconds": 1.0,
+          "sourceDrops": 25,
+          "reinforcementDrops": 0,
+          "peakHitsPerSecond": 11,
+          "scope": "shared HDD command budget; excludes virtual articulation impulses"
+        }
+      },
+      "tonalCommandsIdentical": true
+    }
+  },
+  "songs": [
+    {
+      "file": "Coldplay - The Scientist.mid",
+      "sha256": "9e711509438cb419f99d5f7ec708b9224d03a13cb00f748c613523950f1af57e",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "Every breath you take.mid",
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "hitsBefore": 1049,
+      "hitsAfter": 1049,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 630,
+        "hdd_vcm-2": 419
+      },
+      "percussionNotes35To40Before": 493,
+      "percussionNotes35To40After": 502,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "One_Republic_Counting_stars.mid",
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "hitsBefore": 1204,
+      "hitsAfter": 1204,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 741,
+        "hdd_vcm-2": 463
+      },
+      "percussionNotes35To40Before": 617,
+      "percussionNotes35To40After": 676,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "The Police - Message in a Bottle.mid",
+      "sha256": "5bc05b4fc8fdd69a1b934916996706381cbdae0b9fe21336f668aef928e87a83",
+      "hitsBefore": 2309,
+      "hitsAfter": 2307,
+      "peakHitsPerSecond": 11,
+      "byDevice": {
+        "hdd_vcm-1": 1402,
+        "hdd_vcm-2": 905
+      },
+      "percussionNotes35To40Before": 1042,
+      "percussionNotes35To40After": 1052,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "coldplaythe_scientist.mid",
+      "sha256": "65c1d0aa5fa55af435b6cda74ecc9e3dd77b51fae1e2b428c140b737628c2744",
+      "hitsBefore": 1005,
+      "hitsAfter": 1005,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 640,
+        "hdd_vcm-2": 365
+      },
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "dragonb.mid",
+      "sha256": "e1c50eaef1e15eccdc7d5c7032e652112f8cead40f0dd20d508cf5436fb464c6",
+      "hitsBefore": 557,
+      "hitsAfter": 557,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 321,
+        "hdd_vcm-2": 236
+      },
+      "percussionNotes35To40Before": 286,
+      "percussionNotes35To40After": 286,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "flcl.mid",
+      "sha256": "1bcad0dc366ccce0a2a154d91060b80ce9ce493547e71207ea4f499b207849f1",
+      "hitsBefore": 759,
+      "hitsAfter": 759,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 433,
+        "hdd_vcm-2": 326
+      },
+      "percussionNotes35To40Before": 356,
+      "percussionNotes35To40After": 356,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "godknows.mid",
+      "sha256": "21be30973f48b317a6a97957e553d1fa7419c3517ecf6e888431ee39bdfef92c",
+      "hitsBefore": 2371,
+      "hitsAfter": 2297,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1285,
+        "hdd_vcm-2": 1012
+      },
+      "percussionNotes35To40Before": 1122,
+      "percussionNotes35To40After": 1187,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "pokemon.mid",
+      "sha256": "c4f45c64aa965655304656e5d7f7ece9bafa1ec008cb3248d4713f0d09461576",
+      "hitsBefore": 347,
+      "hitsAfter": 347,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 208,
+        "hdd_vcm-2": 139
+      },
+      "percussionNotes35To40Before": 165,
+      "percussionNotes35To40After": 165,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0001-01-radiohead_1993-you.mid",
+      "sha256": "e64932ccf5abe2ecfefa5ee00c18853cbed183575df76eeb58121c4a52256b0b",
+      "hitsBefore": 1014,
+      "hitsAfter": 1008,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 525,
+        "hdd_vcm-2": 483
+      },
+      "percussionNotes35To40Before": 577,
+      "percussionNotes35To40After": 577,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0002-02-radiohead_1993-creep-[k].mid",
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "hitsBefore": 1167,
+      "hitsAfter": 1165,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 608,
+        "hdd_vcm-2": 557
+      },
+      "percussionNotes35To40Before": 545,
+      "percussionNotes35To40After": 548,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0003-03-radiohead_1993-how_do_you.mid",
+      "sha256": "a46879887806eac7f19cfd51e51dffc4e39c2f629d66835d805b1decbd2595be",
+      "hitsBefore": 903,
+      "hitsAfter": 902,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 541,
+        "hdd_vcm-2": 361
+      },
+      "percussionNotes35To40Before": 548,
+      "percussionNotes35To40After": 550,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0004-04-radiohead_1993-stop_whispering.mid",
+      "sha256": "f5c7393bed9175930ab93ebfe09b1082c010b0df840eb32bee8a024436f11fb0",
+      "hitsBefore": 2167,
+      "hitsAfter": 1946,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1152,
+        "hdd_vcm-2": 794
+      },
+      "percussionNotes35To40Before": 871,
+      "percussionNotes35To40After": 870,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0005-05-radiohead_1993-thinking_about_you.mid",
+      "sha256": "a08c2139af1e31ec4ceb0d2fa5696ae9842c9ad26093496c53e82ebec1c062ce",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0006-06-radiohead_1993-anyone_can_play_guitar.mid",
+      "sha256": "7df97b6c1f577b047260b7731d8c092cdcc8cd6fb2dc9f57c4be0cd60b8ef38a",
+      "hitsBefore": 1385,
+      "hitsAfter": 1315,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 656,
+        "hdd_vcm-2": 659
+      },
+      "percussionNotes35To40Before": 684,
+      "percussionNotes35To40After": 684,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0007-07-radiohead_1993-ripcord.mid",
+      "sha256": "779f77bb1172554ad5e8fcab3ba2b50a9f01bb9883aa2df6c87f91e6de96be6e",
+      "hitsBefore": 1383,
+      "hitsAfter": 1383,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 689,
+        "hdd_vcm-2": 694
+      },
+      "percussionNotes35To40Before": 753,
+      "percussionNotes35To40After": 759,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0008-08-radiohead_1993-vegetable.mid",
+      "sha256": "981cb285acf86b6d4e74d1a3f80a184a0604c0e023a92fac4383f47419fc1cb2",
+      "hitsBefore": 1040,
+      "hitsAfter": 1040,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 587,
+        "hdd_vcm-2": 453
+      },
+      "percussionNotes35To40Before": 478,
+      "percussionNotes35To40After": 478,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0009-09-radiohead_1993-prove_yourself.mid",
+      "sha256": "0cce6d7b28c63207c1835d2b6234484c8f255c5df046707eb543db84ab00da8c",
+      "hitsBefore": 644,
+      "hitsAfter": 644,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 349,
+        "hdd_vcm-2": 295
+      },
+      "percussionNotes35To40Before": 322,
+      "percussionNotes35To40After": 322,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0010-10-radiohead_1993-i_can't.mid",
+      "sha256": "e1e032bfd5c2bcbd97d60a327202bba97bfe3b3b85c70a80d9152d0c96cb7e42",
+      "hitsBefore": 1166,
+      "hitsAfter": 1106,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 589,
+        "hdd_vcm-2": 517
+      },
+      "percussionNotes35To40Before": 643,
+      "percussionNotes35To40After": 705,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0011-11-radiohead_1993-lurgee.mid",
+      "sha256": "cc4e7d90a7df8202b6872f4fed4a34bdebef2a4bdba68bdfa74c60349caaff4a",
+      "hitsBefore": 1066,
+      "hitsAfter": 1058,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 601,
+        "hdd_vcm-2": 457
+      },
+      "percussionNotes35To40Before": 465,
+      "percussionNotes35To40After": 473,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0012-12-radiohead_1993-blow_out.mid",
+      "sha256": "1f519ce015c37d7e7c3a63b66dff37e989a742b14a00301b47030da8acb825da",
+      "hitsBefore": 1779,
+      "hitsAfter": 1779,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1044,
+        "hdd_vcm-2": 735
+      },
+      "percussionNotes35To40Before": 864,
+      "percussionNotes35To40After": 864,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0013-13-radiohead_1993-pop_is_dead.mid",
+      "sha256": "e0bc91c130cd169b3ed636adb21e957f83a5f6bb8a41e883e8100982236091d3",
+      "hitsBefore": 745,
+      "hitsAfter": 729,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 417,
+        "hdd_vcm-2": 312
+      },
+      "percussionNotes35To40Before": 381,
+      "percussionNotes35To40After": 397,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0014-14-radiohead_1993-inside_my_head.mid",
+      "sha256": "91dd1cd17d3c4b7bf97b67c117eddf36108f322883447c61438640bd151da729",
+      "hitsBefore": 1170,
+      "hitsAfter": 1107,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 599,
+        "hdd_vcm-2": 508
+      },
+      "percussionNotes35To40Before": 744,
+      "percussionNotes35To40After": 750,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0015-04-radiohead_1994-banana_co.mid",
+      "sha256": "948943ee28e174ab99a1acb6fcac116464df7f980b47e9fa0acc7117c08087e1",
+      "hitsBefore": 443,
+      "hitsAfter": 443,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 291,
+        "hdd_vcm-2": 152
+      },
+      "percussionNotes35To40Before": 150,
+      "percussionNotes35To40After": 150,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0016-08-radiohead_1994-creep_(acoustic).mid",
+      "sha256": "e6b2de76774ec7f05a8ba183dc997ad7541931028f4207160334dffc74dca1cc",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0017-02-radiohead_1994-the_trickster_(live).mid",
+      "sha256": "e4f8d46ef5d36d06e51af298cc616203684c7174ea55126272c7712bc7771a50",
+      "hitsBefore": 1676,
+      "hitsAfter": 1490,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 855,
+        "hdd_vcm-2": 635
+      },
+      "percussionNotes35To40Before": 807,
+      "percussionNotes35To40After": 807,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0018-06-radiohead_1994-lozenge_of_love_(live).mid",
+      "sha256": "70c4b2e5aeb0f1ab1d19a251e2e553388cbdf556a68df7d4b90efe3477096f24",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0019-07-radiohead_1994-you_never_wash_up_after_yourself_(live).mid",
+      "sha256": "4288b76fd2d722b1ae414506784442478e17f72851d8d7cdf1942bc474177cf7",
+      "hitsBefore": 521,
+      "hitsAfter": 521,
+      "peakHitsPerSecond": 4,
+      "byDevice": {
+        "hdd_vcm-1": 389,
+        "hdd_vcm-2": 132
+      },
+      "percussionNotes35To40Before": 262,
+      "percussionNotes35To40After": 262,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0020-01-radiohead_1995-planet_telex.mid",
+      "sha256": "e98715f1d378d44d48a7dd6c01949db2e850a396c9c84985d9d3e1198ad7b104",
+      "hitsBefore": 1623,
+      "hitsAfter": 1623,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 915,
+        "hdd_vcm-2": 708
+      },
+      "percussionNotes35To40Before": 1064,
+      "percussionNotes35To40After": 1064,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0021-02-radiohead_1995-the_bends.mid",
+      "sha256": "ee6a377355ed0e3595c405fe5a96b2c551f2a395005e853fdc15db90fbfff928",
+      "hitsBefore": 1042,
+      "hitsAfter": 1042,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 603,
+        "hdd_vcm-2": 439
+      },
+      "percussionNotes35To40Before": 529,
+      "percussionNotes35To40After": 529,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0022-03-radiohead_1995-high_and_dry-[k].mid",
+      "sha256": "be6a0107f5592614286009c0255b610a23c6e5b9e950ac767a1ad7e1f15335a9",
+      "hitsBefore": 1201,
+      "hitsAfter": 1158,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 704,
+        "hdd_vcm-2": 454
+      },
+      "percussionNotes35To40Before": 474,
+      "percussionNotes35To40After": 477,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0023-04-radiohead_1995-fake_plastic_trees-[k].mid",
+      "sha256": "eeb1a97cdde6ece920bcdf82e362192adee80615bd050b5004c2fe8f98856bc7",
+      "hitsBefore": 681,
+      "hitsAfter": 681,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 469,
+        "hdd_vcm-2": 212
+      },
+      "percussionNotes35To40Before": 202,
+      "percussionNotes35To40After": 202,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0024-05-radiohead_1995-bones.mid",
+      "sha256": "b0eaa237ff7a3f6e0f6dcea40adbe6f91dae7eec42f6ffabb9eb1f6b3fe547b3",
+      "hitsBefore": 1094,
+      "hitsAfter": 1094,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 556,
+        "hdd_vcm-2": 538
+      },
+      "percussionNotes35To40Before": 441,
+      "percussionNotes35To40After": 441,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0025-06-radiohead_1995-(nice_dream)-[k].mid",
+      "sha256": "90dc1a80def4c2f8e9944bb8449f8e1a26b6a9a8be05dd0cc6045c8cf19c11e5",
+      "hitsBefore": 1091,
+      "hitsAfter": 1091,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 540,
+        "hdd_vcm-2": 551
+      },
+      "percussionNotes35To40Before": 556,
+      "percussionNotes35To40After": 556,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0026-07-radiohead_1995-just-[k].mid",
+      "sha256": "8453058c3ab17210496d2f31f9b40227476acd9a4387879676aaf4466b6225de",
+      "hitsBefore": 1172,
+      "hitsAfter": 1167,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 664,
+        "hdd_vcm-2": 503
+      },
+      "percussionNotes35To40Before": 614,
+      "percussionNotes35To40After": 614,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0027-08-radiohead_1995-my_iron_lung-[k].mid",
+      "sha256": "a4f1b71a938ce921f1393c495c4dd746eaea905e2f647e82191ebfa716e4ad63",
+      "hitsBefore": 1416,
+      "hitsAfter": 1406,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 765,
+        "hdd_vcm-2": 641
+      },
+      "percussionNotes35To40Before": 743,
+      "percussionNotes35To40After": 753,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0029-10-radiohead_1995-black_star.mid",
+      "sha256": "f5f7ba835fb0313f20b5341e6bf628d58894cf5fa7e1eb6f0fc480bd6c709957",
+      "hitsBefore": 1137,
+      "hitsAfter": 1137,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 639,
+        "hdd_vcm-2": 498
+      },
+      "percussionNotes35To40Before": 558,
+      "percussionNotes35To40After": 558,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0030-11-radiohead_1995-sulk.mid",
+      "sha256": "22088eab592ddfd6ed30f96e0bd90442d27c19711197da57b9d30ca440af3203",
+      "hitsBefore": 1141,
+      "hitsAfter": 1084,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 531,
+        "hdd_vcm-2": 553
+      },
+      "percussionNotes35To40Before": 411,
+      "percussionNotes35To40After": 470,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "hitsBefore": 1430,
+      "hitsAfter": 1332,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 832,
+        "hdd_vcm-2": 500
+      },
+      "percussionNotes35To40Before": 454,
+      "percussionNotes35To40After": 454,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0032-01-radiohead_1997-airbag-[k].mid",
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "hitsBefore": 1631,
+      "hitsAfter": 1612,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 874,
+        "hdd_vcm-2": 738
+      },
+      "percussionNotes35To40Before": 1118,
+      "percussionNotes35To40After": 1255,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0033-02-radiohead_1997-paranoid_android-[k].mid",
+      "sha256": "aa8324e99320213f907bf484651566a29f5369cc9277da3469a04c6adcc9e2e3",
+      "hitsBefore": 1957,
+      "hitsAfter": 1838,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 940,
+        "hdd_vcm-2": 898
+      },
+      "percussionNotes35To40Before": 1015,
+      "percussionNotes35To40After": 1021,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0034-03-radiohead_1997-subterranean_homesick_alien.mid",
+      "sha256": "b556c6d1513e4d56999321c8452c3ac5eb11f191eda88db7f0ce2ee47aa8f644",
+      "hitsBefore": 1322,
+      "hitsAfter": 1195,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-2": 583,
+        "hdd_vcm-1": 612
+      },
+      "percussionNotes35To40Before": 634,
+      "percussionNotes35To40After": 634,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid",
+      "sha256": "8c0c0223dcdbc577545429df843a27738f262f1e62c6e07c21776e225d0d7d66",
+      "hitsBefore": 255,
+      "hitsAfter": 253,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 153,
+        "hdd_vcm-2": 100
+      },
+      "percussionNotes35To40Before": 120,
+      "percussionNotes35To40After": 120,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0036-05-radiohead_1997-let_down-[k].mid",
+      "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+      "hitsBefore": 1428,
+      "hitsAfter": 1428,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 819,
+        "hdd_vcm-2": 609
+      },
+      "percussionNotes35To40Before": 451,
+      "percussionNotes35To40After": 451,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0037-06-radiohead_1997-karma_police-[k].mid",
+      "sha256": "486253a317a26e2a580cd00a745e8d13777aa59de9f42b26003d1eee6df74133",
+      "hitsBefore": 773,
+      "hitsAfter": 773,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 465,
+        "hdd_vcm-2": 308
+      },
+      "percussionNotes35To40Before": 299,
+      "percussionNotes35To40After": 299,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0038-07-radiohead_1997-fitter_happier.mid",
+      "sha256": "8cefed0f5be45e150cf8bd870dbe6931ea273d66a78e6d58a696a750b6f1e756",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0039-08-radiohead_1997-electioneering.mid",
+      "sha256": "d63e99b7a3faa361a5356579b144b618eef4cdae7aec2b8a1d6203481f09b0b7",
+      "hitsBefore": 976,
+      "hitsAfter": 969,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 505,
+        "hdd_vcm-2": 464
+      },
+      "percussionNotes35To40Before": 692,
+      "percussionNotes35To40After": 694,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0040-09-radiohead_1997-climbing_up_the_walls-[k].mid",
+      "sha256": "eabc334c82e6958d905675b9511989b686eb01c1d97da1fb29670517b8faaf8e",
+      "hitsBefore": 1072,
+      "hitsAfter": 1071,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 616,
+        "hdd_vcm-2": 455
+      },
+      "percussionNotes35To40Before": 162,
+      "percussionNotes35To40After": 166,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0041-10-radiohead_1997-no_surprises-[k].mid",
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "hitsBefore": 731,
+      "hitsAfter": 725,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-2": 338,
+        "hdd_vcm-1": 387
+      },
+      "percussionNotes35To40Before": 410,
+      "percussionNotes35To40After": 410,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0042-11-radiohead_1997-lucky-[k].mid",
+      "sha256": "616f2c7fdda123c942fe94329d227eee2e4015f64da3b1a6903da430b6abaf49",
+      "hitsBefore": 1053,
+      "hitsAfter": 1053,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 647,
+        "hdd_vcm-2": 406
+      },
+      "percussionNotes35To40Before": 319,
+      "percussionNotes35To40After": 319,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0043-12-radiohead_1997-the_tourist-[k].mid",
+      "sha256": "529c04959f3d7de8e1205cab273a23dc2a908af4cc4eda4bd47dd4625fe66069",
+      "hitsBefore": 1260,
+      "hitsAfter": 1260,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 794,
+        "hdd_vcm-2": 466
+      },
+      "percussionNotes35To40Before": 438,
+      "percussionNotes35To40After": 438,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "sha256": "77309b18d07c1b3b9b6bed3964c2dc8ca0a2a9961307ebef17d87d59389b2a7c",
+      "hitsBefore": 480,
+      "hitsAfter": 480,
+      "peakHitsPerSecond": 3,
+      "byDevice": {
+        "hdd_vcm-1": 480
+      },
+      "percussionNotes35To40Before": 480,
+      "percussionNotes35To40After": 480,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0045-02-radiohead_2000-kid_a.mid",
+      "sha256": "163db355cc29260c2a1937965abaf8f809d89e77d19651daebdb3c53850d46cf",
+      "hitsBefore": 1588,
+      "hitsAfter": 1531,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 801,
+        "hdd_vcm-2": 730
+      },
+      "percussionNotes35To40Before": 1092,
+      "percussionNotes35To40After": 1233,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0046-03-radiohead_2000-the_national_anthem.mid",
+      "sha256": "07227a13983380b1df08b205532b40ce2c889a43f57db26f3510110f4bc67c4f",
+      "hitsBefore": 1560,
+      "hitsAfter": 1459,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 731,
+        "hdd_vcm-2": 728
+      },
+      "percussionNotes35To40Before": 838,
+      "percussionNotes35To40After": 1043,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0047-05-radiohead_2000-treefingers.mid",
+      "sha256": "4163a3369d4888f61ab8ea0d4b4f25d5739903a1b6e467b0e0731a270d0d13ef",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0048-06-radiohead_2000-optimistic-[k].mid",
+      "sha256": "265a37e13d9ca1706de0642fcc1c96abd08736d61a842545f6748fd015d23033",
+      "hitsBefore": 1991,
+      "hitsAfter": 1961,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1004,
+        "hdd_vcm-2": 957
+      },
+      "percussionNotes35To40Before": 928,
+      "percussionNotes35To40After": 928,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0049-07-radiohead_2000-in_limbo.mid",
+      "sha256": "a912ef58e1de55af2a9871561410d77b932f53ee67171e9233db83f63c7bd809",
+      "hitsBefore": 925,
+      "hitsAfter": 925,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 527,
+        "hdd_vcm-2": 398
+      },
+      "percussionNotes35To40Before": 334,
+      "percussionNotes35To40After": 334,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0050-08-radiohead_2000-idioteque.mid",
+      "sha256": "ce19521f7feb85da2bb4799bd16597b9c1c845153f907ab9b78e707658798f39",
+      "hitsBefore": 1755,
+      "hitsAfter": 1730,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 801,
+        "hdd_vcm-2": 929
+      },
+      "percussionNotes35To40Before": 1017,
+      "percussionNotes35To40After": 1040,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0051-09-radiohead_2000-morning_bell-[k].mid",
+      "sha256": "03adf5c5e76ac7e09796ebd6bcca1e3e5a43c1dd10f67702d3ee87eef6ccafdb",
+      "hitsBefore": 1869,
+      "hitsAfter": 1868,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1160,
+        "hdd_vcm-2": 708
+      },
+      "percussionNotes35To40Before": 696,
+      "percussionNotes35To40After": 696,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid",
+      "sha256": "d2d8c6d3f3fd5ceca622e314805a734fca6999ab7ea671c43ca1b3222635285c",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0053-01-radiohead_2001-packt_like_sardines_in_a_crushd_tin_box-[k].mid",
+      "sha256": "710b3c562ef7cd02f7d23d5ef5257f28637d7a11c0ba59fa45e51ca78cd8e042",
+      "hitsBefore": 1277,
+      "hitsAfter": 1273,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 756,
+        "hdd_vcm-2": 517
+      },
+      "percussionNotes35To40Before": 806,
+      "percussionNotes35To40After": 898,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0054-02-radiohead_2001-pyramid_song.mid",
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "hitsBefore": 562,
+      "hitsAfter": 552,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-2": 257,
+        "hdd_vcm-1": 295
+      },
+      "percussionNotes35To40Before": 281,
+      "percussionNotes35To40After": 281,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0055-04-radiohead_2001-you_and_whose_army-[k].mid",
+      "sha256": "161040d97741cc5c4793daa69ceea8c88eb1d50abc6710b884313898f9a6b04b",
+      "hitsBefore": 273,
+      "hitsAfter": 273,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 158,
+        "hdd_vcm-2": 115
+      },
+      "percussionNotes35To40Before": 121,
+      "percussionNotes35To40After": 121,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0056-05-radiohead_2001-i_might_be_wrong.mid",
+      "sha256": "acc3055039f43ba3976d311fa010733e7449f6e83d30d9571fe824e4f1170f30",
+      "hitsBefore": 1264,
+      "hitsAfter": 1044,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 624,
+        "hdd_vcm-2": 420
+      },
+      "percussionNotes35To40Before": 501,
+      "percussionNotes35To40After": 573,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0057-06-radiohead_2001-knives_out-[k].mid",
+      "sha256": "7dceb146c7af96b4d40cb38ddf4b4a48df2bdc67eb5d3b7f5713785d57b5563e",
+      "hitsBefore": 1823,
+      "hitsAfter": 1823,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 1121,
+        "hdd_vcm-2": 702
+      },
+      "percussionNotes35To40Before": 702,
+      "percussionNotes35To40After": 702,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0058-08-radiohead_2001-dollars_and_cents.mid",
+      "sha256": "5dd71eef6121405258a58cbd424c0ffe547e24e5c69c96a21ff2dcbdd82a2c70",
+      "hitsBefore": 1590,
+      "hitsAfter": 1590,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1308,
+        "hdd_vcm-2": 282
+      },
+      "percussionNotes35To40Before": 26,
+      "percussionNotes35To40After": 26,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0059-09-radiohead_2001-hunting_bears.mid",
+      "sha256": "2d172589d56f47c797be44707c2ed55ffd68e868201d952f6491e2c4f7828571",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0060-11-radiohead_2001-life_in_a_glass_house-[k].mid",
+      "sha256": "9cd803df51e1c64a0bad5b906fcf0a76c90323d9f175d0741568d3e0a31fd78e",
+      "hitsBefore": 424,
+      "hitsAfter": 424,
+      "peakHitsPerSecond": 6,
+      "byDevice": {
+        "hdd_vcm-1": 213,
+        "hdd_vcm-2": 211
+      },
+      "percussionNotes35To40Before": 267,
+      "percussionNotes35To40After": 267,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0061-04-radiohead_2001-like_spinning_plates_(live).mid",
+      "sha256": "f25b11a21857a0505ae5ffd88e2229eafc52130e5cc62a0896b06b62e7143bdb",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0062-08-radiohead_2001-true_love_waits_(live).mid",
+      "sha256": "17e2467e8cd95434b6a4e509710c79d957098e98f13c37ceaeb43e59cf1969c1",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0063-01-radiohead_2003-2+2=5-[k].mid",
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "hitsBefore": 1353,
+      "hitsAfter": 1326,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 773,
+        "hdd_vcm-2": 553
+      },
+      "percussionNotes35To40Before": 497,
+      "percussionNotes35To40After": 497,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0064-02-radiohead_2003-sit_down_stand_up-[k].mid",
+      "sha256": "14012c9c0c5705807725c3bead4a2c7ed0ede5619461dad235cc6bb5f4dd7659",
+      "hitsBefore": 1962,
+      "hitsAfter": 1889,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 943,
+        "hdd_vcm-2": 946
+      },
+      "percussionNotes35To40Before": 723,
+      "percussionNotes35To40After": 751,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0065-03-radiohead_2003-sail_to_the_moon.mid",
+      "sha256": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+      "hitsBefore": 462,
+      "hitsAfter": 462,
+      "peakHitsPerSecond": 6,
+      "byDevice": {
+        "hdd_vcm-1": 254,
+        "hdd_vcm-2": 208
+      },
+      "percussionNotes35To40Before": 120,
+      "percussionNotes35To40After": 120,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0066-04-radiohead_2003-backdrift-[intro].mid",
+      "sha256": "0be5d1651dde3c356cf350e6e6acbd0939bdc93d873ac7dde17544d02a3ce751",
+      "hitsBefore": 194,
+      "hitsAfter": 159,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 85,
+        "hdd_vcm-2": 74
+      },
+      "percussionNotes35To40Before": 70,
+      "percussionNotes35To40After": 70,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0067-05-radiohead_2003-go_to_sleep-[k].mid",
+      "sha256": "c13d8318345a12556e42e07f8d4b1e4eb80c53ca61a3ae7b24f07ed6d9306341",
+      "hitsBefore": 1198,
+      "hitsAfter": 1013,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 473,
+        "hdd_vcm-2": 540
+      },
+      "percussionNotes35To40Before": 700,
+      "percussionNotes35To40After": 704,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0068-06-radiohead-2003-where_i_end_and_you_begin.mid",
+      "sha256": "f54991424a09ecd3b55a7e59c14c17d079ad786fb4363c87d7041d3c9053fccf",
+      "hitsBefore": 1534,
+      "hitsAfter": 1507,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 954,
+        "hdd_vcm-2": 553
+      },
+      "percussionNotes35To40Before": 1327,
+      "percussionNotes35To40After": 1442,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0069-07-radiohead-2003-we_suck_young_blood-[k].mid",
+      "sha256": "af3f57f17338975d41522a4a860040c4822a6971cd1e1afd2e8f93c4870caaf5",
+      "hitsBefore": 691,
+      "hitsAfter": 670,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 361,
+        "hdd_vcm-2": 309
+      },
+      "percussionNotes35To40Before": 158,
+      "percussionNotes35To40After": 159,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0070-08-radiohead_2003-the_gloaming.mid",
+      "sha256": "d17e2544d26e675966eac7adcaaff5be5b5aae65f94787336eadd2d7bc66bacd",
+      "hitsBefore": 925,
+      "hitsAfter": 925,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 566,
+        "hdd_vcm-2": 359
+      },
+      "percussionNotes35To40Before": 436,
+      "percussionNotes35To40After": 436,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0071-09-radiohead_2003-there_there-[k].mid",
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "hitsBefore": 2634,
+      "hitsAfter": 2634,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1319,
+        "hdd_vcm-2": 1315
+      },
+      "percussionNotes35To40Before": 842,
+      "percussionNotes35To40After": 845,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0072-10-radiohead_2003-i_will.mid",
+      "sha256": "07f2d5234e743265e35f7418f7f649a4436bbcc87b647a9677edf3e17f8e9c0d",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0073-11-radiohead_2003-a_punchup_at_a_wedding-[k].mid",
+      "sha256": "3f2561b774ff7f1dc4bfee9c64ba659328baed7a61f6b3fef9d7a607d1becafe",
+      "hitsBefore": 1340,
+      "hitsAfter": 1248,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 796,
+        "hdd_vcm-2": 452
+      },
+      "percussionNotes35To40Before": 502,
+      "percussionNotes35To40After": 504,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0074-12-radiohead_2003-myxomatosis.mid",
+      "sha256": "43ee700dcfb15479daf6001f8e0ee21d78dbffde965b3cf6a54790d49dbd5d63",
+      "hitsBefore": 1424,
+      "hitsAfter": 1422,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 724,
+        "hdd_vcm-2": 698
+      },
+      "percussionNotes35To40Before": 873,
+      "percussionNotes35To40After": 905,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0075-13-radiohead_2003-scatterbrain-[k].mid",
+      "sha256": "ade84e57f05c01ceeaef30d47a4a81c3e10e4b876d3727d3fd8199e8c5a96c52",
+      "hitsBefore": 1529,
+      "hitsAfter": 1529,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 825,
+        "hdd_vcm-2": 704
+      },
+      "percussionNotes35To40Before": 669,
+      "percussionNotes35To40After": 669,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0076-14-radiohead_2003-a_wolf_at_the_door.mid",
+      "sha256": "55461f8409deea548d720c86795e1e9e63651d4ff6cef1ec11b75f0ec3d75efc",
+      "hitsBefore": 725,
+      "hitsAfter": 721,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 418,
+        "hdd_vcm-2": 303
+      },
+      "percussionNotes35To40Before": 291,
+      "percussionNotes35To40After": 293,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0077-04-radiohead_2004-paperbag_writer.mid",
+      "sha256": "e910c9e221741edf83d39cac024e7e171a7903ffd3a99634a708bb769c372e30",
+      "hitsBefore": 1467,
+      "hitsAfter": 1375,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 695,
+        "hdd_vcm-2": 680
+      },
+      "percussionNotes35To40Before": 291,
+      "percussionNotes35To40After": 291,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0078-06-radiohead_2004-i_am_citizen_insane.mid",
+      "sha256": "f9e6b9f88598a97000f52d0e95bb495272cc58c2be98e130ae42c889d6bc7fc4",
+      "hitsBefore": 1080,
+      "hitsAfter": 1080,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 614,
+        "hdd_vcm-2": 466
+      },
+      "percussionNotes35To40Before": 374,
+      "percussionNotes35To40After": 374,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0079-01-radiohead_2007-15_step-[k].mid",
+      "sha256": "c3bec792de58440ac6adefe68c7be0dc075bfce82066ebcfa73e862b0df4d6de",
+      "hitsBefore": 1293,
+      "hitsAfter": 1266,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 639,
+        "hdd_vcm-2": 627
+      },
+      "percussionNotes35To40Before": 1000,
+      "percussionNotes35To40After": 1031,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "hitsBefore": 1414,
+      "hitsAfter": 1188,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 637,
+        "hdd_vcm-2": 551
+      },
+      "percussionNotes35To40Before": 838,
+      "percussionNotes35To40After": 842,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0081-03-radiohead_2007-nude.mid",
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "hitsBefore": 739,
+      "hitsAfter": 739,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 442,
+        "hdd_vcm-2": 297
+      },
+      "percussionNotes35To40Before": 260,
+      "percussionNotes35To40After": 260,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0082-04-radiohead_2007-weird_fishes-arpegi.mid",
+      "sha256": "441b44a841c48ef9c9925649adfde3740217a6a0117e1521a3e2836e417c8cce",
+      "hitsBefore": 2074,
+      "hitsAfter": 1778,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-2": 678,
+        "hdd_vcm-1": 1100
+      },
+      "percussionNotes35To40Before": 919,
+      "percussionNotes35To40After": 945,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0083-05-radiohead_2007-all_i_need.mid",
+      "sha256": "d1f1954bbb60aeab8a54c80a45a55d2008debd907b933ac3bee926720bb9d3b0",
+      "hitsBefore": 983,
+      "hitsAfter": 967,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 513,
+        "hdd_vcm-2": 454
+      },
+      "percussionNotes35To40Before": 446,
+      "percussionNotes35To40After": 462,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0084-06-radiohead_2007-faust_arp.mid",
+      "sha256": "770095b6d0063608e06aa34d9a3000b8359df7f9db53e521df269357c1f2b922",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0085-07-radiohead_2007-reckoner-[k].mid",
+      "sha256": "9db449b977ac482c711e149d8049ec3c40ad54ab4cb52b4595447822411a3a8a",
+      "hitsBefore": 1513,
+      "hitsAfter": 1419,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 805,
+        "hdd_vcm-2": 614
+      },
+      "percussionNotes35To40Before": 852,
+      "percussionNotes35To40After": 992,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0086-08-radiohead_2007-house_of_cards.mid",
+      "sha256": "d98730d50269e54f4160f289addc8764badd14509e644ba3dea0d3298f43a7b9",
+      "hitsBefore": 1515,
+      "hitsAfter": 1515,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-2": 366,
+        "hdd_vcm-1": 1149
+      },
+      "percussionNotes35To40Before": 655,
+      "percussionNotes35To40After": 655,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "hitsBefore": 1543,
+      "hitsAfter": 1434,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 777,
+        "hdd_vcm-2": 657
+      },
+      "percussionNotes35To40Before": 805,
+      "percussionNotes35To40After": 805,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0088-10-radiohead_2007-videotape.mid",
+      "sha256": "454bb4054fd63ef0609d48965c0dbfc7b57018b0aedf8e75d44bc4846d3544cf",
+      "hitsBefore": 914,
+      "hitsAfter": 846,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-2": 449,
+        "hdd_vcm-1": 397
+      },
+      "percussionNotes35To40Before": 711,
+      "percussionNotes35To40After": 730,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0089-02-radiohead_2007-down_is_the_new_up.mid",
+      "sha256": "eba6977a270ebb4bffb010a6935640f10429f809733a70cf7b6b2b5acc0039e9",
+      "hitsBefore": 1588,
+      "hitsAfter": 1537,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 885,
+        "hdd_vcm-2": 652
+      },
+      "percussionNotes35To40Before": 869,
+      "percussionNotes35To40After": 962,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0090-03-radiohead_2007-go_slowly.mid",
+      "sha256": "ecfce2c0941ccce07ec5e63d0f509ff74ed75f9f07fbd83edb4d967531b9eb2b",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0091-05-radiohead_2007-last_flowers.mid",
+      "sha256": "af2ed20ab0120f51bbff3953e48c84f73e3b87efc8562865a8f2a232b1bbb9e1",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0092-07-radiohead_2007-bangers_and_mash.mid",
+      "sha256": "a53a247b0f8fe03e77e13234b3132b8a1f98461954e4b209e092244994600498",
+      "hitsBefore": 1352,
+      "hitsAfter": 1261,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 772,
+        "hdd_vcm-2": 489
+      },
+      "percussionNotes35To40Before": 769,
+      "percussionNotes35To40After": 861,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0093-08-radiohead_2007-4_minutes_warning.mid",
+      "sha256": "5e7cfb72712b4a224f6fe0bd7ea075660d7a9499e2ec2730b80a9091c564bf92",
+      "hitsBefore": 616,
+      "hitsAfter": 616,
+      "peakHitsPerSecond": 4,
+      "byDevice": {
+        "hdd_vcm-1": 616
+      },
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0094-01-radiohead_2011-bloom.mid",
+      "sha256": "ff01241322d61e124f03a726b167f0623916b891947c035571d924a8dd4410f6",
+      "hitsBefore": 1556,
+      "hitsAfter": 1556,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-2": 770,
+        "hdd_vcm-1": 786
+      },
+      "percussionNotes35To40Before": 1241,
+      "percussionNotes35To40After": 1387,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0095-03-radiohead_2011-little_by_little.mid",
+      "sha256": "da2220adbd67957b9e943d567a65b8863f90c7b4f34ad23f86e33d7e79baa90a",
+      "hitsBefore": 1865,
+      "hitsAfter": 1760,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 950,
+        "hdd_vcm-2": 810
+      },
+      "percussionNotes35To40Before": 407,
+      "percussionNotes35To40After": 407,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0096-04-radiohead_2011-feral.mid",
+      "sha256": "5f1e2b3acdbf6baeb82fa4ff57e73c3838bb62e324321fc7547a4d2e53d2649a",
+      "hitsBefore": 1577,
+      "hitsAfter": 1507,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 691,
+        "hdd_vcm-2": 816
+      },
+      "percussionNotes35To40Before": 1051,
+      "percussionNotes35To40After": 1146,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0097-05-radiohead_2011-lotus_flower.mid",
+      "sha256": "7345684ba84ca5dead87505a93a8a11f1be655bd56f9e9c6e4ab08eb8bc3469e",
+      "hitsBefore": 1942,
+      "hitsAfter": 1818,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 1213,
+        "hdd_vcm-2": 605
+      },
+      "percussionNotes35To40Before": 826,
+      "percussionNotes35To40After": 957,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0098-06-radiohead_2011-codex.mid",
+      "sha256": "af93dab3e5803769c77d00ae6bd2d624ddc502b3ac59d545d5cade7ee9519e70",
+      "hitsBefore": 354,
+      "hitsAfter": 354,
+      "peakHitsPerSecond": 3,
+      "byDevice": {
+        "hdd_vcm-1": 354
+      },
+      "percussionNotes35To40Before": 354,
+      "percussionNotes35To40After": 354,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0099-08-radiohead_2011-separator.mid",
+      "sha256": "d87fb3e9127673bf0b50228cdae83b39b8c5ea4dd02ec2d3134a39517e25d257",
+      "hitsBefore": 2016,
+      "hitsAfter": 2016,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 1152,
+        "hdd_vcm-2": 864
+      },
+      "percussionNotes35To40Before": 864,
+      "percussionNotes35To40After": 864,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0100-01-radiohead_2016-burn_the_witch.mid",
+      "sha256": "1a45c8ec816a0e7a948501f98ae5ac7d343a04d43f0230d59be003e23e80b2ee",
+      "hitsBefore": 488,
+      "hitsAfter": 488,
+      "peakHitsPerSecond": 4,
+      "byDevice": {
+        "hdd_vcm-1": 488
+      },
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0101-02-radiohead_2016-daydreaming.mid",
+      "sha256": "7286e374b204543827896cd4bf1cc7415c8755dd03d0fe11f17bfffa1b23a314",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0102-03-radiohead_2016-decks_dark.mid",
+      "sha256": "7e68b519d75fef9371e1d669b2e5a24bf60e6c6f13fe0d8dbf97c125bb3ca72a",
+      "hitsBefore": 1314,
+      "hitsAfter": 1314,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 770,
+        "hdd_vcm-2": 544
+      },
+      "percussionNotes35To40Before": 443,
+      "percussionNotes35To40After": 443,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0103-04-radiohead_2016-desert_island_disk.mid",
+      "sha256": "bbc95afbccd593b66c0e8b38b30e13dcc62ddf912fbabe5e17496fb1fcbc00c1",
+      "hitsBefore": 629,
+      "hitsAfter": 629,
+      "peakHitsPerSecond": 6,
+      "byDevice": {
+        "hdd_vcm-1": 502,
+        "hdd_vcm-2": 127
+      },
+      "percussionNotes35To40Before": 91,
+      "percussionNotes35To40After": 91,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0104-05-radiohead_2016-ful_stop.mid",
+      "sha256": "fc35c1167e0511a172a58d31778bb3ab217761f6ea03d6610067aad913d49853",
+      "hitsBefore": 2419,
+      "hitsAfter": 2419,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1138,
+        "hdd_vcm-2": 1281
+      },
+      "percussionNotes35To40Before": 1111,
+      "percussionNotes35To40After": 1111,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0105-06-radiohead_2016-glass_eyes.mid",
+      "sha256": "d31156689aff821fe4d9766b6104985712ee0277b7dcd570a77e5546d8a1cd41",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0106-07-radiohead_2016-identikit.mid",
+      "sha256": "a551e16fe12cf4bc10450d93af1bca170a1e71dfee1f4f06029d39c0b93330e0",
+      "hitsBefore": 1286,
+      "hitsAfter": 1286,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 803,
+        "hdd_vcm-2": 483
+      },
+      "percussionNotes35To40Before": 807,
+      "percussionNotes35To40After": 807,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0107-08-radiohead_2016-the_numbers.mid",
+      "sha256": "6f000f2069ad50579a33c0b6673435719592d00153bd3a98d8582a57f7a5d9fe",
+      "hitsBefore": 1281,
+      "hitsAfter": 1281,
+      "peakHitsPerSecond": 9,
+      "byDevice": {
+        "hdd_vcm-1": 776,
+        "hdd_vcm-2": 505
+      },
+      "percussionNotes35To40Before": 389,
+      "percussionNotes35To40After": 389,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0108-09-radiohead_2016-present_tense.mid",
+      "sha256": "228e184fe57cd7ac6276065448312bfefa30aa055ca2b67eaae148ddd6d4acbd",
+      "hitsBefore": 1630,
+      "hitsAfter": 1630,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 907,
+        "hdd_vcm-2": 723
+      },
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0109-10-radiohead_2016-tinker_tailor_soldier_sailor_rich_man_poor_man_beggar_man_thief.mid",
+      "sha256": "00b39fe64be5b430da609005c4b148aa4ffae3238bb683e3077532551820e57e",
+      "hitsBefore": 643,
+      "hitsAfter": 643,
+      "peakHitsPerSecond": 6,
+      "byDevice": {
+        "hdd_vcm-1": 447,
+        "hdd_vcm-2": 196
+      },
+      "percussionNotes35To40Before": 1,
+      "percussionNotes35To40After": 1,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0110-11-radiohead_2016-true_love_waits.mid",
+      "sha256": "bd89b7c97856f4770f5483ac7c31a122f54824c9faf0ab8a58b872b62c24514d",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0111-radiohead_1993-yes_i_am.mid",
+      "sha256": "9a3767103faf1aaa05074ee6ee4e34a789131a0a6fe287dccca0598f57f72d0e",
+      "hitsBefore": 1538,
+      "hitsAfter": 1538,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 807,
+        "hdd_vcm-2": 731
+      },
+      "percussionNotes35To40Before": 631,
+      "percussionNotes35To40After": 631,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0112-radiohead_1995-maquiladora.mid",
+      "sha256": "44794f0950572eadbdb489e31ded42bf1753ab9a128dc10a6ef2de5c5a0a23ef",
+      "hitsBefore": 988,
+      "hitsAfter": 988,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 669,
+        "hdd_vcm-2": 319
+      },
+      "percussionNotes35To40Before": 364,
+      "percussionNotes35To40After": 364,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0113-radiohead_1995-nobody_does_it_better.mid",
+      "sha256": "addba84778e1095c2df501212276326747bd8742841232343b5d70ad755c2ec9",
+      "hitsBefore": 656,
+      "hitsAfter": 655,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 383,
+        "hdd_vcm-2": 272
+      },
+      "percussionNotes35To40Before": 308,
+      "percussionNotes35To40After": 308,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0114-radiohead_1996-bishop's_robes.mid",
+      "sha256": "4de801209be094d838f50a52f58f06bf730da3e651f053e632d84ca1c9b58e41",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0115-radiohead_1996-lift.mid",
+      "sha256": "2475ffc1218a9d19c4aaed7d8bd29274ae1b390937753c0fd7209cd4da30f623",
+      "hitsBefore": 931,
+      "hitsAfter": 870,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 523,
+        "hdd_vcm-2": 347
+      },
+      "percussionNotes35To40Before": 337,
+      "percussionNotes35To40After": 399,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0116-radiohead_1996-talk_show_host.mid",
+      "sha256": "f27a509ef3a1b149bc766265093cf6b22bd56a1220d018489e50b6808e8185d5",
+      "hitsBefore": 1182,
+      "hitsAfter": 1134,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 615,
+        "hdd_vcm-2": 519
+      },
+      "percussionNotes35To40Before": 915,
+      "percussionNotes35To40After": 960,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0117-radiohead_1997-lull.mid",
+      "sha256": "9245f36d8653108233d02e2a991aa4374e9c0e1e70d19dfc80e3c5e04cf94e07",
+      "hitsBefore": 345,
+      "hitsAfter": 345,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 215,
+        "hdd_vcm-2": 130
+      },
+      "percussionNotes35To40Before": 111,
+      "percussionNotes35To40After": 111,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0118-radiohead_1997-melatonin.mid",
+      "sha256": "fab5cb0134376aed9c998280838074c1e01aa1abce707f5a42bcb12a22e4ea13",
+      "hitsBefore": 420,
+      "hitsAfter": 420,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 240,
+        "hdd_vcm-2": 180
+      },
+      "percussionNotes35To40Before": 285,
+      "percussionNotes35To40After": 285,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0119-radiohead_1997-nude_(big_ideas).mid",
+      "sha256": "8c181f5d9e428a819f915fec6407da71ea67ec551f28786e62dace2dd80aead1",
+      "hitsBefore": 1009,
+      "hitsAfter": 1008,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 772,
+        "hdd_vcm-2": 236
+      },
+      "percussionNotes35To40Before": 236,
+      "percussionNotes35To40After": 236,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0120-radiohead_1997-pearly.mid",
+      "sha256": "8dae045820072f587c6e2ed6f377cbf45f1190a03db2bbb44eef7cc7bc3b8809",
+      "hitsBefore": 1279,
+      "hitsAfter": 1275,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 716,
+        "hdd_vcm-2": 559
+      },
+      "percussionNotes35To40Before": 508,
+      "percussionNotes35To40After": 513,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0121-radiohead_1997-polyethylene_part_1&2-[k].mid",
+      "sha256": "a060d546b52f372eb00a7deb4426bb36f9d76365919adbd84cf52fb80a199f4b",
+      "hitsBefore": 918,
+      "hitsAfter": 909,
+      "peakHitsPerSecond": 8,
+      "byDevice": {
+        "hdd_vcm-1": 451,
+        "hdd_vcm-2": 458
+      },
+      "percussionNotes35To40Before": 555,
+      "percussionNotes35To40After": 555,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0122-radiohead_1998-how_i_made_my_millions.mid",
+      "sha256": "9f504a6fc5c9fd8b868eab10d2cc94a0e8b7176d508dc7817d95787d2512f696",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0123-radiohead_1998-big_boots_(man-o-war).mid",
+      "sha256": "826a40146f904eab905d8fb431a1a72a2acbd23eb15b9ec4b9392cbc1babbb2f",
+      "hitsBefore": 838,
+      "hitsAfter": 838,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 506,
+        "hdd_vcm-2": 332
+      },
+      "percussionNotes35To40Before": 407,
+      "percussionNotes35To40After": 407,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0124-radiohead_1998-rabbit_in_your_headlights.mid",
+      "sha256": "f749d4b49bb4d079a955b663a367ce6c63c7b5ba44a6253a5dd2253935b8901e",
+      "hitsBefore": 649,
+      "hitsAfter": 649,
+      "peakHitsPerSecond": 7,
+      "byDevice": {
+        "hdd_vcm-1": 428,
+        "hdd_vcm-2": 221
+      },
+      "percussionNotes35To40Before": 216,
+      "percussionNotes35To40After": 241,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0125-radiohead_2001-fog_(alligators_in_new_york_sewers).mid",
+      "sha256": "c05383c3a3af01f7f650f12e4827cfc56cf8a3f8cad44868fc20c518e821df62",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid",
+      "sha256": "a35f843b908f7f91b0141ded4c630a5f0c8a998b5e57f108bbfd65af4e04b0d8",
+      "hitsBefore": 3176,
+      "hitsAfter": 3176,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 1746,
+        "hdd_vcm-2": 1430
+      },
+      "percussionNotes35To40Before": 2179,
+      "percussionNotes35To40After": 2179,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0127-radiohead_2004-arpeggi.mid",
+      "sha256": "a0163a8ee0557669e53582b3111ece91b5094a5ac2f04998352dc4da9076d466",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0128-radiohead_2005-i_want_none_of_this.mid",
+      "sha256": "989d7b32a91471b4fbccd0b5dfd03b0137d2525e4fb8ab2f5138ef0a9de12241",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "radiohead-midi/0129-radiohead_2008-house_of_cards_(live).mid",
+      "sha256": "8b9f83db5727aa3cfbce9da027529e60c59349bfbd56f378f28ea0c35e3f361e",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "sony-playstation-startup.mid",
+      "sha256": "317bb1aae459983fed30f9faa234fd3d2fe6ae20f71f0d2c241fe936e3bf0f96",
+      "hitsBefore": 0,
+      "hitsAfter": 0,
+      "peakHitsPerSecond": 0,
+      "byDevice": {},
+      "percussionNotes35To40Before": 0,
+      "percussionNotes35To40After": 0,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "touhou1.mid",
+      "sha256": "902aecc35c1c33f1c6fa11f3d5a46f90727411b9fcbcf48b68ee065a816bb983",
+      "hitsBefore": 1282,
+      "hitsAfter": 1281,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 707,
+        "hdd_vcm-2": 574
+      },
+      "percussionNotes35To40Before": 861,
+      "percussionNotes35To40After": 861,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "touhou2.mid",
+      "sha256": "f245be435b6b1f7dd33363e56647d103dd0542d6830e9a1d0155c2120ec50509",
+      "hitsBefore": 657,
+      "hitsAfter": 645,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 314,
+        "hdd_vcm-2": 331
+      },
+      "percussionNotes35To40Before": 474,
+      "percussionNotes35To40After": 492,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "touhou3.mid",
+      "sha256": "66cadd7217789fba2090020f81bbb8097b09ed39983bb7da5c492b548954aa6a",
+      "hitsBefore": 1088,
+      "hitsAfter": 1013,
+      "peakHitsPerSecond": 10,
+      "byDevice": {
+        "hdd_vcm-1": 505,
+        "hdd_vcm-2": 508
+      },
+      "percussionNotes35To40Before": 791,
+      "percussionNotes35To40After": 800,
+      "nonHddMetricsIdentical": true
+    },
+    {
+      "file": "touhou4.mid",
+      "sha256": "0ba21f8c9363a39a602e717842a33bf4eea22523d090f9b60124d2b56bb4722a",
+      "error": "MidiSourceError: nie moge wczytac /Users/krzysztof/Music/MIDI/touhou4.mid: list index out of range"
+    }
+  ]
+}

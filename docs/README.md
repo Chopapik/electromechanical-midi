@@ -7,7 +7,8 @@ raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
 Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
 Aktualny układ **2026-10-22**: 8 FDD / 4 DVD / 4 HDD / 2 speakery,
-6 rejestrów i 6 wykorzystywanych DRV8833. Host ma 18 aktywnych wpisów.
+6 rejestrów i 6 wykorzystywanych DRV8833. Host ma 18 wpisów, z czego 16 aktywnych;
+HDD3–4 są wyłączone w konfiguracji, z zachowaniem profili i obsługi firmware.
 Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu, VIRTUAL i REAL jako
 drugą grupę 4× unisono. Są zadeklarowane jako podłączone (`present:true`,
 `realEnabled:true`), a host wymaga cyklu `DIAG FDD` / TRACK0 przed PLAY.
@@ -36,7 +37,7 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
-| Skład hosta | 18 aktywnych wpisów: 8 FDD + 4 DVD + 4 HDD + 2 speakery | [devices.json](../config/devices.json) |
+| Skład hosta | 18 wpisów, 16 aktywnych: 8 FDD + 4 DVD + HDD1–2 + 2 speakery; HDD3–4 wyłączone | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD i HDD | Aktualne zgłoszenie: **VM 5 V z dobrym odprowadzaniem ciepła**, np. do metalowej obudowy VHS pełniącej też rolę rezonatora; brak liczbowej kwalifikacji termicznej | [zasilanie](HARDWARE_WIRING.md#zasilanie), [obserwacje DVD](research/hardware-measurements.md#dvd), [HDD](research/hardware-measurements.md#hdd-vcm) |
@@ -51,7 +52,7 @@ parametrów wykonawczych FDD1. Firmware startuje z nimi wyłączonymi, po czym h
 REAL wysyła PROFILE/ENABLE i sprawdza je przez osobne `DIAG FDD`.
 DVD mają cztery własne profile i są raportowane przez zwykły STATUS.
 STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
-Host zna osiem FDD i cztery DVD; wszystkie wpisy inventory są aktywne.
+Host zna osiem FDD, cztery DVD, cztery HDD i dwa speakery; HDD3–4 są wyłączone.
 [Ograniczenia potwierdzeń stanu](HARDWARE_DEVICES.md#fdd58-adresacja-i-obsługa).
 Przed flashowaniem i testami logiki odłącz moc i sygnały
 urządzeń wykonawczych. Zasilanie testu: ESP32 USB, rejestry 3,3 V ATX,

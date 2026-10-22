@@ -146,7 +146,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from .percussion_routing import source_drops, limit_plan, RATE_LIMIT_REASON
     hdd_rate_drops = source_drops(notes,pins,
         {ident for ident,p in profiles.items() if p.name=='HDD_PERCUSSION'})
-    rhythm = Rhythm(notes,[s for s in slots.values() if profiles[s.device.id].name=='HDD_PERCUSSION'],lanes) if universal_mode else None
+    hdd_slots=[s for s in slots.values() if profiles[s.device.id].name=='HDD_PERCUSSION']
+    rhythm = Rhythm([n for n in notes if n['id'] not in hdd_rate_drops and
+                     not (n['id'] in pins and pins[n['id']].device_id is None)],
+                    hdd_slots,lanes) if universal_mode or len(hdd_slots)==2 else None
     if policy.get('tonalOverflow') == 'adaptive':
         if not policy.get('maxNoteSeconds'):
             policy['maxNoteSeconds'] = _adaptive_cap(notes, accompaniment, policy, frozenset({BASS, HARMONY}))
@@ -292,6 +295,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
                 rejected[ident]['TIMING_CONFLICT'] += 1
                 if policy['mechanicalAware'] and policy['allowVoiceSteal'] and profile.name=='DVD_SLED':
                     blocked_candidates.append((slot, played, hz, folded, duration))
+                continue
+            if rhythm and profile.name=='HDD_PERCUSSION' and not rhythm.preserves_backbeat(
+                    item,ident,profile,state,HardwareNote(None,duration,arrival),ev):
+                diagnostics[ident]['reasons'].append('HDD_BACKBEAT_RESERVED')
                 continue
             if orchestration and orchestration.reserved_conflict(item,device,arrival,duration,fx_tracks):
                 continue

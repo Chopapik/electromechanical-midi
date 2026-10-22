@@ -165,6 +165,18 @@ ich bliskiego wejścia ogranicza pożyczanie ich kanałów. Nie dopisuje uderze�
 nie przesuwa źródłowych onsetów i nie zwiększa energii impulsów ani limitów
 resetu/termiki. Wybór perkusji może się zmienić względem starszych wersji.
 
+Domyślna konfiguracja używa **dwóch HDD: HDD1 i HDD2**. HDD3–4 pozostają
+w katalogu, profilach i firmware, ale mają `enabled:false`. Wszystkie presety
+pomijają je, a router odrzuca ich HIT również ze starego harmonogramu; STOP jest
+nadal przekazywany. Dla dwóch aktywnych HDD preferowane role to stopa i werbel.
+Pozostała perkusja wykorzystuje wolne miejsca, jeśli symulacja istniejącego
+cyklu i budżetów kanału potwierdza, że nie zablokuje jego nadchodzącego głównego
+akcentu. Stopa i werbel mogą pożyczać oba kanały; rezerwacja dotyczy dodatków.
+Bez stopy lub werbla oba HDD mogą reprezentować pozostałe źródłowe uderzenia.
+Nie dopisujemy rytmu ani nie zwiększamy impulsów. Limit 12 HIT/s pozostaje
+wspólnym sufitem; dotychczasowe ograniczenia pojedynczych kanałów mogą wymagać
+niższej gęstości. Brzmienie na sprzęcie wymaga osobnego odsłuchu.
+
 ## Source Continuity, UNISON i reinforcement
 
 [articulation.py](../host/playback/articulation.py) może przedłużyć wykonany gate

@@ -382,3 +382,45 @@ benchmark objął 142 pliki biblioteki: 141 poprawnie sparsowanych ma maksimum
 zmianą limitera. Liczby komend tonalnych wszystkich 134 plików poprzedniego
 benchmarku pozostały niezmienione. Szczegóły i SHA-256 wejść:
 [raport budżetu HDD](../../reports/hdd-shared-budget.json).
+
+## Dwa aktywne HDD — 2026-10-22
+
+Domyślnie aktywne są HDD1–2; HDD3–4 zachowują wpisy, profile, adresację i obsługę
+firmware, lecz mają `enabled:false`. Router filtruje nieaktywne HIT również
+podczas sprawdzania gotowości; STOP pozostaje dozwolony. Katalog ma nadal
+18 urządzeń, z czego 16 aktywnych. Nie zmieniano firmware, profili cewek ani mapy Q.
+
+W dwóch głosach stopa i werbel mają pierwszeństwo. Dodatek może pożyczyć kanał,
+jeśli symulacja przyszłych głównych ataków przez dotychczasowy evaluator
+mechaniczny potwierdza ich wykonalność. Sprawdzane są również dotychczasowe
+budżety częstotliwości uderzeń pojedynczego HDD. Stopa i werbel mogą pożyczać
+oba kanały; nie są odrzucane przez samą rezerwację na późniejszy akcent.
+Limit 12 HIT/s nadal jest wspólnym sufitem, a nie docelową gęstością.
+
+Porównanie z prostym wyłączeniem HDD3–4 po wdrożeniu tego samego limitu 12 HIT/s,
+na identycznych plikach i konfiguracji, preset `instrument_roles_unison4`:
+
+| Utwór | Zachowane nuty perkusji 35–40 przed → po | Wszystkie komendy HIT przed → po |
+| --- | ---: | ---: |
+| Counting Stars | 617 → 676 | 1204 → 1204 |
+| Message in a Bottle | 1042 → 1052 | 2309 → 2307 |
+| Every Breath You Take | 493 → 502 | 1049 → 1049 |
+| Bodysnatchers | 838 → 842 | 1414 → 1188 |
+
+Nuty 35–40 są przybliżonym wskaźnikiem głównego rytmu, nie oceną odsłuchową;
+perkusja tonalna poza kanałem GM zachowuje własną interpretację. W Counting Stars
+w 1:36–1:52 przy 100 HIT liczba werbli wzrosła z 8 do 19 kosztem hi-hatu.
+Regularne odcinki Police 0:36–0:40 i 0:42–0:48 zachowały dokładnie te same nuty.
+Skróty kompletnych komend tonalnych Counting Stars i Police są identyczne przed/po.
+
+Walidacja: 774 testy backendu/C++, w tym dziewięć presetów na syntetycznych MIDI
+i filtrowanie obu wyjść na mockach. Pełna biblioteka liczy 142 pliki: 141 poprawnie
+wczytanych, `touhou4.mid` z tym samym błędem parsera przed/po. Wszystkie poprawne
+pliki używają tylko HDD1–2, mają maksimum 11 HIT w ruchomej sekundzie, zero
+konfliktów mechanicznych, nakładania nut, naruszeń ataków FDD i rozbieżności unisono.
+Metryki tonalne wszystkich 141 utworów pozostały niezmienione. Łącznie zachowano
+2143 więcej nut perkusji 35–40: w 48 plikach więcej, w 92 tyle samo, w Stop Whispering
+o jedną mniej. To jawny kompromis redukcji; nie deklarujemy idealnego odtworzenia
+każdej partii ani potwierdzonej jakości akustycznej. Sprawdzono software offline,
+bez włączania ATX, ruchu urządzeń i flashowania. Szczegóły, SHA-256 MIDI oraz
+identyfikatory obu implementacji: [raport dwóch HDD](../../reports/two-hdd-arrangement.json).

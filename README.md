@@ -2,7 +2,9 @@
 
 Lokalny odtwarzacz MIDI: Python/FastAPI, React/TypeScript i ESP32-WROOM-32.
 Katalog hosta: **18 urządzeń — 8 FDD, 4 DVD stepper, 4 HDD VCM, 2 PC Speakery**.
-Aktywne jest **18: 8 FDD, 4 DVD, 4 HDD i oba speakery**.
+Aktywnych jest **16: 8 FDD, 4 DVD, HDD1–2 i oba speakery**.
+HDD3–4 zachowują adresację, profile i obsługę firmware, lecz są wyłączone w
+konfiguracji; aranżer i router pomijają ich uderzenia w REAL oraz VIRTUAL.
 Docelowe okablowanie i firmware: **8 FDD + 4 DVD + 4 HDD + 2 speakery / 6 × SN74HC595N / 6 wykorzystywanych DRV8833**;
 Q32–Q39 pozostają wolne, HDD zachowują Q40–Q47. FDD5–8 uczestniczą w aranżacji i są zadeklarowane
 jako podłączone; REAL wymaga homingu i potwierdzenia TRACK0.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "8 FDD + 4 DVD + 4 HDD + 2 PC Speakers (18 active)",
+  "name": "8 FDD + 4 DVD + 4 HDD + 2 PC Speakers (16 active)",
   "devices": [
     {
       "id": "fdd-1",
@@ -295,7 +295,7 @@
       "lane": "hdd:3",
       "profile": "WD_CAVIAR_CURRENT",
       "hardwareProfile": "HDD_PERCUSSION",
-      "enabled": true,
+      "enabled": false,
       "volume": 0.6,
       "pan": 0.0
     },
@@ -306,7 +306,7 @@
       "lane": "hdd:4",
       "profile": "WD_CAVIAR_CURRENT",
       "hardwareProfile": "HDD_PERCUSSION",
-      "enabled": true,
+      "enabled": false,
       "volume": 0.6,
       "pan": 0.0
     }

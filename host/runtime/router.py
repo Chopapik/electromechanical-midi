@@ -15,7 +15,7 @@ class Router:
         self.output.stop()  # Failure leaves selection unchanged.
         self.mode=mode
     def ready(self, commands, *, auto_home=False):
-        commands=[c for c in commands if c.device_id not in self.muted]
+        commands=self.accepted(commands)
         if self.mode=='REAL': return self.real.ready(commands,auto_home=auto_home)
         self.virtual.ready(commands)
         return True
@@ -28,7 +28,10 @@ class Router:
             self.output.stop_device(ident)
         else: self.muted.discard(ident)
     def dispatch(self, commands, **clock):
-        accepted=[c for c in commands if c.kind=='stop' or
-                  (c.device_id not in self.muted and self.registry.by_id[c.device_id]['enabled'])]
+        accepted=self.accepted(commands)
         if accepted: self.output.dispatch(accepted,**clock)
+    def accepted(self, commands):
+        # Disabled catalog entries retain addressing and always retain STOP.
+        return [c for c in commands if c.kind=='stop' or
+                (c.device_id not in self.muted and self.registry.by_id[c.device_id]['enabled'])]
     def status(self): return {'mode':self.mode, **self.output.status(), 'muted':sorted(self.muted)}

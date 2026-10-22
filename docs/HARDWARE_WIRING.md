@@ -3,7 +3,8 @@
 Układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
 **6 wykorzystywanych modułów DRV8833**, **8 FDD**, **4** dwufazowe bipolarne
 steppery DVD, 4 cewki HDD VCM oraz 2 pasywne PC Speakery przez osobne S8550 (PNP).
-Host i firmware mają 18 kanałów urządzeń; wszystkie wpisy hosta są aktywne.
+Host i firmware mają 18 kanałów urządzeń; aktywnych jest 16 wpisów hosta.
+HDD3–4 pozostają pod Q44–Q47 i w firmware, ale są wyłączone w konfiguracji hosta.
 Cztery moduły oznaczone DRV1–4 obsługują DVD, a DRV7–8 obsługują HDD.
 Numery istniejących modułów oraz połączenia HDD pozostają zachowane.
 Q32–Q39 na SR5 są wolne. SR5 pozostaje w kaskadzie między SR4 i SR6,

@@ -40,11 +40,11 @@ class BackendCapacityTests(unittest.TestCase):
     def test_catalog_capacity_activity_and_profiles(self):
         r = self.registry
         self.assertEqual(Counter(d['type'] for d in r.devices), {'FDD':8, 'DVD_SLED':4, 'HDD_VCM':4, 'VHS':2})
-        self.assertTrue(all(d['enabled'] for d in r.devices))
-        self.assertEqual(sum(d['enabled'] for d in r.devices), 18)
+        self.assertEqual({d['id'] for d in r.devices if not d['enabled']},{'hdd_vcm-3','hdd_vcm-4'})
+        self.assertEqual(sum(d['enabled'] for d in r.devices), 16)
         for d in r.catalog():
             with self.subTest(device=d['id']):
-                self.assertIsNone(d['reason'])
+                self.assertEqual(d['reason'] is None,d['enabled'])
                 if d['id'] in EXTENDED_FDD:
                     instance = r.profiles.instances[d['lane']]
                     self.assertIs(instance['present'], True)
@@ -69,7 +69,7 @@ class BackendCapacityTests(unittest.TestCase):
         config = self.registry.configuration()
         devices = [VirtualDeviceInstance.parse(d) for d in config.devices]
         bound, unmapped = bind_devices(devices, 2)
-        self.assertEqual(len(bound), 18);self.assertEqual(unmapped, [])
+        self.assertEqual(len(bound), 16);self.assertEqual(unmapped, [])
         for d in devices: d.enabled = True
         bound, unmapped = bind_devices(devices, 2)
         self.assertEqual(len(bound), 18);self.assertEqual(unmapped, [])
@@ -100,6 +100,9 @@ class BackendCapacityTests(unittest.TestCase):
                 with self.subTest(method=method, invalid=invalid), self.assertRaises(ValueError): fn(invalid, *args)
 
     def test_configure_enables_extended_fdd_and_retains_all_hdd_hits(self):
+        # Capacity remains four; this test explicitly opts into all physical HDD.
+        for d in self.registry.devices:
+            if d['type']=='HDD_VCM':d['enabled']=True
         link = Link()
         link.controller_status['speaker_fx'] = '1'
         link.device_status = {k:v for k,v in link.device_status.items()
