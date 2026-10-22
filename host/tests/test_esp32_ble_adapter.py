@@ -184,11 +184,14 @@ int main(int argc,char** argv){
  }else if(c=="callback_deferred"){
   size_t n=writes.size();writeBle("TEST ON\n");assert(gpio[27]==LOW&&writes.size()==n&&uxQueueMessagesWaiting(bleRxQueue)==1);
   drainInput();assert(gpio[27]==HIGH&&drainBle()=="TEST ON\n");
- }else if(c=="extended_sled"){
-  writeBle("SLED 6 PLAY 220\n");drainInput();assert(!ctrl.sled[5].playing&&drainBle()=="ERR DISABLED\n");bleTx->notifications.clear();
-  writeBle("SLED 6 ENABLE 1\nSLED 6 PLAY 220\n");assert(!ctrl.sled[5].playing);drainInput();assert(ctrl.sled[5].playing&&ctrl.sled[5].targetStepRate==220);
-  writeBle("DIAG SLED\n");drainInput();auto text=drainBle();assert(text.find("DIAG SLED BEGIN\n")==0&&text.find("DIAG SLED 6 enabled=1 playing=1 hz=220.00")!=std::string::npos);bleTx->notifications.clear();
-  writeBle("ALL STOP 45\n");drainInput();assert(!ctrl.sled[5].playing&&drainBle()=="STOPPED 45\n");
+ }else if(c=="four_sleds"){
+  writeBle("SLED 4 PLAY 220\n");drainInput();assert(!ctrl.sled[3].playing&&drainBle()=="ERR DISABLED\n");bleTx->notifications.clear();
+  writeBle("SLED 4 ENABLE 1\nSLED 4 PLAY 220\n");assert(!ctrl.sled[3].playing);drainInput();assert(ctrl.sled[3].playing&&ctrl.sled[3].targetStepRate==440);
+  for(int ordinal=map::sledCount+1;ordinal<=map::sledCount+2;++ordinal){
+   auto command="SLED "+std::to_string(ordinal)+" ENABLE 1\n";
+   writeBle(command.c_str());drainInput();assert(drainBle()=="ERR ID\n");bleTx->notifications.clear();
+  }
+  writeBle("ALL STOP 45\n");drainInput();assert(!ctrl.sled[3].playing&&drainBle()=="STOPPED 45\n");
  }else if(c=="motor_deferred"){
   ctrl.fdd[0].homed=true;size_t n=writes.size();writeBle("FDD 1 PLAY 220\n");
   assert(!ctrl.fdd[0].playing&&writes.size()==n);drainInput();assert(ctrl.fdd[0].playing&&writes.size()==n);
@@ -248,7 +251,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('speaker_pnp','power','serial_boot_once', 'boot', 'callback_deferred', 'extended_sled', 'motor_deferred', 'routing', 'reconnect',
+for case in ('speaker_pnp','power','serial_boot_once', 'boot', 'callback_deferred', 'four_sleds', 'motor_deferred', 'routing', 'reconnect',
              'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

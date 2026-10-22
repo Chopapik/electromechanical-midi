@@ -11,11 +11,12 @@
 namespace orchestra {
 namespace map {
 constexpr uint8_t fddCount=8, hostFddCount=4, registerCount=6, bitCount=registerCount*8;
-constexpr uint8_t sledCount=6, hostSledCount=4, hddCount=4;
+constexpr uint8_t sledCount=4, hddCount=4;
 constexpr uint8_t data=23, clock=18, latch=22, oe=21, vhs=25, speakerFx=26, atx=19;
 constexpr uint8_t track0[fddCount]={34,35,36,39,32,33,16,17};
 constexpr uint8_t step[fddCount]={0,2,4,6,8,10,12,14}, dir[fddCount]={1,3,5,7,9,11,13,15};
-constexpr uint8_t sled[sledCount][4]={{16,17,18,19},{20,21,22,23},{24,25,26,27},{28,29,30,31},{32,33,34,35},{36,37,38,39}};
+constexpr uint8_t sled[sledCount][4]={{16,17,18,19},{20,21,22,23},{24,25,26,27},{28,29,30,31}};
+constexpr uint8_t unused[8]={32,33,34,35,36,37,38,39};
 constexpr uint8_t hdd[hddCount][2]={{40,41},{42,43},{44,45},{46,47}};
 }
 namespace fddDefaults {
@@ -27,19 +28,11 @@ static_assert(sizeof(physical::fddReversalUs)/sizeof(physical::fddReversalUs[0])
 static_assert(sizeof(physical::fddMinStepUs)/sizeof(physical::fddMinStepUs[0])==map::hostFddCount,"FDD STEP profile count changed");
 constexpr uint8_t profileIndex(uint8_t id){return id<map::hostFddCount?id:0;}
 }
-namespace sledDefaults {
-// The generator still owns four profiles. Unqualified DVD5-6 temporarily use
-// DVD4's travel/acceleration/band defaults, but explicitly retain ratio=1.
-// Never copy an individual motor's tuner correction onto unqualified DVD5-6.
-// Every generated-array lookup, including the frequency-band check, uses this index.
-static_assert(sizeof(physical::sledTravel)/sizeof(physical::sledTravel[0])==map::hostSledCount,"DVD profile count changed");
-static_assert(sizeof(physical::sledAcceleration)/sizeof(physical::sledAcceleration[0])==map::hostSledCount,"DVD acceleration count changed");
-static_assert(sizeof(physical::sledPitchRatio)/sizeof(physical::sledPitchRatio[0])==map::hostSledCount,"DVD pitch ratio count changed");
-static_assert(sizeof(physical::sledAllowedBandCount)/sizeof(physical::sledAllowedBandCount[0])==map::hostSledCount,"DVD band count changed");
-static_assert(sizeof(physical::sledAllowedBandsHz)/sizeof(physical::sledAllowedBandsHz[0])==map::hostSledCount,"DVD band table count changed");
-constexpr uint8_t profileIndex(uint8_t id){return id<map::hostSledCount?id:map::hostSledCount-1;}
-constexpr float pitchRatio(uint8_t id){return id<map::hostSledCount?physical::sledPitchRatio[id]:1.0f;}
-}
+static_assert(sizeof(physical::sledTravel)/sizeof(physical::sledTravel[0])==map::sledCount,"DVD profile count changed");
+static_assert(sizeof(physical::sledAcceleration)/sizeof(physical::sledAcceleration[0])==map::sledCount,"DVD acceleration count changed");
+static_assert(sizeof(physical::sledPitchRatio)/sizeof(physical::sledPitchRatio[0])==map::sledCount,"DVD pitch ratio count changed");
+static_assert(sizeof(physical::sledAllowedBandCount)/sizeof(physical::sledAllowedBandCount[0])==map::sledCount,"DVD band count changed");
+static_assert(sizeof(physical::sledAllowedBandsHz)/sizeof(physical::sledAllowedBandsHz[0])==map::sledCount,"DVD band table count changed");
 struct IO {
  virtual ~IO() {}
  virtual uint32_t us()=0;
@@ -110,11 +103,11 @@ struct Sled {
  int32_t position=0;int16_t softMax;
  uint8_t id,phase=0;bool enabled=false,playing=false,forward=true,clockStarted=false;
  uint32_t period=0,last=0;float hz=0,currentStepRate=0,targetStepRate=0,accelerationLimit,pitchRatio,fraction=0;
- Sled(uint8_t i):softMax(physical::sledTravel[sledDefaults::profileIndex(i)]),id(i),accelerationLimit(physical::sledAcceleration[sledDefaults::profileIndex(i)]),pitchRatio(sledDefaults::pitchRatio(i)){}
+ Sled(uint8_t i):softMax(physical::sledTravel[i]),id(i),accelerationLimit(physical::sledAcceleration[i]),pitchRatio(physical::sledPitchRatio[i]){}
  void stop(ShiftRegisterBus& bus){playing=false;hz=0;currentStepRate=targetStepRate=fraction=0;clockStarted=false;for(auto b:map::sled[id])bus.setBit(b,false);}
  bool play(float value){
   if(!enabled||softMax<0||!isfinite(value)||value<=0||accelerationLimit<=0||pitchRatio<=0)return false;
-  if(!physical::sledFrequencyAllowed(sledDefaults::profileIndex(id),value/pitchRatio))return false;
+  if(!physical::sledFrequencyAllowed(id,value/pitchRatio))return false;
   double interval=1000000.0/(value/pitchRatio);
   if(interval<physical::sledMinPeriodUs||interval>2147483647)return false;
   period=uint32_t(interval);hz=value;targetStepRate=(forward?1.f:-1.f)*value/pitchRatio;playing=true;return true;
@@ -152,7 +145,7 @@ struct Sled {
  }
 };
 struct Controller {
- IO& io;ShiftRegisterBus bus;FloppyDrive fdd[map::fddCount]={{0},{1},{2},{3},{4},{5},{6},{7}};Hdd hdd[map::hddCount]={{0},{1},{2},{3}};Sled sled[map::sledCount]={{0},{1},{2},{3},{4},{5}};
+ IO& io;ShiftRegisterBus bus;FloppyDrive fdd[map::fddCount]={{0},{1},{2},{3},{4},{5},{6},{7}};Hdd hdd[map::hddCount]={{0},{1},{2},{3}};Sled sled[map::sledCount]={{0},{1},{2},{3}};
  uint8_t vhsWave=Pulse,fxWave=Pulse;
  bool fxEnabled=false;uint8_t fxAmp=0;float fxFrequency=0;
  bool vhsEnabled=true;uint8_t amp=0;float frequency=0;uint32_t lastCommand=0;bool watchdogStopped=false;
@@ -160,7 +153,7 @@ struct Controller {
  bool strictTracks=false; int16_t strictTrack[4]={-1,-1,-1,-1};
  explicit Controller(IO& value):io(value),bus(value){}
  void begin(){powerOn=false;io.atx(false);for(auto& d:fdd){d.stop();d.homed=false;}for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=fxAmp=0;frequency=fxFrequency=0;bus.begin();io.vhs(0,0);io.vhsFx(0,0);lastCommand=io.us();}
- void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);bus.flush();}
+ void allStop(){for(auto& d:fdd)d.stop();for(auto& d:hdd)d.stop(bus);for(auto& d:sled)d.stop(bus);amp=0;frequency=0;io.vhs(0,0);fxAmp=0;fxFrequency=0;io.vhsFx(0,0);for(auto b:map::step)bus.setBit(b,true);for(auto b:map::unused)bus.setBit(b,false);bus.flush();}
  void tick(){
   if(uint32_t(io.us()-lastCommand)>physical::hostWatchdogUs){if(!watchdogStopped){allStop();watchdogStopped=true;}return;}
   if(!powerOn)return;

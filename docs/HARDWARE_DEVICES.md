@@ -1,9 +1,10 @@
 # Urządzenia, ograniczenia i kalibracja
 
-Docelowy firmware obsługuje **8 FDD / 6 DVD / 4 HDD / 2 speakery**,
-6 rejestrów i 8 DRV8833. Host ma **20 wpisów**, z których **18 jest aktywnych
-w planowaniu, VIRTUAL i REAL**: 8 FDD, 4 DVD, 4 HDD i oba speakery.
-FDD5–8 są zadeklarowane jako podłączone; DVD5–6 pozostają wyłączone.
+Firmware i host obsługują **18 urządzeń: 8 FDD / 4 DVD / 4 HDD / 2 speakery**,
+6 rejestrów i 6 wykorzystywanych DRV8833 (oznaczenia DRV1–4 i DRV7–8).
+Wszystkie wpisy są aktywne w planowaniu, VIRTUAL i REAL.
+FDD5–8 są zadeklarowane jako podłączone. Q32–Q39 pozostają wolne;
+HDD zachowują Q40–Q47, bez zmiany istniejącego okablowania.
 Bieżące wartości pochodzą z lokalnego kodu i konfiguracji, także commitów
 niewysłanych na serwer. Kolejność źródeł: aktywne urządzenia w
 [devices.json](../config/devices.json), połączone profile
@@ -21,12 +22,11 @@ Połączenia i napięcia są opisane wyłącznie w [schemacie](HARDWARE_WIRING.m
 | FDD1–4 | `fdd-1`…`fdd-4`, `fdd:1`…`fdd:4` | STEP/DIR, monofoniczne głosy tonalne |
 | FDD5–8 | `fdd-5`…`fdd-8`, `fdd:5`…`fdd:8` | Aktywne w aranżacji, VIRTUAL i REAL; parametry wykonawcze z fallbacku firmware |
 | DVD1–4 | `DVD_STEPPER_1`…`DVD_STEPPER_4`, `sled:1`…`sled:4` | DRV8833, dwie cewki, pełny krok, ciągły obrót |
-| DVD5–6 | `DVD_STEPPER_5`…`DVD_STEPPER_6`, `sled:5`…`sled:6` | Wyłączone; profil teoretyczny, niezweryfikowane |
 | PC Speaker | `vhs-1`, `drum:1` | GPIO25, główny wokal/lead |
 | PC Speaker FX | `pc-speaker-fx`, `drum:2` | GPIO26, tonalne ozdobniki i rezerwa zależna od presetu |
 | HDD1–4 | `hdd_vcm-1`…`hdd_vcm-4`, `hdd:1`…`hdd:4` | DRV8833, perkusyjny HIT |
 
-Aktywne jest 18 z 20 wpisów; tylko DVD5–6 mają `enabled:false`.
+Aktywne jest wszystkich 18 wpisów.
 FDD5–8 mają `enabled:true`, `realEnabled:true` i `present:true`. `enabled` oznacza udział
 w aranżacji i VIRTUAL, `realEnabled` dopuszczenie transportu REAL, a `present`
 w metadanych profili
@@ -49,9 +49,8 @@ HDD mają profil brzmienia `WD_CAVIAR_CURRENT`, ale fizyczny
 | FDD7 | GPIO16 | Q12 / Q13 | Wyłączony, bez HOME |
 | FDD8 | GPIO17 | Q14 / Q15 | Wyłączony, bez HOME |
 
-Cztery istniejące kanały mają dotychczas testowaną logikę; nie oznacza to
-fizycznego sprawdzenia nowej kaskady i przeniesionych DVD/HDD. Dodatkowe FDD
-są jeszcze niepodłączone, a SR6 wymaga oddzielnego testu napięć i propagacji.
+FDD5–8 są zadeklarowane jako podłączone. Profil i potwierdzenie programowe
+nie zastępują indywidualnego sprawdzenia połączeń, napięć i propagacji sygnałów.
 
 Generator nadal dostarcza **cztery** profile FDD. `fddDefaults::profileIndex`
 w [rdzeniu C++](../firmware/controller/include/orchestra_core.h) jawnie wybiera
@@ -75,39 +74,17 @@ znają osiem kanałów FDD. Host wysyła FDD5–8 PROFILE/ENABLE, atomowo scala
 Normalny STATUS nie zawiera dodatkowych FDD; host używa dla nich osobnej,
 ograniczonej transakcji `DIAG FDD`. Domyślny preset aranżuje dwie grupy 4× FDD.
 
-## Nowe DVD5–6: firmware i fallback czterech profili
+## DVD: cztery kanały i profile
 
-| Kanał | Wyjścia | Moduł | Stan po boot |
-| --- | --- | --- | --- |
-| DVD5 / SLED 5 | Q32–Q35 | DRV5, oba mostki | Wyłączony, bez ruchu |
-| DVD6 / SLED 6 | Q36–Q39 | DRV6, oba mostki | Wyłączony, bez ruchu |
+Cztery wpisy `sled:1`…`sled:4` odpowiadają wyjściom Q16–Q31 i modułom DRV1–4.
+Każdy używa własnego wpisu czteroelementowych tablic wygenerowanych profili.
+Nie ma dodatkowych kanałów ani fallbacku parametrów DVD. ENABLE nie rozpoczyna
+ruchu; PLAY, DIR, PROFILE i STOP zachowują dotychczasowe zasady. Identyfikatory
+poza zakresem 1–4 są odrzucane przez host i firmware.
 
-Generator i nagłówek wciąż zawierają **tylko DVD1–4**. Jawny
-`sledDefaults::profileIndex` w C++ wybiera dla DVD5–6 indeks **3 (DVD4)**:
-`travelSteps=0`, przyspieszenie 5000 kroków/s² i brak aktywnych
-pasm częstotliwości. `sledDefaults::pitchRatio` utrzymuje dla DVD5–6 jawne **1,0**,
-niezależnie od indywidualnej korekcji DVD4. To tymczasowe parametry wykonawcze, nie pomiary nowych
-silników ani potwierdzony bezpieczny zakres. Nie przenosimy hipotezy tunera 0,5
-z DVD1–4 na nowe egzemplarze. Ustal ratio, prąd, temperaturę i swobodę obrotu
-indywidualnie przed ruchem. Generator nadal obejmuje cztery profile; aktualizacja
-korekcji DVD4 z 2026-10-19 nie zmienia fallbacku ratio nowych silników.
-
-Fallback obejmuje **każdy odczyt tablic profili DVD**, także sprawdzenie pasm
-w `sledFrequencyAllowed`. Indeksy sprzętowe 4/5 nigdy nie trafiają bezpośrednio
-do czteroelementowych tablic. Runtime PROFILE DVD4 nie zmienia DVD5/6;
-osobny PROFILE nowego kanału jest dopuszczony przy zatrzymaniu, tak jak dla DVD1–4.
-
-Komendy `SLED 5/6 ENABLE`, `PROFILE`, `DIR`, `PLAY`, `STOP` używają istniejącej
-rampy i zasad. ENABLE sam nie uruchamia ruchu. ALL STOP i watchdog obejmują
-sześć DVD oraz cztery HDD na Q40–Q47. Czterokanałowy STRICT_TRACKS blokuje
-PLAY wszystkich DVD. Status nowych kanałów pokazuje osobne **`DIAG SLED`**;
-zwykłe STATUS nadal zawiera tylko DVD1–4 i ma 17 rekordów.
-
-Host rejestruje i adresuje DVD1–6, ale DVD5–6 pozostają wyłączone i mają
-`present:false`. Konfiguracja wysyła dla nich tylko ENABLE 0. Nie kopiujemy
-kalibracji DVD1–4 do nowych instancji; firmware zachowuje istniejący fallback.
-Normalny STATUS nie potwierdza DVD5–6. Przyszła aktywacja wymaga fizycznej
-kwalifikacji i obsługi ich diagnostyki; nie poszerzamy STATUS ani STRICT_TRACKS.
+Zwykły STATUS raportuje wszystkie cztery DVD i zachowuje 17 rekordów.
+ALL STOP oraz watchdog zatrzymują całą czwórkę i zerują wolne Q32–Q39.
+Kaskada pozostaje sześciobajtowa, a HDD zachowują Q40–Q47.
 
 ## Jak czytać dowody
 
@@ -158,9 +135,8 @@ tego foldingu i nie daje przez to uprawnienia do dowolnie wysokich testów.
 
 `pitchRatio = acousticHz / stepsPerSecond`: DVD1–3 mają 0,5 (hipoteza tunera),
 DVD4 ma osobną korekcję 0,5 z odczytu użytkownika 440 → około 220 Hz
-przy poprzednim ratio 1,0 (2026-10-19, HYPOTHESIS/LOW). DVD5–6 zachowują
-jawny fallback 1,0, bez pomiaru. Dla 440 Hz DVD1–4 otrzymują 880 kroków/s,
-DVD5–6 przy przyszłym dopuszczeniu z dotychczasowym profilem otrzymałyby 440 kroków/s.
+przy poprzednim ratio 1,0 (2026-10-19, HYPOTHESIS/LOW).
+Dla 440 Hz DVD1–4 otrzymują 880 kroków/s.
 Różny silnik DVD1 nadal wymaga osobnego sprawdzenia; wspólne ratio nie dowodzi
 jego poprawnego strojenia.
 Host i firmware przeliczają ten sam profil; komenda PLAY zawiera akustyczne Hz.
@@ -237,7 +213,7 @@ Moduły według użytkownika pracowały z niepodłączonym pinem, ale nie ustalo
 ich wariantu i wewnętrznych połączeń. Ta obserwacja nie jest zweryfikowanym
 zabezpieczeniem układów mocy. STOP sprowadza wejścia mostków do LOW (coast),
 a nie odłącza VM. Przy flashowaniu i diagnostyce logiki wyłącz/odłącz moc
-silników i sygnały do urządzeń. SR6 steruje HDD1–4; wszystkie 48 Q jest zajęte.
+silników i sygnały do urządzeń. SR6 steruje HDD1–4; Q32–Q39 na SR5 są wolne.
 Brak sterowania nSLEEP nie jest zabezpieczeniem przed ruchem.
 
 ## Walidacja i bezpieczeństwo

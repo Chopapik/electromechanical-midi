@@ -39,7 +39,7 @@ int main(int argc,char** argv){
  auto nextPhase=[&](int id){auto& s=d.sled[id];int phase=s.phase;for(int n=0;n<10000&&s.phase==phase;++n){io.now+=100;d.lastCommand=io.now;d.tick();}assert(s.phase!=phase);};
  if(c=="power"){
   assert(map::atx==19&&!d.powerOn&&!io.atxOn&&io.powerWrites.front()==false);
-  const char* blocked[]={"HOME","PLAY 220","HIT","DRUM 50","DRUMF 220","FDD ALL HOME","FDD 8 HOME","FDD 1 PLAY 220","SLED 6 PLAY 220","HDD 4 HIT","VHS AMP 50","VHS FREQ 220","VHS2 AMP 50","VHS2 FREQ 830"};
+  const char* blocked[]={"HOME","PLAY 220","HIT","DRUM 50","DRUMF 220","FDD ALL HOME","FDD 8 HOME","FDD 1 PLAY 220","SLED 4 PLAY 220","HDD 4 HIT","VHS AMP 50","VHS FREQ 220","VHS2 AMP 50","VHS2 FREQ 830"};
   for(auto text:blocked)assert(!strcmp(d.command(text),"ERR POWER_OFF"));
   assert(!strcmp(d.command("POWER STATUS"),"POWER STATUS OFF gpio19=0"));
   assert(!strcmp(d.command("POWER ON"),"POWER ON gpio19=1"));assert(d.powerOn&&io.atxOn);
@@ -60,12 +60,13 @@ int main(int argc,char** argv){
   std::vector<int> used;for(auto b:map::step)used.push_back(b);for(auto b:map::dir)used.push_back(b);
   for(auto& group:map::sled)for(auto b:group)used.push_back(b);
   for(auto& group:map::hdd)for(auto b:group)used.push_back(b);
-  assert(used.size()==48);
-  bool seen[48]={};for(int b:used){assert(b<48&&!seen[b]);seen[b]=true;}for(bool assigned:seen)assert(assigned);
+  assert(used.size()==40);
+  bool seen[48]={};for(int b:used){assert(b<48&&!seen[b]);seen[b]=true;}
+  for(auto bit:map::unused){assert(bit>=32&&bit<40&&!seen[bit]);seen[bit]=true;}for(bool assigned:seen)assert(assigned);
   for(int bit=0;bit<48;++bit){for(int b=0;b<48;++b)d.bus.setBit(b,b==bit);d.bus.flush();assert(io.previous==(uint64_t(1)<<bit));for(int b=0;b<48;++b)assert(d.bus.getBit(b)==(b==bit));}
   const uint8_t expectedTrack[8]={34,35,36,39,32,33,16,17};
   for(int i=0;i<8;++i){assert(map::track0[i]==expectedTrack[i]);assert(map::step[i]==2*i&&map::dir[i]==2*i+1);}
-  for(int i=0;i<6;++i)for(int j=0;j<4;++j)assert(map::sled[i][j]==16+4*i+j);
+  for(int i=0;i<4;++i)for(int j=0;j<4;++j)assert(map::sled[i][j]==16+4*i+j);
   for(int i=0;i<4;++i)for(int j=0;j<2;++j)assert(map::hdd[i][j]==40+2*i+j);
   uint64_t last=io.previous;d.bus.setBit(48,true);d.bus.setBit(255,true);d.bus.flush();assert(io.previous==last&&!d.bus.getBit(48)&&!d.bus.getBit(255));
  }else if(c=="boot"){
@@ -153,40 +154,40 @@ int main(int argc,char** argv){
   int expected[4]={6,10,9,5};for(int p:expected){nextPhase(1);assert(((io.previous>>20)&15)==p);}
   d.command("SLED 2 STOP");assert(((io.previous>>20)&15)==0);
   d.command("SLED 2 DIR REV");d.command("SLED 2 PLAY 220");nextPhase(1);assert(((io.previous>>20)&15)==9);
- }else if(c=="six_sleds"){
-  assert(sizeof(d.sled)/sizeof(d.sled[0])==6&&sizeof(d.hdd)/sizeof(d.hdd[0])==4);
-  for(int i=0;i<6;++i)assert(sledDefaults::profileIndex(i)==(i<4?i:3));
-  for(int i=4;i<6;++i){
-   auto& s=d.sled[i];assert(!s.enabled&&!s.playing&&s.softMax==physical::sledTravel[3]);
-   assert(s.accelerationLimit==physical::sledAcceleration[3]&&s.pitchRatio==1&&physical::sledPitchRatio[3]==.5f);
+ }else if(c=="four_sleds"){
+  static_assert(map::sledCount==4,"four DVD channels only");
+  assert(sizeof(d.sled)/sizeof(d.sled[0])==4&&sizeof(d.hdd)/sizeof(d.hdd[0])==4);
+  for(int i=0;i<map::sledCount;++i){
+   auto& s=d.sled[i];assert(!s.enabled&&!s.playing);
+   assert(s.softMax==physical::sledTravel[i]&&s.accelerationLimit==physical::sledAcceleration[i]&&s.pitchRatio==physical::sledPitchRatio[i]);
    char cmd[80];snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"ERR DISABLED"));
-   snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",i+1);assert(!strcmp(d.command(cmd),"OK")&&!s.playing);
+   snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",i+1);assert(!strcmp(d.command(cmd),"OK"));
    snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"OK"));
-   nextPhase(i);assert(s.position==1&&s.currentStepRate>0);assert(((io.previous>>(16+4*i))&15)==6);
-   // All profile-indexed bands use the fallback too; higher timer rates still reject.
-   snprintf(cmd,sizeof(cmd),"SLED %d PLAY 10001",i+1);assert(!strcmp(d.command(cmd),"ERR VALUE"));
-   snprintf(cmd,sizeof(cmd),"SLED %d STOP",i+1);d.command(cmd);assert(((io.previous>>(16+4*i))&15)==0);
-   snprintf(cmd,sizeof(cmd),"SLED %d PROFILE -1 5000 1",i+1);assert(!strcmp(d.command(cmd),"OK"));
-   snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"ERR TRAVEL_UNKNOWN"));
-   snprintf(cmd,sizeof(cmd),"SLED %d PROFILE 0 5000 2",i+1);assert(!strcmp(d.command(cmd),"OK"));
-   snprintf(cmd,sizeof(cmd),"SLED %d DIR REV",i+1);d.command(cmd);
-   snprintf(cmd,sizeof(cmd),"SLED %d PLAY 440",i+1);assert(!strcmp(d.command(cmd),"OK")&&s.targetStepRate==-220);nextPhase(i);assert(s.position==0&&!s.forward);
-   snprintf(cmd,sizeof(cmd),"SLED %d PROFILE 0 1000 1",i+1);assert(!strcmp(d.command(cmd),"ERR BUSY"));
-   snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 0",i+1);d.command(cmd);assert(!s.playing&&!s.enabled&&((io.previous>>(16+4*i))&15)==0);
+   nextPhase(i);assert(s.position==1&&s.targetStepRate==220/s.pitchRatio);
+   assert(((io.previous>>(16+4*i))&15)==6&&((io.previous>>32)&255)==0&&(io.previous>>40)==0);
+   snprintf(cmd,sizeof(cmd),"SLED %d STOP",i+1);assert(!strcmp(d.command(cmd),"OK"));
+   assert(!s.playing&&((io.previous>>(16+4*i))&15)==0);
   }
-  for(int i=0;i<4;++i)assert(!d.sled[i].playing&&d.sled[i].position==0);
-  assert((io.previous>>40)==0); // no unintended HDD bridge activity
-  d.command("SLED 6 ENABLE 1");d.command("TRACKS SET 1 2 3 4");assert(!strcmp(d.command("SLED 6 PLAY 220"),"ERR STRICT_OUTPUT"));
-  assert(!strcmp(d.command("SLED 7 STOP"),"ERR ID"));assert(!strcmp(d.command("HDD 5 STOP"),"ERR ID"));
+  for(int ordinal=map::sledCount+1;ordinal<=map::sledCount+2;++ordinal){
+   for(auto operation:{"ENABLE 1","PROFILE 0 5000 1","DIR REV","PLAY 220","STOP"}){
+    char cmd[80];snprintf(cmd,sizeof(cmd),"SLED %d %s",ordinal,operation);
+    assert(!strcmp(d.command(cmd),"ERR ID"));
+   }
+  }
+  for(auto bit:map::unused)d.bus.setBit(bit,true);
+  d.bus.flush();assert(((io.previous>>32)&255)==255);
+  d.command("ALL STOP");assert(io.previous==0x5555);
+  for(auto bit:map::unused)d.bus.setBit(bit,true);
+  d.bus.flush();io.now+=3000001;d.tick();assert(io.previous==0x5555);
  }else if(c=="all_actuators_stop"){
   auto startAll=[&](){
    for(auto& f:d.fdd){f.enabled=true;f.homed=true;assert(f.play(220,io));}
-   for(int i=0;i<6;++i){char cmd[40];snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",i+1);d.command(cmd);snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"OK"));}
+   for(int i=0;i<map::sledCount;++i){char cmd[40];snprintf(cmd,sizeof(cmd),"SLED %d ENABLE 1",i+1);d.command(cmd);snprintf(cmd,sizeof(cmd),"SLED %d PLAY 220",i+1);assert(!strcmp(d.command(cmd),"OK"));}
    for(int i=0;i<4;++i){char cmd[40];snprintf(cmd,sizeof(cmd),"HDD %d HIT",i+1);assert(!strcmp(d.command(cmd),"OK"));}
    d.command("VHS AMP 50");d.command("VHS FREQ 440");d.command("VHS2 ENABLE 1");d.command("VHS2 AMP 50");d.command("VHS2 FREQ 830");runFor(20000);
   };
   auto stopped=[&](){for(auto& f:d.fdd)assert(!f.playing&&!f.homing);for(auto& s:d.sled)assert(!s.playing&&s.currentStepRate==0);for(auto& h:d.hdd)assert(h.state==Hdd::Idle);assert(io.previous==0x5555&&d.amp==0&&io.fxAmp==0);};
-  startAll();assert((io.previous>>40)!=0);d.command("SLED 5 STOP");assert(!d.sled[4].playing&&d.sled[5].playing&&((io.previous>>32)&15)==0);
+  startAll();assert((io.previous>>40)!=0);d.command("SLED 3 STOP");assert(!d.sled[2].playing&&d.sled[3].playing&&((io.previous>>24)&15)==0);
   d.command("ALL STOP");stopped();
   startAll();io.now+=3000001;d.tick();stopped();
   io.now+=1000;d.tick();stopped(); // no late restart
@@ -375,7 +376,7 @@ class Esp32CoreTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls): cls.directory.cleanup()
 
-for case in ('power','map','boot','home','home_timeout','extended_fdd','extended_stop','extended_strict','parallel','independent','away','timing','hdd','sled','six_sleds','all_actuators_stop','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
+for case in ('power','map','boot','home','home_timeout','extended_fdd','extended_stop','extended_strict','parallel','independent','away','timing','hdd','sled','four_sleds','all_actuators_stop','speaker_fx','speaker_waves','watchdog','protocol','disable','strict_tracks','continuous_pitch','sled_forward','sled_reverse','sled_bounce_max','sled_bounce_min','sled_bounds','sled_stop_position','sled_dir','sled_ramp','profiles','sled_brake','fdd_profile_timing','hdd_profile','sled_allowed_bands','sled_bands_ratio','sled_continuous','sled_calibration'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32CoreTests, 'test_'+case, run)

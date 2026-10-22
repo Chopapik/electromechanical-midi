@@ -17,6 +17,7 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
  const s=app.state!,devices=s.devices,active=s.laboratory?.active??{}
  const [selected,setSelected]=useState(()=>devices.find(d=>d.enabled)?.id??devices[0]?.id??'')
  const [saved,setSaved]=useState(read),[filter,setFilter]=useState('')
+ const catalogIds=JSON.stringify(devices.map(d=>d.id))
  const device=devices.find(d=>d.id===selected)??devices[0]
  const settings=device?{...initial(device),...saved[device.id]}:null
  const running=device?active[device.id]:undefined
@@ -26,6 +27,13 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
  const latest=useRef(app);latest.current=app
  const liveKey=JSON.stringify(settings&&{hz:settings.hz,mode:settings.mode,depth:settings.depth,period:settings.period})
  const applied=useRef<string|null>(null)
+ useEffect(()=>{
+  const known=new Set<string>(JSON.parse(catalogIds))
+  setSaved(old=>{
+   const entries=Object.entries(old)
+   return entries.every(([id])=>known.has(id))?old:Object.fromEntries(entries.filter(([id])=>known.has(id)))
+  })
+ },[catalogIds])
  useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(saved))}catch{/* Storage may be disabled. */}},[saved])
  useEffect(()=>{
   if(!device||!settings||!running||device.type==='HDD_VCM'||blocked){applied.current=null;return}

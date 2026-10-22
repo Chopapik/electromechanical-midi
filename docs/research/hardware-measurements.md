@@ -54,8 +54,7 @@ impulsów ani dźwięku. Dla DVD4 dodano indywidualną korekcję `pitchRatio=0,5
 Oczekiwany wynik akustyczny wymaga ponownego odsłuchu/stroika; nie wykonano nowej
 próby fizycznej, analizy widma ani pomiarów prądu/temperatury. DVD1 jest innym
 silnikiem i użytkownik zgłosił nieprawidłowe brzmienie; jego stare ratio pozostaje
-niepotwierdzone. Korekcja DVD4 nie obejmuje DVD5–6: zachowano jawne ratio 1,0
-i stan wyłączenia. Host wysyła PROFILE podczas konfiguracji, więc zastosowanie
+niepotwierdzone. Host wysyła PROFILE podczas konfiguracji, więc zastosowanie
 korekcji DVD4 przez aplikację nie wymaga flashowania ESP32.
 
 Najdłuższy ciągły odcinek DVD w software benchmarku Universal pełnej biblioteki:

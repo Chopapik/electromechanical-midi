@@ -108,17 +108,17 @@ int main(int argc,char** argv){
   sink.replies.clear();p.execute(Transport::Usb,"FDD 8 ENABLE 1");p.execute(Transport::Usb,"FDD 8 HOME");
   io.active[7]=true;ctrl.tick();p.execute(Transport::Usb,"DIAG FDD");
   assert(sink.replies[4].text.find("DIAG FDD 8 enabled=1 homed=1 playing=0 homing=0")==0);assert(sink.replies[4].text.find("track0=1 raw=0")!=std::string::npos);
- }else if(c=="extended_sled_status"){
-  p.execute(Transport::Ble,"DIAG SLED");assert(sink.replies.size()==4);
-  assert(sink.replies.front().text=="DIAG SLED BEGIN"&&sink.replies.back().text=="DIAG SLED END");
-  for(int i=0;i<2;++i){auto r=sink.replies[i+1];assert(r.origin==Transport::Ble&&r.session==1);assert(r.text=="DIAG SLED "+std::to_string(i+5)+" enabled=0 playing=0 hz=0.00 position=0 dir=fwd soft_min=0 soft_max=0 rate=0 target=0 pos_conf=LOW ramp=0");}
-  assert(io.previous==0x5555);sink.replies.clear();
-  p.execute(Transport::Usb,"SLED 6 ENABLE 1");p.execute(Transport::Usb,"SLED 6 PLAY 220");p.execute(Transport::Usb,"DIAG SLED");
-  assert(sink.replies.size()==4&&sink.replies[2].text.find("DIAG SLED 6 enabled=1 playing=1 hz=220.00")==0);
-  for(auto r:sink.replies)assert(r.origin==Transport::Usb&&r.text.size()<159);
-  sink.replies.clear();p.execute(Transport::Usb,"STATUS");assert(sink.replies.size()==17);
-  for(auto r:sink.replies)assert(r.text.find("STATUS SLED 5")==std::string::npos&&r.text.find("STATUS SLED 6")==std::string::npos);
-  p.execute(Transport::Ble,"ALL STOP 44");assert(!ctrl.sled[5].playing&&io.previous==0x5555&&sink.replies.back().text=="STOPPED 44");
+ }else if(c=="four_sled_status"){
+  p.execute(Transport::Usb,"SLED 4 ENABLE 1");p.execute(Transport::Usb,"SLED 4 PLAY 220");
+  p.execute(Transport::Usb,"STATUS");assert(sink.replies.size()==17);
+  int count=0;for(auto r:sink.replies){if(r.text.find("STATUS SLED ")==0)++count;assert(r.origin==Transport::Usb);}
+  assert(count==4);bool found=false;for(auto r:sink.replies)if(r.text.find("STATUS SLED 4 enabled=1 playing=1 hz=220.00")==0)found=true;assert(found);
+  sink.replies.clear();
+  for(int ordinal=map::sledCount+1;ordinal<=map::sledCount+2;++ordinal){
+   std::string command="SLED "+std::to_string(ordinal)+" ENABLE 1";
+   p.execute(Transport::Ble,command.c_str());assert(sink.replies.back().text=="ERR ID"&&sink.replies.back().origin==Transport::Ble);
+  }
+  p.execute(Transport::Ble,"ALL STOP 44");assert(!ctrl.sled[3].playing&&io.previous==0x5555&&sink.replies.back().text=="STOPPED 44");
  }else if(c=="extended_error_routing"){
   for(int i=5;i<=8;++i){char cmd[50];snprintf(cmd,sizeof(cmd),"FDD %d ENABLE 1",i);p.execute(Transport::Usb,cmd);snprintf(cmd,sizeof(cmd),"FDD %d HOME",i);p.execute(i%2?Transport::Ble:Transport::Usb,cmd);}
   p.newBleSession(7);io.now+=2000001;ctrl.lastCommand=io.now;ctrl.tick();p.pollErrors();assert(sink.replies.size()==4);
@@ -152,7 +152,7 @@ class Esp32ProtocolTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('power','led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
-             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'extended_status', 'extended_sled_status', 'extended_error_routing', 'diag', 'stop_ack'):
+             'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'extended_status', 'four_sled_status', 'extended_error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32ProtocolTests, 'test_'+case, run)

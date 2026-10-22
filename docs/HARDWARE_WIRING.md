@@ -1,15 +1,14 @@
 # Połączenia i zasilanie
 
-Docelowy układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
-**8 × moduł DRV8833**, **8 FDD**, **6** dwufazowych bipolarnych stepperów DVD, 4 cewki HDD VCM oraz
-2 pasywne PC Speakery sterowane przez osobne S8550 (PNP).
-Firmware przygotowuje **8 FDD i 6 DVD**; host ma katalog 20 pozycji, z których aktywne pozostają **4 FDD, 4 DVD, 4 HDD i 2 speakery**.
-Dotychczasowe testy logiki dotyczą istniejących kanałów, nie fizycznej kwalifikacji
-całego docelowego zestawu 20 urządzeń. FDD5–8 i DVD5–6 są planowane do przyszłych
-testów, bez potwierdzonego podłączenia/kwalifikacji; startują wyłączone.
-SR6 i pozostałe niezmierzone wyjścia również wymagają pomiaru.
-Nowe okablowanie powstaje od zera: DVD/HDD zmieniają Q względem starszej mapy.
-**Nie uruchamiaj tego firmware z poprzednim okablowaniem DVD/HDD.**
+Układ: ESP32-WROOM-32 (płytka 38-pin CP2102), **6 × SN74HC595N**,
+**6 wykorzystywanych modułów DRV8833**, **8 FDD**, **4** dwufazowe bipolarne
+steppery DVD, 4 cewki HDD VCM oraz 2 pasywne PC Speakery przez osobne S8550 (PNP).
+Host i firmware mają 18 kanałów urządzeń; wszystkie wpisy hosta są aktywne.
+Cztery moduły oznaczone DRV1–4 obsługują DVD, a DRV7–8 obsługują HDD.
+Numery istniejących modułów oraz połączenia HDD pozostają zachowane.
+Q32–Q39 na SR5 są wolne. SR5 pozostaje w kaskadzie między SR4 i SR6,
+aby sześciobajtowa ramka nadal trafiała do HDD na Q40–Q47.
+Obecność wpisu w konfiguracji nie zastępuje fizycznej kwalifikacji kanału.
 Kompatybilne STATUS nie identyfikuje rewizji połączeń; sprawdzenie mapy jest ręczne.
 Numery GPIO nie są numerami pozycji na złączu płytki ESP32.
 Numery pinów 74HC595 poniżej dotyczą DIP-16; oznaczenia DRV8833 dotyczą
@@ -30,7 +29,7 @@ zasileniem odpowiedniej części. Nie ma zatwierdzonej listy konkretnych modeli 
 | ESP32 | USB płytki developerskiej | Nie łącz dodatniej szyny zasilania ESP32 z dodatnią szyną ATX |
 | 6 × SN74HC595N i pull-upy logiczne | 3,3 V z ATX, wspólna masa z ESP32 USB | Osobna szyna logiki; nie łącz jej z pinem 3V3/5V/VIN zasilanej USB płytki ESP32 |
 | FDD | Osobne 5 V do złącza zasilania napędu | Bieżące założenie układu; sprawdź model i orientację wtyku |
-| DVD stepper | 5 V **na VM DRV8833 #1–6** | Użytkownik zgłasza poprawną pracę przy dobrym odprowadzaniu ciepła; warunki montażu poniżej, brak zmierzonego limitu ciągłej pracy |
+| DVD stepper | 5 V **na VM DRV8833 #1–4** | Użytkownik zgłasza poprawną pracę przy dobrym odprowadzaniu ciepła; warunki montażu poniżej, brak zmierzonego limitu ciągłej pracy |
 | HDD VCM | 5 V **na VM DRV8833 #7–8** | Użytkownik zgłasza poprawną pracę przy dobrym odprowadzaniu ciepła; prąd i temperatura kompletu cewek wymagają pomiarów, [obserwacje](research/hardware-measurements.md#hdd-vcm) |
 | PC Speaker / FX | 3,3 V ATX | S8550 PNP, baza 330 Ω + pull-up 10 kΩ, szeregowo z głośnikiem 56 Ω (moc rezystora do potwierdzenia); połączenie zgłoszone, bez pomiarów; nie zasilać głośnika z GPIO |
 
@@ -99,11 +98,11 @@ komendy ani odczekanie czasu nie oznacza pomiaru zaniku napięcia.
 | 18 | SRCLK pin 11 wszystkich 74HC595: CLOCK |
 | 22 | RCLK pin 12 wszystkich 74HC595: LATCH |
 | 21 | /OE pin 13 wszystkich 74HC595; zewnętrzny pull-up 10 kΩ do 3,3 V |
-| 34 | FDD1 TRACK0, pin 26 złącza sygnałowego |
+| 34 | Wolne (LOW) | 35 | Wolne (LOW) |
 | 35 | FDD2 TRACK0, pin 26 |
-| 36 | FDD3 TRACK0, pin 26 |
+| 36 | Wolne (LOW) | 37 | Wolne (LOW) |
 | 39 | FDD4 TRACK0, pin 26 |
-| 32 | FDD5 TRACK0, pin 26; nowy kanał |
+| 32 | Wolne (LOW) | 33 | Wolne (LOW) |
 | 33 | FDD6 TRACK0, pin 26; nowy kanał |
 | 16 | FDD7 TRACK0, pin 26; nowy kanał |
 | 17 | FDD8 TRACK0, pin 26; nowy kanał |
@@ -164,8 +163,11 @@ Q ani nowego SR6. Sprawdź osobno pin 8 i napięcie zasilania każdego układu.
 
 ## Wszystkie wyjścia Q0–Q47
 
-**Wszystkie 48 Q jest przypisane; nie ma wolnych wyjść ani linii usypiania.**
-SR1–2 obsługują FDD, SR3–5 DVD, SR6 HDD. Dla DVD wejścia są kolejno
+**40 wyjść steruje urządzeniami, osiem Q32–Q39 jest wolnych.**
+SR1–2 obsługują FDD, SR3–4 DVD, SR5 pozostaje w kaskadzie bez obciążeń,
+SR6 obsługuje HDD. Wolne wyjścia mają LOW po boot, ALL STOP i watchdogu;
+DIAG BIT pozostaje testem wszystkich 48 Q wyłącznie bez obciążeń.
+Nie ma sterowania nSLEEP. Dla DVD wejścia są kolejno
 AIN1, AIN2, BIN1, BIN2. Każdy HDD zajmuje jeden mostek H.
 
 | Q | Połączenie | Q | Połączenie |
@@ -186,10 +188,10 @@ AIN1, AIN2, BIN1, BIN2. Każdy HDD zajmuje jeden mostek H.
 | 26 | DRV3 BIN1 | 27 | DRV3 BIN2 |
 | 28 | DRV4 AIN1 | 29 | DRV4 AIN2 |
 | 30 | DRV4 BIN1 | 31 | DRV4 BIN2 |
-| 32 | DRV5 AIN1 | 33 | DRV5 AIN2 |
-| 34 | DRV5 BIN1 | 35 | DRV5 BIN2 |
-| 36 | DRV6 AIN1 | 37 | DRV6 AIN2 |
-| 38 | DRV6 BIN1 | 39 | DRV6 BIN2 |
+| 32 | Wolne (LOW) | 33 | Wolne (LOW) |
+| 34 | Wolne (LOW) | 35 | Wolne (LOW) |
+| 36 | Wolne (LOW) | 37 | Wolne (LOW) |
+| 38 | Wolne (LOW) | 39 | Wolne (LOW) |
 | 40 | DRV7 AIN1 | 41 | DRV7 AIN2 |
 | 42 | DRV7 BIN1 | 43 | DRV7 BIN2 |
 | 44 | DRV8 AIN1 | 45 | DRV8 AIN2 |
@@ -216,8 +218,6 @@ HOME będzie wiarygodne dopiero po sprawdzeniu aktywności TRACK0.
 | DRV2 | DVD2 cewka A | DVD2 cewka B |
 | DRV3 | DVD3 cewka A | DVD3 cewka B |
 | DRV4 | DVD4 cewka A | DVD4 cewka B |
-| DRV5 | DVD5 cewka A | DVD5 cewka B |
-| DRV6 | DVD6 cewka A | DVD6 cewka B |
 | DRV7 | HDD1 VCM | HDD2 VCM |
 | DRV8 | HDD3 VCM | HDD4 VCM |
 

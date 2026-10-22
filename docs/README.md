@@ -6,8 +6,8 @@ Audyt obejmuje wszystkie 31 śledzonych wcześniej plików Markdown, w tym AGENT
 raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
 Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
-Aktualizacja **2026-10-17** obejmuje nową mapę firmware 8 FDD / 6 DVD / 4 HDD / 6 rejestrów / 8 DRV8833,
-oraz zgodny katalog hosta: 20 wpisów, 14 aktywnych i sześć wyłączonych, niezweryfikowanych.
+Aktualny układ **2026-10-22**: 8 FDD / 4 DVD / 4 HDD / 2 speakery,
+6 rejestrów i 6 wykorzystywanych DRV8833. Host ma 18 aktywnych wpisów.
 Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu, VIRTUAL i REAL jako
 drugą grupę 4× unisono. Są zadeklarowane jako podłączone (`present:true`,
 `realEnabled:true`), a host wymaga cyklu `DIAG FDD` / TRACK0 przed PLAY.
@@ -36,25 +36,23 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
-| Skład hosta | 20 wpisów; aktywne 8 FDD + 4 DVD + 4 HDD + 2 speakery; DVD5–6 wyłączone | [devices.json](../config/devices.json) |
+| Skład hosta | 18 aktywnych wpisów: 8 FDD + 4 DVD + 4 HDD + 2 speakery | [devices.json](../config/devices.json) |
 | FDD | Aranżacja −12 / 100–205 Hz; profil 100–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; muzyczny sufit 600 Hz | [interpretacja profili](../host/playback/hardware_profiles.py), [allocator](../host/playback/hardware_arranger.py) |
 | Zasilanie DVD i HDD | Aktualne zgłoszenie: **VM 5 V z dobrym odprowadzaniem ciepła**, np. do metalowej obudowy VHS pełniącej też rolę rezonatora; brak liczbowej kwalifikacji termicznej | [zasilanie](HARDWARE_WIRING.md#zasilanie), [obserwacje DVD](research/hardware-measurements.md#dvd), [HDD](research/hardware-measurements.md#hdd-vcm) |
 | HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |
 | ATX | GPIO19 → S8050 → PS_ON#, stan logiczny, brak PWR_OK/ADC; upload przez potwierdzone OFF | [połączenia](HARDWARE_WIRING.md#sterowanie-atx-przez-ps_on), [procedura](HARDWARE_TESTING.md#firmware-i-sama-logika) |
 | UI i wyjście | `/` i `/settings`, ESP32 BLE, wspólny ExecutionTimeline, VIRTUAL Web Audio | [runtime](../host/runtime/application.py), [UI](../web/src/App.tsx) |
-| DIAG BIT | Q0–Q47, wyłącznie bez obciążeń i przy odłączonej mocy; boot `55 55 00 00 00 00`, wszystkie 48 Q zajęte | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
+| DIAG BIT | Q0–Q47, wyłącznie bez obciążeń i przy odłączonej mocy; boot `55 55 00 00 00 00`, 40 Q przypisanych, Q32–Q39 wolne | [dispatcher](../firmware/controller/include/orchestra_protocol.h) |
 
-Nowa mapa: osiem par STEP/DIR na SR1–2, DVD na SR3–5, HDD na SR6; wszystkie 48 Q zajęte.
+Nowa mapa: osiem par STEP/DIR na SR1–2, DVD na SR3–4, HDD na SR6; 40 Q przypisanych, Q32–Q39 wolne.
 Nie ma sterowania nSLEEP ani zastępczego GPIO. FDD5–8 używają jawnego fallbacku
 parametrów wykonawczych FDD1. Firmware startuje z nimi wyłączonymi, po czym host
 REAL wysyła PROFILE/ENABLE i sprawdza je przez osobne `DIAG FDD`.
-DVD5–6 używają fallbacku DVD4 i osobnego `DIAG SLED`; również startują wyłączone.
-Zwykłe STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
-Host zna pełne osiem FDD i sześć DVD; DVD5–6 pozostają
-wyłączone (`enabled:false`, `present:false`). Pełna pojemność nie oznacza
-kwalifikacji ani gotowości do automatycznej gry. [Ograniczenia potwierdzeń
-stanu i przyszłej aktywacji](HARDWARE_DEVICES.md#nowe-fdd58-adresacja-i-kwalifikacja).
+DVD mają cztery własne profile i są raportowane przez zwykły STATUS.
+STATUS zachowuje 17 rekordów, aby nie przepełnić bufora hosta.
+Host zna osiem FDD i cztery DVD; wszystkie wpisy inventory są aktywne.
+[Ograniczenia potwierdzeń stanu](HARDWARE_DEVICES.md#fdd58-adresacja-i-obsługa).
 Przed flashowaniem i testami logiki odłącz moc i sygnały
 urządzeń wykonawczych. Zasilanie testu: ESP32 USB, rejestry 3,3 V ATX,
 wspólna masa bez łączenia dodatnich szyn. Awaria braku GND pinu 8 i pomiar

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "8 FDD + 6 DVD + 4 HDD + 2 PC Speakers (18 active; 8 FDD enabled for REAL; 2 DVD disabled)",
+  "name": "8 FDD + 4 DVD + 4 HDD + 2 PC Speakers (18 active)",
   "devices": [
     {
       "id": "fdd-1",
@@ -239,28 +239,6 @@
       "profile": "DVD_REFERENCE",
       "hardwareProfile": "DVD_SLED",
       "enabled": true,
-      "volume": 0.2,
-      "pan": 0.0
-    },
-    {
-      "id": "DVD_STEPPER_5",
-      "name": "DVD Stepper 5",
-      "type": "DVD_SLED",
-      "lane": "sled:5",
-      "profile": "DVD_REFERENCE",
-      "hardwareProfile": "DVD_SLED",
-      "enabled": false,
-      "volume": 0.2,
-      "pan": 0.0
-    },
-    {
-      "id": "DVD_STEPPER_6",
-      "name": "DVD Stepper 6",
-      "type": "DVD_SLED",
-      "lane": "sled:6",
-      "profile": "DVD_REFERENCE",
-      "hardwareProfile": "DVD_SLED",
-      "enabled": false,
       "volume": 0.2,
       "pan": 0.0
     },

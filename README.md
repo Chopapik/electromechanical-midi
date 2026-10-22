@@ -1,10 +1,10 @@
 # Orkiestra elektromechaniczna
 
 Lokalny odtwarzacz MIDI: Python/FastAPI, React/TypeScript i ESP32-WROOM-32.
-Katalog hosta: **20 urządzeń — 8 FDD, 6 DVD stepper, 4 HDD VCM, 2 PC Speakery**.
+Katalog hosta: **18 urządzeń — 8 FDD, 4 DVD stepper, 4 HDD VCM, 2 PC Speakery**.
 Aktywne jest **18: 8 FDD, 4 DVD, 4 HDD i oba speakery**.
-Docelowe okablowanie i firmware: **8 FDD + 6 DVD + 4 HDD + 2 speakery / 6 × SN74HC595N / 8 × DRV8833**;
-DVD5–6 pozostają wyłączone. FDD5–8 uczestniczą w aranżacji i są zadeklarowane
+Docelowe okablowanie i firmware: **8 FDD + 4 DVD + 4 HDD + 2 speakery / 6 × SN74HC595N / 6 wykorzystywanych DRV8833**;
+Q32–Q39 pozostają wolne, HDD zachowują Q40–Q47. FDD5–8 uczestniczą w aranżacji i są zadeklarowane
 jako podłączone; REAL wymaga homingu i potwierdzenia TRACK0.
 ATX: `/settings` → **Zasilanie ATX**, domyślnie OFF po restarcie ESP32; status jest logiczny, bez pomiaru napięcia.
 REAL steruje przez BLE, VIRTUAL gra przez Web Audio. Oba wykonują jeden

@@ -18,9 +18,8 @@ class DvdPitchRatioTests(unittest.TestCase):
             p=r.profile(f'DVD_STEPPER_{i}');q=p.quantities['pitchRatio']
             self.assertEqual(q.value,.5);self.assertEqual(q.evidence_type,'HYPOTHESIS');self.assertEqual(q.confidence,'LOW')
             self.assertTrue(p.get('continuousRotation'))
-        for i in (5,6):
-            self.assertEqual(r.profile(f'DVD_STEPPER_{i}').get('pitchRatio'),1.)
-            self.assertFalse(r.by_id[f'DVD_STEPPER_{i}']['enabled'])
+        self.assertEqual({d['lane'] for d in r.devices if d['type']=='DVD_SLED'},
+                         {f'sled:{i}' for i in range(1,5)})
         self.assertEqual(r.profile('fdd-1').get('pitchRatio'),1.)
     def test_planner_and_projection_use_acoustic_hz(self):
         r=DeviceRegistry()

@@ -117,16 +117,11 @@ struct CommandProtocol {
    return;
   }
   // Separate, opt-in diagnostics keep legacy STATUS below the host's 20-line
-  // transaction limit. No unsolicited FDD5-8 or DVD5-6 records enter its STATUS parser.
+  // transaction limit. Additional FDD records use their own transaction.
   if (!strcmp(line,"DIAG FDD")) {
    reply(origin,"DIAG FDD BEGIN");
    for(int i=map::hostFddCount;i<map::fddCount;++i) fddStatus(origin,i,"DIAG FDD");
    reply(origin,"DIAG FDD END");return;
-  }
-  if (!strcmp(line,"DIAG SLED")) {
-   reply(origin,"DIAG SLED BEGIN");
-   for(int i=map::hostSledCount;i<map::sledCount;++i) sledStatus(origin,i,"DIAG SLED");
-   reply(origin,"DIAG SLED END");return;
   }
   uint32_t started[map::fddCount]; bool homing[map::fddCount];
   for (int i=0; i<map::fddCount; ++i) { started[i]=ctrl.fdd[i].homeStartedUs; homing[i]=ctrl.fdd[i].homing; }
@@ -155,7 +150,7 @@ struct CommandProtocol {
   reply(origin,line);
   for (int i=0; i<map::hostFddCount; ++i) fddStatus(origin,i,"STATUS FDD");
   for(int i=0;i<map::hddCount;++i){snprintf(line,sizeof(line),"STATUS HDD %d enabled=%d busy=%d mode=percussion state=%s ready_at=%lu hz=0 safety=UNKNOWN profile=HDD_PERCUSSION",i+1,ctrl.hdd[i].enabled,ctrl.hdd[i].state!=Hdd::Idle,ctrl.hdd[i].state==Hdd::Park?"RESET":ctrl.hdd[i].state==Hdd::Settle?"SETTLE":ctrl.hdd[i].state==Hdd::Strike?"STRIKE":"READY",(unsigned long)(ctrl.hdd[i].state==Hdd::Idle?ctrl.io.us():ctrl.hdd[i].deadline+(ctrl.hdd[i].state==Hdd::Park?ctrl.hdd[i].settleUs+ctrl.hdd[i].strikeUs:ctrl.hdd[i].state==Hdd::Settle?ctrl.hdd[i].strikeUs:0)));reply(origin,line);}
-  for(int i=0;i<map::hostSledCount;++i) sledStatus(origin,i,"STATUS SLED");
+  for(int i=0;i<map::sledCount;++i) sledStatus(origin,i,"STATUS SLED");
   snprintf(line,sizeof(line),"STATUS VHS enabled=%d amp=%d hz=%.2f",ctrl.vhsEnabled,ctrl.amp,ctrl.frequency);reply(origin,line);snprintf(line,sizeof(line),"STATUS VHS2 enabled=%d amp=%d hz=%.2f",ctrl.fxEnabled,ctrl.fxAmp,ctrl.fxFrequency);reply(origin,line);reply(origin,"STATUS END");
  }
 };

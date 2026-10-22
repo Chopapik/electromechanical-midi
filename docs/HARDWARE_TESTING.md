@@ -2,7 +2,7 @@
 
 Najpierw [połączenia](HARDWARE_WIRING.md), następnie
 [limity i status pomiarów](HARDWARE_DEVICES.md). Poniższa procedura nie została
-w całości powtórzona na docelowym zestawie 8 FDD / 6 DVD / 4 HDD / 2 speakery / 6 rejestrów / 8 DRV8833.
+w całości powtórzona na docelowym zestawie 8 FDD / 4 DVD / 4 HDD / 2 speakery / 6 rejestrów / 6 wykorzystywanych DRV8833.
 Testy programowe nie mierzą temperatury, prądu, dźwięku ani pozycji.
 
 ## Kontrola bez zasilania urządzeń
@@ -12,8 +12,9 @@ Testy programowe nie mierzą temperatury, prądu, dźwięku ani pozycji.
    piny zasilania, orientację 74HC595 i faktyczne B/C/E obu S8550 PNP speakerów (osobny S8050 NPN steruje ATX).
 2. Sprawdź **pin 8 GND każdego z sześciu rejestrów**, ciągłość wspólnej masy, brak zwarć między dodatnimi szynami i masą,
    połączenia szyn płytek stykowych, każdy /OE i /SRCLR oraz łańcuch QH′→SER.
-3. Prześledź wszystkie Q0–Q47 według tabeli w schemacie; wszystkie mają przydział.
-   DVD5–6 zajmują Q32–Q39, HDD przeniesiono na Q40–Q47. Sprawdź, że GPIO27 nie trafiło na DRV3 BIN2 (Q27).
+3. Prześledź Q0–Q47 według tabeli w schemacie: 40 wyjść jest przypisanych,
+   Q32–Q39 są wolne, HDD używają Q40–Q47. SR5 musi pozostać w kaskadzie.
+   Sprawdź, że GPIO27 nie trafiło na DRV3 BIN2 (Q27).
 4. Zmierz rezystancje par cewek DVD i HDD. Ustal wartości rezystorów bazowych
    oraz napięcie i prąd speakerów. Nie uruchamiaj nieustalonego obwodu mocy.
 5. Zweryfikuj poziomy STEP/DIR i TRACK0 dla konkretnych FDD. Nie podawaj
@@ -153,10 +154,7 @@ połączenie BLE sprawdza się PING/STATUS. Rekord urządzenia nie dowodzi,
 bufor hosta ma limit 20 linii, a poszerzenie obecnych 17 dałoby 21.
 Wyślij osobno `DIAG FDD`: odpowiedź `DIAG FDD BEGIN`, cztery rekordy
 `DIAG FDD 5`…`DIAG FDD 8`, `DIAG FDD END` pokazuje enabled/HOME/PLAY/TRACK0
-nowych kanałów bez mieszania ich ze STATUS. Analogicznie **`DIAG SLED`** zwraca
-`DIAG SLED BEGIN`, dwa rekordy `DIAG SLED 5` / `DIAG SLED 6`, `DIAG SLED END`.
-Pokazuje ENABLE/PLAY, Hz, pozycję względną, kierunek i rampę nowych DVD.
-Osobna diagnostyka nie poszerza STATUS o nowe urządzenia.
+nowych kanałów bez mieszania ich ze STATUS. STATUS zawiera wszystkie cztery DVD.
 Używaj klienta diagnostycznego
 przy zatrzymanej aplikacji, aby nie współdzielić sterowania.
 
@@ -193,15 +191,11 @@ wcześniej zostały ręcznie włączone. Nie używaj tej komendy zamiast testu j
 nowej stacji. Dodatkowe kanały są dostępne w VIRTUAL UI, Laboratory i REAL;
 normalne PLAY wymaga ich potwierdzenia przez `DIAG FDD` i homing TRACK0.
 
-**DVD5–6 są planowane do przyszłych prób, domyślnie wyłączone**. Nie uznawaj
-fallbacku DVD4 za kwalifikację silników. Najpierw sprawdź cztery połączenia wejść
-każdego DRV5/6, pary cewek, VM i mechanicznie swobodny obrót. Dopiero po kontroli
-logiki i ustaleniu parametrów jeden kanał można włączyć jawnym ENABLE i testować
-skończonym PLAY/STOP z diagnostyką DIAG SLED. W tym zadaniu nie wykonujemy
-żadnej z tych prób ruchowych. Ponownie sprawdź połączenia HDD1–4 na **DRV7/8**;
-nowa mapa nie jest zgodna ze starszym przypisaniem HDD do DRV5/6.
+DVD1–4 zajmują Q16–Q31 na DRV1–4. HDD1–4 zachowują **DRV7–8 / Q40–Q47**.
+Q32–Q39 są wolne i nie mogą być podłączone do urządzeń wykonawczych.
+Sprawdź cztery własne profile DVD oraz odrzucanie ID poza zakresem 1–4.
 
-Aplikacja konfiguruje profile i ENABLE **FDD1–4 oraz DVD1–4** przed grą. Samo połączenie nie wykonuje
+Aplikacja konfiguruje profile i ENABLE **FDD1–8 oraz DVD1–4** przed grą. Samo połączenie nie wykonuje
 HOME. Przy jawnym **Play** w REAL aplikacja automatycznie wysyła HOME do
 niewyciszonych FDD potrzebnych w planie, które nie mają potwierdzonego `homed=1`.
 Czeka na kompletny STATUS z `homed=1, homing=0`, dopiero potem uruchamia zegar
@@ -277,7 +271,7 @@ termicznego, mechanicznego ani potwierdzonego brzmienia.
 HDD wykonuje tylko pojedynczy HIT z czasami i odstępami profilu, bez opcji ciągłej
 lub modulacji. REAL wymaga BLE, logicznego ATX ON, aktywnego profilu, braku Mute
 oraz wcześniej potwierdzonego HOME dla FDD. Lab nie włącza ATX ani nie wykonuje
-automatycznie homingu. Wyłączone DVD5–6 pozostają zablokowane.
+automatycznie homingu.
 
 Lab używa tego samego Playera, Routera i wyjścia. Każdy kanał ma własny termin;
 wspólna pętla wysyła zmiany maksymalnie co 100 ms, w jednym batchu, bez nadrabiania
@@ -347,29 +341,40 @@ Testy w `host/tests/test_esp32_firmware.py`, `test_esp32_protocol.py` i
 Arduino/NimBLE/FreeRTOS. Pozostałe sprawdzają m.in. rdzeń UNO i kompatybilność
 hosta z atrapami transportu/uploadu; nie są próbami fizycznymi.
 
-Wyniki offline dla docelowej mapy 8 FDD / 6 DVD — **2026-10-17**:
+### Kontrole bieżącej mapy
 
-- **98 testów PASS**, w tym 69 testów produkcyjnego C++ ESP32: 38 rdzenia,
-  18 protokołu i 13 adaptera. Obejmują sześć DVD, cztery HDD, domyślne
-  wyłączenie nowych kanałów, fallback i kontrolę częstotliwości DVD5–6,
-  indywidualny STOP, globalny STOP/watchdog, DIAG FDD / DIAG SLED / DIAG BIT,
-  boot `55 55 00 00 00 00` i istniejące zasady FDD/speakerów.
-- Wszystkie 48 bitów występuje w mapie dokładnie raz: 16 FDD, 24 DVD, 8 HDD.
-  Testy obejmują odrzucenie indeksów spoza ramki i osobne limity ID rodzin.
-- **56 przypadków rdzenia/protokołu PASS z UndefinedBehaviorSanitizer**, także
-  konstrukcja i PLAY DVD5–6. Czteroelementowy wygenerowany profil pozostaje
-  niezmieniony; wszystkie odwołania nowych DVD są kierowane przez fallback DVD4.
-- Bootowe STATUS jest bajtowo identyczne zarówno z `9c1bd17`, jak i z lokalną,
-  niezacommitowaną wersją 8 FDD / 4 DVD sprzed tej zmiany. Niezmieniony parser
-  hosta przyjął 17 linii / 14 urządzeń, bez dodatkowych kanałów w transakcji.
-- PlatformIO target ESP32: **SUCCESS**, RAM 39300 B, flash 622485 B dla tego
-  obrazu. Nie wykonywano uploadu. Generator profili `--check`, kompletność
-  tabeli Q0–Q47, lokalne odnośniki i kontrola zakresu zmienionych plików: PASS.
+Weryfikacja programowa konfiguracji 8 FDD / 4 DVD / 4 HDD obejmuje:
 
-To weryfikacja C++/protokołu i modeli offline, nie test elektryczny ani radiowy.
-Nie flashowano fizycznego ESP32 i nie uruchamiano silników. Obserwacja LOW ≈0 V /
-HIGH ≈3,41 V dotyczy wybranych wyjść pięciu rejestrów po naprawie GND; pozostałe
-wyjścia i SR6, dodatkowe FDD oraz DVD5–6 wymagają osobnych kontroli fizycznych.
+- 40 przypisanych Q (16 FDD, 16 DVD, 8 HDD) oraz osiem wolnych Q32–Q39.
+  Brak nakładających się przypisań; HDD pozostają na Q40–Q47.
+- Sześciobajtową ramkę SPI i boot SR1→SR6 `55 55 00 00 00 00`.
+- Cztery profile DVD indeksowane bez dodatkowego fallbacku; odrzucanie
+  identyfikatorów poza zakresem 1–4 przez host, rdzeń C++ i transport USB/BLE.
+- STOP, POWER OFF i watchdog dla wszystkich urządzeń, w tym zerowanie wolnych Q.
+- STATUS z 17 rekordami oraz osobną diagnostykę FDD; DIAG BIT obejmuje Q0–Q47
+  i jest przeznaczone wyłącznie do prób z odłączonymi obciążeniami.
+- Zgodność wygenerowanego nagłówka profili i kompilację PlatformIO ESP32.
+
+To zakres kontroli offline, nie wynik pomiaru elektrycznego ani akustycznego.
+Obserwacja LOW ≈0 V / HIGH ≈3,41 V dotyczy wybranych wyjść pięciu rejestrów po
+naprawie GND; nie potwierdza wszystkich Q ani pozostałych elementów instalacji.
+
+Weryfikacja offline z 2026-10-22 dla bieżącej mapy czterech DVD:
+
+- 759 testów backendu, w tym produkcyjnego C++, protokołu i adaptera ESP32/BLE.
+- 122 testy frontendu oraz poprawny build TypeScript/Vite.
+- 58 przypadków rdzenia i protokołu C++ z UndefinedBehaviorSanitizer.
+- Kompilacja PlatformIO ESP32: RAM 39 180 B, flash 618 469 B;
+  sprawdzenie wygenerowanego nagłówka profili bez rozbieżności.
+- Pełna biblioteka `/Users/krzysztof/Music/MIDI`: 134/134 pliki, bez błędów,
+  identyczne skróty wejściowych MIDI i skompilowanych harmonogramów jak w
+  [poprzednim benchmarku](../reports/library-8fdd-experiment.json),
+  preset `instrument_roles_unison4`. Zero konfliktów mechanicznych, nakładających
+  się nut, naruszeń minimalnego odstępu ataków FDD i rozbieżności grup unisono.
+- Przebudowany kontener `orchestra` zdrowy; API publikuje 18 urządzeń,
+  w tym cztery DVD. Nie wykonywano uploadu ani prób na fizycznych urządzeniach.
+
+Wyniki kolejnych prób zapisuj wraz z wersją kodu i warunkami pomiarów.
 
 ### Sprawdzenie polaryzacji speakerów S8550 PNP
 

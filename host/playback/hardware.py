@@ -10,7 +10,7 @@ jednoczesnie wirtualizacje i realny sprzet - nie ma drugiego modelu
 mechaniki, ktory moglby sie rozjechac z podgladem.
 
 Uno ma jedna linie kazdego rodzaju. Protokol v2 ESP32 adresuje niezalezne
-instancje: 8 FDD, 6 SLED, 4 HDD, 2 PC Speakery. Kolejnosc w konfiguracji
+instancje: 8 FDD, 4 SLED, 4 HDD, 2 PC Speakery. Kolejnosc w konfiguracji
 (wlacznie z disabled) wyznacza stabilne ID sprzetowe. Nadmiarowe instancje
 trafiaja do listy unmapped.
 """
@@ -67,7 +67,7 @@ def bind_devices(devices: list[VirtualDeviceInstance], protocol_version: int = 1
         if protocol_version == 2:
             family = {'FDD': 'fdd', 'DVD_SLED': 'sled', 'VHS': 'drum',
                       'HDD_VCM': 'hdd'}.get(device.type)
-            capacity = {'fdd': 8, 'sled': 6, 'hdd': 4, 'drum': 2}
+            capacity = {'fdd': 8, 'sled': 4, 'hdd': 4, 'drum': 2}
             lane = f'{family}:{ordinal[family]}' if ordinal[family] <= capacity.get(family, 0) else None
 
 

@@ -31,7 +31,7 @@ class DeviceRegistry:
             family = {'FDD':'fdd','DVD_SLED':'sled','HDD_VCM':'hdd','VHS':'drum'}[d['type']]
             counts[family] = counts.get(family, 0) + 1
             # Existing allocator uses stable physical ordinals, including disabled devices.
-            if d['lane'] != f'{family}:{counts[family]}' or counts[family] > {'fdd':8,'sled':6,'hdd':4,'drum':2}[family]:
+            if d['lane'] != f'{family}:{counts[family]}' or counts[family] > {'fdd':8,'sled':4,'hdd':4,'drum':2}[family]:
                 raise ValueError('Registry order must retain existing physical lane IDs')
             self.profile(d['id'])
         if self.volume_path.exists():

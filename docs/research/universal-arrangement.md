@@ -219,7 +219,7 @@ zastępują pomiarów fizycznego układu.
 ## Biblioteka 8 FDD — 2026-10-21
 
 Ten przebieg dotyczy aktualnej konfiguracji: **8 FDD jako dwie grupy unisono,
-4 aktywne DVD, 4 HDD i 2 speakery**. DVD5–6 pozostają wyłączone. Nie należy
+4 aktywne DVD, 4 HDD i 2 speakery**. Nie należy
 porównywać tych liczb bezpośrednio z historycznym benchmarkiem 149 MIDI powyżej:
 zmieniły się biblioteka, skład oraz preset. W aktualnym folderze
 `/Users/krzysztof/Music/MIDI` znaleziono rekurencyjnie **134 pliki / 134 różne

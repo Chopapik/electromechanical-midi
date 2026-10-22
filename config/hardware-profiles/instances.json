@@ -502,16 +502,6 @@
           "confidence": "LOW"
         }
       }
-    },
-    "sled:5": {
-      "present": false,
-      "profile": "DVD_SLED",
-      "quantities": {}
-    },
-    "sled:6": {
-      "present": false,
-      "profile": "DVD_SLED",
-      "quantities": {}
     }
   }
 }

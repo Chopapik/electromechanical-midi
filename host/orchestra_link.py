@@ -22,6 +22,8 @@ def parse_status(lines):
             raise ValueError('unknown device kind')
         if start == 3 and (len(parts) < 4 or not parts[2].isdigit()):
             raise ValueError('invalid device ID')
+        if kind == 'SLED' and not 1 <= int(parts[2]) <= 4:
+            raise ValueError('invalid SLED ID')
         key = kind if start == 2 else f'{kind}:{int(parts[2])}'
         values = dict(token.split('=', 1) for token in parts[start:] if '=' in token)
         if kind == 'CTRL': result['controller'] = values
@@ -118,7 +120,7 @@ class OrchestraLink(FloppyLink):
         return id
 
     def _device(self, kind, id, action):
-        maximum = {'FDD': 8, 'SLED': 6, 'HDD': 4}[kind]
+        maximum = {'FDD': 8, 'SLED': 4, 'HDD': 4}[kind]
         self.send(f'{kind} {self._id(id, maximum)} {action}')
 
     def fdd_play(self, id, hz): self._device('FDD', id, f'PLAY {hz:.2f}')

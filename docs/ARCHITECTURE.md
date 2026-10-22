@@ -1,9 +1,9 @@
 # Architektura i obsługa aplikacji
 
-Katalog i adresacja hosta odpowiadają firmware: **8 FDD, 6 DVD, 4 HDD i 2 speakery**.
-Z 20 wpisów 18 uczestniczy w aranżacji, VIRTUAL i REAL: FDD1–8, DVD1–4,
-HDD1–4 i oba speakery. FDD5–8 mają `present:true` i `realEnabled:true`;
-DVD5–6 mają `enabled:false`.
+Katalog i adresacja hosta odpowiadają firmware: **18 urządzeń: 8 FDD, 4 DVD,
+4 HDD i 2 speakery**. Wszystkie uczestniczą w aranżacji, VIRTUAL i REAL.
+FDD5–8 mają `present:true` i `realEnabled:true`.
+Kaskada ma sześć rejestrów: Q32–Q39 są wolne, HDD nadal używają Q40–Q47.
 Domyślny preset tworzy dwie grupy unisono po cztery FDD. STRICT_TRACKS zachowuje
 cztery sloty i wyłącza FDD5–8 w konfiguracji REAL.
 [Inventory i kwalifikacja](HARDWARE_DEVICES.md#inventory-i-identyfikatory).
@@ -53,17 +53,16 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
 Konfiguracja wysyła FDD5–8 PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
 automatyczny homing TRACK0 czeka na potwierdzenie FDD5–8 przed PLAY.
-`SLED 5..6` nadal otrzymują ENABLE 0.
 HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
 Registry oraz `bind_devices(..., 2)` liczą ordynały również wyłączonych pozycji,
 więc wyłączenie FDD1 nie przenosi FDD2 na kanał 1. OrchestraLink sprawdza
-osobne granice FDD 1–8, SLED 1–6 i HDD 1–4, odrzucając także ID typu bool.
+osobne granice FDD 1–8, SLED 1–4 i HDD 1–4, odrzucając także ID typu bool.
 Wymaga `board=esp32`, protocol 2, `ready=1`, `stop_ack=1`, `hardware_profiles=1`
 oraz capabilities potrzebnych planowi (m.in. `dvd_continuous`, `speaker_fx`,
 `speaker_waves`, `strict_tracks`). Konfigurację potwierdza kompletna transakcja
 STATUS. Firmware zachowuje 17 rekordów STATUS z FDD1–4; host atomowo scala
 osobną transakcję `DIAG FDD` dla FDD5–8, bez zwiększania limitu 20 linii
-podstawowego STATUS. `DIAG SLED` pozostaje diagnostyką. FDD wymagają
+podstawowego STATUS. Cztery DVD są raportowane przez STATUS. FDD wymagają
 potwierdzonego HOME. Jawny Play w REAL przygotowuje automatycznie
 niewyciszone FDD użyte w planie, jeśli nie mają odniesienia; Player czeka bez
 przesuwania zegara utworu, pozostawiając STOP dostępny. STATUS nie jest wysyłany
@@ -95,6 +94,8 @@ Stan `laboratory.active` zawiera aktualne Hz, modulację, czas i pozostały limi
 `lab_test`, `lab_update`, `lab_stop` wymagają właściciela sesji lab. VIRTUAL
 używa krótkiej odnawianej dzierżawy audio bez ponownych ataków. Mechaniczny model
 lab używa zapętlenia bufora z playbackRate; model utworów MIDI pozostaje bez zmian.
+Przeglądarka zachowuje ustawienia osobno dla każdego urządzenia, także wyłączonego,
+a zapisane ustawienia urządzeń usuniętych z katalogu są automatycznie czyszczone.
 [Szczegółowa obsługa i ograniczenia](HARDWARE_TESTING.md#laboratory).
 
 ## Logiczne zasilanie ATX

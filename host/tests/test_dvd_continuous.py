@@ -34,9 +34,9 @@ class ContinuousDvdTests(unittest.TestCase):
         self.assertEqual(state.travel_reversals,0)
     def test_catalog_and_real_configuration_expose_continuous_mode(self):
         catalog=[d for d in self.registry.catalog() if d['type']=='DVD_SLED']
-        self.assertEqual(len(catalog),6)
+        self.assertEqual(len(catalog),4)
         self.assertEqual([d['id'] for d in catalog if d['enabled']], [f'DVD_STEPPER_{i}' for i in range(1,5)])
-        self.assertTrue(all(d['reason'] is not None for d in catalog if not d['enabled']))
+        self.assertTrue(all(d['enabled'] and d['reason'] is None for d in catalog))
         self.assertTrue(all(d['continuousRotation'] and d['bands']==[] for d in catalog))
         app=Application(); link=Link();app.real.attach(link);app.real.configure()
         self.assertTrue(app.registry.by_id['DVD_STEPPER_4']['enabled'])

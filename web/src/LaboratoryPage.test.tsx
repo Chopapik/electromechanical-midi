@@ -27,6 +27,28 @@ describe('Laboratory rack',()=>{
  it('persists drafts over a remount but never autostarts',()=>{
   const view=mount();fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'330'}});view.unmount();mount();expect((screen.getByLabelText('Częstotliwość Hz') as HTMLInputElement).value).toBe('330');expect(send).not.toHaveBeenCalled()
  })
+ it('removes obsolete saved devices but retains settings for disabled catalog members',()=>{
+  app.state!.devices[1].enabled=false
+  const kept={'fdd-1':{hz:300},'fdd-2':{hz:330}}
+  localStorage.setItem('orchestra.laboratory.v1',JSON.stringify({...kept,'obsolete-device':{hz:440}}))
+  mount()
+  expect(JSON.parse(localStorage.getItem('orchestra.laboratory.v1')!)).toEqual(kept)
+  expect((screen.getByLabelText('Częstotliwość Hz') as HTMLInputElement).value).toBe('300')
+  expect(send).not.toHaveBeenCalled()
+ })
+ it('prunes saved settings after a live catalog change without losing other drafts',()=>{
+  const view=mount()
+  fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'300'}})
+  fireEvent.click(screen.getByRole('button',{name:'Ustawienia FDD 2'}))
+  fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'330'}})
+  app.state={...app.state!,devices:app.state!.devices.filter(d=>d.id!=='fdd-2')}
+  view.rerender(<MemoryRouter><LaboratoryPage app={app}/></MemoryRouter>)
+  const saved=JSON.parse(localStorage.getItem('orchestra.laboratory.v1')!)
+  expect(saved['fdd-2']).toBeUndefined()
+  expect(saved['fdd-1'].hz).toBe(300)
+  expect(screen.queryByRole('button',{name:'Ustawienia FDD 2'})).toBeNull()
+  expect(send).not.toHaveBeenCalled()
+ })
  it('provides pitch shortcuts and a duration beyond ten seconds',()=>{
   mount();fireEvent.click(screen.getByRole('button',{name:'300'}));fireEvent.click(screen.getByRole('button',{name:'− oktawa'}));expect((screen.getByLabelText('Częstotliwość Hz') as HTMLInputElement).value).toBe('150');fireEvent.click(screen.getByRole('button',{name:'30 s'}));fireEvent.click(screen.getByRole('button',{name:'Uruchom'}));expect(send.mock.calls.at(-1)?.[1].duration).toBe(30)
  })
