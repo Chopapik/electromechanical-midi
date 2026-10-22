@@ -1,3 +1,12 @@
+# Commit descriptions
+
+Every commit must have a concise, descriptive subject and a short body explaining
+what changed, why, and which components or behavior are affected. Include relevant
+validation results and material limitations, especially whether hardware changes
+were tested only offline or in VIRTUAL rather than on physical devices.
+Keep the description specific and self-contained so a person or AI can understand
+the commit without reading its diff. Avoid vague summaries and exhaustive file lists.
+
 # Local application deployment
 
 After implementing changes to the web application, backend, configuration, or
