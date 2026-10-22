@@ -314,6 +314,13 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
   w orkiestrze; sprawdzić tor S8550 / 56 Ω / zasilanie oraz wpływ niskiego
   rejestru i maskowania przez pozostałe instrumenty. Ocenić osobno VIRTUAL.
 
+- [ ] **Radiohead — Jigsaw Falling into Place: HDD nadal brzmią źle w REAL przez cały utwór.**
+  Obserwacja użytkownika po zmianie na dwa aktywne HDD i wprowadzeniu limitu
+  12 HIT/s; problem dotyczy całego utworu, nie pojedynczego fragmentu.
+  Plik odniesienia: `0087-09-radiohead_2007-jigsaw_falling_into_place.mid`.
+  Przyczyna pozostaje nieustalona; porównać wykonanie REAL ze źródłową perkusją
+  i harmonogramem HIT. Wyniki testów offline nie potwierdzają jakości brzmienia.
+
 - [ ] **HDD — zachować rytmiczne akcenty, ograniczyć nadmierną gęstość uderzeń.**
   Według odsłuchu użytkownika krótkie uderzenia w rytm brzmią bardzo dobrze
   w **0:48–1:17**. Zbyt częste uderzenia brzmią źle w **0:34–0:41** oraz
