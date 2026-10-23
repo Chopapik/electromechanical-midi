@@ -285,6 +285,19 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
 
 ## TODO
 
+- [ ] **FDD — zachować różnorodność Jigsaw Falling into Place, ograniczyć monotonię Bodysnatchers (VIRTUAL).**
+  Według odsłuchu użytkownika FDD w **Jigsaw Falling into Place** brzmią dobrze:
+  słychać różnorodne sekwencje i ciekawe zróżnicowanie partii. W **Bodysnatchers**
+  jednoczesne ataki wszystkich stacji dają irytujące wrażenie monotonii
+  i powtarzalności. To subiektywna obserwacja wyłącznie z **VIRTUAL**;
+  **nie przeprowadzono odsłuchu REAL**. Przyczyna pozostaje niezweryfikowana.
+  Pliki odniesienia: `0087-09-radiohead_2007-jigsaw_falling_into_place.mid`
+  oraz `0080-02-radiohead_2007-bodysnatchers-[k].mid`.
+  Porównać źródłowe partie, powtarzalność sekwencji i synchronizację ataków
+  obu grup FDD w planie i harmonogramie, uwzględniając działanie unisono.
+  Wykorzystać Jigsaw jako pozytywny punkt odniesienia przy poprawie różnorodności;
+  nie uznawać wrażenia jednoczesnej gry wszystkich stacji za potwierdzony błąd.
+
 - [ ] **Let Down — zbędne impulsy PC Speakera po około 2:55 (175 s).**
   Użytkownik zgłasza niepotrzebne impulsy i podejrzewa błędny przydział partii
   pomiędzy którymś DVD a PC Speakerem. Zgłoszenie pozostaje niezweryfikowane;
