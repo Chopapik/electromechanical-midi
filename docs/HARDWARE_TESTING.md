@@ -265,7 +265,7 @@ nadal generują wyłącznie prostokąt z regulowanym wypełnieniem. Pole Hz i mo
 aktualizują aktywny test po 250 ms bez zmian suwaka. Zakres całej modulacji musi
 mieścić się w jednym dozwolonym paśmie profilu; nie składamy Hz oktawowo.
 Dla ciągłego DVD obowiązuje istniejący zakres wykonawczy profilu/protokołu,
-nie muzyczny sufit aranżera 600 Hz. Dostępny zakres nie oznacza bezpieczeństwa
+nie muzyczny rejestr aranżera 200–800 Hz. Dostępny zakres nie oznacza bezpieczeństwa
 termicznego, mechanicznego ani potwierdzonego brzmienia.
 
 HDD wykonuje tylko pojedynczy HIT z czasami i odstępami profilu, bez opcji ciągłej

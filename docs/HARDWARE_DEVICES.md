@@ -132,9 +132,14 @@ Długie gate'y i powroty karetki nadal mogą wpływać na brzmienie.
 ## DVD stepper
 
 W aktywnym trybie ciągłym `travelSteps=0`, bez limitu drogi i bez whitelisty
-pasm. `−1` oznacza nieznany profil, nie ciągły obrót. Aranżacja ma niezależny
-sufit **600 Hz akustycznych**, składając wyższe nuty o oktawy. Lab nie stosuje
-tego foldingu i nie daje przez to uprawnienia do dowolnie wysokich testów.
+pasm. `−1` oznacza nieznany profil, nie ciągły obrót. Końcowy rejestr aranżacji to
+**200–800 Hz akustycznych**: preferowane +1 oktawa całej przydzielonej frazy,
+ze składaniem pojedynczych nut tylko gdy wspólny rejestr nie mieści się w zakresie.
+Wewnętrzny przydział pozostaje przy dawnym pułapie 600 Hz, więc podniesienie
+rejestru nie zmienia liczby ani obsady nut. Szczegóły i wyjątki pitch bend:
+[aranżacja](ARRANGEMENT.md). Lab nie stosuje tego foldingu i nie daje przez to
+uprawnienia do dowolnie wysokich testów. Zakres muzyczny nie jest pomiarem
+bezpieczeństwa termicznego ani potwierdzeniem strojenia silników.
 
 `pitchRatio = acousticHz / stepsPerSecond`: DVD1–3 mają 0,5 (hipoteza tunera),
 DVD4 ma osobną korekcję 0,5 z odczytu użytkownika 440 → około 220 Hz

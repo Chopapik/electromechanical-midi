@@ -84,4 +84,6 @@ def arrange(source, registry):
         # spacing to the complete final plan.
         limit_fdd_attacks(plan, registry)
         synchronize_unison4(plan, registry)
+    from playback.dvd_register import apply as set_dvd_register
+    set_dvd_register(plan, registry, source)
     return plan

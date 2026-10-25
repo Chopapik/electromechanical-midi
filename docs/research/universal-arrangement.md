@@ -5,6 +5,55 @@
 
 # Universal — wyniki i odtwarzanie benchmarków
 
+## Rejestr DVD 200–1000 Hz — kontrola 2026-10-25
+
+**Historyczny wariant:** po tej kontroli górną granicę obniżono na życzenie
+użytkownika do **800 Hz**. Aktualny rejestr to **200–800 Hz**; poniższe wyniki
+dotyczą wcześniejszej granicy 1000 Hz i nie są wynikami pomiaru wariantu 800 Hz.
+
+Sprawdzono wszystkie 142 pliki `.mid`/`.midi` z lokalnego `Music/MIDI`,
+rekurencyjnie, z aktualną lokalną konfiguracją i domyślnym presetem
+`instrument_roles_unison4`. Ten snapshot zawiera również niezależny eksperyment
+8 HIT/s HDD; identyczne ustawienia obowiązywały przed i po etapie rejestru DVD.
+Nie jest to porównanie z dawnym commitem Universal ani ocena odsłuchowa.
+
+Kontrola przechwytywała gotowy plan bezpośrednio przed
+`dvd_register.apply`, kompilowała go, wykonywała nowy etap i porównywała ponownie
+skompilowany ExecutionTimeline. **141 plików przeszło**; `touhou4.mid` ma
+`MidiSourceError: list index out of range` już podczas odczytu źródła, przed
+uruchomieniem aranżera. Nie liczono go jako pomyślnej kontroli.
+
+| Metryka, 141 MIDI | Przed | Po |
+| --- | ---: | ---: |
+| Nuty DVD, łącznie z reinforcement | 138420 | 138420 |
+| Komendy DVD STOP z ExecutionTimeline | 47705 | 47705 |
+| Nowe konflikty chronologii DVD | — | 0 |
+| Zmienione komendy rodzin innych niż DVD | — | 0 |
+| Zmienione onsety, gate'y lub przypisania urządzeń | — | 0 |
+
+Końcowe bazowe Hz i próbki krzywych częstotliwości mieściły się w 200–1000 Hz;
+faktyczne nuty tego korpusu obejmowały **207,652–987,767 Hz**. Spośród 15239
+fraz 279 wymagało składania poszczególnych nut, ponieważ nie istniało wspólne
+przesunięcie oktawowe mieszczące całą frazę. Żadna krzywa pitch bend tego korpusu
+nie wymagała składania pojedynczych próbek. Koszt nowego etapu: mediana 0,0646 s,
+maksimum 0,3092 s podczas równoległego benchmarku na tej maszynie; nie jest to
+gwarancja czasu ładowania innych MIDI.
+
+| Przykład | Nuty DVD przed = po | STOP przed = po | Najniższe Hz przed → po | Najwyższe Hz po |
+| --- | ---: | ---: | ---: | ---: |
+| Bodysnatchers (`0080-02…`) | 1923 | 1093 | 36,708 → 220 | 932,328 |
+| Every breath you take | 800 | 308 | 32,703 → 233,082 | 987,767 |
+| One_Republic_Counting_stars | 803 | 263 | 27,5 → 220 | 987,767 |
+
+Pełne testy hosta: **788 OK** (`.venv/bin/python -m unittest discover -s host/tests -q`).
+Nowe kontrakty obejmują wszystkie dziewięć presetów AUTO, spójność REAL/VIRTUAL
+na atrapach wyjść, granice fraz/tempa, wielogłos, zmianę DVD, reinforcement,
+pitch bend, idempotencję i odmowę niepoprawnej chronologii bez ukrytego odrzucania
+nut. Kontener przebudowano i sprawdzono jego zdrowie oraz obecność nowego modułu.
+**Bez flashowania, ruchu silników i odsłuchu VIRTUAL/REAL w tym badaniu.**
+Sustain i ciągłe odcinki pracy nie zostały wydłużone; nowy rejestr nie potwierdza
+strojenia, wydajności fizycznej ani bezpieczeństwa cieplnego urządzeń.
+
 ## Status weryfikacji: wyłącznie VIRTUAL i testy software
 
 **BRAK TESTÓW TEGO PRESETU NA FIZYCZNYCH INSTRUMENTACH W REAL.**

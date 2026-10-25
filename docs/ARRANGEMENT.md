@@ -34,8 +34,23 @@ Ozdobnik tonalny na FX to inna kategoria niż efekt nietonalny.
 
 [hardware_arranger.py](../host/playback/hardware_arranger.py) ocenia kandydatów
 w granicach profilu, preferencji i transpozycji urządzenia. Folding jest oktawowy;
-nie wprowadza dowolnej częstotliwości ani nowej harmonii. Dla DVD sufit muzyczny
-wynosi 600 Hz akustycznych przed przeliczeniem `pitchRatio`. FDD używają
+nie wprowadza dowolnej częstotliwości ani nowej harmonii. Przydział DVD zachowuje
+dotychczasowy pułap 600 Hz, żeby nie zmieniać wyboru nut ani rezerwacji. Na końcu
+runtime stosuje [rejestr DVD](../host/playback/dvd_register.py): **200–800 Hz
+akustycznych**, przed przeliczeniem `pitchRatio`, we wszystkich presetach AUTO.
+Preferuje +1 oktawę całej już przydzielonej frazy. Jeśli nie mieści się ona w tym
+zakresie, wybiera najbliższe wspólne przesunięcie oktawowe; dopiero gdy takie
+przesunięcie nie istnieje, składa poszczególne nuty. Głosy śledzi osobno w ramach
+track/channel, również przy zmianach docelowego DVD, a pauzy źródłowe rozdzielają
+frazy według lokalnego tempa. Nie zmienia liczby nut, NOTE_ON, gate, sustainu,
+przypisań urządzeń ani komend pozostałych rodzin. Obejmuje także DVD reinforcement
+i odzyskane ogony FDD; aktualizuje ich krzywe częstotliwości, zachowując pozostałą
+ekspresję. Skrajny pitch bend, którego nie da się pomieścić jednym przesunięciem,
+jest składany oktawowo próbka po próbce (możliwy skok rejestru). Raport
+`hardware.dvdRegister` podaje przesunięcia, wyjątki i końcowe projekcje mechaniczne;
+pełna chronologia DVD jest ponownie sprawdzana bez usuwania nut.
+Jest to wybór brzmieniowy, nie potwierdzenie bezpiecznej pracy fizycznego silnika.
+Laboratory zachowuje osobny zakres profilu/protokołu. FDD używają
 obecnego eksperymentu −12 / 100–205 Hz, niezależnie od presetu.
 Zajętość jest monofoniczna na fizyczną lane, z pełnymi rezerwacjami extras.
 Profil sprawdza również przejścia i przyszłą chronologię, nie samą pojedynczą nutę.

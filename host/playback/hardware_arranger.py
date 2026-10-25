@@ -14,7 +14,7 @@ from .hardware_profiles import min_note_ms, HardwareDeviceState, HardwareNote, V
 from .performance import PerformancePlan
 
 
-DVD_MAX_HZ = 600.  # Musical DVD ceiling in acoustic Hz, before pitchRatio conversion.
+DVD_MAX_HZ = 600.  # Allocation backbone only; final dvd_register pass uses 200–800 acoustic Hz.
 
 
 def fold_for_profile(note, minimum, maximum, mode, profile):

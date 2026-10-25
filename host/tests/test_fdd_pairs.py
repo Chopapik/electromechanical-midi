@@ -205,6 +205,10 @@ class FddPairTests(unittest.TestCase):
         with patch('runtime.arranger.allocate', return_value=paired):
             final = arrange(self.source(tracks), r)
         command = next(c for c in compile_plan(final).commands if c.device_id == 'DVD_STEPPER_1' and c.kind == 'tone')
+        # Expression survives the omitted FDD source; only the final DVD
+        # frequency register is transposed with its performed base pitch.
+        ratio = command.hz / copy.hz
+        expected['frequency']['values'] = tuple(v*ratio for v in expected['frequency']['values'])
         self.assertEqual(command.articulation, expected)
-        self.assertEqual(final.reinforcements[0], copy)
+        self.assertEqual(final.reinforcements[0], dataclasses.replace(copy, hz=command.hz))
         self.assert_feasible(final, r)

@@ -30,7 +30,10 @@ zależy od presetu; [algorytmy](ARRANGEMENT.md) są opisane w jednym miejscu.
 
 Runtime dodaje ekspresję tonalną i artykulację HDD, po czym wykonuje wspólny
 pass ograniczania ataków FDD. Universal ma po nim dodatkowe odzyskiwanie głosów,
-sprawdzające pełną chronologię każdej nowej rezerwacji. `PerformancePlan` zawiera
+sprawdzające pełną chronologię każdej nowej rezerwacji. Ostatni etap ustawia
+[rejestr DVD 200–800 Hz](../host/playback/dvd_register.py), preferując +1 oktawę
+całych fraz, bez zmiany rezerwacji i liczby nut. Ponownie sprawdza chronologię DVD.
+`PerformancePlan` zawiera
 źródłowe dane, wykonane zdarzenia, pominięcia z powodami, extras i sidecary ekspresji.
 Nie jest jeszcze kolejką transportową.
 
