@@ -151,6 +151,27 @@ it('selects expressive FDD and explains the rhythmic gate exception',()=>{
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_expressive'})
 })
 
+it('selects the accent-free expressive A/B without the fixed 200 ms description',()=>{
+ Object.assign(state,{arrangementPreset:'fdd_expressive_solo'})
+ mount('/settings')
+ expect(screen.getByRole('option',{name:'FDD Expressive · bez kopii akcentów'})).toBeTruthy()
+ expect(screen.getByText(/Porównanie A\/B: identyczne główne nuty/)).toBeTruthy()
+ expect(screen.queryByText(/każdy zachowany ton trwa 200 ms/)).toBeNull()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_expressive_solo'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_expressive_solo'})
+})
+
+it('selects phrase legato and explains the rhythmic reduction',()=>{
+ Object.assign(state,{arrangementPreset:'fdd_legato'})
+ mount('/settings')
+ expect(screen.getByRole('option',{name:'FDD Legato · ciągłe frazy'})).toBeTruthy()
+ expect(screen.getByText(/Ciągłe frazy na stałych FDD/)).toBeTruthy()
+ expect(screen.getByText(/do ośmiu FDD jednocześnie/)).toBeTruthy()
+ expect(screen.queryByText(/każdy zachowany ton trwa 200 ms/)).toBeNull()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_legato'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_legato'})
+})
+
 
 it('keeps output selection available while a MIDI arrangement is loading',()=>{
  loading.value={name:'large.mid',stage:'planning'}

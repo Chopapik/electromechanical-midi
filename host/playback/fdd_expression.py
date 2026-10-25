@@ -13,6 +13,7 @@ from .hardware_profiles import min_note_ms
 from .instrument_roles import contexts
 
 PRESET = 'fdd_expressive'
+SOLO_PRESET = 'fdd_expressive_solo'
 
 
 class Phrases:
@@ -97,3 +98,64 @@ def finalize(plan):
         singleDriveNotes=len(primaries)-len(accents),
         gateRangeMs=[min((e.actual_duration for e in primaries), default=0)*1000,
                      max((e.actual_duration for e in primaries), default=0)*1000])
+
+
+def without_accents(plan, registry):
+    """Controlled A/B: mute copies only after the complete baseline is planned.
+
+    Keeping the original allocation avoids spending freed capacity on different
+    notes. Removing STEP commands changes projected head travel, so validate the
+    remaining chronology without shortening, moving or dropping any primary.
+    """
+    report = plan.hardware.get('fddExpressive')
+    if report is None:  # STRICT_TRACKS retains its existing articulation.
+        return
+    from .mechanical_arrangement import ChronologyCache
+    from .hardware_profiles import Verdict
+
+    extras = []
+    articulation = {k: v for k, v in plan.execution_articulation.items()
+                    if not k.startswith('extra:')}
+    removed = defaultdict(int)
+    for index, extra in enumerate(plan.reinforcements):
+        if extra.kind == 'FDD_ACCENT':
+            removed[extra.device_id] += 1
+            continue
+        key = 'extra:'+str(index)
+        if key in plan.execution_articulation:
+            articulation['extra:'+str(len(extras))] = plan.execution_articulation[key]
+        extras.append(extra)
+
+    chronologies = {}
+    for device in plan.devices:
+        if device['type'] != 'FDD' or device['id'] not in plan.hardware['physicalLanes']:
+            continue
+        ident = device['id']
+        primary = [e for e in plan.events if e.played and e.device_id == ident]
+        copies = [e for e in extras if e.device_id == ident]
+        chronology = ChronologyCache(registry.profile(ident))
+        if chronology.check(primary, copies) is None:
+            raise ValueError('FDD Expressive bez kopii: niewykonalna chronologia '+ident)
+        chronologies[ident] = chronology
+
+    plan.reinforcements = extras
+    plan.execution_articulation = articulation
+    for ident, chronology in chronologies.items():
+        plan.hardware['states'][ident] = chronology.states[-1].as_dict()
+        counter = plan.hardware['counters'][ident]
+        counter.update(acceptedNotes=len(chronology.values), playedNotes=len(chronology.values),
+            degradedNotes=sum(e.quality != Verdict.PASS or e.timing != Verdict.PASS for e in chronology.values),
+            transitions=sum(e.transition_time > 0 for e in chronology.values),
+            physicalUnknown=sum(e.physical_load == Verdict.UNKNOWN for e in chronology.values),
+            travelReversals=chronology.states[-1].travel_reversals,
+            reversals=chronology.states[-1].travel_reversals,
+            accentCopiesSuppressed=counter.get('accentCopiesSuppressed',0)+removed[ident])
+        for key, reason in (('tooShort', 'NOTE_TOO_SHORT'),
+                            ('outsidePreferredRange', 'OUTSIDE_PREFERRED_RANGE'),
+                            ('outsideStableRange', 'OUTSIDE_STABLE_RANGE')):
+            counter[key] = sum(reason in e.quality_reasons for e in chronology.values)
+    report.update(accentCopiesEnabled=False, baselinePreset=PRESET,
+        suppressedAccentCopies=report.get('suppressedAccentCopies',0)+sum(removed.values()), allocationPreserved=True,
+        scope='baseline Expressive with only accent copies muted; acoustic effect unmeasured')
+    plan.hardware['fddPairs']['unisonCopies'] = sum(e.device_id in chronologies for e in extras)
+    finalize(plan)

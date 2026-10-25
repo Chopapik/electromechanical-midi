@@ -108,7 +108,7 @@ wyniki testów od aktualnej polityki muzycznej.
 | Firmware, wejście PLAY | 40–500 Hz | Zakres poprawnej komendy, nie gwarancja osiągalnej częstotliwości |
 | Firmware, impulsy STEP | Minimalny odstęp 2439 µs ≈ 410 kroków/s | Osobny limit wykonania, również przy komendzie 500 Hz |
 | Metadane FDD1 | `stableHz` 130–410 Hz | Górny punkt z testu; 130 Hz zachowane w metadanych, nie zmierzony próg dolny |
-| Ataki nut | Minimum 120 ms; przy stałym gate 200 ms efektywne minimum 203 ms | Eksperyment muzyczny z release 3 ms. FDD Expressive w AUTO dobiera gate rytmicznie; [reguły](ARRANGEMENT.md#presety). Niezależne od częstotliwości STEP |
+| Ataki nut | Minimum 120 ms; przy stałym gate 200 ms efektywne minimum 203 ms | FDD Expressive dobiera gate rytmicznie, FDD Legato łączy wybrane nuty wewnątrz frazy bez release. Granice fraz zachowują co najmniej 3 ms przerwy; [reguły](ARRANGEMENT.md#presety). Parametry muzyczne, niezależne od częstotliwości STEP |
 
 `COMFORT_MIN_HZ=200` / `MAX=410` w [pitch.py](../host/pitch.py) to ogólny
 fallback. Aktywne preferencje urządzeń go zawężają do 100–205 Hz po transpozycji.

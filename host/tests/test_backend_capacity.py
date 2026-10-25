@@ -23,7 +23,8 @@ from test_runtime import Link
 ROOT = Path(__file__).resolve().parents[2]
 EXTENDED_FDD = {f'fdd-{i}' for i in range(5, 9)}
 PRESETS = ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'fdd_quality_adaptive',
-           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet','instrument_roles_unison4', 'universal')
+           'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet','instrument_roles_unison4',
+           'fdd_expressive', 'fdd_expressive_solo', 'fdd_legato', 'universal')
 
 
 class BackendCapacityTests(unittest.TestCase):

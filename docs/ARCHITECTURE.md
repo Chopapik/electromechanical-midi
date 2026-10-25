@@ -34,18 +34,32 @@ podobnie jak 2×4 Unisono i FDD Expressive. Expressive rezerwuje cztery logiczne
 głosy w parach FDD1–2, 3–4, 5–6, 7–8, dobiera rytmiczne gate'y i opcjonalne
 krótsze kopie akcentów; omija eksperyment stałych 200 ms tylko we własnym AUTO.
 Recovery dla obu presetów grupowych nie dodaje niezależnych nut FDD.
-Odzyskiwanie sprawdza pełną chronologię każdej nowej rezerwacji. Ostatni etap ustawia
+Odzyskiwanie sprawdza pełną chronologię każdej nowej rezerwacji. Kolejny etap ustawia
 [rejestr DVD 200–800 Hz](../host/playback/dvd_register.py), preferując +1 oktawę
 całych fraz, bez zmiany rezerwacji i liczby nut. Ponownie sprawdza chronologię DVD.
+Wariant A/B `fdd_expressive_solo` planuje pełne Expressive, a następnie usuwa
+wyłącznie kopie `FDD_ACCENT`, przelicza indeksy sidecarów i ponownie sprawdza
+chronologię FDD. Nie wykorzystuje zwolnionych miejsc do doboru innych nut.
+`fdd_legato` korzysta z tego samego tła, po czym przeorganizowuje wyłącznie
+pierwotne nuty FDD: stabilne napędy na frazę, łączenie powtórzeń i redukcja
+szybkich zmian. Następnie wolne stacje w parach wzmacniają mocne fragmenty
+kopiami przebiegu legato (`FDD_LEGATO_REINFORCEMENT`). Decyzja wynika z ataków
+źródłowych, także powtórzeń scalonych w długi ton. Dodatkowe rezerwacje
+zachowują wszystkie przyszłe główne nuty. Ponownie sprawdza pełną chronologię
+i odświeża stany FDD.
 `PerformancePlan` zawiera
 źródłowe dane, wykonane zdarzenia, pominięcia z powodami, extras i sidecary ekspresji.
 Nie jest jeszcze kolejką transportową.
 
 [compile_plan](../host/runtime/compiler.py) tworzy uporządkowany
 `ExecutionTimeline`: tone/hit/stop ze stabilnym `device_id`. Stykające się tony
-nie mają pośredniego STOP; dla DVD tolerancja błędu float granicy wynosi 1 ns.
+nie mają pośredniego STOP; dla DVD i jawnego passu `fdd_legato` tolerancja
+błędu float granicy wynosi 1 ns.
 Rzeczywiste przerwy nadal generują STOP. Liczenie STOP i ciągłych odcinków pracy
 musi korzystać z tej warstwy, obejmując również dodatkowe głosy.
+W VIRTUAL nowy preset utrzymuje jeden zapętlony podgląd mechaniczny przez
+stykające się nuty danej stacji i skokowo zmienia jego wysokość. Pauza, STOP,
+mute i zmiana epoki przerywają głos. Ten model nie jest kalibracją akustyczną.
 
 [Player](../host/runtime/player.py) ma jeden zegar, epokę i właściciela
 (orchestra, lab albo service). [Router](../host/runtime/router.py) przekazuje

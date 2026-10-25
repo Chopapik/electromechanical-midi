@@ -72,6 +72,8 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | `balanced` — Balanced / Mechanical-Aware | Lokalna gęstość i sustain: krótkie zmienne frazy preferują FDD, dłuższe DVD; ochrona leadu/basu; opcjonalny dynamiczny UNISON | Preferencje miękkie, więc długi głos może pozostać na FDD przy braku miejsca |
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
 | `fdd_expressive` — FDD Expressive · 4 partie + akcenty | Cztery logiczne głosy Universal w parach FDD1–2, 3–4, 5–6, 7–8; zwykła nuta na jednej stacji, akcent z krótszą kopią; gate z MIDI, tempa i następnego ataku | Do czterech głosów, zależnie od dostępności par; więcej źródłowych nut kosztem liczby równoległych kopii. Parametry wymagają odsłuchu REAL |
+| `fdd_expressive_solo` — FDD Expressive · bez kopii akcentów | Porównanie A/B z pełnym Expressive: identyczne główne nuty, ich urządzenia, pitch, onset i gate; na końcu usuwane tylko dodatkowe `FDD_ACCENT` | Zwolniona pojemność pozostaje niewykorzystana, aby porównanie izolowało kopie. Krótkie główne nuty pozostają krótkie; efekt akustyczny wymaga odsłuchu |
+| `fdd_legato` — FDD Legato · ciągłe frazy | Frazowe przeorganizowanie puli FDD z Expressive: jedna stacja na frazę, ciągłe zmiany wysokości, scalanie powtórzeń i wybór ważniejszych ataków | Cztery logiczne głosy w parach; pozostałe instrumenty identyczne jak w Expressive. Celowo mniej ataków MIDI i dłuższa ciągła praca; jakość i temperatura wymagają oceny fizycznej |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
 | `instrument_roles_unison4` — 2×4 FDD Unisono · eksperymentalny | Dwa logiczne głosy od początku alokacji Universal: FDD1–4 i FDD5–8; cztery stacje w grupie mają identyczne Hz, onset i gate. DVD preferują długie tło, speakery wokal/FX, HDD role rytmiczne | Dwie linie zamiast ośmiu niezależnych; mogą wykonać dwa różne głosy jednej partii. Gęste MIDI nadal wymaga redukcji |
@@ -112,6 +114,66 @@ Szczegóły istotne dla porównań:
   Wszystkie liczby artykulacji są parametrami do odsłuchu, nie zmierzonymi limitami
   bezpieczeństwa. Inspiracja obwiednią liczby napędów:
   [opis autora Floppotronu](https://silent.org.pl/home/2022/06/13/the-floppotron-3-0/).
+- Wariant `fdd_expressive_solo` korzysta w runtime z dokładnie tego samego
+  planowania, artykulacji, recovery i rejestru DVD co `fdd_expressive`.
+  Dopiero po tych etapach usuwa dodatkowe kopie `FDD_ACCENT`; nie dobiera
+  nowych nut i nie wydłuża istniejących. Wszystkie podstawowe zdarzenia,
+  pozostałe extras i komendy DVD/HDD/speakerów pozostają identyczne.
+  Indeksy sidecarów są przeliczane, a pozostała chronologia FDD ponownie
+  sprawdzana, ponieważ usunięcie kroków zmienia model pozycji/nawrotów.
+  Przy niewykonalności plan kończy się błędem zamiast pomijać kolejne nuty.
+  `hardware.fddExpressive` raportuje `accentCopies: 0`, liczbę
+  `suppressedAccentCopies` i `allocationPreserved: true`. Liczniki wykonanych
+  tonów i końcowe stany FDD są odświeżane; decyzje głównych nut zachowują
+  diagnostykę alokacji wariantu bazowego. STRICT_TRACKS nadal stosuje 200 ms.
+  Domyślny preset i wersja z akcentami pozostają dostępne.
+- FDD Legato (`fdd_legato`) działa po gotowym wariancie bez kopii w AUTO.
+  Nie zmienia źródłowych danych MIDI, przydziałów DVD/speakerów/HDD ani ich
+  komend i sidecarów. Przeorganizowuje tylko wcześniej wybrane główne FDD.
+  W każdej dotychczasowej parze stabilizuje track/channel przez frazę;
+  utrzymuje właściciela przez krótki wtręt, jeżeli zbliża się jego kolejne
+  wejście, a lead/bas może przerwać mniej ważną partię. Próg luki źródłowej
+  wynosi roboczo 0,9 ćwierćnuty, ograniczone do 180–450 ms. Wyraźniejsza
+  pauza lub zmiana partii zamyka frazę. Głosy różnych partii nie są sklejane.
+  Przy kolejnej frazie wybierany jest mniej obciążony członek tej samej pary.
+  Mocniejsze fragmenty wzmacnia wolny partner: cztery linie mogą grać na
+  ośmiu stacjach naraz, z unisono wewnątrz pary i różnymi partiami między parami.
+  To dłuższe kopie przebiegu legato, bez krótkich kopii akcentów.
+  Selekcja zachowuje wejście frazy i maksymalizuje wagę velocity oraz akcentów
+  ćwierćnutowych przy wymaganym czasie na wysokości. Roboczy cel to połowa
+  ćwierćnuty ograniczona do **140–220 ms**, z zachowaniem większego minimum
+  profilu i skonfigurowanego odstępu ataków (domyślnie co najmniej 120 ms).
+  To nie skalibrowany próg satysfakcjonującego tonu ani limit bezpieczeństwa.
+  Zachowane NOTE_ON zostają w źródłowych chwilach, bez kolejki opóźnień;
+  pitch pochodzi z MIDI po obecnej transpozycji/foldingu 100–205 Hz.
+  Powtórzenia tej samej wykonanej wysokości współdzielą ton. Pozostałe zbyt
+  szybkie nuty są pomijane muzycznie; powody `FDD_LEGATO_*` rozróżniają
+  podtrzymany pitch, redukcję, ciągłość partii, brak miejsca na ton i weto profilu.
+  Gate sięga dokładnie następnego wybranego ataku. Ostatni ton zachowuje
+  koniec ostatniej nuty danej frazy lub czas potrzebny na ton; granica kolejnej
+  partii pozostawia co najmniej 3 ms release. Jawny użytkowy `maxNoteSeconds`
+  jest respektowany; automatyczny cap krótkich ataków z alokatora nie ogranicza
+  frazowych wybrzmień. Długie historyczne NOTE_OFF nie kasują pauzy po późniejszej
+  nucie tej linii. Pełna chronologia FDD jest oceniana ponownie, bez podnoszenia
+  limitów STEP, zakresów, zmiany firmware, TRACK0 ani zachowania STOP/watchdoga.
+  Wzmocnienie analizuje źródłowe ataki wybranej puli FDD przed scaleniem
+  powtórzeń. Roboczo wymaga ≥3 ataków z ≥2 głosów w ostatniej ćwierćnucie
+  (tolerancja strumu 15 ms), velocity ≥80 oraz akcentu ćwierćnutowego lub
+  velocity ≥100. Sąsiednie okna z podtrzymaniem dwóch ćwierćnut łączą się.
+  Nie jest to rozpoznawanie głośności nagrania. W obrębie takiego okna partner
+  podąża za już graną wysokością, również wchodząc na źródłowym akcencie
+  podczas długiej nuty właściciela; nie tworzy dodatkowej melodii.
+  Blok trwa co najmniej ćwierćnutę i 350 ms, a każdy jego ton spełnia te same
+  minima pobytu na wysokości i profilu co główny FDD. Kopia kończy się przy
+  pauzie właściciela, końcu okna lub rezerwacji partnera, z ochroną 3 ms release.
+  Wszystkie przyszłe nuty partnera, odstęp ataków i pełna chronologia mają
+  pierwszeństwo; przy wecie pomijana jest tylko kopia. Użytkowe
+  `fddUnisonEnabled: false` lub `fddUnisonMaxVoices < 2` wyłącza te wzmocnienia.
+  Inne presety zachowują dotychczasowe zachowanie.
+  `hardware.fddLegato` zapisuje liczbę fraz, zachowanych ataków i przyczyny
+  redukcji; `reinforcement` podaje okna, bloki, dodatkowe tony, czas pracy i weta.
+  Liczba odrzuconych ID obejmuje też scalone powtórzenia: nie oznacza
+  wtedy braku tonu, ale rezygnację z osobnego ataku. STRICT_TRACKS zachowuje 200 ms.
 - Mechanical-Aware (`mechanical_arrangement.py`): roboczy próg sustainu 500 ms,
   kontekst tej samej partii track/channel; profil i ochrona istotnych głosów
   ograniczają kradzież. To preferencja przy alokacji, nie globalny gate.

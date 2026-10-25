@@ -92,3 +92,27 @@ describe('Laboratory live audio lease',()=>{
   expect(allocation.mock.calls[0][1]).toBeLessThanOrEqual(ctx.sampleRate*.25)
  })
 })
+
+describe('Phrase-legato FDD audio',()=>{
+ it('retunes touching tones on one buffer without a new attack or pitch glide',async()=>{
+  const ctx=await setup(),tone={...note(),duration:.2,hz:130,articulation:{kind:'fdd_legato'}}
+  output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[tone,{...tone,time:.2,hz:165}]},devices)
+  expect(ctx.sources).toHaveLength(1)
+  expect(ctx.sources[0].start).toHaveBeenCalledTimes(1)
+  expect(ctx.sources[0].playbackRate.setValueAtTime).toHaveBeenLastCalledWith(165/130,expect.any(Number))
+  expect(ctx.sources[0].playbackRate.linearRampToValueAtTime).not.toHaveBeenCalled()
+  expect(ctx.sources[0].stop.mock.calls.at(-1)?.[0]).toBeCloseTo(10.5)
+ })
+ it('starts a new buffer after a real phrase rest',async()=>{
+  const ctx=await setup(),tone={...note(),duration:.2,hz:130,articulation:{kind:'fdd_legato'}}
+  output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[tone,{...tone,time:.3,hz:165}]},devices)
+  expect(ctx.sources).toHaveLength(2)
+ })
+ it('does not revive a voice explicitly stopped at a boundary',async()=>{
+  const ctx=await setup(),tone={...note(),duration:.2,hz:130,articulation:{kind:'fdd_legato'}}
+  output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[tone,{...tone,kind:'stop',time:.2},{...tone,time:.2,hz:165}]},devices)
+  expect(ctx.sources).toHaveLength(2)
+  output.state(2,false)
+  expect(ctx.sources[1].stop).toHaveBeenLastCalledWith()
+ })
+})

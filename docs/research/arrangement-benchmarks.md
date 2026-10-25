@@ -201,6 +201,182 @@ PY
   --output /tmp/fdd-expressive-repeat.json
 ```
 
+### Krok 1 — Expressive bez kopii akcentów, 2026-10-25
+
+Źródło: [fdd-expressive-solo-comparison.json](../../reports/fdd-expressive-solo-comparison.json).
+Punkt odniesienia: pełne `fdd_expressive` z commita `4e1f709`.
+Nowy wariant runtime `fdd_expressive_solo` usuwa wyłącznie dodatkowe
+`FDD_ACCENT` z całkowicie zaplanowanej aranżacji. Zwolnione miejsca nie są
+ponownie przydzielane. To porównanie jednej zmiennej; nie wprowadza jeszcze
+minimalnego czasu satysfakcjonującego tonu ani kalibracji odsłuchowej.
+
+W 12 MIDI / 24 pełnych przebiegach zachowano dokładną zgodność wszystkich
+podstawowych zdarzeń, pozostałych extras i komend nie-FDD, weryfikowaną
+fingerprintami. Sprawdzono Bodysnatchers, Jigsaw, Airbag, No Surprises,
+True Love Waits (live), Myxomatosis, Last Flowers, Identikit, Levels,
+Counting Stars, Always on My Mind oraz Pink Floyd — Time.
+Usunięto łącznie **6307 kopii**, bez dodatkowych pominięć podstawowych nut,
+konfliktów modeli mechanicznych, overlapów i naruszeń odstępu ataków FDD.
+
+| MIDI | Komendy tonu FDD z kopiami → bez kopii | Źródłowe nuty tonalne całej orkiestry |
+| --- | ---: | ---: |
+| Bodysnatchers | 4948 → 3779 | 5770 → 5770 |
+| Jigsaw Falling into Place | 3543 → 3046 | 4971 → 4971 |
+| Airbag | 2385 → 2064 | 3375 → 3375 |
+| Counting Stars | 3715 → 3179 | 4669 → 4669 |
+
+**808 testów hosta, 124 testy frontendu i build frontendu OK.**
+Ruch po usunięciu kopii jest ponownie oceniany pełną chronologią FDD;
+nie poprawia się jej przez przesuwanie, skracanie ani odrzucanie głównych nut.
+Nowy wariant otrzymują wspólnie REAL i VIRTUAL. Firmware, impulsy STEP,
+zakresy częstotliwości, limit HDD i pozostałe presety nie zostały zmienione.
+To testy offline/mock, bez uruchamiania urządzeń i bez oceny akustycznej.
+
+W `/settings` → Aranżacja → Preset aranżacji porównać
+**FDD Expressive · 4 partie + akcenty** oraz
+**FDD Expressive · bez kopii akcentów**, na tym samym MIDI i fragmencie,
+przy jednakowych poziomach i wyjściu REAL. Zmiana presetu zatrzymuje grę;
+wznowienie wymaga osobnego Play. Krótkie główne nuty pozostają krótkie —
+eksperyment ma ustalić udział dodatkowych kopii w mechanicznym klikaniu.
+
+Powtórzenie na lokalnie dostępnych plikach, np.:
+
+```sh
+.venv/bin/python scripts/benchmark_universal.py \
+  'midi/0080-02-radiohead_2007-bodysnatchers-[k].mid' \
+  'midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid' \
+  --presets fdd_expressive fdd_expressive_solo --workers 2 \
+  --output /tmp/fdd-expressive-solo-repeat.json
+```
+
+### FDD Legato — frazowe przeorganizowanie FDD, 2026-10-25
+
+Poniższy pomiar zachowuje pierwszą wersję Legato, bez wzmocnień partnerem.
+Aktualna wersja dodaje etap opisany w następnym podrozdziale.
+
+Źródła: [A/B 12 MIDI](../../reports/fdd-legato-comparison.json) oraz
+[pełna biblioteka](../../reports/fdd-legato-library.json). Baseline to
+`fdd_expressive_solo`, experiment to `fdd_legato`, z identycznym inventory,
+rejestrem FDD 100–205 Hz / −12, DVD 200–800 Hz i wspólnym limitem HDD 8 HIT/s.
+Oba warianty zachowują dokładnie te same komendy DVD, HDD i speakerów oraz
+ich extras w 12 porównaniach. Nowy pass przebudowuje tylko pulę głównych FDD.
+
+| MIDI | Skompilowane STOP FDD przed → po | Najdłuższy odcinek FDD bez STOP po zmianie |
+| --- | ---: | ---: |
+| Bodysnatchers | 3779 → 529 | 175,708 s |
+| Jigsaw Falling into Place | 3046 → 456 | 17,644 s |
+| Airbag | 2064 → 359 | 23,199 s |
+| Counting Stars | 3179 → 318 | 33,299 s |
+| No Surprises | 2129 → 421 | 24,067 s |
+
+STOP pochodzi z `ExecutionTimeline`, a ciągły odcinek kończy rzeczywista
+komenda STOP. Nie utożsamiamy go z jedną wysokością: wewnątrz odcinka
+mogą występować kolejne PLAY zmieniające częstotliwość. Wybrzmienie nie
+przerywa się na granicy stykających się nut z powodu błędu float do 1 ns.
+Ta tolerancja jest ograniczona do DVD i jawnego nowego passu FDD Legato;
+zwykłe release'y oraz granice innych presetów pozostają bez zmian.
+
+W Bodysnatchers czas pracy sumowany po FDD rośnie **369,985 → 758,084 s**.
+Ataki źródłowe FDD maleją 3779 → 1486: **1893 powtórzenia** zastępuje
+podtrzymany pitch, **76** ataków pominięto na rzecz ciągłości właściciela,
+**298** krótkich wejść nie miało miejsca na pełny ton, a **26** pominięto
+podczas wyboru wolniejszego przebiegu. Żaden zachowany NOTE_ON nie został
+przesunięty. Wszystkie osiem FDD ma komendy w tym planie; jedna fraza
+pozostaje na jednym członku pary, przy kolejnych frazach obciążenie jest
+rozdzielane. Liczenie zachowanych źródłowych ID nie mierzy tutaj wierności
+muzycznej: scalone powtórzenie traci osobny atak, ale jego wysokość nadal brzmi.
+
+**158 różnych plików po SHA-256, 157 poprawnie odczytanych planów.**
+`touhou4.mid` nadal kończy się błędem parsera `list index out of range`
+przed aranżacją. Nie wykryto konfliktów modeli mechanicznych, overlapów,
+naruszeń odstępu FDD ani przekroczeń 8 HIT/s; HDD3–4 pozostają nieaktywne.
+Żaden plik z niepustą bazową pulą FDD nie utracił całej tej rodziny.
+Najdłuższy ciągły odcinek FDD w bibliotece: **302,614 s w The National Anthem**.
+To znaczący wzrost czasu pracy. Parametry fraz i długości nie są pomiarami
+akustycznymi ani termicznymi; testy nie kwalifikują takiej pracy jako bezpiecznej.
+
+**819 testów hosta, 128 frontendu oraz build frontendu OK.** Testy obejmują
+powtórzenia, prawdziwe pauzy, wejście innej partii, długi historyczny NOTE_OFF,
+jawny cap użytkownika, brak członka pary, STRICT_TRACKS, deterministyczność,
+brak pośredniego STOP i identyczne komendy przekazywane do REAL/VIRTUAL na mockach.
+VIRTUAL utrzymuje w tym presecie bufor mechaniczny przez stykające się nuty,
+zmieniając wysokość bez glissanda i ponownego ataku; STOP i epoka nadal go anulują.
+Firmware, GPIO, TRACK0, generowanie STEP oraz istniejące zabezpieczenia nie były zmieniane.
+Nie flashowano, nie włączano ATX ani nie wykonywano fizycznego odsłuchu w tych testach.
+
+Powtórzenie podstawowego porównania:
+
+```sh
+.venv/bin/python scripts/benchmark_universal.py \
+  'midi/0080-02-radiohead_2007-bodysnatchers-[k].mid' \
+  'midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid' \
+  --presets fdd_expressive_solo fdd_legato --workers 2 \
+  --output /tmp/fdd-legato-repeat.json
+```
+
+### FDD Legato — wzmocnienie mocnych fragmentów ośmioma stacjami, 2026-10-25
+
+Pierwsza wersja używała wszystkich napędów w całym utworze, lecz maksymalnie
+czterech jednocześnie. Wzmocnienia `FDD_LEGATO_REINFORCEMENT` dołączają wolnych
+partnerów do istniejących linii w mocniejszych fragmentach. Nie przywracają
+krótkich `FDD_ACCENT`: partner podąża za wysokością bez STOP wewnątrz bloku.
+Cichsza lub rzadsza partia nie wymusza ośmiu napędów.
+
+Źródła: [12 porównań w obrębie tego samego planowania](../../reports/fdd-legato-reinforcement.json)
+oraz [pełna biblioteka](../../reports/fdd-legato-reinforcement-library.json).
+`benchmark_universal.py` dla `fdd_legato` zapisuje stan tuż przed dodaniem
+wzmocnień w `legatoBeforeReinforcement`; sprawdza identyczność wszystkich
+głównych zdarzeń, pozostałych extras i komend innych rodzin po tym etapie.
+To porównanie tego samego presetu, konfiguracji i MIDI, bez ponownej alokacji.
+Metryki aktywności liczą przedziały skompilowanych tonów, a nie jednoczesne NOTE_ON:
+stacja trzymająca ton także jest aktywna. Czas pracy sumuje sekundy wszystkich FDD.
+
+| Bodysnatchers | Legato bez wzmocnień | Legato ze wzmocnieniami |
+| --- | ---: | ---: |
+| Maksimum aktywnych FDD jednocześnie | 4 | 8 |
+| Czas z ośmioma aktywnymi FDD | 0 s | 81,589 s |
+| Czas z co najmniej pięcioma aktywnymi FDD | 0 s | 180,639 s |
+| Wybrane główne ataki FDD | 1486 | 1486 |
+| Dodatkowe tony partnerów | 0 | 1194 w 239 blokach |
+| Łączny czas pracy FDD | 758,084 s | 1442,595 s |
+| STOP FDD z ExecutionTimeline | 529 | 768 |
+| Najdłuższy odcinek jednego FDD bez STOP | 175,708 s | 175,708 s |
+
+Wzrost liczby STOP wynika z pracy dodatkowych stacji: główne linie mają
+niezmieniony harmonogram, a partner kończy każdy dodatkowy blok. Nie dodaje
+STOP między jego stykającymi się wysokościami. Ten kompromis zwiększa obsadę
+i czas pracy, nie jest próbą minimalizacji samej liczby komend.
+
+| MIDI kontrolne | Sekundy z ośmioma FDD po zmianie |
+| --- | ---: |
+| Jigsaw Falling into Place | 103,683 |
+| Airbag | 23,023 |
+| No Surprises | 57,038 |
+| Counting Stars | 122,506 |
+| True Love Waits (live) | 0 — brak kwalifikujących mocnych okien |
+
+W 12 porównaniach oraz wszystkich **157 poprawnie odczytanych MIDI** z biblioteki
+wszystkie główne nuty, pozostałe extras oraz komendy DVD, speakerów i HDD są
+identyczne. Osiem FDD pracuje równocześnie w 118 plikach; pozostałe nie są do
+tego zmuszane. Jeden z 158 plików, `touhou4.mid`, zachowuje wcześniejszy błąd
+parsera. Brak konfliktów modeli, nakładających się rezerwacji i naruszeń odstępu
+ataków FDD; wspólny limit HDD nadal wynosi 8 HIT/s. Najdłuższa ciągła praca FDD
+w bibliotece nadal wynosi **302,614 s — The National Anthem**.
+**825 testów hosta, 128 frontendu i build frontendu: OK.** Testy obejmują
+pracę ośmiu stacji, łagodne fragmenty, włączenie partnera w trakcie tonu,
+ochronę przyszłych rezerwacji, weto profilu, deterministyczność oraz zgodność
+REAL/VIRTUAL na mockach. Algorytm nie był oceniany słuchowo
+ani termicznie przez te narzędzia; wzrost wypełnienia nie potwierdza bezpieczeństwa
+ciągłej pracy. Firmware, częstotliwości STEP, GPIO i watchdog pozostały bez zmian.
+
+Powtórzenie z lokalnych MIDI:
+
+```sh
+.venv/bin/python scripts/benchmark_universal.py \
+  'midi/0080-02-radiohead_2007-bodysnatchers-[k].mid' \
+  --presets fdd_legato --output /tmp/fdd-legato-reinforcement-repeat.json
+```
+
 ## DVD Continuous Sustain — pierwszy eksperyment
 
 Źródło: [dvd-sustain-comparison.json](../../reports/dvd-sustain-comparison.json).

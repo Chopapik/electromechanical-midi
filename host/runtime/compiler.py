@@ -37,12 +37,13 @@ def compile_plan(plan):
         add(e.device_id,e.start,e.duration,e.hz,e.velocity,None,e.source_id,art)
     # Touching tones change pitch without an extra actuator STOP, as before.
     starts={(c.device_id,c.time) for c in commands if c.kind=='tone'}
-    # DVD-only nanosecond tolerance: subtraction/addition of exact gates can
-    # differ by an ULP. Real musical release gaps remain STOPs.
+    # Nanosecond tolerance for DVD and explicit FDD phrase legato: touching
+    # gates can differ by an ULP. Real musical release gaps remain STOPs.
     from bisect import bisect_left
     dvd_starts = {}
     for c in commands:
-        if c.kind == 'tone' and kinds[c.device_id] == 'DVD_SLED':
+        if c.kind == 'tone' and (kinds[c.device_id] == 'DVD_SLED' or
+                                kinds[c.device_id] == 'FDD' and 'fddLegato' in plan.hardware):
             dvd_starts.setdefault(c.device_id, []).append(c.time)
     for times in dvd_starts.values(): times.sort()
     def dvd_touch(c):

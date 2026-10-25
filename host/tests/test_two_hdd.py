@@ -67,7 +67,7 @@ class TwoHddTests(unittest.TestCase):
         notes += [(i*.5+.19,i*.5+.21,36) for i in range(5)]
         notes += [(i*.5+.44,i*.5+.46,38) for i in range(5)]
         source=self.source([('Drums',9,notes)])
-        for preset in ('balanced','instrument_roles_unison4','fdd_expressive','universal'):
+        for preset in ('balanced','instrument_roles_unison4','fdd_expressive','fdd_expressive_solo','fdd_legato','universal'):
             with self.subTest(preset=preset):
                 r=DeviceRegistry();r.document['parameters']['arrangementPreset']=preset
                 plan=arrange(source,r);self.assert_feasible(plan,r)

@@ -3,6 +3,7 @@ import argparse
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from copy import deepcopy
+from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
@@ -104,6 +105,12 @@ def metrics(plan, registry):
         'noiseOmitted':sum(e.role=='unpitched_effect' and not e.played for e in plan.events),
         'drumFingerprint':digest([c.as_dict() for c in timeline.commands if c.kind=='hit']),
         'timelineFingerprint':execution_fingerprint(timeline)}
+    result.update(primaryEventsFingerprint=digest([asdict(e) for e in plan.events]),
+        nonAccentExtrasFingerprint=digest([asdict(e) for e in plan.reinforcements if e.kind!='FDD_ACCENT']),
+        nonLegatoExtrasFingerprint=digest([asdict(e) for e in plan.reinforcements
+            if e.kind not in ('FDD_ACCENT','FDD_LEGATO_REINFORCEMENT')]),
+        nonFddTimelineFingerprint=digest([c.as_dict() for c in timeline.commands
+            if registry.by_id[c.device_id]['type']!='FDD']))
     recovery=plan.hardware.get('universal',{}).get('recovery')
     fdd=[c for c in timeline.commands if c.kind=='tone' and registry.by_id[c.device_id]['type']=='FDD']
     attacks=Counter(round(c.time,6) for c in fdd)
@@ -120,6 +127,36 @@ def metrics(plan, registry):
                         max((c.duration for c in fdd),default=0)*1000])
     if 'fddExpressive' in plan.hardware:
         result['fddExpressive']=plan.hardware['fddExpressive']
+    fdd_devices={d['id'] for d in plan.devices if d['type']=='FDD'}
+    fdd_longest=fdd_silence=0.
+    for ident in fdd_devices:
+        beginning=previous_stop=None
+        for c in timeline.commands:
+            if c.device_id!=ident:continue
+            if c.kind=='tone' and beginning is None:
+                beginning=c.time
+                if previous_stop is not None:fdd_silence+=max(0.,c.time-previous_stop)
+            elif c.kind=='stop' and beginning is not None:
+                fdd_longest=max(fdd_longest,c.time-beginning)
+                beginning=None;previous_stop=c.time
+    result.update(fddStops=sum(c.kind=='stop' and c.device_id in fdd_devices for c in timeline.commands),
+        fddWorkSeconds=round(sum(c.duration for c in fdd),3),
+        fddLongestContinuousSeconds=round(fdd_longest,3),fddSilenceSeconds=round(fdd_silence,3),
+        fddByDevice=dict(Counter(c.device_id for c in fdd)))
+    # Interval union per drive: touching pitch changes are one active motor.
+    edges=defaultdict(Counter)
+    for c in fdd:
+        edges[c.time][c.device_id]+=1
+        edges[c.time+c.duration][c.device_id]-=1
+    active=Counter();seconds=Counter();previous=0.;peak=0
+    for at,delta in sorted(edges.items()):
+        n=sum(v>0 for v in active.values())
+        seconds[n]+=at-previous
+        active.update(delta);peak=max(peak,sum(v>0 for v in active.values()));previous=at
+    result.update(fddPeakActiveDrives=peak, fddAllEightActiveSeconds=round(seconds[8],3),
+        fddFiveOrMoreActiveSeconds=round(sum(v for k,v in seconds.items() if k>=5),3),
+        fddActiveDriveSeconds={str(k):round(v,3) for k,v in sorted(seconds.items())})
+    if 'fddLegato' in plan.hardware:result['fddLegato']=plan.hardware['fddLegato']
     if recovery is not None:
         result['recovery']=recovery
     result['backboneTimelineFingerprint']=(recovery or {}).get('backboneTimelineFingerprint',result['timelineFingerprint'])
@@ -149,8 +186,24 @@ def run_job(code_root, path, preset):
             return original(plan,*args)
         with patch.object(universal_recovery,'recover',audited):
             plan=arrange(MidiSource(Path(path)),registry)
+    elif preset=='fdd_legato':
+        from playback import fdd_legato
+        original=fdd_legato.reinforce
+        before={}
+        def audited_reinforcement(plan, *args):
+            before.update(metrics(plan,registry))
+            return original(plan,*args)
+        with patch.object(fdd_legato,'reinforce',audited_reinforcement):
+            plan=arrange(MidiSource(Path(path)),registry)
     else:plan=arrange(MidiSource(Path(path)),registry)
     values=metrics(plan,registry)
+    if preset=='fdd_legato':
+        for key in ('primaryEventsFingerprint','nonLegatoExtrasFingerprint','nonFddTimelineFingerprint'):
+            assert before[key]==values[key], (path,key)
+        values['legatoBeforeReinforcement']={k:before[k] for k in (
+            'fddStops','fddWorkSeconds','fddLongestContinuousSeconds','fddPeakActiveDrives',
+            'fddAllEightActiveSeconds','fddFiveOrMoreActiveSeconds','fddByDevice')}
+        values['reinforcementPreservesPrimariesAndOtherInstruments']=True
     if protected:
         values['backboneTimelineFingerprint']=protected['timeline']
         after={e.id:e for e in plan.events}
@@ -158,7 +211,7 @@ def run_job(code_root, path, preset):
         values['originalReinforcementsIdentical']=plan.reinforcements[:len(protected['extras'])]==protected['extras']
         values['originalArticulationIdentical']=all(plan.execution_articulation.get(k)==v for k,v in protected['sidecars'].items())
         assert all(values[k] for k in ('originalPlayedEventsIdentical','originalReinforcementsIdentical','originalArticulationIdentical'))
-    if preset in ('universal','fdd_expressive'):
+    if preset in ('universal','fdd_expressive','fdd_expressive_solo','fdd_legato'):
         assert not any(values[k] for k in ('fddAttackViolations','overlaps','mechanicalConflicts')), values
     values['planningSeconds']=round(time.monotonic()-started,3)
     values['configurationFingerprint']=configuration_fingerprint(registry.document)
@@ -171,16 +224,33 @@ def comparisons(rows):
     for row in rows:by_file[row['file']][row['preset']]=row
     compared=[]
     for name,presets in sorted(by_file.items()):
-        for baseline,experiment in (('instrument_roles','universal'),('instrument_roles_unison4','fdd_expressive')):
+        for baseline,experiment in (('instrument_roles','universal'),('instrument_roles_unison4','fdd_expressive'),
+                                    ('fdd_expressive','fdd_expressive_solo'),('fdd_expressive_solo','fdd_legato')):
             if not {baseline,experiment} <= presets.keys():continue
             old,new=presets[baseline],presets[experiment]
             assert old['sha256']==new['sha256']
             a,b=old['metrics'],new['metrics']
-            compared.append({'file':name,'baselinePreset':baseline,'experimentPreset':experiment,
+            comparison={'file':name,'baselinePreset':baseline,'experimentPreset':experiment,
                 'tonalNotesRecoveredNet':b['playedTonal']-a['playedTonal'],
                 'previouslyRetainedImportantIdsLost':sorted(set(a['retainedImportantIds'])-set(b['retainedImportantIds'])),
                 'drumTimelineIdentical':a['drumFingerprint']==b['drumFingerprint'],
-                'durationCoverageDelta':round(b['sourceDurationCoverage']-a['sourceDurationCoverage'],6)})
+                'durationCoverageDelta':round(b['sourceDurationCoverage']-a['sourceDurationCoverage'],6)}
+            if experiment=='fdd_expressive_solo':
+                for key in ('primaryEventsFingerprint','nonAccentExtrasFingerprint','nonFddTimelineFingerprint'):
+                    assert a[key]==b[key], (name,key)
+                assert b['fddExpressive']['accentCopies']==0
+                assert a['toneCommandsByFamily']['FDD']-b['toneCommandsByFamily']['FDD']==a['fddExpressive']['accentCopies']
+                comparison.update(primaryEventsIdentical=True,nonAccentExtrasIdentical=True,
+                    nonFddTimelineIdentical=True,removedAccentCopies=a['fddExpressive']['accentCopies'])
+            if experiment=='fdd_legato':
+                assert a['nonFddTimelineFingerprint']==b['nonFddTimelineFingerprint'],name
+                assert a['nonLegatoExtrasFingerprint']==b['nonLegatoExtrasFingerprint'],name
+                comparison.update(nonFddTimelineIdentical=True,nonLegatoExtrasIdentical=True,
+                    fddStopsBefore=a['fddStops'],fddStopsAfter=b['fddStops'],
+                    fddLongestContinuousBefore=a['fddLongestContinuousSeconds'],
+                    fddLongestContinuousAfter=b['fddLongestContinuousSeconds'],
+                    reductionReasons=b['fddLegato']['reductions'])
+            compared.append(comparison)
     return compared
 
 

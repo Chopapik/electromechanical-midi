@@ -6,7 +6,7 @@ export interface Command {
   hz:number; velocity:number; articulation?:MechanicalArticulation & {attack?:number; decay?:number; sustain?:number; intensity?:number; resonance?:number; kind?:string; duration?:number;
     gain?:{times:number[];values:number[]}; frequency?:{times:number[];values:number[]}}
 }
-type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string;level?:GainNode;levelValue?:number;duty?:number;waveform?:SpeakerWaveform;labHz?:number}
+type Voice={source:OscillatorNode|AudioBufferSourceNode; gain:GainNode; start:number; end:number; device:string;level?:GainNode;levelValue?:number;duty?:number;waveform?:SpeakerWaveform;labHz?:number;legato?:boolean}
 export class VirtualOutput {
   context:AudioContext|null=null
   private voices:Voice[]=[]
@@ -94,13 +94,14 @@ export class VirtualOutput {
           const at=Math.max(ctx.currentTime,when)
           v.gain.gain.cancelScheduledValues(at);v.gain.gain.setValueAtTime(0,at)
           try{v.source.stop(at)}catch{/* already stopped */}
+          v.end=at;v.legato=false
         }
         continue
       }
       const end=when+c.duration
       if(end<=ctx.currentTime || (c.kind==='hit'&&ctx.currentTime-when>.1))continue
       const start=Math.max(ctx.currentTime,when)
-      if(c.kind==='tone'&&c.articulation?.kind==='laboratory'){
+      if(c.kind==='tone'&&(c.articulation?.kind==='laboratory'||c.articulation?.kind==='fdd_legato')){
         this.liveTone(c,devices[c.device_id],start,end)
         continue
       }
@@ -153,9 +154,14 @@ export class VirtualOutput {
   }
   private liveTone(c:Command,device:{volume:number;type:string;realAmplitude?:number},start:number,end:number){
     const ctx=this.context!
-    const existing=this.voices.find(v=>v.device===c.device_id&&v.labHz!==undefined&&v.end>start)
+    const legato=c.articulation?.kind==='fdd_legato'
+    const existing=this.voices.find(v=>v.device===c.device_id&&v.labHz!==undefined&&v.legato===legato&&
+      (v.end>start||legato&&Math.abs(v.end-start)<=1e-9))
     if(existing){
-      if('buffer' in existing.source)existing.source.playbackRate.linearRampToValueAtTime(c.hz/existing.labHz!,start)
+      if('buffer' in existing.source){
+        if(legato)existing.source.playbackRate.setValueAtTime(c.hz/existing.labHz!,start)
+        else existing.source.playbackRate.linearRampToValueAtTime(c.hz/existing.labHz!,start)
+      }
       else existing.source.frequency.linearRampToValueAtTime(c.hz,start)
       existing.end=end
       existing.source.stop(end) // Refresh a bounded audio lease, without reattacking.
@@ -179,7 +185,7 @@ export class VirtualOutput {
     source.connect(gain)
     if(level){level.gain.setValueAtTime(levelValue,start);gain.connect(level);level.connect(this.bus??ctx.destination)}
     else gain.connect(this.bus??ctx.destination)
-    const voice:Voice={source,gain,start,end,device:c.device_id,level,levelValue,duty:device.realAmplitude??50,labHz:c.hz}
+    const voice:Voice={source,gain,start,end,device:c.device_id,level,levelValue,duty:device.realAmplitude??50,labHz:c.hz,legato}
     this.voices.push(voice)
     source.onended=()=>{source.disconnect();gain.disconnect();level?.disconnect();this.voices=this.voices.filter(v=>v!==voice)}
     source.start(start);source.stop(end)

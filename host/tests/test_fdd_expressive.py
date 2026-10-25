@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import test_mechanical_arrangement as helpers
 from playback.allocator import allocate, ManualPin
-from playback.fdd_expression import PRESET, Phrases, finalize
+from playback.fdd_expression import PRESET, SOLO_PRESET, Phrases, finalize, without_accents
 from playback.performance import ReinforcementEvent
 from playback.orchestra import parse_policy
 from runtime.arranger import arrange
@@ -208,3 +208,82 @@ class ExpressiveTests(unittest.TestCase):
             _midi=s._midi,ticks_per_beat=s.ticks_per_beat)
         fast=Phrases(events,fast_source,parse_policy({})).gate(events[0],130.,r.profile('fdd-1'),.01,False,.003)
         self.assertLess(fast,slow)
+
+    def test_solo_only_mutes_final_copies_without_reallocating_dense_voices(self):
+        r=self.registry(dvd=4)
+        s=self.source([(str(i),i,[(j*.09,j*.09+.07,48+i+j%7) for j in range(32)])
+                       for i in range(6)])
+        a=arrange(s,r)
+        self.assertTrue(any(e.kind=='FDD_ACCENT' for e in a.reinforcements))
+        r.document['parameters']['arrangementPreset']=SOLO_PRESET
+        b=arrange(s,r)
+        self.assertEqual(b.policy['arrangementPreset'],SOLO_PRESET)
+        self.assertEqual(r.document['parameters']['arrangementPreset'],SOLO_PRESET)
+        self.assertEqual(a.events,b.events)
+        self.assertEqual([e for e in a.reinforcements if e.kind!='FDD_ACCENT'],b.reinforcements)
+        self.assertEqual({e.id:a.execution_articulation.get(e.id) for e in a.events},
+                         {e.id:b.execution_articulation.get(e.id) for e in b.events})
+        for e in b.reinforcements:
+            old=a.reinforcements.index(e);new=b.reinforcements.index(e)
+            self.assertEqual(a.execution_articulation.get('extra:'+str(old)),
+                             b.execution_articulation.get('extra:'+str(new)))
+        non_fdd={d['id'] for d in a.devices if d['type']!='FDD'}
+        self.assertEqual([c for c in compile_plan(a).commands if c.device_id in non_fdd],
+                         [c for c in compile_plan(b).commands if c.device_id in non_fdd])
+        self.assertEqual(b.hardware['fddExpressive']['accentCopies'],0)
+        self.assertEqual(b.hardware['fddExpressive']['singleDriveNotes'],
+                         a.hardware['fddExpressive']['primaryNotes'])
+        self.assertEqual(b.hardware['fddExpressive']['suppressedAccentCopies'],
+                         a.hardware['fddExpressive']['accentCopies'])
+        self.assertEqual(b.hardware['fddExpressive']['gateRangeMs'],a.hardware['fddExpressive']['gateRangeMs'])
+        self.assertEqual(len(self.tones(b)),len(self.tones(a))-a.hardware['fddExpressive']['accentCopies'])
+        self.assertEqual(compile_plan(b),compile_plan(arrange(s,r)))
+        self.assert_feasible(b,r)
+
+    def test_solo_reindexes_held_dvd_and_speaker_sidecars(self):
+        r=self.registry(fdd=2)
+        p=arrange(self.source([('Riff',0,[(0,.15,60)])]),r)
+        self.assertTrue(p.reinforcements)
+        for ident in ('DVD_STEPPER_1','vhs-1'):
+            p.reinforcements.append(ReinforcementEvent(p.events[0].id,ident,1,.3,300,80))
+            p.execution_articulation['extra:'+str(len(p.reinforcements)-1)]={'sentinel':ident}
+        without_accents(p,r)
+        self.assertEqual([e.device_id for e in p.reinforcements],['DVD_STEPPER_1','vhs-1'])
+        self.assertEqual({k:v for k,v in p.execution_articulation.items() if k.startswith('extra:')},
+                         {'extra:0':{'sentinel':'DVD_STEPPER_1'},'extra:1':{'sentinel':'vhs-1'}})
+
+    def test_solo_respects_missing_devices_and_strict_tracks(self):
+        r=self.registry()
+        for d in r.devices:d['enabled']=d['id']=='fdd-1'
+        r.document['parameters']['arrangementPreset']=SOLO_PRESET
+        s=self.source([('Riff',0,[(0,.1,60)])])
+        p=arrange(s,r)
+        self.assertTrue(p.events[0].played)
+        self.assertEqual(p.hardware['fddExpressive']['accentCopies'],0)
+        r.document['routing']={'mode':'STRICT_TRACKS','tracks':[1,None,None,None]}
+        p=arrange(s,r)
+        self.assertEqual(p.events[0].actual_duration,.2)
+        self.assertNotIn('fddExpressive',p.hardware)
+        self.assertEqual(p.policy['arrangementPreset'],SOLO_PRESET)
+
+    def test_solo_does_not_drop_notes_to_hide_a_chronology_failure(self):
+        r=self.registry(fdd=2)
+        p=arrange(self.source([('Riff',0,[(0,.15,60)])]),r)
+        before=copy.deepcopy(p)
+        with patch('playback.mechanical_arrangement.ChronologyCache.check',return_value=None):
+            with self.assertRaisesRegex(ValueError,'niewykonalna chronologia'):
+                without_accents(p,r)
+        self.assertEqual(p,before)
+
+    def test_solo_selection_and_outputs_share_the_same_timeline(self):
+        r=self.registry(fdd=2)
+        app=Application(r);app.set_preset(SOLO_PRESET)
+        p=arrange(self.source([('Riff',0,[(0,.15,60),(.25,.35,62)])]),r)
+        lines,packets=[],[]
+        real=RealOutput(r);real.link=SimpleNamespace(controller_status={'atx':'ON'},send_batch=lambda batch:lines.extend(batch))
+        virtual=VirtualOutput(packets.append)
+        timeline=compile_plan(p)
+        real.dispatch(timeline.commands);virtual.dispatch(timeline.commands,epoch=1)
+        self.assertEqual(packets[0]['commands'],[c.as_dict() for c in timeline.commands])
+        self.assertEqual(sum(' PLAY ' in line for line in lines),len(self.tones(p)))
+        self.assertFalse(any(e.kind=='FDD_ACCENT' for e in p.reinforcements))

@@ -35,6 +35,13 @@ Pary Dwugłos, **2×4 FDD Unisono · eksperymentalny**, FDD Quality, FDD Quality
 **FDD Expressive · 4 partie + akcenty** to osobny eksperyment: cztery głosy w
 parach FDD1–2, 3–4, 5–6, 7–8, rytmiczne gate'y oraz krótsze kopie akcentów.
 Nie stosuje sztywnych 200 ms w AUTO; wymaga oceny brzmienia na sprzęcie.
+Do porównania służy **FDD Expressive · bez kopii akcentów**: identyczne główne
+nuty i pozostałe instrumenty, usunięte jedynie dodatkowe krótkie kopie FDD.
+**FDD Legato · ciągłe frazy** prowadzi wybrane głosy na stałych stacjach,
+łączy powtórzenia i zmienia wysokości bez STOP. W mocnych fragmentach wolny
+partner wzmacnia całą linię legato, dzięki czemu może pracować osiem FDD naraz.
+Upraszcza szybkie przebiegi;
+to osobny eksperyment artykulacji FDD, z niezmienionym planem innych instrumentów.
 Domyślnie uruchamia się **2×4 FDD Unisono · eksperymentalny**: dwa logiczne głosy FDD,
 dobór partii Universal, długie tło DVD, osobne wokal/FX i preferowane role HDD.
 Porównanie całej lokalnej biblioteki: [benchmark](docs/research/universal-arrangement.md#biblioteka-8-fdd-2026-10-21).

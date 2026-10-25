@@ -126,7 +126,7 @@ class FddAttackRateTests(unittest.TestCase):
         from test_allocator import write_tracks
         presets = ('balanced', 'fdd_quality', 'fdd_quality_adaptive', 'dvd_lead_low_fdd',
                    'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet',
-                   'instrument_roles_unison4', 'fdd_expressive', 'universal')
+                   'instrument_roles_unison4', 'fdd_expressive', 'fdd_expressive_solo', 'fdd_legato', 'universal')
         with tempfile.TemporaryDirectory() as directory:
             source = MidiSource(write_tracks(Path(directory)/'fast.mid',
                 [('Riff', 0, [(i*.045, i*.045+.03, 57+i%3) for i in range(24)])]))
@@ -139,12 +139,12 @@ class FddAttackRateTests(unittest.TestCase):
                         if strict:
                             r.document['routing'] = {'mode': 'STRICT_TRACKS', 'tracks': [1, None, None, None]}
                         p = arrange(source, r)
-                        expressive=preset=='fdd_expressive' and not strict
+                        expressive=preset in ('fdd_expressive','fdd_expressive_solo','fdd_legato') and not strict
                         self.assertEqual(p.articulation['fddAttackRate']['minAttackIntervalMs'],120 if expressive else 203)
                         self.assertEqual(p.articulation['fddAttackRate']['fixedToneMs'],0 if expressive else 200)
                         tones=[c for c in compile_plan(p).commands
                                if c.kind=='tone' and c.device_id.startswith('fdd-')]
                         self.assertTrue(tones)
-                        self.assertTrue(all(c.duration<.2 if expressive else abs(c.duration-.2)<1e-9 for c in tones))
+                        self.assertTrue(all(c.duration>=.12-1e-9 if preset=='fdd_legato' and not strict else c.duration<.2 if expressive else abs(c.duration-.2)<1e-9 for c in tones))
                         self.assert_rate(p)
                         self.assertEqual(compile_plan(p), compile_plan(arrange(source, r)))
