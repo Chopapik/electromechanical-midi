@@ -59,7 +59,7 @@ class TwoHddTests(unittest.TestCase):
                 hits=[c for c in compile_plan(plan).commands if c.kind=='hit']
                 self.assertTrue(hits)
                 self.assertLessEqual({c.device_id for c in hits},ACTIVE)
-                self.assertLessEqual(peak_hits(c.time for c in hits),12)
+                self.assertLessEqual(peak_hits(c.time for c in hits),8)
                 self.assertFalse(any(e.device_id in INACTIVE for e in plan.reinforcements))
 
     def test_dense_hats_do_not_block_upcoming_kick_or_snare_on_their_owner(self):
@@ -67,7 +67,7 @@ class TwoHddTests(unittest.TestCase):
         notes += [(i*.5+.19,i*.5+.21,36) for i in range(5)]
         notes += [(i*.5+.44,i*.5+.46,38) for i in range(5)]
         source=self.source([('Drums',9,notes)])
-        for preset in ('balanced','instrument_roles_unison4','universal'):
+        for preset in ('balanced','instrument_roles_unison4','fdd_expressive','universal'):
             with self.subTest(preset=preset):
                 r=DeviceRegistry();r.document['parameters']['arrangementPreset']=preset
                 plan=arrange(source,r);self.assert_feasible(plan,r)

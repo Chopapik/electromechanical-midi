@@ -14,7 +14,7 @@ const state={state:'stopped',position:0,duration:3,file:'test.mid',owner:'orches
   output:{mode:'REAL',connected:false,unknown:false,message:'Brak połączenia z ESP32',muted:[]},
   service:{busy:false,error:null,reset:{available:false,reason:'Brak komendy resetu'},home:{available:false,reason:'Offline'},firmware:{available:false,reason:'Podłącz ESP32 przez USB (CP2102), aby wgrać firmware'}}}
 vi.mock('./runtime',()=>({useRuntime:()=>({state,send,error:null,connected:true,files:[{name:'test.mid',size:100,modified:0}],upload:vi.fn(),firmwareEvents,midiLoading:loading.value})}))
-beforeEach(()=>{loading.value=null;state.service.busy=false;Object.assign(state,{homing:false});cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
+beforeEach(()=>{loading.value=null;state.service.busy=false;Object.assign(state,{homing:false,arrangementPreset:'balanced'});cleanup();state.devices.splice(1);send.mockClear();firmwareEvents.length=0;state.output.mode='REAL';state.output.connected=false;state.output.unknown=false;state.error=null;state.owner='orchestra';state.service.firmware.available=false})
 function mount(path='/'){return render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>)}
 describe('Orchestra UI',()=>{
  it('starts offline REAL with disabled Play, still showing registry',()=>{mount();expect((screen.getByRole('button',{name:'Play'}) as HTMLButtonElement).disabled).toBe(true);expect(screen.getByText('Offline · ESP32 nie jest połączony')).toBeTruthy();expect(screen.getByRole('article',{name:'FDD #1'})).toBeTruthy();expect(screen.queryByText('Laboratory · debug')).toBeNull()})
@@ -139,6 +139,16 @@ it('offers the experimental dual four-drive unison preset',()=>{
  expect(screen.getByRole('option',{name:'2×4 FDD Unisono · eksperymentalny'})).toBeTruthy()
  fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'instrument_roles_unison4'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'instrument_roles_unison4'})
+})
+
+it('selects expressive FDD and explains the rhythmic gate exception',()=>{
+ Object.assign(state,{arrangementPreset:'fdd_expressive'})
+ mount('/settings')
+ expect(screen.getByRole('option',{name:'FDD Expressive · 4 partie + akcenty'})).toBeTruthy()
+ expect(screen.getByText(/Cztery głosy w parach FDD1–2/)).toBeTruthy()
+ expect(screen.queryByText(/każdy zachowany ton trwa 200 ms/)).toBeNull()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'fdd_expressive'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'fdd_expressive'})
 })
 
 

@@ -52,7 +52,9 @@ def arrange(source, registry):
     limit_fdd_attacks(plan, registry)
     from playback.fdd_pairs import synchronize_unison4
     synchronize_unison4(plan, registry)
-    if routing['mode']=='AUTO' and plan.policy.get('arrangementPreset') in ('universal','instrument_roles_unison4'):
+    from playback.fdd_expression import finalize as finalize_fdd_expression
+    finalize_fdd_expression(plan)
+    if routing['mode']=='AUTO' and plan.policy.get('arrangementPreset') in ('universal','instrument_roles_unison4','fdd_expressive'):
         from playback.universal_recovery import recover
         existing_extras=len(plan.reinforcements)
         recovered = recover(plan, registry, source)
@@ -84,6 +86,7 @@ def arrange(source, registry):
         # spacing to the complete final plan.
         limit_fdd_attacks(plan, registry)
         synchronize_unison4(plan, registry)
+        finalize_fdd_expression(plan)
     from playback.dvd_register import apply as set_dvd_register
     set_dvd_register(plan, registry, source)
     return plan

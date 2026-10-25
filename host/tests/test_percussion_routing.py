@@ -33,7 +33,8 @@ class PercussionRoutingTests(unittest.TestCase):
         self.assertTrue(all(e.device_type=='HDD_VCM' for e in hits))
 
     def test_kick_snare_and_hat_prefer_stable_different_lanes(self):
-        plan,_=self.plan([('Drums',9,[(i*.3,i*.3+.02,n) for i in range(8) for n in (36,38,42)])])
+        # Keep this lane-preference fixture below the shared eight-hit budget.
+        plan,_=self.plan([('Drums',9,[(i*.5,i*.5+.02,n) for i in range(8) for n in (36,38,42)])])
         by_note={n:{e.device_id for e in plan.events if e.played and e.note==n} for n in (36,38,42)}
         self.assertTrue(all(len(ids)==1 for ids in by_note.values()))
         self.assertEqual(len(set.union(*by_note.values())),3)

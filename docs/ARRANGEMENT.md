@@ -71,6 +71,7 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | --- | --- | --- |
 | `balanced` — Balanced / Mechanical-Aware | Lokalna gęstość i sustain: krótkie zmienne frazy preferują FDD, dłuższe DVD; ochrona leadu/basu; opcjonalny dynamiczny UNISON | Preferencje miękkie, więc długi głos może pozostać na FDD przy braku miejsca |
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
+| `fdd_expressive` — FDD Expressive · 4 partie + akcenty | Cztery logiczne głosy Universal w parach FDD1–2, 3–4, 5–6, 7–8; zwykła nuta na jednej stacji, akcent z krótszą kopią; gate z MIDI, tempa i następnego ataku | Do czterech głosów, zależnie od dostępności par; więcej źródłowych nut kosztem liczby równoległych kopii. Parametry wymagają odsłuchu REAL |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
 | `instrument_roles_unison4` — 2×4 FDD Unisono · eksperymentalny | Dwa logiczne głosy od początku alokacji Universal: FDD1–4 i FDD5–8; cztery stacje w grupie mają identyczne Hz, onset i gate. DVD preferują długie tło, speakery wokal/FX, HDD role rytmiczne | Dwie linie zamiast ośmiu niezależnych; mogą wykonać dwa różne głosy jednej partii. Gęste MIDI nadal wymaga redukcji |
@@ -82,10 +83,35 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 Szczegóły istotne dla porównań:
 
 - Globalny eksperyment odsłuchowy `fddFixedToneMs: 200` ustawia każdą zachowaną
-  nutę FDD i każdą kopię FDD na dokładnie 200 ms we wszystkich presetach oraz
+  nutę FDD i każdą kopię FDD na dokładnie 200 ms w pozostałych presetach oraz
   STRICT_TRACKS. Końcowy filtr wymaga dodatkowo 3 ms release, więc onsety na
   jednej stacji muszą być oddalone co najmniej o 203 ms. Gęstsze ataki są
   pomijane bez przesuwania NOTE_ON; DVD, speakery i HDD nie zmieniają gate.
+- FDD Expressive w AUTO wyłącza sztywne 200 ms **wyłącznie w swoim planie**.
+  Universal od początku ma cztery logiczne sloty FDD zamiast ośmiu fizycznych;
+  revoicing śledzi właściciela frazy i preferuje różne partie przed kolejnymi
+  głosami tej samej partii. Wszystkie dźwięki pochodzą ze źródła MIDI; folding
+  i obecna transpozycja −12 / 100–205 Hz pozostają bez zmian.
+  [fdd_expression.py](../host/playback/fdd_expression.py) dobiera gate z minimum
+  długości źródłowej, 180 ms, 0,45 ćwierćnuty oraz 80% odstępu do następnego
+  ataku tego głosu. Robocze minimum to 6 cykli tonu oraz minimum profilu;
+  może nieco wydłużyć bardzo krótki ornament, ale nie zajmuje następnego ataku
+  z pominięciem przerwy release (co najmniej 3 ms). Niedające się zmieścić
+  zdarzenie zostaje pominięte, bez przesuwania NOTE_ON.
+  Zwykłe ataki rozkładane są między członków pary, z zachowaniem minimum 120 ms
+  między atakami każdej fizycznej stacji. Akcent to wejście frazy, mocna część
+  taktu lub velocity ≥10 powyżej mediany partii, przy velocity ≥64.
+  Dostępna druga stacja gra tę samą nutę w tym samym momencie przez około 55%
+  gate'u głównego, z minimum profilu i 4 cykli. To obwiednia liczby napędów 2→1,
+  nie regulacja napięcia ani szerokości STEP. Odrzucenie kopii nie usuwa głównego
+  ataku; osierocone kopie są usuwane. Brak członka pary nie zmienia numeracji.
+  Recovery korzysta z DVD i speakerów, nie dopisuje FDD poza budżetem czterech
+  głosów. Raport `hardware.fddExpressive` ujawnia grupy, nuty solo, kopie i gate'y.
+  Ręczne przypisania FDD w AUTO wymagają wyjścia z tego eksperymentu;
+  STRICT_TRACKS zachowuje wcześniejsze reguły i 200 ms.
+  Wszystkie liczby artykulacji są parametrami do odsłuchu, nie zmierzonymi limitami
+  bezpieczeństwa. Inspiracja obwiednią liczby napędów:
+  [opis autora Floppotronu](https://silent.org.pl/home/2022/06/13/the-floppotron-3-0/).
 - Mechanical-Aware (`mechanical_arrangement.py`): roboczy próg sustainu 500 ms,
   kontekst tej samej partii track/channel; profil i ochrona istotnych głosów
   ograniczają kradzież. To preferencja przy alokacji, nie globalny gate.
@@ -150,7 +176,7 @@ W starszych presetach reguła FX wymaga leadu, co najmniej 8 nut, średniego pit
 bez wokalu/basu. Przykład: Counting Stars, okolice 34,5–36,5 s,
 830,61 → 987,77 → 830,61 → 739,99 Hz; [raport](../reports/counting-stars-speakers.json).
 
-Universal oraz 2×4 FDD Unisono rezerwują również przyszłe wejścia wokalu/FX; poza nimi speakery
+Universal, 2×4 FDD Unisono oraz FDD Expressive rezerwują również przyszłe wejścia wokalu/FX; poza nimi speakery
 mogą ratować krótkie melodie za szybkie dla silników. Główny wokal może użyć
 FX/motorów podczas polifonii. Długie pady i niskie basy nie zajmują tej puli;
 wyjątek analizy wielogłosu basu dotyczy równoczesnego górnego głosu, nie
@@ -162,7 +188,7 @@ semantyka GM kanału 10 i pitched percussion poza tym kanałem są rozróżniane
 Artykulacja wirtualnego hitu nie zmienia faz fizycznego cyklu.
 Model HDD w VIRTUAL ma dwukrotnie większe wzmocnienie (+6 dB); zachowuje dynamikę
 velocity i artykulację. Nie zmienia to impulsów ani poziomu sterowania REAL.
-W **każdym presecie** obowiązuje wspólny limit **12 komend HDD HIT w dowolnym
+W **każdym presecie** obowiązuje wspólny limit **8 komend HDD HIT w dowolnym
 ruchomym oknie `[t, t + 1 s)`**, łącznie dla wszystkich HDD. To budżet muzyczny,
 nie zmierzony bezpieczny limit cewek. Selekcja przed alokacją chroni stopę i werbel,
 następnie tomy, talerze i hi-hat; drobna perkusja (np. tamburyn i marakasy)
@@ -173,7 +199,7 @@ Końcowy plan uwzględnia też ręczne przypisania i kopie HDD z reinforcement;
 kompilator odrzuca harmonogram przekraczający limit. REAL i VIRTUAL wykonują
 ten sam wybór HIT. Dodatkowe impulsy artykulacji VIRTUAL, np. podwójne uderzenie
 werbla, nie są dodatkowymi komendami HIT i nie wchodzą do tego budżetu.
-W Universal i 2×4 FDD Unisono [percussion_routing.py](../host/playback/percussion_routing.py)
+W Universal, 2×4 FDD Unisono i FDD Expressive [percussion_routing.py](../host/playback/percussion_routing.py)
 preferuje role według fizycznej kolejności: HDD1 stopa, HDD2 werbel,
 HDD3 hi-hat, HDD4 tomy/talerze. To miękkie preferencje, nie wyłączne kanały.
 Przy wyłączonych HDD role są przydzielane kolejno dostępnym kanałom.
@@ -190,7 +216,7 @@ Pozostała perkusja wykorzystuje wolne miejsca, jeśli symulacja istniejącego
 cyklu i budżetów kanału potwierdza, że nie zablokuje jego nadchodzącego głównego
 akcentu. Stopa i werbel mogą pożyczać oba kanały; rezerwacja dotyczy dodatków.
 Bez stopy lub werbla oba HDD mogą reprezentować pozostałe źródłowe uderzenia.
-Nie dopisujemy rytmu ani nie zwiększamy impulsów. Limit 12 HIT/s pozostaje
+Nie dopisujemy rytmu ani nie zwiększamy impulsów. Limit 8 HIT/s pozostaje
 wspólnym sufitem; dotychczasowe ograniczenia pojedynczych kanałów mogą wymagać
 niższej gęstości. Brzmienie na sprzęcie wymaga osobnego odsłuchu.
 
@@ -266,7 +292,7 @@ do poprzedniego gate, niedopuszczalny atak może zostać pominięty.
 Pozostałe urządzenia zachowują wykonanie. Koszt muzyczny to uproszczenie riffów;
 regresja Airbag 1:34 jest w [benchmarkach](research/arrangement-benchmarks.md).
 
-## Universal i 2×4 FDD: odzyskiwanie po redukcji FDD
+## Universal, 2×4 FDD i Expressive: odzyskiwanie po redukcji FDD
 
 [universal.py](../host/playback/universal.py) wybiera głosy według ciągłości fraz,
 rozłożenia akordów i pokrycia partii, z rezerwacjami przyszłych pickupów.
@@ -300,6 +326,52 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
 
 ## TODO
 
+- [ ] **Settings — osobna zakładka „Aranżer” z dokładną regulacją i przeliczeniem utworu.**
+  Umożliwić użytkownikowi samodzielne dostrajanie aranżacji z poziomu aplikacji,
+  bez konieczności każdorazowej zmiany kodu. Umieścić te opcje w osobnej zakładce
+  ustawień, z sekcjami dla FDD, DVD, HDD, PC Speakera i PC Speakera FX,
+  aby nie zaśmiecać pozostałych ustawień. Dla każdej rodziny przewidzieć kilka
+  do kilkunastu przydatnych parametrów, z precyzyjnymi polami liczbowymi,
+  jednostkami, suwakami oraz krótkim wyjaśnieniem wpływu na brzmienie.
+  Przykładowy zakres: preferowane partie i rejestry, transpozycja/folding,
+  długości nut, ataki, odstępy i sustain; dla HDD także maksymalna gęstość
+  uderzeń, selekcja akcentów, priorytety klas perkusji i podział ról kanałów.
+  Dokładną listę dobrać do istniejących mechanizmów oraz odsłuchów użytkownika.
+  Dodać przycisk **„Przerenderuj aktualnie wybrany utwór”**, który przelicza
+  jego aranżację i wspólny harmonogram REAL/VIRTUAL z bieżącymi ustawieniami,
+  bez ponownego wgrywania MIDI i bez automatycznego uruchamiania odtwarzania.
+  Pokazać stan przeliczania i błędy, zachowywać wybrane wartości oraz umożliwić
+  przywrócenie domyślnych ustawień presetu. Zmiana parametrów ma wpływać na
+  świadomie uruchomione przeliczenie, bez niespodziewanej podmiany granego planu.
+  Oddzielić parametry muzyczne od kalibracji i ograniczeń sprzętu; kontrolki
+  aranżera nie mogą zwiększać energii impulsów, omijać limitów wykonawczych ani
+  włączać nieaktywnych urządzeń. To plan funkcji, bez obecnej zmiany UI lub logiki.
+
+- [ ] **PC Speaker — poprawić przydział partii i wprowadzić minimum muzyczne 250 Hz.**
+  Użytkownik zgłasza, że PC Speaker bywa przypisywany do niewłaściwej partii.
+  Konkretne utwory, fragmenty, tryb REAL/VIRTUAL i ewentualny udział kanału FX
+  wymagają ustalenia. Porównać źródłowe partie z klasyfikacją i przydziałem
+  do głównego speakera, zanim zostaną zmienione reguły routingu.
+  Wymaganie użytkownika: główny PC Speaker nie powinien grać poniżej **250 Hz**.
+  Traktować tę wartość jako ograniczenie muzyczne aranżacji, nie zmierzony limit
+  sprzętu; uwzględnić transpozycję i folding oraz zgodność REAL/VIRTUAL.
+  Nie rozszerzać automatycznie tego wymagania na PC Speaker FX bez ustalenia
+  zakresu. Na razie jest to TODO, bez zmian kodu i konfiguracji.
+
+- [ ] **Import MIDI — obsłużyć błędne SysEx w Pink Floyd — Echoes.**
+  Plik odniesienia: `Feuneuleu_Prod_Echoes__Pink_Floyd.mid` z Downloads,
+  SHA-256: `b961663092017453181dae040204ee072955fa1ea15e77a4291db6bf3df1f5f2`.
+  Potwierdzono dwa zdarzenia F0 SysEx przy offsetach pliku 28 i 46 (licząc od 0),
+  zawierające odpowiednio niedozwolone bajty `C5` (197) i `C6` (198).
+  Parser `mido` zgłasza `data byte must be in range 0..127` przed aranżacją.
+  Diagnostyczny odczyt tolerancyjny ograniczony do SysEx pozwolił ściśle
+  sparsować pozostałe zdarzenia: 22 ścieżki i 18 427 ataków nut.
+  Opracować kontrolowaną obsługę takich komunikatów z czytelnym ostrzeżeniem;
+  zachować oryginał, nuty, velocity, NOTE_OFF oraz mapę tempa i czasy zdarzeń.
+  Nie włączać globalnego `clip=True`, które może zmieniać także dane nut.
+  Dodać testy wadliwego i poprawnego SysEx oraz zachowania pozostałych zdarzeń.
+  Nie zmieniono dotąd importera ani pliku MIDI; diagnoza była wyłącznie offline.
+
 - [ ] **FDD — zachować różnorodność Jigsaw Falling into Place, ograniczyć monotonię Bodysnatchers (VIRTUAL).**
   Według odsłuchu użytkownika FDD w **Jigsaw Falling into Place** brzmią dobrze:
   słychać różnorodne sekwencje i ciekawe zróżnicowanie partii. W **Bodysnatchers**
@@ -312,6 +384,20 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
   obu grup FDD w planie i harmonogramie, uwzględniając działanie unisono.
   Wykorzystać Jigsaw jako pozytywny punkt odniesienia przy poprawie różnorodności;
   nie uznawać wrażenia jednoczesnej gry wszystkich stacji za potwierdzony błąd.
+
+- [ ] **FDD Expressive — ochrona ważnych partii po rozszerzonym A/B.**
+  W porównaniu 157 poprawnie odczytanych MIDI ze starym 2×4 Unisono
+  nowy preset zachowuje więcej nut w 130 plikach, ale w 16 plikach gubi
+  100 wcześniej granych ID z rolą `bass`, bez oktawowego odpowiednika tej
+  samej partii na oryginalnym onsecie. Sprawdzić m.in. True Love Waits (live)
+  około 1:10,875, No Surprises około 3:00,743, The Scientist około 3:47,915
+  oraz touhou1.mid około 2:54,432. Rola `bass` jest heurystyką; nie każde
+  ID oznacza osobny, słyszalny ubytek całej orkiestry. Uchronić ważne wejścia
+  podczas wyboru czterech głosów i odzyskiwania nut, bez zwiększania tempa
+  ataków FDD ani zajmowania cudzych rezerwacji. Osobno ocenić skrócenie
+  wybrzmienia Myxomatosis i ubytek 20 nut w Identikit. Szczegóły i hashe:
+  [rozszerzony benchmark](research/arrangement-benchmarks.md#rozszerzone-ab--cała-lokalna-biblioteka-2026-10-25).
+  To wyniki planowania offline; brak potwierdzenia odsłuchem VIRTUAL/REAL.
 
 - [ ] **Let Down — zbędne impulsy PC Speakera po około 2:55 (175 s).**
   Użytkownik zgłasza niepotrzebne impulsy i podejrzewa błędny przydział partii

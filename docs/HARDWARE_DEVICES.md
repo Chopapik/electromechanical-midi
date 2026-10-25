@@ -108,7 +108,7 @@ wyniki testów od aktualnej polityki muzycznej.
 | Firmware, wejście PLAY | 40–500 Hz | Zakres poprawnej komendy, nie gwarancja osiągalnej częstotliwości |
 | Firmware, impulsy STEP | Minimalny odstęp 2439 µs ≈ 410 kroków/s | Osobny limit wykonania, również przy komendzie 500 Hz |
 | Metadane FDD1 | `stableHz` 130–410 Hz | Górny punkt z testu; 130 Hz zachowane w metadanych, nie zmierzony próg dolny |
-| Ataki nut | Minimum 203 ms między zachowanymi NOTE_ON na stację; ton trwa 200 ms | Globalny eksperyment muzyczny z przerwą 3 ms, niezależny od częstotliwości STEP |
+| Ataki nut | Minimum 120 ms; przy stałym gate 200 ms efektywne minimum 203 ms | Eksperyment muzyczny z release 3 ms. FDD Expressive w AUTO dobiera gate rytmicznie; [reguły](ARRANGEMENT.md#presety). Niezależne od częstotliwości STEP |
 
 `COMFORT_MIN_HZ=200` / `MAX=410` w [pitch.py](../host/pitch.py) to ogólny
 fallback. Aktywne preferencje urządzeń go zawężają do 100–205 Hz po transpozycji.
@@ -177,7 +177,7 @@ ciągłe 5 hitów/s i burst 10 hitów/s w oknie 500 ms są założeniami, nie ra
 cewki. Kolejność faz i czas impulsu pochodzą z firmware; parametry brzmienia
 wirtualnego nie zmieniają czasu fizycznego uderzenia.
 Niezależnie od tych ograniczeń pojedynczego kanału, każdy preset stosuje
-[wspólny budżet muzyczny 12 HIT w ruchomej sekundzie](ARRANGEMENT.md#speakery-i-perkusja)
+[wspólny budżet muzyczny 8 HIT w ruchomej sekundzie](ARRANGEMENT.md#speakery-i-perkusja)
 łącznie dla wszystkich HDD. Nie podnosi on limitów pojedynczej cewki ani nie
 stanowi potwierdzenia bezpieczeństwa termicznego.
 

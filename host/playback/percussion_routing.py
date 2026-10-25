@@ -5,7 +5,7 @@ Only routes existing MIDI hits. No generated strikes or stronger coil settings.
 from bisect import bisect_left
 from collections import defaultdict
 
-MAX_HDD_HITS_PER_SECOND = 12
+MAX_HDD_HITS_PER_SECOND = 8
 RATE_LIMIT_REASON = 'HDD_RATE_LIMIT'
 
 
@@ -27,7 +27,7 @@ def priority(item):
 
 
 def _select(rows):
-    """Keep at most 12 hits in any half-open one-second window, across all HDD.
+    """Keep at most 8 hits in any half-open one-second window, across all HDD.
 
     Offline lookahead may evict a weaker earlier hit for a later kick/snare.
     No onset is moved. Active storage is bounded by the shared hit budget.

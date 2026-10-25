@@ -69,10 +69,15 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     from . import fdd_pairs
     if fdd_pairs.enabled(policy):
         quad = policy['arrangementPreset'] == fdd_pairs.QUAD_PRESET
-        base = dataclasses.replace(config, policy={**policy, 'arrangementPreset': 'universal' if quad else 'instrument_roles'})
+        expressive = policy['arrangementPreset'] == fdd_pairs.EXPRESSIVE_PRESET
+        if expressive:
+            # The 200 ms listening experiment remains active in other presets.
+            policy = {**policy, 'fddFixedToneMs': 0., 'fddUnisonEnabled': False}
+            config = dataclasses.replace(config, policy=policy)
+        base = dataclasses.replace(config, policy={**policy, 'arrangementPreset': 'universal' if quad or expressive else 'instrument_roles'})
         reference = allocate_hardware(source, base, context, midi_analysis=midi_analysis,
-                                      pins=pins, name=name, origin=origin, logical_fdd=quad)
-        return fdd_pairs.arrange(reference, config, context, pins)
+                                      pins=pins, name=name, origin=origin, logical_fdd=2 if expressive else quad)
+        return fdd_pairs.arrange(reference, config, context, pins, source=source)
     from . import instrument_roles
     role_mode = instrument_roles.enabled(policy)
     if role_mode:
@@ -135,9 +140,10 @@ def allocate_hardware(source, config, context, *, midi_analysis=None, pins=None,
     allocation_slots = dict(slots)
     if logical_fdd:
         representatives = set()
-        for first in (1,5):
+        group_size = 4 if logical_fdd is True else logical_fdd
+        for first in range(1,9,group_size):
             members = [s.device.id for s in slots.values() if s.device.type=='FDD'
-                       and first<=int(lanes[s.device.id].split(':')[1])<first+4]
+                       and first<=int(lanes[s.device.id].split(':')[1])<first+group_size]
             if members: representatives.add(min(members,key=lambda ident:int(lanes[ident].split(':')[1])))
         allocation_slots = {ident:s for ident,s in slots.items()
                             if s.device.type!='FDD' or ident in representatives}

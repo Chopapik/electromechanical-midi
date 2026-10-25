@@ -53,5 +53,5 @@ def compile_plan(plan):
     commands.sort(key=lambda c:(c.time, 0 if c.kind=='stop' else 1,c.device_id,c.source_id or ''))
     from playback.percussion_routing import peak_hits, MAX_HDD_HITS_PER_SECOND
     if peak_hits(c.time for c in commands if c.kind=='hit') > MAX_HDD_HITS_PER_SECOND:
-        raise ValueError('HDD rate limit exceeded: at most 12 HIT commands in any one-second window')
+        raise ValueError(f'HDD rate limit exceeded: at most {MAX_HDD_HITS_PER_SECOND} HIT commands in any one-second window')
     return ExecutionTimeline(tuple(commands), max(plan.duration,max((c.time+c.duration for c in commands),default=0.)))

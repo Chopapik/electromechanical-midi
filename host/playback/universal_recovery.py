@@ -41,7 +41,7 @@ def recover(plan, registry, source):
     caps = capabilities_for(list(devices.values()))
     profiles = {ident:registry.profile(ident) for ident in plan.hardware['physicalLanes']
                 if devices[ident].type in ('FDD','DVD_SLED','VHS')
-                and not (plan.policy.get('arrangementPreset')=='instrument_roles_unison4' and devices[ident].type=='FDD')}
+                and not (plan.policy.get('arrangementPreset') in ('instrument_roles_unison4','fdd_expressive') and devices[ident].type=='FDD')}
     slots = {}
     for ident, profile in profiles.items():
         cap = caps[ident]

@@ -31,23 +31,23 @@ def event(ident,time,note=70,velocity=45,device='hdd-1'):
 def assert_budget(test,times):
     # Independent check at every possible left endpoint, including simultaneous hits.
     for start in times:
-        test.assertLessEqual(sum(start<=t<start+1. for t in times),12)
+        test.assertLessEqual(sum(start<=t<start+1. for t in times),8)
 
 
 class HddSelectionTests(unittest.TestCase):
     def test_half_open_windows_and_boundary_burst(self):
-        exact=[item(i,0 if i<12 else 1) for i in range(24)]
+        exact=[item(i,0 if i<8 else 1) for i in range(16)]
         self.assertEqual(source_drops(exact,{}, {'hdd-1'}),set())
-        burst=[item(i,.99 if i<12 else 1.01) for i in range(24)]
+        burst=[item(i,.99 if i<8 else 1.01) for i in range(16)]
         omitted=source_drops(burst,{}, {'hdd-1'})
-        self.assertEqual(len(omitted),12)
+        self.assertEqual(len(omitted),8)
         assert_budget(self,[n['span'].start for n in burst if n['id'] not in omitted])
 
     def test_later_kick_and_snare_displace_weak_auxiliary_hits(self):
-        notes=[item(i,i*.01) for i in range(12)]+[item(12,.5,36,106),item(13,.75,38,90)]
+        notes=[item(i,i*.01) for i in range(8)]+[item(8,.5,36,106),item(9,.75,38,90)]
         omitted=source_drops(notes,{}, {'hdd-1'})
         self.assertEqual(len(omitted),2)
-        self.assertNotIn('12',omitted);self.assertNotIn('13',omitted)
+        self.assertNotIn('8',omitted);self.assertNotIn('9',omitted)
         self.assertEqual(family(54,9),'aux');self.assertEqual(family(70,9),'aux')
         self.assertEqual(family(82,9),'aux');self.assertEqual(family(41,9),'tom')
 
@@ -63,7 +63,7 @@ class HddSelectionTests(unittest.TestCase):
         notes=[item(i,i*.137) for i in range(40)]
         self.assertFalse(source_drops(notes,{}, {'hdd-1'}))
         notes=[item(i,0) for i in range(24)]
-        pins={str(i):SimpleNamespace(device_id=None) for i in range(12)}
+        pins={str(i):SimpleNamespace(device_id=None) for i in range(16)}
         self.assertFalse(source_drops(notes,pins,{'hdd-1'}))
         self.assertFalse(source_drops(notes,{},set()))
 
@@ -76,7 +76,7 @@ class HddSelectionTests(unittest.TestCase):
         self.assertEqual(omitted,source_drops(notes,{}, {'hdd-1','hdd-2','hdd-3','hdd-4'}))
 
     def test_final_plan_covers_reinforcement_preserves_tones_and_remaps_sidecars(self):
-        hits=[event(i,.01*i) for i in range(12)]
+        hits=[event(i,.01*i) for i in range(8)]
         tone=replace(event('tone',.3),device_id='fdd-1',device_type='FDD',role='harmony',played_hz=220.)
         plan=PerformancePlan('fixture',hits+[tone],[{'id':'hdd-1','type':'HDD_VCM'},{'id':'hdd-2','type':'HDD_VCM'},{'id':'fdd-1','type':'FDD'}],{})
         plan.reinforcements=[ReinforcementEvent('0','hdd-2',.5,.084,0,127,kind='hit'),ReinforcementEvent('tone','fdd-1',2,.1,220,90)]
@@ -92,13 +92,22 @@ class HddSelectionTests(unittest.TestCase):
         self.assertEqual(plan,before)
         assert_budget(self,[c.time for c in compile_plan(plan).commands if c.kind=='hit'])
 
+    def test_compiler_rejects_ninth_hit_and_accepts_eight_without_retiming(self):
+        events=[event(i,i*.05,36,127) for i in range(9)]
+        plan=PerformancePlan('eight-hit-boundary',events,[{'id':'hdd-1','type':'HDD_VCM'}],{})
+        with self.assertRaisesRegex(ValueError,'at most 8 HIT'):
+            compile_plan(plan)
+        plan.events=events[:8]
+        self.assertEqual([c.time for c in compile_plan(plan).commands if c.kind=='hit'],
+                         [e.start for e in events[:8]])
+
     def test_manual_and_shifted_final_hits_are_limited_and_compiler_rejects_bypass(self):
-        events=[event(i,.9 if i<12 else 1.1,36,127) for i in range(24)]
+        events=[event(i,.9 if i<8 else 1.1,36,127) for i in range(16)]
         plan=PerformancePlan('manual',events,[{'id':'hdd-1','type':'HDD_VCM'}],{})
         with self.assertRaisesRegex(ValueError,'HDD rate limit'):
             compile_plan(plan)
         limit_plan(plan)
-        self.assertEqual(sum(e.played for e in plan.events),12)
+        self.assertEqual(sum(e.played for e in plan.events),8)
         self.assertTrue(all(e.reason==RATE_LIMIT_REASON for e in plan.events if not e.played))
         assert_budget(self,[c.time for c in compile_plan(plan).commands if c.kind=='hit'])
 

@@ -30,7 +30,11 @@ zależy od presetu; [algorytmy](ARRANGEMENT.md) są opisane w jednym miejscu.
 
 Runtime dodaje ekspresję tonalną i artykulację HDD, po czym wykonuje wspólny
 pass ograniczania ataków FDD. Universal ma po nim dodatkowe odzyskiwanie głosów,
-sprawdzające pełną chronologię każdej nowej rezerwacji. Ostatni etap ustawia
+podobnie jak 2×4 Unisono i FDD Expressive. Expressive rezerwuje cztery logiczne
+głosy w parach FDD1–2, 3–4, 5–6, 7–8, dobiera rytmiczne gate'y i opcjonalne
+krótsze kopie akcentów; omija eksperyment stałych 200 ms tylko we własnym AUTO.
+Recovery dla obu presetów grupowych nie dodaje niezależnych nut FDD.
+Odzyskiwanie sprawdza pełną chronologię każdej nowej rezerwacji. Ostatni etap ustawia
 [rejestr DVD 200–800 Hz](../host/playback/dvd_register.py), preferując +1 oktawę
 całych fraz, bez zmiany rezerwacji i liczby nut. Ponownie sprawdza chronologię DVD.
 `PerformancePlan` zawiera
@@ -245,10 +249,10 @@ Generator z `--check` sprawdza zgodność bez zapisywania konfiguracji/nagłówk
 18 pozycji / 16 aktywnych w planowaniu, stabilne ordynały kanałów, limity ID,
 bramkę `realEnabled`, pełny cykl DIAG/HOME/PLAY FDD8 na atrapach, HIT wszystkich
 czterech HDD po jawnym włączeniu w teście, niezmieniony STATUS i cztery sloty
-STRICT_TRACKS. Testy dziewięciu presetów sprawdzają dozwolone kanały wykonawcze.
+STRICT_TRACKS. Testy presetów, w tym FDD Expressive, sprawdzają dozwolone kanały wykonawcze.
 [Testy dwóch HDD](../host/tests/test_two_hdd.py) obejmują domyślnie nieaktywne
 HDD3–4, filtrowanie gotowości i komend routera, ochronę głównego rytmu oraz
-wspólny limit 12 HIT/s, wyłącznie offline.
+wspólny limit 8 HIT/s, wyłącznie offline.
 Firmware ma przypięte zależności w [platformio.ini](../firmware/controller/platformio.ini);
 zmiana wersji Arduino/LEDC wymaga oddzielnej weryfikacji, nie automatycznej migracji.
 

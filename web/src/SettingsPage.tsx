@@ -75,6 +75,7 @@ export function SettingsPage({app}:{app:Runtime}){
             <label className="settings-select">Preset aranżacji
               <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>void app.send('arrangement_preset',{preset:e.target.value})}>
                 <option value="universal">Universal · adaptacyjny</option>
+                <option value="fdd_expressive">FDD Expressive · 4 partie + akcenty</option>
                 <option value="balanced">Balanced</option>
                 <option value="instrument_roles">FDD Riffs + DVD Tło</option>
                 <option value="instrument_roles_unison">FDD Riffs + DVD Tło · Pary Unisono</option>
@@ -86,7 +87,9 @@ export function SettingsPage({app}:{app:Runtime}){
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
-            <small>Eksperyment globalny FDD: każdy zachowany ton trwa 200 ms; gęstsze ataki są pomijane, aby zostawić 3 ms przerwy.</small>
+            {s?.arrangementPreset==='fdd_expressive'
+              ? <small>Cztery głosy w parach FDD1–2, 3–4, 5–6 i 7–8. Długość nut wynika z rytmu i tempa; akcent dołącza drugą stację na krótszy czas. Nuty zachowują moment wejścia z MIDI. Eksperyment wymaga odsłuchu REAL.</small>
+              : <small>Eksperyment globalny FDD: każdy zachowany ton trwa 200 ms; gęstsze ataki są pomijane, aby zostawić 3 ms przerwy.</small>}
             {s?.arrangementPreset==='universal'&&<small>Lokalne frazy, wokal i ozdobniki; długie tło DVD. FDD uwzględnia odstęp ataków przed wyborem urządzenia.</small>}
             {s?.arrangementPreset==='instrument_roles'&&<small>FDD: krótkie nuty i zmiany wysokości. DVD: długie tło. PC Speaker: wokal, PC Speaker FX: ozdobniki. Perkusja bez zmian.</small>}
             {s?.arrangementPreset==='instrument_roles_unison'&&<small>FDD1+2 i FDD3+4: dwie partie, każda grana wspólnie tą samą nutą. Pary utrzymują frazy i przejmują aktywne partie podczas pauz. DVD: długie tło.</small>}

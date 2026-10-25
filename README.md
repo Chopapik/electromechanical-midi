@@ -32,6 +32,9 @@ Aplikacja startuje w REAL również offline; samo offline nie przełącza wyjśc
 Presety wybierasz w `/settings` → **Aranżacja → Preset aranżacji**:
 Universal, Balanced / Mechanical-Aware, FDD Riffs + DVD Tło, Pary Unisono,
 Pary Dwugłos, **2×4 FDD Unisono · eksperymentalny**, FDD Quality, FDD Quality Adaptive, DVD Lead + Low FDD.
+**FDD Expressive · 4 partie + akcenty** to osobny eksperyment: cztery głosy w
+parach FDD1–2, 3–4, 5–6, 7–8, rytmiczne gate'y oraz krótsze kopie akcentów.
+Nie stosuje sztywnych 200 ms w AUTO; wymaga oceny brzmienia na sprzęcie.
 Domyślnie uruchamia się **2×4 FDD Unisono · eksperymentalny**: dwa logiczne głosy FDD,
 dobór partii Universal, długie tło DVD, osobne wokal/FX i preferowane role HDD.
 Porównanie całej lokalnej biblioteki: [benchmark](docs/research/universal-arrangement.md#biblioteka-8-fdd-2026-10-21).

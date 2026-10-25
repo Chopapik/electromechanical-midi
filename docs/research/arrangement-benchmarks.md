@@ -10,6 +10,197 @@ Surowe dane pozostają w `reports/` w katalogu repozytorium; nie zmieniamy
 ścieżek używanych przez skrypty ani archiwalnych hashy. Parametry i wyniki
 z różnych tabel nie mogą służyć jako jedno wspólne A/B.
 
+## FDD Expressive — cztery głosy i kopie akcentów, 2026-10-25
+
+Nowy preset `fdd_expressive` jest osobnym wariantem do odsłuchu; domyślny
+`instrument_roles_unison4` pozostaje dostępny. Źródło danych:
+[fdd-expressive-comparison.json](../../reports/fdd-expressive-comparison.json).
+Porównanie wykorzystuje to samo lokalne inventory 8 FDD, 4 DVD, 2 aktywne HDD
+i 2 speakery oraz ten sam eksperymentalny wspólny limit 8 HIT/s HDD.
+Rejestr DVD to 200–800 Hz, FDD nadal używają −12 / 100–205 Hz.
+Firmware i jego limity nie były zmieniane.
+
+Wariant A to dwa głosy, każdy grany przez cztery FDD, ze stałym gate 200 ms.
+Wariant B ma cztery głosy w parach. Zwykły atak gra jedna stacja, a akcent
+może dołączyć krótszą kopię na drugiej. Gate wynika ze źródła, tempa i kadencji.
+Mocny akcent może nadal uruchomić wszystkie osiem stacji.
+
+| MIDI | Źródłowe nuty FDD A → B | Różne pary wysokość/onset A → B | Ataki wszystkich 8 FDD A → B |
+| --- | ---: | ---: | ---: |
+| Bodysnatchers | 1283 → 3779 | 1012 → 2375 | 99,53% → 10,59% |
+| Jigsaw Falling into Place | 1124 → 3046 | 1019 → 2239 | 47,31% → 2,53% |
+| Airbag | 1077 → 2064 | 1016 → 1719 | 22,95% → 0,45% |
+
+Źródłowe nuty liczymy bez fizycznych kopii. „Ataki wszystkich 8” to udział
+momentów rozpoczęcia nut FDD, w których jednocześnie startuje osiem napędów;
+nie oznacza ośmiu jednakowych wysokości. Różne pary pitch/onset nie są oceną
+jakości muzycznej. Liczba zachowanych nut tonalnych całej orkiestry wzrosła
+odpowiednio 4033 → 5770, 3579 → 4971 i 3227 → 3375.
+W tych trzech porównaniach nie stracono żadnego wcześniej zachowanego ID
+leadu/basu, komendy HDD są identyczne i nie ma konfliktów mechanicznych,
+overlapów ani naruszeń odstępu ataków FDD. Bas ma pierwszeństwo przed
+utrzymaniem właściciela partii akompaniamentu.
+
+W B liczba krótszych kopii akcentów to 1169 / 497 / 321. Główne gate'y
+obejmują około 31–161 / 32–159 / 32–180 ms; kopie mogą być jeszcze krótsze,
+z zachowaniem minimum modelu. Wszystkie FDD NOTE_ON pozostają na źródłowym
+onsecie, bez losowych opóźnień, nowych dźwięków i poślizgów częstotliwości.
+
+Powtórzenie porównania (ścieżki MIDI należy wskazać lokalnie):
+
+```sh
+.venv/bin/python scripts/benchmark_universal.py \
+  /path/to/0080-02-radiohead_2007-bodysnatchers-[k].mid \
+  /path/to/0087-09-radiohead_2007-jigsaw_falling_into_place.mid \
+  /path/to/0032-01-radiohead_1997-airbag-[k].mid \
+  --presets instrument_roles_unison4 fdd_expressive --workers 3 \
+  --output /tmp/fdd-expressive-comparison.json
+
+.venv/bin/python scripts/benchmark_orchestra_library.py \
+  --midi-root /path/to/MIDI --preset fdd_expressive --workers 4 \
+  --output /tmp/fdd-expressive-library.json
+```
+
+Końcowy przebieg biblioteki: **141 poprawnie odczytanych MIDI**, zero konfliktów
+mechanicznych, overlapów i naruszeń odstępu ataków FDD; maksymalnie 8 HIT/s HDD.
+Łącznie 226676 źródłowych ataków FDD i 45033 kopie akcentów. `touhou4.mid`
+zatrzymuje się na znanym `MidiSourceError: list index out of range` przed
+aranżacją i nie jest liczony jako zaliczony. Skrót walidacji oraz fingerprint
+implementacji są w raporcie porównawczym.
+**803 testy hosta i 123 testy frontendu OK**, build frontendu zakończony sukcesem.
+Kontener przebudowano; zdrowie, API oraz nowy preset w serwowanym bundle zweryfikowano.
+
+**Wyłącznie planowanie offline i wyjścia mock. Bez odsłuchu VIRTUAL/REAL,
+flashowania, ruchu urządzeń ani pomiarów cieplnych.** Parametry artykulacji
+są propozycją do odsłuchu, nie zweryfikowanymi granicami bezpieczeństwa.
+Próba w REAL jest potrzebna do oceny ataku, nawrotów i barwy konkretnej stacji.
+
+### Rozszerzone A/B — cała lokalna biblioteka, 2026-10-25
+
+Źródło: [fdd-expressive-expanded.json](../../reports/fdd-expressive-expanded.json).
+Zebrano 443 ścieżki z `~/Music/MIDI` i aplikacyjnego `midi/`, a następnie
+usunięto kopie według SHA-256 całego pliku: **158 różnych plików MIDI**.
+Zestaw obejmuje również dwa fixture'y techniczne; różne zapisy tego samego
+utworu mogą mieć różne hashe. Nie jest to 158 niezależnych kompozycji.
+Względem biblioteki Music dołączono 16 innych plików z aplikacji, m.in.
+Avicii, Queen, Black Sabbath, Bastille i Pet Shop Boys.
+
+**157 plików przeszło oba pełne przebiegi `arrange` → `compile_plan`.**
+`touhou4.mid` zgłosił `MidiSourceError: list index out of range` podczas
+odczytu, przed aranżacją. Nie został policzony jako zaliczony test.
+Porównano lokalny stan implementacji wraz z niezacommitowanymi zmianami;
+fingerprint produkcyjnego Python/JSON zapisano w raporcie i sprawdzono po
+benchmarku. Oba warianty mają identyczne inventory i ustawienia poza presetem:
+8 FDD, 4 DVD, 2 aktywne HDD, 2 speakery oraz wspólny eksperyment **8 HIT/s HDD**.
+Nie jest to porównanie ze stanem ostatniego commita ani eksperyment 8 vs 12 HIT/s.
+
+| Metryka, suma dla 157 MIDI, chyba że zaznaczono inaczej | 2×4 Unisono | FDD Expressive |
+| --- | ---: | ---: |
+| Zachowane źródłowe nuty tonalne całej orkiestry | 375918 | 435646 |
+| Pominięte źródłowe nuty tonalne | 97960 | 38232 |
+| Źródłowe ataki FDD, bez kopii | 132305 | 251644 |
+| Fizyczne komendy tonu FDD, z kopiami | 529220 | 302155 |
+| Mediana udziału ataków wszystkich 8 FDD | 34,05% | 0,52% |
+| Niereprezentowane okna partii, spośród 58632 | 747 | 84 |
+| Mediana zachowania źródłowego wybrzmienia, z kontynuacjami | 77,129% | 76,571% |
+| Konflikty mechaniczne / overlapy / naruszenia odstępu ataków FDD | 0 / 0 / 0 | 0 / 0 / 0 |
+| Maksymalny szczyt HDD w przesuwanym oknie 1 s | 8 | 8 |
+
+Okno partii to 2 s aktywności źródłowego track/channel, oceniane po atakach.
+Brak pustego okna nie oznacza zachowania wszystkich jego głosów. Mediana
+ataku ośmiu napędów jest liczona po plikach, nie po wszystkich atakach razem.
+Suma źródłowych nut tonalnych jest identyczna: 473878. Liczby nie obejmują
+perkusji i rozpoznanych efektów nietonalnych. Więcej nut oraz mniej kopii nie
+stanowi samo w sobie dowodu lepszego brzmienia.
+
+Expressive zachowuje więcej nut w **130** plikach, tyle samo w **24**, mniej
+w **3**: Desert Island Disk (−2), Identikit (−20) i Rabbit in Your Headlights
+(−1). Pokrycie źródłowego wybrzmienia rośnie w 66 plikach, spada w 88,
+pozostaje takie samo w 3. Krótsze gate'y FDD są zamierzone, ale nie każdy
+ubytek sustainu musi być muzycznie korzystny: Myxomatosis traci 13,744 punktu
+procentowego tego pokrycia, Black Sabbath — Paranoid 11,604, Identikit 7,442.
+
+#### Regresje ważnych partii
+
+Nie utracono wcześniej zachowanego źródłowego ID sklasyfikowanego jako `lead`.
+Utracono **176 ID z rolą `bass` w 19 plikach**, przy równoczesnym odzyskaniu
+8671 innych ID lead/bass. Klasyfikacja jest heurystyczna: `bass` bywa również
+polifoniczną partią fortepianu lub jej górnym głosem.
+
+Dodatkowy audyt sprawdził dla każdego utraconego ID, czy przy oryginalnym
+NOTE_ON gra dźwięk tej samej klasy wysokości z tego samego track/channel.
+**76 ID ma taki oktawowy odpowiednik**, w tym wszystkie 68 z Last Flowers
+i wszystkie 4 z aplikacyjnego Sail to the Moon. To reprezentacja częściowa:
+nie potwierdza zgodności oktawy wykonawczej, czasu trwania ani barwy.
+Pozostaje **100 ID bez takiego odpowiednika w 16 MIDI**; 67 było najniższym
+dźwiękiem danej partii w otoczeniu ±15 ms. Nie oznacza to 100 różnych,
+słyszalnie brakujących dźwięków całej orkiestry — inne partie mogą je dublować.
+
+| Przykład regresji | ID bez odpowiednika tej samej partii | Przykładowy czas źródłowego ataku |
+| --- | ---: | --- |
+| touhou1.mid | 24 | 2:54,432 — MIDI 39 |
+| True Love Waits (live), 2001 | 19 | 1:10,875 — MIDI 51 |
+| touhou3.mid | 16 | 1:10,993 — MIDI 57 |
+| A Punchup at a Wedding | 10 | Szczegółowe czasy w raporcie |
+| Pet Shop Boys — Always on My Mind | 7 | 3:27,444 — MIDI 26 |
+| Coldplay — The Scientist | 5 | 3:47,915 — MIDI 36 |
+| No Surprises | 4 | 3:00,743 — MIDI 41 i 29 w dwóch partiach basu |
+| Pink Floyd — Time | 3 | 5:17,371 — MIDI 40 |
+
+W osobnych **33 przypadkach** źródłowe ID pozostało grane, lecz jego atak
+przesunął się o około 8,681–86,805 ms; test zgodności oryginalnego onsetu
+używa tolerancji 1 µs. Takie przesunięcie nie jest pominięciem nuty.
+Szczegóły obejmują wcześniejsze/nowe urządzenie, przyczynę, velocity,
+pitch i czas. To konkretna lista do poprawy ochrony ważnych partii, a nie
+podstawa do uznania nowego presetu za bezwarunkowo lepszy dla każdego MIDI.
+
+#### Kontrole wykonawcze i ograniczenia
+
+W obu wariantach nie wykryto konfliktów modeli mechanicznych, overlapów,
+ataków FDD poniżej 120 ms, FDD poza 100–205 Hz ani DVD poza 200–800 Hz,
+także w próbkach krzywych częstotliwości. FDD zachowują źródłowe NOTE_ON;
+kopie akcentów mają właściwą parę, źródło, onset i wysokość oraz nie są
+dłuższe od głównego tonu. HDD3–4 nie dostają aktywnych komend.
+**Harmonogramy HIT są identyczne dla wszystkich 157 porównań.**
+
+Najdłuższy ciągły odcinek DVD w planie wynosi **366,997 s w Ful Stop**,
+identycznie w obu presetach; kolejne to Planet Telex 266,666 s i Videotape
+255,574 s. Modele software'owe nie potwierdzają bezpieczeństwa termicznego
+tak długiej pracy. Nie wykonano pomiaru temperatury ani prądu silników.
+
+Ponownie uruchomiono **803 testy hosta — OK**, w tym deterministyczność
+Expressive i zgodność harmonogramu REAL/VIRTUAL na atrapach transportu.
+Benchmark nie uruchamiał dźwięku, BLE, zasilacza ani urządzeń. Nie zmieniano
+aranżera, firmware ani ustawień aplikacji w ramach tego rozszerzenia testów.
+Podczas odczytu stanu aplikacja grała w REAL z `instrument_roles_unison4`;
+nie przełączano jej na Expressive i nie restartowano podczas odsłuchu.
+
+Późniejszy odsłuch użytkownika w REAL: Expressive wypada korzystnie przy
+dostatecznie długich nutach, ale szybkie fragmenty Bodysnatchers eksponują
+mechaniczne ruszenie i zatrzymanie głowicy zamiast satysfakcjonującego tonu.
+To subiektywne zgłoszenie, bez nagrania ani pomiaru akustycznego. Kolejny
+eksperyment ma osobno porównać wariant z krótkimi kopiami akcentów i bez nich;
+w opisanym tutaj stanie kopie pozostają włączone. Wyniki offline nie
+rozstrzygają tej oceny brzmienia.
+
+Podstawowe A/B można powtórzyć istniejącym skryptem, pomijając plik z błędem
+parsera i wskazując oba lokalne katalogi do odszukania MIDI według SHA-256:
+
+```sh
+.venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+report = json.loads(Path('reports/fdd-expressive-expanded.json').read_text())
+valid = {'songs': [s for s in report['songs'] if 'comparison' in s]}
+Path('/tmp/fdd-expressive-valid-midi.json').write_text(json.dumps(valid))
+PY
+.venv/bin/python scripts/benchmark_universal.py \
+  --manifest /tmp/fdd-expressive-valid-midi.json \
+  --midi-dir "$HOME/Music/MIDI" --midi-dir midi \
+  --presets instrument_roles_unison4 fdd_expressive --workers 4 \
+  --output /tmp/fdd-expressive-repeat.json
+```
+
 ## DVD Continuous Sustain — pierwszy eksperyment
 
 Źródło: [dvd-sustain-comparison.json](../../reports/dvd-sustain-comparison.json).

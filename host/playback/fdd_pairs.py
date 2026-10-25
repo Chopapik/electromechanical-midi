@@ -15,6 +15,7 @@ from .instrument_roles import fdd_gate
 from .mechanical_arrangement import _chronology
 from .performance import ReinforcementEvent
 from .tonal_articulation import resolve, retarget
+from .fdd_expression import PRESET as EXPRESSIVE_PRESET
 
 PRESETS = ('instrument_roles_unison', 'instrument_roles_duet')
 QUAD_PRESET = 'instrument_roles_unison4'
@@ -24,18 +25,22 @@ OWNER_PICKUP = .12
 
 
 def enabled(policy):
-    return policy.get('arrangementPreset') in PRESETS + (QUAD_PRESET,)
+    return policy.get('arrangementPreset') in PRESETS + (QUAD_PRESET, EXPRESSIVE_PRESET)
 
 
-def arrange(plan, config, context, pins=None):
+def arrange(plan, config, context, pins=None, *, source=None):
     from .allocator import _clip
     from .hardware_arranger import fold_for_profile
 
     pins = pins or {}
     quad = config.policy['arrangementPreset'] == QUAD_PRESET
-    mode = 'unison4' if quad else 'unison' if config.policy['arrangementPreset'] == PRESETS[0] else 'duet'
-    label = 'FDD 2×(4× unisono)' if quad else 'FDD pair '+mode
+    expressive = config.policy['arrangementPreset'] == EXPRESSIVE_PRESET
+    cached = quad or expressive
+    mode = 'expressive' if expressive else 'unison4' if quad else 'unison' if config.policy['arrangementPreset'] == PRESETS[0] else 'duet'
+    label = 'FDD Expressive 4×2' if expressive else 'FDD 2×(4× unisono)' if quad else 'FDD pair '+mode
     plan.policy['arrangementPreset'] = config.policy['arrangementPreset']
+    if expressive:
+        plan.policy['fddFixedToneMs'] = 0.
     bound, _ = bind_devices(config.instances(), 2)
     available = plan.hardware['physicalLanes']
     if quad:
@@ -45,7 +50,7 @@ def arrange(plan, config, context, pins=None):
                        if lane in bound and bound[lane].id in available) for start in (1, 5)]
     else:
         pairs = [tuple(bound[lane].id for lane in (f'fdd:{i}', f'fdd:{i+1}')
-                       if lane in bound and bound[lane].id in available) for i in (1, 3)]
+                       if lane in bound and bound[lane].id in available) for i in ((1,3,5,7) if expressive else (1,3))]
     devices = {d.id: d for d in bound.values()}
     profiles = {ident: context.profile_for(devices[ident], available[ident])
                 for pair in pairs for ident in pair}
@@ -64,11 +69,15 @@ def arrange(plan, config, context, pins=None):
             plan.execution_articulation['extra:'+str(i)] = asdict(retarget(tonal[e.source_id],
                 types[e.device_id], e.duration, e.velocity, e.start-sources[e.source_id].actual_start))
     candidates = [e for e in plan.events if e.id not in pins and not e.rule_id
-                  and (e.role in ('bass', 'harmony') or quad and e.device_type == 'FDD')
+                  and (e.role in ('bass', 'harmony') or cached and e.device_type == 'FDD')
                   and (e.device_type == 'FDD' or (not e.played and e.reason not in
                        ('MANUAL_DROP', 'UNPITCHED_EFFECT', 'NO_DEVICE')))]
-    if quad and any(e.played and e.device_type == 'FDD' and (e.id in pins or e.rule_id) for e in plan.events):
-        raise ValueError('4 FDD Unisono: usuń ręczne przypisania nut do FDD przed eksperymentem')
+    if cached and any(e.played and e.device_type == 'FDD' and (e.id in pins or e.rule_id) for e in plan.events):
+        raise ValueError(label+': usuń ręczne przypisania nut do FDD przed eksperymentem')
+    expression = None
+    if expressive:
+        from .fdd_expression import Phrases
+        expression = Phrases(candidates, source, plan.policy)
     candidate_ids = {e.id for e in candidates}
     # A static pitch/start index is equivalent to scanning every DVD event
     # for every candidate; prefix maxima also handle overlapping background.
@@ -95,7 +104,7 @@ def arrange(plan, config, context, pins=None):
     accepted = {ident: [] for ident in profiles}
     # Quad candidates are chronological and have no fixed FDD reservations.
     # Preserve exactly the state a full chronology replay would produce.
-    if quad:
+    if cached:
         assert not any(fixed.values())
     accepted_states = {ident: HardwareDeviceState() for ident in profiles}
     pending_evaluations = {}
@@ -129,10 +138,14 @@ def arrange(plan, config, context, pins=None):
         if not fold.in_range:
             return None
         fixed = plan.policy.get('fddFixedToneMs',0)/1000.
-        duration = fixed or fdd_gate(_clip(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id])
+        duration = (expression.gate(event, fold.hz, profile, caps[ident].min_note_s,
+                                   covered[event.id], max(.003, plan.policy['releaseGapMs']/1000.))
+                    if expression else fixed or fdd_gate(_clip(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id]))
+        if duration is None:
+            return None
         times = attacks[part(event)]
         following = bisect_right(times, event.start+CHORD_WINDOW)
-        if not fixed and following < len(times):
+        if not fixed and not expression and following < len(times):
             # Overlapping source gates must not hide the next riff attack.
             # Keep a short physical release and the existing minimum gate.
             duration = min(duration, max(caps[ident].min_note_s,
@@ -146,7 +159,7 @@ def arrange(plan, config, context, pins=None):
     def feasible(notes):
         pending_evaluations.clear()
         for ident, note in notes.items():
-            if quad:
+            if cached:
                 previous=accepted[ident][-1] if accepted[ident] else None
                 interval=max(plan.policy['fddMinAttackIntervalMs']/1000.,
                     (plan.policy.get('fddFixedToneMs',0)+plan.policy.get('releaseGapMs',0))/1000.)
@@ -170,6 +183,32 @@ def arrange(plan, config, context, pins=None):
         ordered = sorted(events, key=lambda e: (
             abs(e.note-previous) if previous is not None else 0,
             -e.velocity, e.note, e.id))
+        if expressive:
+            for e in ordered:
+                # Alternate ordinary attacks within the stable pair. Copies
+                # can be vetoed independently and never consume another voice.
+                members = sorted(pair, key=lambda d: (len(accepted[d]),
+                    accepted[d][-1].actual_start if accepted[d] else -float('inf'), d))
+                for ident in members:
+                    primary = playable(e, ident)
+                    if primary is None or any(abs(primary.played_hz-hz)<1e-6 for hz in forbidden):
+                        continue
+                    notes = {ident: primary}
+                    if not feasible(notes):
+                        continue
+                    if expression.accent(e):
+                        for other in pair:
+                            if other == ident:
+                                continue
+                            copy = playable(e, other)
+                            gate = expression.accent_gate(primary, profiles[other], caps[other].min_note_s)
+                            if copy and gate is not None and abs(copy.played_hz-primary.played_hz)<1e-6:
+                                combined = {**notes, other: replace(copy, actual_duration=gate)}
+                                if feasible(combined):
+                                    return combined
+                    if feasible(notes):
+                        return notes
+            return None
         if mode == 'duet' and len(pair) == 2:
             options = []
             for a, b in permutations(ordered, 2):
@@ -207,7 +246,7 @@ def arrange(plan, config, context, pins=None):
         # An occupied pair keeps its part until both physical reservations end.
         occupied = {i for i, pair in enumerate(pairs) if any(
             e.actual_start <= now+CHORD_WINDOW and e.end > now+1e-9
-            for ident in pair for e in ((accepted[ident][-1:] if quad else fixed[ident]+accepted[ident])))}
+            for ident in pair for e in ((accepted[ident][-1:] if cached else fixed[ident]+accepted[ident])))}
         chosen_ids = set()
         represented = {owners[i] for i in occupied if owners[i] is not None}
         # Existing owners get first refusal, avoiding swaps when both attack.
@@ -227,9 +266,14 @@ def arrange(plan, config, context, pins=None):
             def rank(key):
                 times = attacks[key]
                 activity = bisect_right(times, now+PHRASE_LOOKAHEAD)-bisect_left(times, now)
+                if expressive:
+                    # Phrase ownership must not let four accompaniment owners
+                    # mask a new bass entry. Preserve the musical skeleton first.
+                    role = min({'lead':0, 'bass':1}.get(e.role,2) for e in by_part[key])
+                    return (role, key != owner, -activity, -max(e.velocity for e in by_part[key]), key)
                 return (not any(e.role=='lead' for e in by_part[key]), key != owner, -activity,
                         -max(e.velocity for e in by_part[key]), key)
-            part_candidates = (k for k in by_part if quad or k not in represented)
+            part_candidates = (k for k in by_part if cached or k not in represented)
             for key in sorted(part_candidates, key=lambda k:(k in represented,rank(k))):
                 available_notes=[e for e in by_part[key] if e.id not in chosen_ids]
                 forbidden=[accepted[ident][-1].played_hz for j,pair in enumerate(pairs) if j!=i and owners[j]==key
@@ -241,12 +285,12 @@ def arrange(plan, config, context, pins=None):
                 represented.add(key)
                 changes[i] += int(owner is not None and owner != key)
                 owners[i] = key
-                last_pitch[i] = notes[pairs[i][0]].note
+                last_pitch[i] = next(iter(notes.values())).note
                 primary_ids = set()
                 for ident, note in notes.items():
-                    ev = (pending_evaluations[ident] if quad else
+                    ev = (pending_evaluations[ident] if cached else
                           _chronology(profiles[ident], fixed[ident]+accepted[ident]+[note], [])[note.id])
-                    if quad:
+                    if cached:
                         advance_state(accepted_states[ident], profiles[ident],
                                       HardwareNote(note.played_hz, note.actual_duration, note.actual_start), ev)
                     note = replace(note, hardware={**ev.as_dict(), 'lane': available[ident],
@@ -260,7 +304,7 @@ def arrange(plan, config, context, pins=None):
                         primary = replacements[note.id]
                         extras.append(ReinforcementEvent(note.id, ident, note.actual_start,
                             note.actual_duration, note.played_hz, note.velocity,
-                            kind='FDD_UNISON4' if quad else 'FDD_PAIR_UNISON', source_device=primary.device_id,
+                            kind='FDD_ACCENT' if expressive else 'FDD_UNISON4' if quad else 'FDD_PAIR_UNISON', source_device=primary.device_id,
                             reason=label+': same MIDI note and attack',
                             semantic_compatibility='same source part / exact unison', role=note.role))
                 break
@@ -269,7 +313,7 @@ def arrange(plan, config, context, pins=None):
         if e.id not in replacements:
             replacements[e.id] = replace(e, device_id=None, device_type=None,
                 played_note=None, played_hz=None, actual_start=e.start, actual_duration=0.,
-                sustain_added=0., outcome='DROPPED', reason='FDD_UNISON4_CAPACITY' if quad else 'FDD_PAIR_CAPACITY')
+                sustain_added=0., outcome='DROPPED', reason='FDD_EXPRESSIVE_CAPACITY' if expressive else 'FDD_UNISON4_CAPACITY' if quad else 'FDD_PAIR_CAPACITY')
     plan.events = sorted([replacements.get(e.id, e) for e in plan.events],
                          key=lambda e: (e.actual_start, e.track, e.id))
     # Pair reservations replace optional FDD copies; other actuator copies stay.
@@ -306,11 +350,16 @@ def arrange(plan, config, context, pins=None):
         'primaryNotes': sum(e.played for e in replacements.values()),
         'unisonCopies': len(extras),
         'notSelected': sum(not e.played for e in replacements.values()),
-        'scope': 'two independent parts on FDD1-4 and FDD5-8; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
+        'scope': 'four source voices with optional shorter accent copies; planned, not measured' if expressive else 'two independent parts on FDD1-4 and FDD5-8; planned, not measured' if quad else 'two accompaniment parts; original MIDI pitches only; planned, not measured'}
     if quad:
         plan.hardware['fddUnison4'] = dict(plan.hardware['fddPairs'],version=2,
             logicalVoiceBudget=sum(bool(pair) for pair in pairs),
             groups=[list(pair) for pair in pairs])
+    if expressive:
+        plan.hardware['fddExpressive'] = {'version': 1, 'logicalVoiceBudget': sum(bool(p) for p in pairs),
+            'groups': [list(p) for p in pairs], 'fixedToneMs': 0.,
+            'primaryNotes': sum(e.played for e in replacements.values()), 'accentCopies': len(extras),
+            'scope': 'four phrase voices, optional shorter attack copies; offline planning, not physical validation'}
     return plan
 
 

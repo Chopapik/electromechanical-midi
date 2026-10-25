@@ -1,0 +1,622 @@
+{
+  "scope": "Offline planning only; no REAL or VIRTUAL listening. Same local 8 FDD / 4 DVD / 2 active HDD / 2 speakers; existing independent shared HDD eight-hit experiment enabled in both variants. Firmware unchanged.",
+  "songs": [
+    {
+      "file": "0032-01-radiohead_1997-airbag-[k].mid",
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "preset": "fdd_expressive",
+      "metrics": {
+        "sourceTonalNotes": 3631,
+        "playedTonal": 3375,
+        "droppedTonal": 256,
+        "playedByRole": {
+          "harmony": 2809,
+          "lead": 182,
+          "bass": 384
+        },
+        "droppedByRole": {
+          "harmony": 256
+        },
+        "dropReasons": {
+          "FDD_EXPRESSIVE_CAPACITY": 256
+        },
+        "sourceDurationCoverage": 0.776318,
+        "sourceVoiceDurationCoverage": 0.776773,
+        "weightedOnsetCoverage": 0.929665,
+        "unrepresentedPartWindows": 0,
+        "partWindows": 500,
+        "toneCommandsByFamily": {
+          "FDD": 2385,
+          "DVD_SLED": 674,
+          "VHS": 638,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 285,
+        "dvdWorkSeconds": 733.773,
+        "dvdLongestContinuousSeconds": 36.057,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.074405,
+        "noiseOmitted": 16,
+        "drumFingerprint": "8e838fe61d6ff91994be38e0c63f9e532c58d7d9d17b9c9a4554353b6b09f076",
+        "timelineFingerprint": "c7a65ca0fe117f5979d7d99ab9f23a0411de1d32749b08c836638e638ee28055",
+        "fddDistinctPitchOnsets": 1719,
+        "fddAllEightAttackFraction": 0.004518072289156626,
+        "fddRepeatedPitchFraction": 0.5713083718973496,
+        "fddGateRangeMs": [
+          21.621947545497733,
+          180.0
+        ],
+        "fddExpressive": {
+          "version": 1,
+          "logicalVoiceBudget": 4,
+          "groups": [
+            [
+              "fdd-1",
+              "fdd-2"
+            ],
+            [
+              "fdd-3",
+              "fdd-4"
+            ],
+            [
+              "fdd-5",
+              "fdd-6"
+            ],
+            [
+              "fdd-7",
+              "fdd-8"
+            ]
+          ],
+          "fixedToneMs": 0.0,
+          "primaryNotes": 2064,
+          "accentCopies": 321,
+          "scope": "four phrase voices, optional shorter attack copies; offline planning, not physical validation",
+          "singleDriveNotes": 1743,
+          "gateRangeMs": [
+            32.43292131825603,
+            180.0
+          ]
+        },
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 271,
+          "recovered": 15,
+          "addedSourceSeconds": 3.883925,
+          "mechanicalVetoes": 5,
+          "byRole": {
+            "harmony": 15
+          },
+          "byDevice": {
+            "DVD_STEPPER_3": 4,
+            "DVD_STEPPER_4": 2,
+            "pc-speaker-fx": 2,
+            "DVD_STEPPER_1": 6,
+            "DVD_STEPPER_2": 1
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 0,
+          "continuations": 1,
+          "continuationSeconds": 0.723166,
+          "backboneTimelineFingerprint": "e10b3e76488ca81920aa082c656f81ad8bca2f146787eac4343a77621b8c64b1"
+        },
+        "backboneTimelineFingerprint": "e10b3e76488ca81920aa082c656f81ad8bca2f146787eac4343a77621b8c64b1",
+        "planningSeconds": 6.053,
+        "configurationFingerprint": "b406b0b817adcf9599baf6b9c52ef5011b27154401707ac86506f9190a40f2c4",
+        "retainedImportantSourceCount": 566,
+        "fddSourceAttacks": 2064
+      }
+    },
+    {
+      "file": "0032-01-radiohead_1997-airbag-[k].mid",
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "preset": "instrument_roles_unison4",
+      "metrics": {
+        "sourceTonalNotes": 3631,
+        "playedTonal": 3227,
+        "droppedTonal": 404,
+        "playedByRole": {
+          "harmony": 2691,
+          "lead": 182,
+          "bass": 354
+        },
+        "droppedByRole": {
+          "harmony": 374,
+          "bass": 30
+        },
+        "dropReasons": {
+          "FDD_UNISON4_CAPACITY": 404
+        },
+        "sourceDurationCoverage": 0.785192,
+        "sourceVoiceDurationCoverage": 0.785192,
+        "weightedOnsetCoverage": 0.888224,
+        "unrepresentedPartWindows": 5,
+        "partWindows": 500,
+        "toneCommandsByFamily": {
+          "FDD": 4308,
+          "DVD_SLED": 1100,
+          "VHS": 1050,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 429,
+        "dvdWorkSeconds": 809.583,
+        "dvdLongestContinuousSeconds": 34.271,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.089286,
+        "noiseOmitted": 16,
+        "drumFingerprint": "8e838fe61d6ff91994be38e0c63f9e532c58d7d9d17b9c9a4554353b6b09f076",
+        "timelineFingerprint": "62bee07638b5391aaaf164a16ee0eb81f9ee2128f44b1ae5c73f17b7fd0ef991",
+        "fddDistinctPitchOnsets": 1016,
+        "fddAllEightAttackFraction": 0.22945205479452055,
+        "fddRepeatedPitchFraction": 0.5934883720930233,
+        "fddGateRangeMs": [
+          200.0,
+          200.0
+        ],
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 547,
+          "recovered": 143,
+          "addedSourceSeconds": 19.702361,
+          "mechanicalVetoes": 149,
+          "byRole": {
+            "bass": 47,
+            "harmony": 96
+          },
+          "byDevice": {
+            "DVD_STEPPER_2": 15,
+            "DVD_STEPPER_3": 14,
+            "pc-speaker-fx": 64,
+            "DVD_STEPPER_1": 25,
+            "DVD_STEPPER_4": 8,
+            "vhs-1": 17
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 0,
+          "continuations": 0,
+          "continuationSeconds": 0.0,
+          "backboneTimelineFingerprint": "0cedf0acbcca61d4f13da3f155cf460744684816799dc3c79516b0909aae661c"
+        },
+        "backboneTimelineFingerprint": "0cedf0acbcca61d4f13da3f155cf460744684816799dc3c79516b0909aae661c",
+        "planningSeconds": 9.722,
+        "configurationFingerprint": "13a15d6aa2b4ebecb0883609fedea3cf462bd3668d3dfa4e50a4f1622c1f2991",
+        "retainedImportantSourceCount": 536,
+        "fddSourceAttacks": 1077
+      }
+    },
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "preset": "fdd_expressive",
+      "metrics": {
+        "sourceTonalNotes": 7490,
+        "playedTonal": 5770,
+        "droppedTonal": 1720,
+        "playedByRole": {
+          "harmony": 4597,
+          "lead": 316,
+          "bass": 857
+        },
+        "droppedByRole": {
+          "harmony": 1720
+        },
+        "dropReasons": {
+          "FDD_EXPRESSIVE_CAPACITY": 1720
+        },
+        "sourceDurationCoverage": 0.762418,
+        "sourceVoiceDurationCoverage": 0.762418,
+        "weightedOnsetCoverage": 0.776702,
+        "unrepresentedPartWindows": 0,
+        "partWindows": 610,
+        "toneCommandsByFamily": {
+          "FDD": 4948,
+          "DVD_SLED": 1290,
+          "VHS": 701,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 830,
+        "dvdWorkSeconds": 601.206,
+        "dvdLongestContinuousSeconds": 22.851,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.01,
+        "noiseOmitted": 0,
+        "drumFingerprint": "dd117bb2a47278eed8f136a05811ac8d78505b7df795024bfa64c2093dddd56f",
+        "timelineFingerprint": "e3fbabd9fca63f1b7389563d3b38e60f32e4c731d35ec8f47a2d3f205bdcb66d",
+        "fddDistinctPitchOnsets": 2375,
+        "fddAllEightAttackFraction": 0.10594795539033457,
+        "fddRepeatedPitchFraction": 0.6135627530364373,
+        "fddGateRangeMs": [
+          20.40840087835205,
+          160.71390000000002
+        ],
+        "fddExpressive": {
+          "version": 1,
+          "logicalVoiceBudget": 4,
+          "groups": [
+            [
+              "fdd-1",
+              "fdd-2"
+            ],
+            [
+              "fdd-3",
+              "fdd-4"
+            ],
+            [
+              "fdd-5",
+              "fdd-6"
+            ],
+            [
+              "fdd-7",
+              "fdd-8"
+            ]
+          ],
+          "fixedToneMs": 0.0,
+          "primaryNotes": 3779,
+          "accentCopies": 1169,
+          "scope": "four phrase voices, optional shorter attack copies; offline planning, not physical validation",
+          "singleDriveNotes": 2610,
+          "gateRangeMs": [
+            30.612601317528352,
+            160.71390000000002
+          ]
+        },
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 2065,
+          "recovered": 345,
+          "addedSourceSeconds": 97.767623,
+          "mechanicalVetoes": 3,
+          "byRole": {
+            "harmony": 345
+          },
+          "byDevice": {
+            "DVD_STEPPER_1": 78,
+            "DVD_STEPPER_2": 88,
+            "pc-speaker-fx": 54,
+            "vhs-1": 15,
+            "DVD_STEPPER_4": 57,
+            "DVD_STEPPER_3": 53
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 0,
+          "continuations": 0,
+          "continuationSeconds": 0.0,
+          "backboneTimelineFingerprint": "60db4cdc111be0f74b033418cd331686080216ccf0df3684b9db16d83d12e6e9"
+        },
+        "backboneTimelineFingerprint": "60db4cdc111be0f74b033418cd331686080216ccf0df3684b9db16d83d12e6e9",
+        "planningSeconds": 9.875,
+        "configurationFingerprint": "b406b0b817adcf9599baf6b9c52ef5011b27154401707ac86506f9190a40f2c4",
+        "retainedImportantSourceCount": 1173,
+        "fddSourceAttacks": 3779
+      }
+    },
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "preset": "instrument_roles_unison4",
+      "metrics": {
+        "sourceTonalNotes": 7490,
+        "playedTonal": 4033,
+        "droppedTonal": 3457,
+        "playedByRole": {
+          "harmony": 3123,
+          "lead": 316,
+          "bass": 594
+        },
+        "droppedByRole": {
+          "harmony": 3194,
+          "bass": 263
+        },
+        "dropReasons": {
+          "FDD_UNISON4_CAPACITY": 3457
+        },
+        "sourceDurationCoverage": 0.748476,
+        "sourceVoiceDurationCoverage": 0.748476,
+        "weightedOnsetCoverage": 0.531548,
+        "unrepresentedPartWindows": 39,
+        "partWindows": 610,
+        "toneCommandsByFamily": {
+          "FDD": 5132,
+          "DVD_SLED": 1923,
+          "VHS": 827,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 1093,
+        "dvdWorkSeconds": 693.452,
+        "dvdLongestContinuousSeconds": 22.851,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.01,
+        "noiseOmitted": 0,
+        "drumFingerprint": "dd117bb2a47278eed8f136a05811ac8d78505b7df795024bfa64c2093dddd56f",
+        "timelineFingerprint": "59512232793adcc46a7a9f1c9d6c7c504c943acdfbc2da7cdbd7622fd6afba01",
+        "fddDistinctPitchOnsets": 1012,
+        "fddAllEightAttackFraction": 0.995334370139969,
+        "fddRepeatedPitchFraction": 0.7135050741608119,
+        "fddGateRangeMs": [
+          200.0,
+          200.0
+        ],
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 3724,
+          "recovered": 267,
+          "addedSourceSeconds": 65.398319,
+          "mechanicalVetoes": 3,
+          "byRole": {
+            "harmony": 251,
+            "bass": 16
+          },
+          "byDevice": {
+            "DVD_STEPPER_1": 83,
+            "DVD_STEPPER_2": 52,
+            "DVD_STEPPER_3": 59,
+            "DVD_STEPPER_4": 41,
+            "vhs-1": 8,
+            "pc-speaker-fx": 24
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 0,
+          "continuations": 0,
+          "continuationSeconds": 0.0,
+          "backboneTimelineFingerprint": "3178aca04d9a51a5e644424879e492d9bcfa6176d97a601536cd9df633a37b38"
+        },
+        "backboneTimelineFingerprint": "3178aca04d9a51a5e644424879e492d9bcfa6176d97a601536cd9df633a37b38",
+        "planningSeconds": 13.501,
+        "configurationFingerprint": "13a15d6aa2b4ebecb0883609fedea3cf462bd3668d3dfa4e50a4f1622c1f2991",
+        "retainedImportantSourceCount": 910,
+        "fddSourceAttacks": 1283
+      }
+    },
+    {
+      "file": "0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "preset": "fdd_expressive",
+      "metrics": {
+        "sourceTonalNotes": 5379,
+        "playedTonal": 4971,
+        "droppedTonal": 408,
+        "playedByRole": {
+          "harmony": 3983,
+          "bass": 678,
+          "lead": 310
+        },
+        "droppedByRole": {
+          "harmony": 408
+        },
+        "dropReasons": {
+          "FDD_EXPRESSIVE_CAPACITY": 408
+        },
+        "sourceDurationCoverage": 0.635968,
+        "sourceVoiceDurationCoverage": 0.636118,
+        "weightedOnsetCoverage": 0.928985,
+        "unrepresentedPartWindows": 2,
+        "partWindows": 581,
+        "toneCommandsByFamily": {
+          "FDD": 3543,
+          "DVD_SLED": 1253,
+          "VHS": 673,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 575,
+        "dvdWorkSeconds": 778.33,
+        "dvdLongestContinuousSeconds": 22.587,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.086765,
+        "noiseOmitted": 0,
+        "drumFingerprint": "4f0fd55ed64033a520b894977a3aa80f835957c38611f54adb6711be0b8d3a25",
+        "timelineFingerprint": "8df288972e463edfd2cee4e0cae6b7921e40ec63d8a206810fb4d3f7cf66194e",
+        "fddDistinctPitchOnsets": 2239,
+        "fddAllEightAttackFraction": 0.02530459231490159,
+        "fddRepeatedPitchFraction": 0.40565770862800565,
+        "fddGateRangeMs": [
+          27.241946852299748,
+          158.82345
+        ],
+        "fddExpressive": {
+          "version": 1,
+          "logicalVoiceBudget": 4,
+          "groups": [
+            [
+              "fdd-1",
+              "fdd-2"
+            ],
+            [
+              "fdd-3",
+              "fdd-4"
+            ],
+            [
+              "fdd-5",
+              "fdd-6"
+            ],
+            [
+              "fdd-7",
+              "fdd-8"
+            ]
+          ],
+          "fixedToneMs": 0.0,
+          "primaryNotes": 3046,
+          "accentCopies": 497,
+          "scope": "four phrase voices, optional shorter attack copies; offline planning, not physical validation",
+          "singleDriveNotes": 2549,
+          "gateRangeMs": [
+            32.43292131825603,
+            158.82345
+          ]
+        },
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 450,
+          "recovered": 42,
+          "addedSourceSeconds": 11.2337,
+          "mechanicalVetoes": 0,
+          "byRole": {
+            "harmony": 42
+          },
+          "byDevice": {
+            "DVD_STEPPER_3": 12,
+            "DVD_STEPPER_1": 10,
+            "DVD_STEPPER_2": 14,
+            "DVD_STEPPER_4": 5,
+            "pc-speaker-fx": 1
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 0,
+          "continuations": 1,
+          "continuationSeconds": 0.348412,
+          "backboneTimelineFingerprint": "122efe031ad6a5de5ffe076039cdf013618d2a35674b056da6bc4e70dec50c22"
+        },
+        "backboneTimelineFingerprint": "122efe031ad6a5de5ffe076039cdf013618d2a35674b056da6bc4e70dec50c22",
+        "planningSeconds": 9.815,
+        "configurationFingerprint": "b406b0b817adcf9599baf6b9c52ef5011b27154401707ac86506f9190a40f2c4",
+        "retainedImportantSourceCount": 988,
+        "fddSourceAttacks": 3046
+      }
+    },
+    {
+      "file": "0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "preset": "instrument_roles_unison4",
+      "metrics": {
+        "sourceTonalNotes": 5379,
+        "playedTonal": 3579,
+        "droppedTonal": 1800,
+        "playedByRole": {
+          "harmony": 2843,
+          "bass": 426,
+          "lead": 310
+        },
+        "droppedByRole": {
+          "bass": 252,
+          "harmony": 1548
+        },
+        "dropReasons": {
+          "FDD_UNISON4_CAPACITY": 1800
+        },
+        "sourceDurationCoverage": 0.575251,
+        "sourceVoiceDurationCoverage": 0.575251,
+        "weightedOnsetCoverage": 0.678999,
+        "unrepresentedPartWindows": 10,
+        "partWindows": 581,
+        "toneCommandsByFamily": {
+          "FDD": 4496,
+          "DVD_SLED": 1745,
+          "VHS": 710,
+          "HDD_VCM": 0
+        },
+        "dvdStops": 684,
+        "dvdWorkSeconds": 851.799,
+        "dvdLongestContinuousSeconds": 26.469,
+        "fddAttackViolations": 0,
+        "overlaps": 0,
+        "mechanicalConflicts": 0,
+        "maxDelaySeconds": 0.175059,
+        "noiseOmitted": 0,
+        "drumFingerprint": "4f0fd55ed64033a520b894977a3aa80f835957c38611f54adb6711be0b8d3a25",
+        "timelineFingerprint": "03098de1eff5df4ca7d668f6cfec766703f2c305c3475bdb6db5991b0df741ab",
+        "fddDistinctPitchOnsets": 1019,
+        "fddAllEightAttackFraction": 0.47313237221494103,
+        "fddRepeatedPitchFraction": 0.4322638146167558,
+        "fddGateRangeMs": [
+          200.0,
+          200.0
+        ],
+        "recovery": {
+          "version": 1,
+          "scope": "offline free-gap recovery; no physical safety claim",
+          "considered": 1882,
+          "recovered": 82,
+          "addedSourceSeconds": 21.69393,
+          "mechanicalVetoes": 7,
+          "byRole": {
+            "harmony": 50,
+            "bass": 32
+          },
+          "byDevice": {
+            "DVD_STEPPER_4": 16,
+            "DVD_STEPPER_2": 14,
+            "DVD_STEPPER_3": 26,
+            "DVD_STEPPER_1": 13,
+            "pc-speaker-fx": 11,
+            "vhs-1": 2
+          },
+          "primaryEventsChanged": 0,
+          "originalReinforcementsChanged": 0,
+          "lateSustainEntries": 3,
+          "continuations": 0,
+          "continuationSeconds": 0.0,
+          "backboneTimelineFingerprint": "2b37fe020d903b047274bf1c71165e8d979eb47e521212a69dfc196a28b6aefa"
+        },
+        "backboneTimelineFingerprint": "2b37fe020d903b047274bf1c71165e8d979eb47e521212a69dfc196a28b6aefa",
+        "planningSeconds": 13.473,
+        "configurationFingerprint": "13a15d6aa2b4ebecb0883609fedea3cf462bd3668d3dfa4e50a4f1622c1f2991",
+        "retainedImportantSourceCount": 736,
+        "fddSourceAttacks": 1124
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "file": "0032-01-radiohead_1997-airbag-[k].mid",
+      "baselinePreset": "instrument_roles_unison4",
+      "experimentPreset": "fdd_expressive",
+      "tonalNotesRecoveredNet": 148,
+      "previouslyRetainedImportantIdsLost": [],
+      "drumTimelineIdentical": true,
+      "durationCoverageDelta": -0.008874
+    },
+    {
+      "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+      "baselinePreset": "instrument_roles_unison4",
+      "experimentPreset": "fdd_expressive",
+      "tonalNotesRecoveredNet": 1737,
+      "previouslyRetainedImportantIdsLost": [],
+      "drumTimelineIdentical": true,
+      "durationCoverageDelta": 0.013942
+    },
+    {
+      "file": "0087-09-radiohead_2007-jigsaw_falling_into_place.mid",
+      "baselinePreset": "instrument_roles_unison4",
+      "experimentPreset": "fdd_expressive",
+      "tonalNotesRecoveredNet": 1392,
+      "previouslyRetainedImportantIdsLost": [],
+      "drumTimelineIdentical": true,
+      "durationCoverageDelta": 0.060717
+    }
+  ],
+  "date": "2026-10-25",
+  "libraryValidation": {
+    "files": 142,
+    "passed": 141,
+    "errors": [
+      {
+        "file": "touhou4.mid",
+        "error": "MidiSourceError: nie moge wczytac /Users/krzysztof/Music/MIDI/touhou4.mid: list index out of range"
+      }
+    ],
+    "mechanicalConflicts": 0,
+    "overlaps": 0,
+    "fddAttackViolations": 0,
+    "hddPeakHitsPerSecond": 8,
+    "implementationSha256": "0c5ec84583247040f9704aacd4568fe15c370fad972224084aa85a372de422f3",
+    "scope": "offline only; no acoustic or physical validation"
+  }
+}

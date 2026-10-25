@@ -145,7 +145,7 @@ class DvdRegisterTests(helpers.unittest.TestCase):
             ('Drums', 9, [(i*.25, i*.25+.02, 36 if i%2 else 38) for i in range(12)])])
         for preset in ('balanced', 'fdd_quality', 'dvd_lead_low_fdd', 'fdd_quality_adaptive',
                        'instrument_roles', 'instrument_roles_unison', 'instrument_roles_duet',
-                       'instrument_roles_unison4', 'universal'):
+                       'instrument_roles_unison4', 'fdd_expressive', 'universal'):
             with self.subTest(preset=preset):
                 r = DeviceRegistry()
                 r.document['parameters']['arrangementPreset'] = preset

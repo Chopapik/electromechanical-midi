@@ -105,6 +105,21 @@ def metrics(plan, registry):
         'drumFingerprint':digest([c.as_dict() for c in timeline.commands if c.kind=='hit']),
         'timelineFingerprint':execution_fingerprint(timeline)}
     recovery=plan.hardware.get('universal',{}).get('recovery')
+    fdd=[c for c in timeline.commands if c.kind=='tone' and registry.by_id[c.device_id]['type']=='FDD']
+    attacks=Counter(round(c.time,6) for c in fdd)
+    repeats=transitions=0
+    for ident,commands in by_device.items():
+        if registry.by_id[ident]['type']!='FDD':continue
+        transitions+=max(0,len(commands)-1)
+        repeats+=sum(abs(a.hz-b.hz)<1e-6 for a,b in zip(commands,commands[1:]))
+    result.update(fddDistinctPitchOnsets=len({(round(c.time,6),round(c.hz,6)) for c in fdd}),
+        fddSourceAttacks=sum(e.played and e.device_type=='FDD' for e in plan.events),
+        fddAllEightAttackFraction=sum(v==8 for v in attacks.values())/max(1,len(attacks)),
+        fddRepeatedPitchFraction=repeats/max(1,transitions),
+        fddGateRangeMs=[min((c.duration for c in fdd),default=0)*1000,
+                        max((c.duration for c in fdd),default=0)*1000])
+    if 'fddExpressive' in plan.hardware:
+        result['fddExpressive']=plan.hardware['fddExpressive']
     if recovery is not None:
         result['recovery']=recovery
     result['backboneTimelineFingerprint']=(recovery or {}).get('backboneTimelineFingerprint',result['timelineFingerprint'])
@@ -143,7 +158,7 @@ def run_job(code_root, path, preset):
         values['originalReinforcementsIdentical']=plan.reinforcements[:len(protected['extras'])]==protected['extras']
         values['originalArticulationIdentical']=all(plan.execution_articulation.get(k)==v for k,v in protected['sidecars'].items())
         assert all(values[k] for k in ('originalPlayedEventsIdentical','originalReinforcementsIdentical','originalArticulationIdentical'))
-    if preset=='universal':
+    if preset in ('universal','fdd_expressive'):
         assert not any(values[k] for k in ('fddAttackViolations','overlaps','mechanicalConflicts')), values
     values['planningSeconds']=round(time.monotonic()-started,3)
     values['configurationFingerprint']=configuration_fingerprint(registry.document)
@@ -156,14 +171,16 @@ def comparisons(rows):
     for row in rows:by_file[row['file']][row['preset']]=row
     compared=[]
     for name,presets in sorted(by_file.items()):
-        if not {'instrument_roles','universal'} <= presets.keys():continue
-        old=presets['instrument_roles'];new=presets['universal']
-        assert old['sha256']==new['sha256']
-        a,b=old['metrics'],new['metrics']
-        compared.append({'file':name,'tonalNotesRecoveredNet':b['playedTonal']-a['playedTonal'],
-            'previouslyRetainedImportantIdsLost':sorted(set(a['retainedImportantIds'])-set(b['retainedImportantIds'])),
-            'drumTimelineIdentical':a['drumFingerprint']==b['drumFingerprint'],
-            'durationCoverageDelta':round(b['sourceDurationCoverage']-a['sourceDurationCoverage'],6)})
+        for baseline,experiment in (('instrument_roles','universal'),('instrument_roles_unison4','fdd_expressive')):
+            if not {baseline,experiment} <= presets.keys():continue
+            old,new=presets[baseline],presets[experiment]
+            assert old['sha256']==new['sha256']
+            a,b=old['metrics'],new['metrics']
+            compared.append({'file':name,'baselinePreset':baseline,'experimentPreset':experiment,
+                'tonalNotesRecoveredNet':b['playedTonal']-a['playedTonal'],
+                'previouslyRetainedImportantIdsLost':sorted(set(a['retainedImportantIds'])-set(b['retainedImportantIds'])),
+                'drumTimelineIdentical':a['drumFingerprint']==b['drumFingerprint'],
+                'durationCoverageDelta':round(b['sourceDurationCoverage']-a['sourceDurationCoverage'],6)})
     return compared
 
 
