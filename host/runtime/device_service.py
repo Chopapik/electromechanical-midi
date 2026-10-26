@@ -90,24 +90,28 @@ class DeviceService:
                 raise OutputError('BLE: niezgodny protokół lub brak wymaganych możliwości firmware')
             if self.real.registry.document.get('routing',{}).get('mode')=='STRICT_TRACKS' and status.get('strict_tracks')!='1':
                 raise OutputError('BLE: firmware bez STRICT TRACKS')
-            with self.lock:
-                if self.busy or self._closed.is_set() or self.player.router.mode!='REAL' or self.real.link or (expected_generation is not None and expected_generation!=self._generation): return False
-                with self.player.lock:
-                    if self.firmware_state['flash']=='success' and status.get('atx') not in ('ON','OFF'):
-                        raise OutputError('Firmware po uploadzie nie potwierdza obsługi POWER OFF')
-                    if status.get('atx') in ('ON','OFF'):
-                        link.power('STATUS')
-                        if self.firmware_state['flash']=='success' and self.firmware_state['ble']!='verified':
-                            if link.power('OFF')!='OFF': raise OutputError('Nie potwierdzono ATX OFF po flashowaniu')
-                    self.real.attach(link); link=None
-                    self.error=None
+            # Nested locks always follow player -> service. In particular, do
+            # not hold service.lock while waiting for the player or a live ACK.
+            with self.player.lock:
+                with self.lock:
+                    if self.busy or self._closed.is_set() or self.player.router.mode!='REAL' or self.real.link or (expected_generation is not None and expected_generation!=self._generation): return False
+                    flashed=self.firmware_state['flash']=='success'
+                    recovering=flashed and self.firmware_state['ble']!='verified'
+                if flashed and status.get('atx') not in ('ON','OFF'):
+                    raise OutputError('Firmware po uploadzie nie potwierdza obsługi POWER OFF')
+                if status.get('atx') in ('ON','OFF'):
+                    link.power('STATUS')
+                    if recovering and link.power('OFF')!='OFF':
+                        raise OutputError('Nie potwierdzono ATX OFF po flashowaniu')
+                self.real.attach(link);link=None
+                with self.lock:self.error=None
             if self.firmware_state['flash']=='success': self._state(stage='ready',ble='verified',error=None)
             return True
         except Exception as exc:
             with self.lock: self.error=str(exc)
             if link is not None and self.real.link is link:
                 with self.player.lock:
-                    self.real.link=None; self.real.configured=False
+                    self.real.detach(close=False)
             if self.firmware_state['flash']=='success': self._state(stage='ble_retry',ble='retrying',error=str(exc))
             elif self.firmware_state['flash']=='failed': self._state(stage='failed',ble='retrying')
             return False
@@ -138,22 +142,12 @@ class DeviceService:
         self._closed.set()
 
     def _power(self, action):
-        if not self.real.link: raise OutputError('Brak BLE: nie można potwierdzić POWER '+action)
+        if not self.real.link:raise OutputError('Brak BLE: nie można potwierdzić POWER '+action)
         try:
-            result=self.real.link.power(action)
-            self.real.power_state()
-            if action!='STATUS' and result!=action: raise OutputError('Niepoprawne potwierdzenie POWER '+action)
-            if action=='OFF':
-                self.real.active=False; self.real.unknown=False; self.real.error=None
-                self.real.active_speakers.clear()
-                self.real.speaker_frequencies.clear()
-                for key,state in getattr(self.real.link,'device_status',{}).items():
-                    if key.startswith('FDD:'): state.update(homed='0',homing='0',playing='0')
+            result=self.real.power(action)
             self.power_error=None
             return result
         except Exception as exc:
-            if self.real.link.controller_status.get('atx') is not None:
-                self.real.link.controller_status['atx']='UNKNOWN'
             self.power_error=str(exc)
             raise OutputError(str(exc)) from exc
 
@@ -163,7 +157,7 @@ class DeviceService:
         self._power('OFF')
         self._event(kind='log',line='Potwierdzono GPIO19 LOW; to nie jest pomiar napięcia ATX. Odczekiwanie 1 s.')
         time.sleep(self.power_off_delay)
-        self.real.link.close(); self.real.link=None; self.real.configured=False
+        self.real.detach()
 
     def run(self, operation, *, confirmed=False):
         if operation=='reset': raise OutputError(self.status()['reset']['reason'])
@@ -193,10 +187,8 @@ class DeviceService:
                     return {'ok':True,'power':self._power('ON' if operation=='power_on' else 'OFF')}
                 if operation=='firmware': self.prepare_safe_upload()
             if operation=='home':
-                if not self.real.link: raise OutputError('Brak połączenia z ESP32')
-                self.real.require_power(); self.real.configure(); self.real.active=True; self.real.write(['FDD ALL HOME'])
-                if not self.real.link.wait_homed(echo=lambda _:None): raise OutputError('Homing TRACK0 nie został potwierdzony')
-                self.real.stop(); return {'ok':True}
+                self.real.home_all()
+                return {'ok':True}
             candidates=esp32_upload_ports(scan_ports())
             if len(candidates)!=1: raise OutputError('Podłącz dokładnie jeden port USB CP2102 przed uploadem')
             port=candidates[0].device; tool=platformio()
@@ -210,9 +202,7 @@ class DeviceService:
             fresh=esp32_upload_ports(scan_ports())
             if len(fresh)!=1 or fresh[0].device!=port:
                 raise OutputError('Port USB został odłączony lub zmieniony przed uploadem')
-            if self.real.link:
-                self.real.link.close(); self.real.link=None
-            self.real.configured=False
+            self.real.detach()
             self._state(stage='upload',progress=None)
             run_firmware(tool,port,target='esp32',on_line=line)
             self._state(stage='flash_confirmed',flash='success',progress=100)

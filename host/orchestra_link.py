@@ -151,13 +151,23 @@ class OrchestraLink(FloppyLink):
             time.sleep(.005)
         raise StopConfirmationError('STOP niepotwierdzony przez ESP32 — stan sprzętu jest nieznany')
 
+    def invalidate_power_state(self):
+        """A failed GPIO acknowledgement cannot preserve a previous ON/OFF."""
+        if self.controller_status.get('atx') is not None:
+            self.controller_status['atx']='UNKNOWN'
+
+    def invalidate_fdd_reference(self):
+        """Confirmed power-off invalidates homing, not a measured TRACK0 pin."""
+        for key,state in getattr(self,'device_status',{}).items():
+            if key.startswith('FDD:'):state.update(homed='0',homing='0',playing='0')
+
     def power(self, action, timeout=2.0):
         """Confirm a GPIO command/query, never a measured ATX rail voltage."""
         if action not in ('ON', 'OFF', 'STATUS'): raise ValueError('Invalid POWER action')
         if self.controller_status.get('atx') not in ('ON','OFF','UNKNOWN'):
             raise RuntimeError('Firmware bez POWER; wymagane pierwsze wdrożenie z ręcznie wyłączonym ATX')
         token = str(time.monotonic_ns() & 0xffffffff)
-        self.controller_status['atx'] = 'UNKNOWN'
+        self.invalidate_power_state()
         self.send(f'POWER {action} {token}')
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
@@ -169,7 +179,7 @@ class OrchestraLink(FloppyLink):
                         self.controller_status['atx'] = state
                         return state
             time.sleep(.005)
-        self.controller_status['atx'] = 'UNKNOWN'
+        self.invalidate_power_state()
         raise RuntimeError('Brak potwierdzenia POWER '+action+'; logiczny stan ATX nieznany')
 
     def wait_homed(self, timeout=10.0, echo=print):

@@ -1,18 +1,17 @@
 """The orchestra inventory; calibration values remain in hardware-profiles/."""
 import copy
 import json
-import os
 import math
-import tempfile
 from pathlib import Path
 from playback.hardware_profiles import HardwareRegistry, sled_frequency_range
 from playback.orchestra import parse_orchestra
+from .speaker_settings import SpeakerSettingsStore
 
 DEFAULT = Path(__file__).resolve().parents[2] / 'config/devices.json'
 
 class DeviceRegistry:
     def __init__(self, path=DEFAULT, *, volume_path=None):
-        self.volume_path = Path(volume_path or os.getenv('ORCHESTRA_SPEAKER_SETTINGS') or DEFAULT.parents[0]/'.runtime/speaker-volumes.json')
+        self.speaker_settings=SpeakerSettingsStore(volume_path)
         self.document = json.loads(Path(path).read_text())
         if self.document['schemaVersion'] != 1:
             raise ValueError('Unsupported device registry')
@@ -34,14 +33,12 @@ class DeviceRegistry:
             if d['lane'] != f'{family}:{counts[family]}' or counts[family] > {'fdd':8,'sled':4,'hdd':4,'drum':2}[family]:
                 raise ValueError('Registry order must retain existing physical lane IDs')
             self.profile(d['id'])
-        if self.volume_path.exists():
-            saved = json.loads(self.volume_path.read_text())
-            for ident, values in saved.items():
-                if ident in self.by_id and self.by_id[ident]['type']=='VHS':
-                    for output, key, default in [('VIRTUAL','volume',.6),('REAL','realAmplitude',50)]:
-                        value = values.get(key, default)
-                        self.validate_volume(ident, output, value)
-                        self.by_id[ident][key] = value
+        for ident,values in self.speaker_settings.load().items():
+            if ident in self.by_id and self.by_id[ident]['type']=='VHS':
+                for output,key,default in [('VIRTUAL','volume',.6),('REAL','realAmplitude',50)]:
+                    value=values.get(key,default)
+                    self.validate_volume(ident,output,value)
+                    self.by_id[ident][key]=value
         # Retire saved non-pulse experiments without changing levels or files.
         for device in self.devices:
             if device['type']=='VHS':device['waveform']='pulse'
@@ -66,11 +63,12 @@ class DeviceRegistry:
         self.by_id[ident][key]=value
 
     def save_speakers(self,saved):
-        self.volume_path.parent.mkdir(parents=True,exist_ok=True)
-        with tempfile.NamedTemporaryFile(mode='w',dir=self.volume_path.parent,delete=False) as file:
-            json.dump(saved,file,indent=2);temporary=Path(file.name)
-        try: temporary.replace(self.volume_path)
-        finally: temporary.unlink(missing_ok=True)
+        self.speaker_settings.save(saved)
+
+    @property
+    def volume_path(self):
+        """Compatibility view; persistence owns path selection and file access."""
+        return self.speaker_settings.path
 
     def validate_waveform(self,ident,waveform):
         if ident not in self.by_id or self.by_id[ident]['type']!='VHS' or waveform!='pulse':

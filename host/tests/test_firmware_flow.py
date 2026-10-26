@@ -22,6 +22,9 @@ class Link:
     def power(self, action):
         if action!='STATUS': self.controller_status['atx']=action
         return self.controller_status['atx']
+    def invalidate_power_state(self):
+        if self.controller_status.get('atx') is not None:self.controller_status['atx']='UNKNOWN'
+    def invalidate_fdd_reference(self):pass
     def ping(self): pass
     def poll_lines(self): return ['STATUS END']
     def all_stop_confirmed(self): return True

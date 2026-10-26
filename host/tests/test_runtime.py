@@ -46,6 +46,11 @@ class Link:
         self.sent.append('POWER '+action)
         if action!='STATUS': self.controller_status['atx']=action
         return self.controller_status['atx']
+    def invalidate_power_state(self):
+        if self.controller_status.get('atx') is not None:self.controller_status['atx']='UNKNOWN'
+    def invalidate_fdd_reference(self):
+        for key,state in self.device_status.items():
+            if key.startswith('FDD:'):state.update(homed='0',homing='0',playing='0')
     def ping(self): pass
     def wait_boot(self,**_): return True
     def wait_homed(self,**_): return True

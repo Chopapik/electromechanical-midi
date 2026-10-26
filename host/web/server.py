@@ -45,26 +45,22 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
     async def broadcast():
         while True:
             await send_all({'type':'state','state':await asyncio.to_thread(runtime.snapshot)})
-            await asyncio.to_thread(runtime.lab.expire)
+            await asyncio.to_thread(runtime.expire_laboratory)
             await asyncio.sleep(.05)
     async def connect_loop():
         while True:
-            await asyncio.to_thread(runtime.service.refresh)
-            if connect_on_start and runtime.router.mode=='REAL' and not runtime.real.link:
-                await asyncio.to_thread(runtime.service.connect)
+            await asyncio.to_thread(runtime.refresh_connection,connect_on_start)
             await asyncio.sleep(2)
     @contextlib.asynccontextmanager
     async def lifespan(app):
         nonlocal loop
-        loop=asyncio.get_running_loop(); runtime.player.start()
+        loop=asyncio.get_running_loop(); runtime.start()
         workers=[asyncio.create_task(broadcast()),asyncio.create_task(connect_loop())]
         yield
         for worker in workers: worker.cancel()
         await asyncio.gather(*workers,return_exceptions=True)
         # Stop barriers need the socket receiver alive; disconnected browsers self-silence.
-        with contextlib.suppress(Exception): await asyncio.to_thread(runtime.player.close)
-        runtime.service.shutdown()
-        if runtime.real.link: runtime.real.link.close()
+        await asyncio.to_thread(runtime.close)
         for task in tasks: task.cancel()
     app=FastAPI(lifespan=lifespan)
     app.state.runtime=runtime
@@ -104,7 +100,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
     async def action(peer, owner, message):
         operation=message.get('action'); request=message.get('requestId')
         try:
-            if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
+            runtime.require_available()
             if command_lock.locked() and operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware'):
                 raise ValueError('DeviceService jest zajęty')
             def perform():
@@ -112,37 +108,24 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                     origin=urlsplit(peer.headers.get('origin',''))
                     if origin.scheme not in ('http','https') or origin.hostname not in ('localhost','127.0.0.1','::1') or origin.netloc!=peer.headers.get('host'):
                         raise ValueError('Sterowanie ATX i upload wymagają lokalnego połączenia z poprawnym Origin')
-                if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
-                p=runtime.player
+                runtime.require_available()
                 if operation=='set_file': runtime.load(_library_call(library.resolve,message['file']))
                 elif operation=='arrangement_preset': runtime.set_preset(message['preset'])
-                elif operation=='play':
-                    if runtime.router.mode=='VIRTUAL':
-                        if runtime.virtual.active and runtime.virtual.owner!=owner: raise ValueError('Web Audio jest używane przez inną przeglądarkę')
-                        runtime.virtual.owner=owner
-                    if p.owner!='orchestra' or p.timeline is not runtime.timeline: runtime.orchestra()
-                    p.play()
-                elif operation=='audio_error':
-                    if runtime.virtual.owner==owner and runtime.router.mode=='VIRTUAL' and message.get('epoch')==p.epoch:
-                        p.stop(); p.error='Web Audio: '+str(message.get('message','wyjście niedostępne'))[:250]
-                elif operation=='pause': p.pause()
-                elif operation=='stop': p.stop()
-                elif operation=='seek': p.seek(message['position'])
-                elif operation=='output':
-                    with p.lock:
-                        if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
-                        p.switch(message['mode'])
+                elif operation=='play': runtime.play(owner)
+                elif operation=='audio_error': runtime.audio_error(owner,message['epoch'],message.get('message','wyjście niedostępne'))
+                elif operation=='pause': runtime.pause()
+                elif operation=='stop': runtime.stop()
+                elif operation=='seek': runtime.seek(message['position'])
+                elif operation=='output': runtime.switch_output(message['mode'])
                 elif operation=='speaker_waveform': runtime.set_speaker_waveform(message['deviceId'],message['waveform'])
                 elif operation=='speaker_volume': runtime.set_speaker_volume(message['deviceId'],message['output'],message['value'])
-                elif operation=='mute': p.mute(message['deviceId'],message['muted'])
-                elif operation=='lab_enter': runtime.lab.enter(owner)
-                elif operation=='lab_leave': runtime.lab.leave(owner); runtime.orchestra()
+                elif operation=='mute': runtime.mute(message['deviceId'],message['muted'])
+                elif operation=='lab_enter': runtime.enter_laboratory(owner)
+                elif operation=='lab_leave': runtime.leave_laboratory(owner)
                 elif operation in ('lab_test','lab_update'):
-                    runtime.lab.require_session(owner)
-                    if runtime.router.mode=='VIRTUAL': runtime.virtual.owner=owner
-                    runtime.lab.test(owner,message['deviceId'],message.get('hz',200),message.get('duration',1),message.get('modulation'),update=operation=='lab_update')
-                elif operation=='lab_stop': runtime.lab.stop_device(owner,message['deviceId'])
-                elif operation=='service': runtime.service.run(message['operation'],confirmed=message.get('confirmed') is True)
+                    runtime.test_laboratory(owner,message['deviceId'],message.get('hz',200),message.get('duration',1),message.get('modulation'),update=operation=='lab_update')
+                elif operation=='lab_stop': runtime.stop_laboratory(owner,message['deviceId'])
+                elif operation=='service': runtime.run_service(message['operation'],confirmed=message.get('confirmed') is True)
                 else: raise ValueError('Unknown action')
             if operation=='output':
                 # File loading plans outside Player's lock. Changing its output
@@ -172,9 +155,9 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                 except (ValueError,TypeError) as exc:
                     await command_error(peer,raw,exc)
                     continue
-                if message.get('action')=='audio_ack': runtime.virtual.acknowledge(owner,message.get('token'))
+                if message.get('action')=='audio_ack': runtime.acknowledge_audio(owner,message['token'])
                 elif message.get('action')=='sync':
-                    runtime.lab.touch(owner)
+                    runtime.heartbeat(owner)
                     await send_peer(peer,{'type':'sync','sent':message['sent'],'serverTime':time.monotonic()})
                 else:
                     task=asyncio.create_task(action(peer,owner,message)); tasks.add(task); task.add_done_callback(tasks.discard)
@@ -182,15 +165,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
         finally:
             peers.pop(owner,None)
             peer_locks.pop(peer,None)
-            if runtime.virtual.owner==owner:
-                # Browser heartbeat watchdog silences scheduled nodes within 500 ms.
-                # Keep owner through STOP timeout; do not claim acknowledgement.
-                with contextlib.suppress(Exception): await asyncio.to_thread(runtime.player.stop)
-                await asyncio.sleep(.6)  # Audio-graph heartbeat lease has expired.
-                runtime.virtual.active=False
-                runtime.virtual.owner=None
-            if runtime.lab.session==owner:
-                with contextlib.suppress(Exception): await asyncio.to_thread(runtime.lab.leave,owner)
+            await asyncio.to_thread(runtime.disconnect,owner)
     dist=HOST_DIR.parent/'web/dist'
     if dist.exists():
         @app.get('/settings',include_in_schema=False)

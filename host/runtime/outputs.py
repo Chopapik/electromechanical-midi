@@ -38,6 +38,42 @@ class RealOutput:
         state = self.power_state()
         if state != 'ON': raise OutputError('ATX '+state+': włącz zasilanie w Settings przed ruchem REAL')
 
+    def invalidate_configuration(self):
+        self.configured=False
+
+    def detach(self, *, close=True):
+        """Release a session without claiming STOP or clearing unknown motion."""
+        if self.link and close:self.link.close()
+        self.power_state()
+        self.link=None
+        self.invalidate_configuration()
+
+    def power(self, action):
+        """Apply only acknowledged logical GPIO power state, never rail voltage."""
+        if not self.link:raise OutputError('Brak BLE: nie można potwierdzić POWER '+action)
+        try:
+            result=self.link.power(action)
+            self.power_state()
+            if action!='STATUS' and result!=action:
+                raise OutputError('Niepoprawne potwierdzenie POWER '+action)
+            if action=='OFF':
+                self.active=False;self.unknown=False;self.error=None
+                self.active_speakers.clear()
+                self.speaker_frequencies.clear()
+                self.link.invalidate_fdd_reference()
+            return result
+        except Exception as exc:
+            self.link.invalidate_power_state()
+            raise OutputError(str(exc)) from exc
+
+    def home_all(self):
+        if not self.link:raise OutputError('Brak połączenia z ESP32')
+        self.require_power();self.configure();self.active=True
+        self.write(['FDD ALL HOME'])
+        if not self.link.wait_homed(echo=lambda _:None):
+            raise OutputError('Homing TRACK0 nie został potwierdzony')
+        self.stop()
+
     def status(self):
         return {'connected':self.link is not None, 'unknown':self.unknown,
                 'message':self.error or ('ESP32 BLE connected' if self.link else 'Brak połączenia z ESP32')}
@@ -60,9 +96,7 @@ class RealOutput:
                 except Exception: pass
             try: self.link.close()
             except Exception: pass
-        self.power_state()
-        self.link = None
-        self.configured = False
+        self.detach(close=False)
         self.homing_devices = ()
         self.homing_status_pending = False
         self.homing_status_requirements = (False, False)
@@ -72,7 +106,7 @@ class RealOutput:
     def attach(self, link):
         self.link = link
         self.power_state()
-        self.configured = False
+        self.invalidate_configuration()
         # Establish a stopped baseline on reconnect; never resume playback.
         self.stop()
         self.error = None
@@ -314,6 +348,20 @@ class VirtualOutput:
         self.active=False
         self.pending={}
         self.lock=threading.Lock()
+
+    def claim_owner(self, owner, *, exclusive=False):
+        with self.lock:
+            if exclusive and self.active and self.owner!=owner:
+                raise ValueError('Web Audio jest używane przez inną przeglądarkę')
+            self.owner=owner
+
+    def release_owner(self, owner):
+        """An expired browser lease cannot release a newer audio session."""
+        with self.lock:
+            if self.owner!=owner:return False
+            self.active=False
+            self.owner=None
+            return True
 
     def ready(self, commands=()):
         if self.owner is None: raise OutputError('Brak przeglądarki z aktywnym Web Audio')
