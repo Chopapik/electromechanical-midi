@@ -21,9 +21,9 @@ def span(start, end, note=69):
     return NoteSpan(start, end, note, 100, 0)
 
 class VirtualMechanicsTest(unittest.TestCase):
-    def test_fdd_calibrated_comfort_does_not_replace_firmware_limits(self):
+    def test_fdd_working_range_preserves_firmware_limits_and_measured_upper_bound(self):
         profile = PROFILES['FDD_CURRENT']
-        self.assertEqual(profile.get('preferredMinHz'), 200)
+        self.assertEqual(profile.get('preferredMinHz'), 40)
         self.assertEqual(profile.get('preferredMaxHz'), 410)
         self.assertEqual(profile.parameters['preferredMaxHz'].provenance, 'MEASURED')
         self.assertEqual(profile.get('minHz'), 40)
@@ -31,10 +31,10 @@ class VirtualMechanicsTest(unittest.TestCase):
 
     def test_fdd_virtual_real_and_hybrid_share_the_musical_range(self):
         from playback.capabilities import capability_for
-        from pitch import COMFORT_MIN_HZ, COMFORT_MAX_HZ
+        from pitch import COMFORT_MAX_HZ
         for mode in ('virtual', 'real', 'hybrid'):
             capability = capability_for(device(mode=mode))
-            self.assertEqual((capability.min_hz, capability.max_hz), (COMFORT_MIN_HZ, COMFORT_MAX_HZ))
+            self.assertEqual((capability.min_hz, capability.max_hz), (40, COMFORT_MAX_HZ))
         orchestra = VirtualOrchestra([device()])
         orchestra.simulate(Source([span(0, 1, 69)]))
         self.assertEqual(next(e.hz for e in orchestra.events if e.kind == 'tone'), 220)

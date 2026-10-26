@@ -28,12 +28,12 @@
       },
       "musicalHz": {
         "value": [
-          65,
+          40,
           500
         ],
         "unit": "Hz",
         "uncertainty": null,
-        "source": "docs/research/orkiestra-model-teoretyczny.md",
+        "source": "User-requested working lower limit 40 Hz matches the firmware protocol; not measured low-frequency qualification",
         "evidenceType": "HYPOTHESIS",
         "confidence": "LOW"
       },

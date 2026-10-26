@@ -2,7 +2,7 @@
 from __future__ import annotations
 import dataclasses
 import math
-from pitch import COMFORT_MIN_HZ, COMFORT_MAX_HZ
+from pitch import COMFORT_MAX_HZ
 
 KINDS = ('FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS', 'HDD_VCM', 'SOLENOID_RESONATOR')
 TONAL = {'FDD', 'DVD_SLED', 'STEPPER_FREE', 'VHS'}
@@ -57,9 +57,9 @@ PROFILES = {
         'polyphony': _p(1, 'RESEARCHED', 'single FDD head and firmware PLAY state'),
         'minPosition': _p(4, 'RESEARCHED', 'firmware/controller/src/main.cpp MIN_TRACK'),
         'maxPosition': _p(72, 'RESEARCHED', 'firmware/controller/src/main.cpp MAX_TRACK'),
-        'minHz': _p(40, 'RESEARCHED', 'firmware MIN_PLAY_HZ'),
+        'minHz': _p(40, 'RESEARCHED', 'config/hardware-profiles/theoretical.json: fddProtocolMinHz'),
         'maxHz': _p(500, 'RESEARCHED', 'firmware MAX_PLAY_HZ'),
-        'preferredMinHz': _p(COMFORT_MIN_HZ, 'RESEARCHED', 'host/pitch.py'),
+        'preferredMinHz': _p(40, 'ESTIMATED', 'User-requested working lower limit matching the existing firmware protocol'),
         'preferredMaxHz': _p(COMFORT_MAX_HZ, 'MEASURED', 'README.md: Fizyczna kalibracja FDD; 410 Hz = 38/40, normal orientation'),
         'maxStepRate': _p(1000, 'RESEARCHED', 'firmware MIN_STEP_INTERVAL_US'),
     }, overflow='fold'),

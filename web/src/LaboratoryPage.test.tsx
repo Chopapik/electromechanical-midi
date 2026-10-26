@@ -5,7 +5,7 @@ import {LaboratoryPage} from './LaboratoryPage'
 import type {State,useRuntime} from './runtime'
 const send=vi.fn()
 function makeApp(){return {state:{state:'stopped',owner:'lab',epoch:1,position:0,duration:0,file:null,revision:0,error:null,audioOwner:null,
- devices:[{id:'fdd-1',name:'FDD 1',type:'FDD',enabled:true,volume:.6,bands:[[100,410]],reason:null},{id:'fdd-2',name:'FDD 2',type:'FDD',enabled:true,volume:.6,bands:[[100,410]],reason:null},{id:'hdd-1',name:'HDD 1',type:'HDD_VCM',enabled:true,volume:.6,bands:[],reason:null}],
+ devices:[{id:'fdd-1',name:'FDD 1',type:'FDD',enabled:true,volume:.6,bands:[[40,410]],reason:null},{id:'fdd-2',name:'FDD 2',type:'FDD',enabled:true,volume:.6,bands:[[40,410]],reason:null},{id:'hdd-1',name:'HDD 1',type:'HDD_VCM',enabled:true,volume:.6,bands:[],reason:null}],
  laboratory:{active:{}},output:{mode:'VIRTUAL',connected:true,unknown:false,muted:[],message:''},service:{busy:false,error:null,power:{state:'ON',available:true,operation:null,error:null,reason:null,measured:false},home:{available:false,reason:'Test'},reset:{available:false,reason:'Test'},firmware:{available:false,reason:'Test'}}} as State,
  send,connected:true,error:null,files:[],firmwareEvents:[],upload:vi.fn(),midiLoading:null} as ReturnType<typeof useRuntime>}
 let app:ReturnType<typeof useRuntime>
@@ -14,6 +14,21 @@ beforeEach(()=>{localStorage.clear();send.mockClear();app=makeApp()})
 afterEach(()=>{cleanup();vi.useRealTimers()})
 describe('Laboratory rack',()=>{
  it('shows device list and right inspector instead of orchestra cards',()=>{mount();expect(screen.getByRole('region',{name:'Lista urządzeń'})).toBeTruthy();expect(screen.getByRole('complementary',{name:'Panel FDD 1'})).toBeTruthy();expect(screen.queryByRole('article')).toBeNull();expect(screen.getByRole('slider',{name:'Suwak częstotliwości'})).toBeTruthy()})
+ it('offers low-frequency presets while blocking 25 Hz below the FDD limit',()=>{
+  mount()
+  const below=screen.getByRole('button',{name:'25'}) as HTMLButtonElement
+  expect(below.disabled).toBe(true)
+  expect(below.title).toBe('Poniżej dolnego limitu 40 Hz')
+  for(const hz of [50,75,100]){
+   fireEvent.click(screen.getByRole('button',{name:String(hz)}))
+   expect((screen.getByLabelText('Częstotliwość Hz') as HTMLInputElement).value).toBe(String(hz))
+   expect((screen.getByRole('button',{name:'Uruchom'}) as HTMLButtonElement).disabled).toBe(false)
+  }
+  fireEvent.click(screen.getByRole('button',{name:'50'}));fireEvent.click(screen.getByRole('button',{name:'Uruchom'}))
+  expect(send).toHaveBeenLastCalledWith('lab_test',{deviceId:'fdd-1',hz:50,duration:5,modulation:{mode:'off',depth:5,period:4}})
+  fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'39'}})
+  expect((screen.getByRole('button',{name:'Uruchom'}) as HTMLButtonElement).disabled).toBe(true)
+ })
  it('retains independent frequency, modulation and duration when changing devices',()=>{
   mount();fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'300'}});fireEvent.click(screen.getByRole('button',{name:'∞ Do STOP'}));fireEvent.click(screen.getByRole('button',{name:'Vibrato'}));fireEvent.change(screen.getByRole('slider',{name:'Głębokość modulacji Hz'}),{target:{value:'12'}})
   fireEvent.click(screen.getByRole('button',{name:'Ustawienia FDD 2'}));expect((screen.getByLabelText('Częstotliwość Hz') as HTMLInputElement).value).toBe('220');fireEvent.change(screen.getByLabelText('Częstotliwość Hz'),{target:{value:'200'}})

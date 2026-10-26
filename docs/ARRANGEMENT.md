@@ -51,7 +51,7 @@ jest składany oktawowo próbka po próbce (możliwy skok rejestru). Raport
 pełna chronologia DVD jest ponownie sprawdzana bez usuwania nut.
 Jest to wybór brzmieniowy, nie potwierdzenie bezpiecznej pracy fizycznego silnika.
 Laboratory zachowuje osobny zakres profilu/protokołu. FDD używają
-obecnego eksperymentu −12 / 100–205 Hz, niezależnie od presetu.
+obecnego eksperymentu −12 / 40–205 Hz, niezależnie od presetu.
 Zajętość jest monofoniczna na fizyczną lane, z pełnymi rezerwacjami extras.
 Profil sprawdza również przejścia i przyszłą chronologię, nie samą pojedynczą nutę.
 
@@ -94,7 +94,7 @@ Szczegóły istotne dla porównań:
   Universal od początku ma cztery logiczne sloty FDD zamiast ośmiu fizycznych;
   revoicing śledzi właściciela frazy i preferuje różne partie przed kolejnymi
   głosami tej samej partii. Wszystkie dźwięki pochodzą ze źródła MIDI; folding
-  i obecna transpozycja −12 / 100–205 Hz pozostają bez zmian.
+  i obecna transpozycja −12 / 40–205 Hz pozostają bez zmian.
   [fdd_expression.py](../host/playback/fdd_expression.py) dobiera gate z minimum
   długości źródłowej, 180 ms, 0,45 ćwierćnuty oraz 80% odstępu do następnego
   ataku tego głosu. Robocze minimum to 6 cykli tonu oraz minimum profilu;
@@ -147,7 +147,7 @@ Szczegóły istotne dla porównań:
   profilu i skonfigurowanego odstępu ataków (domyślnie co najmniej 120 ms).
   To nie skalibrowany próg satysfakcjonującego tonu ani limit bezpieczeństwa.
   Zachowane NOTE_ON zostają w źródłowych chwilach, bez kolejki opóźnień;
-  pitch pochodzi z MIDI po obecnej transpozycji/foldingu 100–205 Hz.
+  pitch pochodzi z MIDI po obecnej transpozycji/foldingu 40–205 Hz.
   Powtórzenia tej samej wykonanej wysokości współdzielą ton. Pozostałe zbyt
   szybkie nuty są pomijane muzycznie; powody `FDD_LEGATO_*` rozróżniają
   podtrzymany pitch, redukcję, ciągłość partii, brak miejsca na ton i weto profilu.

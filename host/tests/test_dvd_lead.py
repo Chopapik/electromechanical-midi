@@ -17,9 +17,11 @@ class DvdLeadTests(unittest.TestCase):
     assert_feasible=helpers.MechanicalArrangementTests.assert_feasible
     def experimental(self, **counts):
         r=self.registry(**counts)
-        # Isolate this strategy's own octave from the global listening test.
+        # Isolate this strategy's own octave and fixed test range from global preferences.
         for d in r.devices:
-            if d['type']=='FDD': d.update(transpose=0, overrides={})
+            if d['type']=='FDD':
+                d.update(transpose=0, overrides={'preferredMinHz':{
+                    'value':200, 'provenance':'ESTIMATED', 'source':'offline fixed-range fixture'}})
         r.document['parameters']['arrangementPreset']=PRESET
         return r
     def test_dvd_main_roles_and_original_register(self):

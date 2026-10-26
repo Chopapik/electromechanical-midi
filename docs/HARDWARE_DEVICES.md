@@ -101,19 +101,24 @@ wyniki testów od aktualnej polityki muzycznej.
 
 ## FDD: trzy różne zakresy
 
-| Warstwa | Bieżąca wartość dla FDD1–4 | Co oznacza |
+| Warstwa | Bieżąca wartość dla FDD1–8 | Co oznacza |
 | --- | --- | --- |
-| Aranżacja | Transpozycja −12, preferowane 100–205 Hz | Zapisany eksperyment odsłuchowy; wszystkie presety i STRICT_TRACKS |
-| Profil sprzętowy | `musicalHz` 100–410 Hz | Dopuszczenie przez model hosta, także testy lab; dolna granica eksperymentalna |
+| Aranżacja | Transpozycja −12, preferowane 40–205 Hz | Zapisany eksperyment odsłuchowy; wszystkie presety i STRICT_TRACKS |
+| Profil sprzętowy | `musicalHz` 40–410 Hz | Dopuszczenie przez model hosta, także testy lab; dolna granica zgodna z protokołem, nie zmierzony próg mechaniczny |
 | Firmware, wejście PLAY | 40–500 Hz | Zakres poprawnej komendy, nie gwarancja osiągalnej częstotliwości |
 | Firmware, impulsy STEP | Minimalny odstęp 2439 µs ≈ 410 kroków/s | Osobny limit wykonania, również przy komendzie 500 Hz |
 | Metadane FDD1 | `stableHz` 130–410 Hz | Górny punkt z testu; 130 Hz zachowane w metadanych, nie zmierzony próg dolny |
 | Ataki nut | Minimum 120 ms; przy stałym gate 200 ms efektywne minimum 203 ms | FDD Expressive dobiera gate rytmicznie, FDD Legato łączy wybrane nuty wewnątrz frazy bez release. Granice fraz zachowują co najmniej 3 ms przerwy; [reguły](ARRANGEMENT.md#presety). Parametry muzyczne, niezależne od częstotliwości STEP |
 
 `COMFORT_MIN_HZ=200` / `MAX=410` w [pitch.py](../host/pitch.py) to ogólny
-fallback. Aktywne preferencje urządzeń go zawężają do 100–205 Hz po transpozycji.
+fallback. Aktywne preferencje urządzeń go zawężają do 40–205 Hz po transpozycji.
 Dlatego wykonane 130,81 Hz lub ~196 Hz są zgodne z bieżącą konfiguracją.
 Przykład: wcześniej wykonywane C4 261,63 Hz staje się C3 130,81 Hz.
+Obniżony roboczy próg 40 Hz dopuszcza także nuty poniżej wcześniejszych 100 Hz;
+transpozycja −12 oraz górne limity pozostają bez zmian. Laboratorium oferuje
+skróty 50, 75 i 100 Hz; 25 Hz jest widoczne, ale nieaktywne dla FDD. Obecny
+firmware przyjmuje co najmniej 40 Hz, więc ta zmiana hosta nie wymaga uploadu.
+Nie stanowi to pomiaru jakości brzmienia ani kwalifikacji niskich częstotliwości.
 Folding przesuwa o całe oktawy, nie przycina nuty do wartości granicznej.
 Źródłowy pitch MIDI pozostaje zapisany osobno od `played_hz`.
 Dodatkową próbę obniżenia w DVD Lead opisuje [aranżacja](ARRANGEMENT.md#presety).

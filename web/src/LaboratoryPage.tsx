@@ -6,7 +6,7 @@ import type {Device,useRuntime} from './runtime'
 type Settings={hz:number;duration:number;continuous:boolean;mode:'off'|'sine'|'triangle';depth:number;period:number}
 const storageKey='orchestra.laboratory.v1'
 const families=[['FDD','Stacje dyskietek'],['DVD_SLED','Silniki DVD'],['VHS','PC Speakery'],['HDD_VCM','Perkusja HDD']]
-const presets=[110,130.81,164.81,196,220,261.63,300,329.63,392,440,523.25,659.25,880,987.77]
+const presets=[25,50,75,100,110,130.81,164.81,196,220,261.63,300,329.63,392,440,523.25,659.25,880,987.77]
 function bands(d:Device){return d.labBands?.length?d.labBands:d.bands.length?d.bands:[[1,10000]]}
 function initial(d:Device):Settings{const [lo,hi]=bands(d)[0];return {hz:Math.max(lo,Math.min(hi,220)),duration:5,continuous:false,mode:'off',depth:5,period:4}}
 function note(hz:number){const n=Math.round(69+12*Math.log2(hz/440));return `${['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][(n%12+12)%12]}${Math.floor(n/12)-1}`}
@@ -78,7 +78,7 @@ export function LaboratoryPage({app}:{app:ReturnType<typeof useRuntime>}){
       <div className="lab-scale"><span>{lo.toFixed(lo<1?3:0)} Hz</span><span>{hi.toFixed(0)} Hz</span></div>
       {allowed.length>1&&<div className="lab-chips">{allowed.map(([a,b])=><button key={a} onClick={()=>change({hz:a,mode:'off'})}>{a}–{b} Hz</button>)}</div>}
       <div className="lab-step-buttons">{[[-12,'− oktawa'],[-1,'− półton'],[1,'+ półton'],[12,'+ oktawa']].map(([n,label])=><button key={n} onClick={()=>setHz(settings.hz*2**(Number(n)/12))}>{label}</button>)}</div>
-      <div className="lab-chips">{presets.filter(h=>h>=lo&&h<=hi).map(h=><button key={h} className={Math.abs(h-settings.hz)<.01?'chosen':''} onClick={()=>setHz(h)}>{Number.isInteger(h)?h:note(h)}</button>)}</div>
+      <div className="lab-chips">{presets.filter(h=>h<=hi&&(h>=lo||device.type==='FDD'&&h===25)).map(h=><button key={h} disabled={h<lo} title={h<lo?`Poniżej dolnego limitu ${lo} Hz`:undefined} className={Math.abs(h-settings.hz)<.01?'chosen':''} onClick={()=>setHz(h)}>{Number.isInteger(h)?h:note(h)}</button>)}</div>
       <small className="lab-help">Zmiany częstotliwości i modulacji działają podczas testu.</small>
      </section>
      <section className="lab-control-section">

@@ -316,7 +316,7 @@ VIRTUAL anuluje kolejki/epokę i wycisza audio po utracie synchronizacji.
 | FDD zablokowane | HOME i TRACK0, błędy w `/api/firmware/events` |
 | Nuta pominięta / skrócona | `/api/plan` i Settings → Aranżacja → Arrangement · PerformancePlan; powód decyzji, nie tylko statystyka |
 | STOP pomiędzy tonami DVD | `/api/timeline`: rzeczywista przerwa, źródłowa fraza, ograniczenie sustainu, zmiana partii lub rezerwacja |
-| 130 Hz zamiast 260 Hz FDD | Obecna transpozycja −12 i zakres 100–205 Hz; patrz [zakresy](HARDWARE_DEVICES.md#fdd-trzy-różne-zakresy) |
+| 130 Hz zamiast 260 Hz FDD | Obecna transpozycja −12 i zakres 40–205 Hz; patrz [zakresy](HARDWARE_DEVICES.md#fdd-trzy-różne-zakresy) |
 | Drugi speaker / przebieg | `speaker_fx` w STATUS; obsługiwany tylko `pulse`, `speaker_waves=0` |
 | VIRTUAL milczy | Wybrane Output, gest uruchamiający Web Audio, gain/duty 0, Mute, aktywna karta i synchronizacja |
 

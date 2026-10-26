@@ -18,12 +18,12 @@
         },
         "musicalHz": {
           "value": [
-            100,
+            40,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         },
@@ -163,12 +163,12 @@
         },
         "musicalHz": {
           "value": [
-            100,
+            40,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -209,12 +209,12 @@
         },
         "musicalHz": {
           "value": [
-            100,
+            40,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -255,12 +255,12 @@
         },
         "musicalHz": {
           "value": [
-            100,
+            40,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested octave-down experiment: allow working musical low 100 Hz; device folding targets 100-205 Hz. Measured upper endpoint and execution limits retained; low is not a measured mechanical minimum",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -380,10 +380,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [100, 410],
+          "value": [40, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "shared octave-down planning window; not an individual drive measurement",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -418,10 +418,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [100, 410],
+          "value": [40, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "shared octave-down planning window; not an individual drive measurement",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -456,10 +456,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [100, 410],
+          "value": [40, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "shared octave-down planning window; not an individual drive measurement",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -494,10 +494,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [100, 410],
+          "value": [40, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "shared octave-down planning window; not an individual drive measurement",
+          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
