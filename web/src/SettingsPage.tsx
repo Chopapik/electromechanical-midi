@@ -1,4 +1,5 @@
 import {waveformPoints} from './pulseWave'
+import {arrangementPresets,isArrangementPreset} from './generated/arrangementPresets'
 import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
@@ -73,35 +74,12 @@ export function SettingsPage({app}:{app:Runtime}){
           <h2>Aranżacja</h2>
           <div className="settings-action">
             <label className="settings-select">Preset aranżacji
-              <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>void app.send('arrangement_preset',{preset:e.target.value})}>
-                <option value="universal">Universal · adaptacyjny</option>
-                <option value="fdd_expressive">FDD Expressive · 4 partie + akcenty</option>
-                <option value="fdd_expressive_solo">FDD Expressive · bez kopii akcentów</option>
-                <option value="adaptive_legato">Adaptive Legato · ochrona rytmu</option>
-                <option value="fdd_legato">FDD Legato · ciągłe frazy</option>
-                <option value="balanced">Balanced</option>
-                <option value="instrument_roles">FDD Riffs + DVD Tło</option>
-                <option value="instrument_roles_unison">FDD Riffs + DVD Tło · Pary Unisono</option>
-                <option value="instrument_roles_unison4">2×4 FDD Unisono · eksperymentalny</option>
-                <option value="instrument_roles_duet">FDD Riffs + DVD Tło · Pary Dwugłos</option>
-                <option value="fdd_quality">FDD Quality · eksperymentalny</option>
-                <option value="fdd_quality_adaptive">FDD Quality Adaptive · eksperymentalny</option>
-                <option value="dvd_lead_low_fdd">DVD Lead + Low FDD · eksperymentalny</option>
+              <select aria-label="Preset aranżacji" value={s?.arrangementPreset??'balanced'} disabled={disabled} onChange={e=>{if(isArrangementPreset(e.target.value))void app.send('arrangement_preset',{preset:e.target.value})}}>
+                {arrangementPresets.map(preset=><option key={preset.id} value={preset.id}>{preset.label}</option>)}
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
-            {s?.arrangementPreset==='adaptive_legato'
-              ? <small>Lokalna ochrona krótkich, rytmicznych fraz i powtórzeń; płynne partie zachowują legato. Zbyt szybkie nuty nadal podlegają ograniczeniom FDD. DVD, speakery i HDD zachowują plan Expressive. Eksperymentalna heurystyka — wymaga odsłuchu REAL.</small>
-              : s?.arrangementPreset==='fdd_legato'
-              ? <small>Ciągłe frazy na stałych FDD: zmiany wysokości bez STOP, łączenie powtórzeń i uproszczenie szybkich przebiegów. Mocne fragmenty wzmacnia druga stacja w każdej parze — do ośmiu FDD jednocześnie, z pełnym wybrzmieniem. DVD, speakery i HDD zachowują plan Expressive. Eksperyment do odsłuchu REAL; mniej źródłowych ataków i dłuższa ciągła praca napędów.</small>
-              : s?.arrangementPreset==='fdd_expressive'||s?.arrangementPreset==='fdd_expressive_solo'
-              ? <small>Cztery głosy w parach FDD1–2, 3–4, 5–6 i 7–8. Długość nut wynika z rytmu i tempa. {s?.arrangementPreset==='fdd_expressive_solo' ? 'Porównanie A/B: identyczne główne nuty i pozostałe instrumenty jak w wersji z akcentami; usunięte tylko dodatkowe kopie akcentów.' : 'Akcent dołącza drugą stację na krótszy czas.'} Nuty zachowują moment wejścia z MIDI. Eksperyment wymaga odsłuchu REAL.</small>
-              : <small>Eksperyment globalny FDD: każdy zachowany ton trwa 200 ms; gęstsze ataki są pomijane, aby zostawić 3 ms przerwy.</small>}
-            {s?.arrangementPreset==='universal'&&<small>Lokalne frazy, wokal i ozdobniki; długie tło DVD. FDD uwzględnia odstęp ataków przed wyborem urządzenia.</small>}
-            {s?.arrangementPreset==='instrument_roles'&&<small>FDD: krótkie nuty i zmiany wysokości. DVD: długie tło. PC Speaker: wokal, PC Speaker FX: ozdobniki. Perkusja bez zmian.</small>}
-            {s?.arrangementPreset==='instrument_roles_unison'&&<small>FDD1+2 i FDD3+4: dwie partie, każda grana wspólnie tą samą nutą. Pary utrzymują frazy i przejmują aktywne partie podczas pauz. DVD: długie tło.</small>}
-            {s?.arrangementPreset==='instrument_roles_unison4'&&<small>FDD1–4 grają pierwszy głos, a FDD5–8 drugi. Każda grupa gra wewnętrznie tę samą nutę, start i długość. Grupy śledzą różne partie lub dwa głosy jednej partii. Universal rozdziela melodie, tło DVD i speakery; HDD preferują osobne role rytmiczne.</small>}
-            {s?.arrangementPreset==='instrument_roles_duet'&&<small>FDD1+2 i FDD3+4: do dwóch różnych nut MIDI z jednej partii na parę. Pojedyncza linia: unisono. DVD: długie tło. Dwie niezależne partie FDD jednocześnie.</small>}
+            {arrangementPresets.find(preset=>preset.id===(s?.arrangementPreset??'balanced'))?.descriptions.map(description=><small key={description}>{description}</small>)}
           </div>
           <ArrangementPreview revision={s?.revision??0} file={s?.file??null}/>
         </section>
@@ -126,7 +104,7 @@ export function SettingsPage({app}:{app:Runtime}){
             <pre ref={consoleRef} className="firmware-console" aria-label="Log PlatformIO">{current.filter(event=>event.kind==='log').map(event=>event.line).join('\n')}</pre>
           </section>}
           <div className="settings-action">
-            <button disabled title={s?.service.reset.reason}>Reset ESP32 — niedostępny</button>
+            <button disabled title={s?.service.reset.reason??undefined}>Reset ESP32 — niedostępny</button>
             <small>{s?.service.reset.reason}</small>
           </div>
           <div className="settings-action">

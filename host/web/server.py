@@ -16,6 +16,7 @@ from fastapi.responses import FileResponse
 from runtime.application import Application
 from runtime.registry import DeviceRegistry
 from web.library import MidiLibrary, MidiLibraryError, MAX_UPLOAD_BYTES
+from web.contracts import validate_command
 
 LIBRARY_HTTP_STATUS = {'invalid_name':400, 'outside_library':400, 'not_found':404,
                        'invalid_upload_name':422, 'invalid_midi':422, 'upload_too_large':413}
@@ -89,6 +90,17 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
         data=await file.read(MAX_UPLOAD_BYTES+1)
         path=_library_call(library.save_upload,file.filename,data)
         return {'name':path.name}
+    async def command_error(peer, message, exc):
+        raw=message if isinstance(message,dict) else {}
+        operation=raw.get('action'); request=raw.get('requestId')
+        if not isinstance(request,str): request=None
+        detail=str(exc)
+        lab_action={'lab_test':'uruchomienie testu','lab_update':'zmiana parametrów','lab_stop':'zatrzymanie testu'}.get(operation) if isinstance(operation,str) else None
+        if lab_action:
+            ident=raw.get('deviceId')
+            device=runtime.registry.by_id.get(ident,{}) if isinstance(ident,str) else {}
+            detail=f"{device.get('name', 'Urządzenie')} · {lab_action}: {detail}"
+        with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':detail})
     async def action(peer, owner, message):
         operation=message.get('action'); request=message.get('requestId')
         try:
@@ -142,13 +154,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                     await asyncio.to_thread(perform)
             await send_peer(peer,{'type':'ack','requestId':request,'state':await asyncio.to_thread(runtime.snapshot)})
         except Exception as exc:
-            detail=str(exc)
-            lab_action={'lab_test':'uruchomienie testu','lab_update':'zmiana parametrów','lab_stop':'zatrzymanie testu'}.get(operation)
-            if lab_action:
-                ident=message.get('deviceId')
-                device=runtime.registry.by_id.get(ident,{}) if isinstance(ident,str) else {}
-                detail=f"{device.get('name', 'Urządzenie')} · {lab_action}: {detail}"
-            with contextlib.suppress(Exception): await send_peer(peer,{'type':'error','requestId':request,'message':detail})
+            await command_error(peer,message,exc)
     command_lock=asyncio.Lock()
     @app.websocket('/ws')
     async def websocket(peer:WebSocket):
@@ -159,7 +165,13 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
             for event in list(runtime.service.events): await peer.send_json(event)
         try:
             while True:
-                message=await peer.receive_json()
+                raw=None
+                try:
+                    raw=await peer.receive_json()
+                    message=validate_command(raw)
+                except (ValueError,TypeError) as exc:
+                    await command_error(peer,raw,exc)
+                    continue
                 if message.get('action')=='audio_ack': runtime.virtual.acknowledge(owner,message.get('token'))
                 elif message.get('action')=='sync':
                     runtime.lab.touch(owner)
