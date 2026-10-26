@@ -76,15 +76,17 @@ def phrases(events, clock):
     return result, ignored
 
 
-def select(events, dwell, clock, end):
+def select(events, dwell, clock, end, articulation=None):
     """Maximum-salience source subsequence with a minimum pitch residence time.
 
     Keep the phrase entry. Same performed-pitch repetitions can share a body;
     beat accents and velocity guide the reduction of intervening fast notes.
     """
+    # Adaptive selection keeps later repeats available: the first return to a
+    # pitch can be infeasible while a subsequent attack fits the residence.
     runs = []
     for event in events:
-        if not runs or abs(event.played_hz-runs[-1].played_hz) > 1e-6:
+        if articulation is not None or not runs or abs(event.played_hz-runs[-1].played_hz) > 1e-6:
             runs.append(event)
     first = runs[0]
     if first.start+dwell(first) > end+EPS:
@@ -112,7 +114,8 @@ def select(events, dwell, clock, end):
             index -= 1
     selected = [first]+list(reversed(selected))
     # A skipped excursion may bring two selected tones back to the same pitch.
-    return [e for i, e in enumerate(selected) if not i or abs(e.played_hz-selected[i-1].played_hz)>1e-6]
+    return [e for i, e in enumerate(selected) if not i or abs(e.played_hz-selected[i-1].played_hz)>1e-6
+            or articulation is not None and (articulation.is_protected(e) or articulation.is_protected(selected[i-1]))]
 
 
 def strong_windows(pool, clock):
@@ -242,7 +245,7 @@ def reinforce(plan, registry, pool, clock):
     report.update(seconds=round(report['seconds'], 3), rejected=dict(rejected))
 
 
-def apply(plan, registry, source):
+def apply(plan, registry, source, adaptive=False):
     if 'fddExpressive' not in plan.hardware:  # STRICT_TRACKS is deliberately unchanged.
         return
     clock = Clock(source)
@@ -255,6 +258,8 @@ def apply(plan, registry, source):
     for event in plan.events:
         if event.played and event.device_type == 'FDD':
             pool[group_for[event.device_id]].append(event)
+    from .adaptive_legato import Articulation
+    articulation = Articulation(pool, clock) if adaptive else None
     states = {ident: HardwareDeviceState() for ident in group_for}
     load = Counter()
     replacements, sidecars, decisions = {}, {}, {}
@@ -290,7 +295,10 @@ def apply(plan, registry, source):
                     return max(plan.policy['fddMinAttackIntervalMs']/1000.,
                         (min_note_ms(profile, e.played_hz) or 0)/1000.,
                         max(MIN_DWELL, min(MAX_DWELL, clock.beat(e.start)*.5)))
-                chosen = select(mapped, dwell, clock, end)
+                def residence(e):
+                    return dwell(e)+(max(release, articulation.gap(e))
+                        if articulation and articulation.is_protected(e) else 0.)
+                chosen = select(mapped, residence, clock, end, articulation)
                 if not chosen:
                     continue
                 state = replace(states[ident], hit_times=list(states[ident].hit_times))
@@ -298,6 +306,10 @@ def apply(plan, registry, source):
                 tail = sequence[-1].start+sequence[-1].duration
                 for index, event in enumerate(chosen):
                     stop = chosen[index+1].start if index+1 < len(chosen) else min(end,max(tail,event.start+dwell(event)))
+                    if articulation and articulation.is_protected(event):
+                        if index+1 < len(chosen):
+                            stop -= max(release, articulation.gap(event))
+                        stop = min(stop, event.start+max(event.duration, dwell(event)))
                     # The backbone derives an AUTO cap for allocating short
                     # source attacks. Phrase bodies honor only an explicit cap.
                     limit = config.policy.get('leadMaxNoteSeconds' if event.role=='lead' else 'maxNoteSeconds', 0)
@@ -359,6 +371,11 @@ def apply(plan, registry, source):
         'dwellRangeMs':[MIN_DWELL*1000,MAX_DWELL*1000],
         'bridgeRangeMs':[MIN_BRIDGE*1000,MAX_BRIDGE*1000],
         'nonFddPreserved':True,'scope':'experimental phrase reorchestration; not acoustic or thermal calibration'}
+    if articulation:
+        plan.hardware['adaptiveLegato'] = articulation.report()
+        plan.hardware['adaptiveLegato'].update(
+            protectedAttacksRetained=sum(e.id in articulation.protected for e in replacements.values() if e.played),
+            selectedSourceAttacks=len(sidecars))
     reinforce(plan, registry, pool, clock)
     # Refresh final FDD counters/states and validate the complete changed travel.
     from .fdd_expression import without_accents

@@ -803,3 +803,52 @@ drops become 166 instead of 165 (three previously retained notes are lost,
 two previously dropped notes are recovered). All device reservations remain
 non-overlapping. This is reported explicitly; removing a competing source
 does not guarantee globally optimal allocation by the existing allocator.
+
+## Adaptive Legato — 2026-10-26 (offline)
+
+New opt-in `adaptive_legato`, compared with unchanged `fdd_legato` using the
+same registry and source files. The union of `~/Music/MIDI` and repository
+`midi/` contained 470 paths / 161 SHA-256-unique files. All paths were inventoried;
+identical content was planned once per preset. 160 files completed both plans.
+`touhou4.mid` failed source parsing (`list index out of range`); it was not
+counted as a successful arrangement. No song-name-specific rules were used.
+
+Reproduce with:
+
+```sh
+.venv/bin/python scripts/benchmark_adaptive_legato.py \
+  --midi-dir ~/Music/MIDI --midi-dir midi
+```
+
+[Full per-file results and aliases](../../reports/adaptive-legato-library.json).
+The script asserts complete compiled non-FDD timeline equality, no overlapping
+reservations, no modeled mechanical conflicts and no FDD onset-spacing violations.
+All 160 readable files passed those checks. It does not measure sound quality.
+
+| MIDI | Primary FDD attacks: Legato → Adaptive | Compiled FDD STOP: Legato → Adaptive | Longest continuous FDD, s: Legato → Adaptive |
+| --- | ---: | ---: | ---: |
+| Bodysnatchers | 1486 → 2270 | 768 → 1781 | 175.708 → 11.423 |
+| Let Down | 1300 → 1690 | 873 → 1289 | 39.832 → 39.832 |
+| No Surprises | 804 → 1275 | 628 → 1164 | 24.067 → 12.762 |
+| Somebody That I Used to Know | 1980 → 2014 | 1378 → 1606 | 27.766 → 27.407 |
+| Popcorn | 1676 → 2047 | 329 → 688 | 136.000 → 31.875 |
+
+Across the readable corpus, primary FDD attacks increased from 108,623 to
+158,067; compiled STOPs including partner reinforcement increased from 54,012
+to 117,430. These are different populations: primary counts exclude copies,
+STOP counts include them. More retained attacks are not proof of better motif
+recognition, and more stops may reintroduce objectionable mechanical noise.
+The longest continuous run decreased from 302.614 s (The National Anthem) to
+231.544 s (Dollars and Cents). Neither duration is a thermally verified limit.
+
+The new profile keeps later repeated source pitches eligible during selection,
+protects locally detached/repeated short attacks, and uses legato for flowing
+material. It operates on the already allocated FDD pool; omitted source voices,
+lead identification, speaker routing and octave folding are not solved by this
+experiment. No automatic "MIDI suitability percentage" is claimed. No MIDI was
+used as an acoustic validation set: this run checks software and explicitly
+requires subsequent REAL listening before judging improvement.
+
+Validation: 836 host tests, 129 frontend tests, frontend production build passed.
+Docker `orchestra` rebuilt and healthy; served bundle includes the new preset.
+No firmware changes, uploads, power commands or actuator tests were performed.

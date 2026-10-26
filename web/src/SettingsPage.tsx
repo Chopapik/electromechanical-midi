@@ -77,6 +77,7 @@ export function SettingsPage({app}:{app:Runtime}){
                 <option value="universal">Universal · adaptacyjny</option>
                 <option value="fdd_expressive">FDD Expressive · 4 partie + akcenty</option>
                 <option value="fdd_expressive_solo">FDD Expressive · bez kopii akcentów</option>
+                <option value="adaptive_legato">Adaptive Legato · ochrona rytmu</option>
                 <option value="fdd_legato">FDD Legato · ciągłe frazy</option>
                 <option value="balanced">Balanced</option>
                 <option value="instrument_roles">FDD Riffs + DVD Tło</option>
@@ -89,7 +90,9 @@ export function SettingsPage({app}:{app:Runtime}){
               </select>
             </label>
             <small>Zmiana presetu zatrzymuje odtwarzanie i przebudowuje plan.</small>
-            {s?.arrangementPreset==='fdd_legato'
+            {s?.arrangementPreset==='adaptive_legato'
+              ? <small>Lokalna ochrona krótkich, rytmicznych fraz i powtórzeń; płynne partie zachowują legato. Zbyt szybkie nuty nadal podlegają ograniczeniom FDD. DVD, speakery i HDD zachowują plan Expressive. Eksperymentalna heurystyka — wymaga odsłuchu REAL.</small>
+              : s?.arrangementPreset==='fdd_legato'
               ? <small>Ciągłe frazy na stałych FDD: zmiany wysokości bez STOP, łączenie powtórzeń i uproszczenie szybkich przebiegów. Mocne fragmenty wzmacnia druga stacja w każdej parze — do ośmiu FDD jednocześnie, z pełnym wybrzmieniem. DVD, speakery i HDD zachowują plan Expressive. Eksperyment do odsłuchu REAL; mniej źródłowych ataków i dłuższa ciągła praca napędów.</small>
               : s?.arrangementPreset==='fdd_expressive'||s?.arrangementPreset==='fdd_expressive_solo'
               ? <small>Cztery głosy w parach FDD1–2, 3–4, 5–6 i 7–8. Długość nut wynika z rytmu i tempa. {s?.arrangementPreset==='fdd_expressive_solo' ? 'Porównanie A/B: identyczne główne nuty i pozostałe instrumenty jak w wersji z akcentami; usunięte tylko dodatkowe kopie akcentów.' : 'Akcent dołącza drugą stację na krótszy czas.'} Nuty zachowują moment wejścia z MIDI. Eksperyment wymaga odsłuchu REAL.</small>

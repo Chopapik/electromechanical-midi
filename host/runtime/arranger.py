@@ -11,8 +11,9 @@ def arrange(source, registry):
     config = registry.configuration()
     from playback.fdd_expression import PRESET, SOLO_PRESET, without_accents
     from playback.fdd_legato import PRESET as LEGATO_PRESET, apply as phrase_legato
+    from playback.adaptive_legato import PRESET as ADAPTIVE_PRESET
     requested_preset = config.policy['arrangementPreset']
-    if requested_preset in (SOLO_PRESET, LEGATO_PRESET):
+    if requested_preset in (SOLO_PRESET, LEGATO_PRESET, ADAPTIVE_PRESET):
         # Run the exact original preset, including its reservations and recovery.
         # Muting early would change the next primary allocation and confound A/B.
         config.policy['arrangementPreset'] = PRESET
@@ -96,9 +97,9 @@ def arrange(source, registry):
         finalize_fdd_expression(plan)
     from playback.dvd_register import apply as set_dvd_register
     set_dvd_register(plan, registry, source)
-    if requested_preset in (SOLO_PRESET, LEGATO_PRESET):
+    if requested_preset in (SOLO_PRESET, LEGATO_PRESET, ADAPTIVE_PRESET):
         without_accents(plan, registry)
-        if requested_preset == LEGATO_PRESET:
-            phrase_legato(plan, registry, source)
+        if requested_preset in (LEGATO_PRESET, ADAPTIVE_PRESET):
+            phrase_legato(plan, registry, source, adaptive=requested_preset == ADAPTIVE_PRESET)
         plan.policy['arrangementPreset'] = requested_preset
     return plan

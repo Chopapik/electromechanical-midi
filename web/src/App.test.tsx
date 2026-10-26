@@ -187,3 +187,13 @@ it('still blocks output changes during exclusive device service operations',()=>
  mount('/settings')
  expect((screen.getByLabelText('Virtual debug · Web Audio') as HTMLInputElement).disabled).toBe(true)
 })
+
+it('selects adaptive legato with honest rhythm protection guidance',()=>{
+ Object.assign(state,{arrangementPreset:'adaptive_legato'})
+ mount('/settings')
+ expect(screen.getByRole('option',{name:'Adaptive Legato · ochrona rytmu'})).toBeTruthy()
+ expect(screen.getByText(/Lokalna ochrona krótkich, rytmicznych fraz/)).toBeTruthy()
+ expect(screen.queryByText(/każdy zachowany ton trwa 200 ms/)).toBeNull()
+ fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'adaptive_legato'}})
+ expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'adaptive_legato'})
+})

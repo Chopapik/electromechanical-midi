@@ -73,6 +73,7 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
 | `fdd_expressive` — FDD Expressive · 4 partie + akcenty | Cztery logiczne głosy Universal w parach FDD1–2, 3–4, 5–6, 7–8; zwykła nuta na jednej stacji, akcent z krótszą kopią; gate z MIDI, tempa i następnego ataku | Do czterech głosów, zależnie od dostępności par; więcej źródłowych nut kosztem liczby równoległych kopii. Parametry wymagają odsłuchu REAL |
 | `fdd_expressive_solo` — FDD Expressive · bez kopii akcentów | Porównanie A/B z pełnym Expressive: identyczne główne nuty, ich urządzenia, pitch, onset i gate; na końcu usuwane tylko dodatkowe `FDD_ACCENT` | Zwolniona pojemność pozostaje niewykorzystana, aby porównanie izolowało kopie. Krótkie główne nuty pozostają krótkie; efekt akustyczny wymaga odsłuchu |
+| `adaptive_legato` — Adaptive Legato · ochrona rytmu | Lokalny wybór artykulacji źródłowej partii: ochrona krótkich rytmicznych ataków, legato w płynnych fragmentach | Osobny eksperyment; ograniczenia FDD nadal wymuszają redukcję zbyt szybkich nut. DVD, speakery i HDD zachowują plan Expressive |
 | `fdd_legato` — FDD Legato · ciągłe frazy | Frazowe przeorganizowanie puli FDD z Expressive: jedna stacja na frazę, ciągłe zmiany wysokości, scalanie powtórzeń i wybór ważniejszych ataków | Cztery logiczne głosy w parach; pozostałe instrumenty identyczne jak w Expressive. Celowo mniej ataków MIDI i dłuższa ciągła praca; jakość i temperatura wymagają oceny fizycznej |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
@@ -513,3 +514,51 @@ pozytywny odsłuch VIRTUAL od braku walidacji całego algorytmu na REAL.
   dominację drobnych dodatków i częste zmiany ról HDD w gęstych fragmentach.
   Wprowadzono wspólny limit 12 HIT/s i niższy priorytet `aux`; ocena brzmienia
   po zmianie nadal wymaga odsłuchu, osobno w REAL i VIRTUAL.
+
+
+### Adaptive Legato — ochrona rytmu
+
+Preset `adaptive_legato` korzysta z tej samej alokacji Expressive i walidacji
+fizycznej co FDD Legato. Domyślny preset nie zmienia się. STRICT_TRACKS zachowuje
+poprzednie działanie. Analiza obejmuje wybraną pulę FDD, nie wszystkie odrzucone
+wcześniej głosy MIDI; nie zmienia automatycznie przypisania melodii do speakera.
+
+Dla każdego ataku analizuje sąsiedztwo dwóch ćwierćnut wstecz i dwóch naprzód
+w obrębie tej samej logicznej grupy FDD, track i channel. Tempo pochodzi z MIDI.
+Krótka nuta (≤0,6 ćwierćnuty) jest chroniona, jeżeli istnieją przynajmniej dwa
+lokalne odstępy ataków nie większe niż ćwierćnuta oraz co najmniej połowa z nich:
+
+- ma źródłowy gate ≤80% odstępu do następnego ataku albo
+- jest powtórzeniem tej samej źródłowej wysokości.
+
+To jawne heurystyki rytmiczności, nie wykrywanie rozpoznawalnego motywu ani
+skalibrowane parametry akustyczne. Długie dźwięki nie stają się staccato tylko
+z powodu obecności krótkich dźwięków w okolicy.
+
+Chroniony atak zachowuje źródłowy czas wejścia. Gate jest możliwie zbliżony do
+źródła, ale nigdy krótszy niż obowiązujące minimum tonu 140–220 ms, profilu
+sprzętowego oraz odstępu ataków. Selekcja rezerwuje dodatkową separację:
+0,08 ćwierćnuty ograniczone do 30–60 ms (lub większy skonfigurowany release).
+Zbyt szybkie ataki nadal mogą zostać pominięte; nie obniżamy limitów, żeby
+uzyskać korzystniejszy wynik. Płynne fragmenty zachowują ciągłe zmiany wysokości.
+
+Nowy profil zachowuje wszystkie powtórzenia jako kandydatów do selekcji.
+Dzięki temu późniejszy powrót do wysokości nadal jest dostępny, nawet jeśli
+pierwszy powrót następuje za szybko. Scalanie wybranych powtórzeń jest dozwolone
+dopiero po selekcji, wyłącznie gdy nie są chronione. Stare Legato pozostaje
+punktem odniesienia A/B. Dłuższe wzmocnienia na partnerach par mogą występować
+w płynnych fragmentach; istniejące zasady nie pozwalają im wypełniać przerw
+w chronionej partii.
+
+`hardware.adaptiveLegato` raportuje liczbę ataków chronionych, płynnych i
+zachowanych. Nie jest to procent jakości muzycznej. Raport obejmuje tylko
+pulę po alokacji. Redukcje i fizyczne weta pozostają w `hardware.fddLegato`.
+
+Benchmark offline: `scripts/benchmark_adaptive_legato.py --midi-dir ~/Music/MIDI`
+porównuje oba presety na plikach deduplikowanych SHA-256, zapisuje błędy parsera,
+STOP z ExecutionTimeline, najdłuższy ciągły czas FDD, konflikty i zgodność
+komend pozostałych instrumentów. Odsłuch REAL jest konieczny do oceny kompromisu
+między czytelnością rytmu a odgłosami ruszania głowicy. Testy nie potwierdzają
+bezpieczeństwa termicznego ciągłej pracy.
+
+Wyniki całej biblioteki i kompromisy: [benchmark Adaptive Legato](research/arrangement-benchmarks.md#adaptive-legato--2026-10-26-offline).

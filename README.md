@@ -42,6 +42,10 @@ nuty i pozostałe instrumenty, usunięte jedynie dodatkowe krótkie kopie FDD.
 partner wzmacnia całą linię legato, dzięki czemu może pracować osiem FDD naraz.
 Upraszcza szybkie przebiegi;
 to osobny eksperyment artykulacji FDD, z niezmienionym planem innych instrumentów.
+**Adaptive Legato · ochrona rytmu** dobiera artykulację lokalnie: krótkie,
+rytmiczne frazy zachowują rozdzielone ataki, a płynne partie korzystają z legato.
+Chroni powtórzenia przed przedwczesnym scaleniem; nie jest gwarancją rozpoznawalności
+utworu. Pozostałe instrumenty zachowują plan Expressive.
 Domyślnie uruchamia się **2×4 FDD Unisono · eksperymentalny**: dwa logiczne głosy FDD,
 dobór partii Universal, długie tło DVD, osobne wokal/FX i preferowane role HDD.
 Porównanie całej lokalnej biblioteki: [benchmark](docs/research/universal-arrangement.md#biblioteka-8-fdd-2026-10-21).
