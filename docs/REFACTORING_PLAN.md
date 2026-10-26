@@ -1,7 +1,7 @@
 # Plan etapowej refaktoryzacji aplikacji
 
 Data audytu: 2026-10-26. Punkt odniesienia: `a221286` na `main`.
-Status: **plan przygotowany; żaden etap implementacji nie został wykonany**.
+Status: **zakończony — etapy 0–8 zweryfikowane 2026-10-26**.
 
 Dokument jest instrukcją dla przyszłego agenta AI. Przed wykonaniem sprawdź
 aktualny kod, historię i `AGENTS.md`: ścieżki oraz obserwacje mogą się zdezaktualizować.
@@ -349,15 +349,15 @@ bramek i poszerzaj testy przy nowych ryzykach.
 
 | Etap | Stan | Commit / dowód walidacji |
 | --- | --- | --- |
-| 0. Baseline | DO ZROBIENIA | — |
-| 1. Import MIDI | DO ZROBIENIA | — |
-| 2. Kontrakty i presety | DO ZROBIENIA | — |
-| 3. Scenariusze aplikacyjne | DO ZROBIENIA | — |
-| 4. Stan i preferencje | DO ZROBIENIA | — |
-| 5. Dane planowania | DO ZROBIENIA | — |
-| 6. Pipeline aranżera | DO ZROBIENIA | — |
-| 7. Frontend runtime | DO ZROBIENIA | — |
-| 8. Domknięcie | DO ZROBIENIA | — |
+| 0. Baseline | GOTOWE | 117/117 capture + verify; reports/refactoring-baseline-2026-10-26.jsonl.gz |
+| 1. Import MIDI | GOTOWE | 59 testów biblioteki/API/runtime PASS; rebuild orchestra PASS |
+| 2. Kontrakty i presety | GOTOWE | 106 backend, 154 frontend, build, generator i baseline13 PASS |
+| 3. Scenariusze aplikacyjne | GOTOWE | 114 backend, 7 scenariuszy bez FastAPI, baseline13, deploy PASS |
+| 4. Stan i preferencje | GOTOWE | 163 testy, baseline13 i rebuild PASS |
+| 5. Dane planowania | GOTOWE | 903 host, 117/117 baseline, rebuild PASS |
+| 6. Pipeline aranżera | GOTOWE | 138 testów, 117/117 baseline, 489/489 pełnych planów, rebuild PASS |
+| 7. Frontend runtime | GOTOWE | 168 frontend, TypeScript/build, rebuild PASS |
+| 8. Domknięcie | GOTOWE | 917 host, 168 frontend, guard57, generator/build/deploy; 489/489 planów i 1 niezmieniony błąd parsera |
 
 Po każdym etapie dopisz krótki wpis:
 
@@ -368,4 +368,207 @@ Po każdym etapie dopisz krótki wpis:
 - Odstępstwa, znane problemy, zakres niezbadany na fizycznym sprzęcie.
 - Commit, jeśli był zlecony; następny etap i warunki jego rozpoczęcia.
 
-Pierwszym przyszłym zadaniem implementacyjnym jest **wyłącznie etap 0**.
+Przy kontynuacji sprawdź dziennik poniżej i wybierz pierwszy nieukończony etap.
+Nie zaczynaj ponownie etapu 0, jeśli jego artefakty i wyniki już istnieją.
+
+
+### Wykonanie — 2026-10-26, start
+
+Użytkownik wyraźnie zlecił cały plan w jednym zadaniu, etapami z testami;
+pozwolił na kilku agentów. Etapy są wykonywane kolejno po ich bramkach,
+bez oczekiwania na osobne polecenie po każdym z nich. Nie zlecono commitów.
+
+Punkt wejściowy Git: `ea0b26c5ddad30a9dc5042dbd4e34daf6abdc0f8`.
+Przed zamrożeniem baseline'u domknięto osobno zleconą poprawkę stałych par
+Adaptive Legato. Jej różnica względem starej wersji jest jawna i opisana w
+`reports/adaptive-legato-pairs.json`; główne nuty i harmonogramy innych urządzeń
+zachowano. Refaktoryzacja ma zachować już poprawiony stan, nie przywracać
+wcześniejsze niepełne wzmocnienia par.
+
+Środowisko początkowe: Python 3.14.8, Node v24.10.0, npm 11.6.0.
+Weryfikacja poprawki: pełny host 840 PASS, następnie końcowe 16 testów Adaptive
+PASS; frontend 129 PASS, build PASS. Kontener przebudowany, healthy;
+serwowany bundle `/assets/index-7fLkdD2C.js` zawiera opis stałych par.
+Bez uploadu firmware, POWER ON ani prób fizycznych.
+
+
+### Etap 0 — zakończony
+
+`reports/refactoring-baseline-2026-10-26.jsonl.gz`: 117 przypadków, 64 519
+zdarzeń głównych i 85 684 komendy. Capture i niezależny verify: 117/117 PASS.
+Manifest zawiera SHA oryginalnych MIDI i jawnych 48-sekundowych wycinków:
+Bodysnatchers, Somebody That I Used to Know, No Surprises, The National Anthem,
+Counting Stars; do tego dwie syntetyczne próbki, wszystkie 13 presetów i
+warianty STRICT_TRACKS/wyłączonych partnerów. Brak pomiarów akustycznych.
+Preferencje speakerów są izolowane, a konfiguracja zapisana w artefakcie.
+SHA-256 artefaktu: `7140fcdfcd094c5ec3a571797e6c62227199655aa664e147d254b89953826948`.
+Audyt API, właścicieli stanu i blokad: `docs/research/refactoring-baseline.md`.
+Narzędzie `scripts/refactoring_baseline.py` ma 4 testy; verify wskazuje pierwszą
+różnicę i porównuje float dokładnie. Metadane Git nie blokują refaktoryzacji.
+
+### Etap 1 — zakończony
+
+Jeden importer `MidiLibrary.save_upload`, błędy domenowe niezależne od FastAPI,
+mapowanie HTTP/WS w kontrolerze. Zachowano limit 5 MB, MidiSource, odpowiedzi,
+konwencję nazw stem-N.mid i sprzątanie plików roboczych. 59 testów biblioteki,
+API, runtime i przełączania wyjścia podczas planowania PASS. Rebuild orchestra PASS.
+
+Jawna naprawa poza czystą zmianą struktury: odtworzono upload do wiszącego
+symlinku, który zapisywał poza biblioteką. Nowy zapis wyłączny `xb` traktuje
+symlink i równoległy zapis jako zajętą nazwę; regresja jest pokryta testem.
+Nie zmieniono planowania MIDI, protokołu ESP32 ani zasilania.
+
+
+### Etap 2 — zakończony
+
+Kanoniczny katalog `host/arrangement_presets.py` i generowany plik TypeScript
+z `scripts/generate_preset_catalog.py --check`. Kolejność ID bazowego kontraktu
+pozostała identyczna; kolejność UI jest jawnie określona osobno.
+`host/web/contracts.py` i `web/src/contracts.ts` definiują oraz sprawdzają
+wiadomości. Format poprawnych komend/odpowiedzi zachowany, błędny JSON lub
+niewłaściwy kształt danych daje kontrolowany błąd bez utraty sesji. ACK audio,
+sync i wyjątek output podczas planowania pozostają poza zwykłą kolejką.
+
+Wyniki: 100 istniejących fokusowych testów backendu i 6 nowych PASS;
+154 testy frontendu PASS, TypeScript/Vite build PASS, generator --check PASS;
+13/13 baseline fixture-phrases/AUTO PASS. Rebuild po etapie 2 PASS.
+Testy nie wykonują operacji na fizycznym sprzęcie.
+
+
+### Etap 3 — zakończony
+
+`Application` ma jawne metody scenariuszy odtwarzania, laboratorium, serwisu,
+audio, heartbeatów i cyklu życia. Kontroler mapuje komunikaty i Origin;
+nie zmienia już ownera ani stanu playera/wyjść bezpośrednio. Wyjątek output
+podczas planowania oraz natychmiastowa ścieżka audio_ack/sync są zachowane.
+Disconnect nadal wykonuje STOP przed upływem dzierżawy audio.
+
+114 fokusowych testów backendu PASS, w tym 7 nowych scenariuszy bez FastAPI/WS,
+testy zmiany wyjścia podczas planowania oraz ACK/sync podczas STOP. Mały baseline
+wszystkich 13 presetów AUTO PASS. Rebuild orchestra po etapie 3 PASS.
+Kolejny etap ogranicza bezpośrednie zmiany stanu wewnątrz usług aplikacyjnych.
+
+
+### Etap 4 — zakończony
+
+RealOutput udostępnia power/detach/home_all i unieważnianie konfiguracji;
+adapter linku unieważnia logiczny stan POWER i odniesienie FDD. DeviceService
+nie zapisuje już bezpośrednio tych pól. `SpeakerSettingsStore` przejął wczytanie
+i atomowy zapis preferencji, z zachowaniem środowiska, ścieżki i formatu JSON.
+
+163 testy serwisu/POWER/safe upload/firmware/preferencji/runtime/homingu/lab/BLE
+PASS; baseline 13 presetów AUTO PASS; rebuild orchestra PASS.
+
+Dwie jawne korekty współbieżności, pokryte testami: connect nie trzyma już
+service.lock podczas oczekiwania na player.lock lub ACK; kolejność zagnieżdżeń
+jest player→service. Stara sesja przeglądarki po swojej dzierżawie nie czyści
+właściciela audio, jeśli w tym czasie przejęła go nowa sesja.
+Nie osłabiono potwierdzeń STOP/POWER ani procedury uploadu; brak testów fizycznych.
+
+
+### Etap 5 — zakończony
+
+`PlanningContext` przechowuje grupy FDD, możliwości wykonawcze i flagę łączenia
+tonów. Kompilator nie rozpoznaje Legato po kluczu raportowym. Dodatkowe nuty
+mają stabilne wewnętrzne powiązania z artykulacją, także dla identycznych
+wartości zdarzeń i filtrowania/replacementów. Kompatybilna projekcja `extra:N`
+i publiczna serializacja pozostają bez zmian. Legacy producers są adaptowane
+na granicy alokacji; dalsze transformacje używają helperów powiązań.
+
+161 testów fokusowych PASS, pełny backend 903 PASS; niezależny pełny verify
+117/117 PASS. Rebuild aplikacji po etapie 5 PASS. Zmiany bez pomiarów fizycznych.
+
+### Etap 6 — zakończony
+
+`runtime.arranger` jest publicznym wejściem do nazwanych kroków w
+`runtime.planning_pipeline`. `ArrangementStrategy` jawnie oddziela wybrany
+preset od współdzielonej alokacji; tworzy osobną konfigurację zamiast chwilowo
+zmieniać wejściowy wybór. Kolejność etapów i ponowne walidacje po recovery
+pozostają takie same. Wspólny model urządzeń/profili jest w
+`playback.device_models`, ze zgodnymi importami starego `playback.virtual`.
+
+138 testów pipeline/modelu/preview/recovery/FDD/runtime PASS; 117/117 przypadków
+baseline identycznych, w tym wszystkie 13 presetów i warianty STRICT/disabled.
+Trzy testowe patchpointy przeniesiono z dawnego modułu arrangera do właściciela
+alokacji w pipeline, bez zmiany ich asercji. Rebuild po etapie 6 PASS.
+Pełny korpus: 483 ścieżki / 164 SHA-unikalne MIDI; końcowy verify potwierdził
+489/489 planów w Universal/Expressive/Adaptive oraz jeden niezmieniony błąd
+parsera. Snapshot pełnego korpusu zamrożono po etapach 1–4, przed zmianami
+planowania z etapów 5–6; wcześniejszy mały baseline obejmuje wszystkie etapy.
+
+
+### Etap 7 — zakończony
+
+`RuntimeClient` odpowiada za WS, reconnect, heartbeat, pending requests, ACK,
+timeouty i disposal; `MidiImportProcess` za STOP→import→plan oraz sprzątanie;
+`FirmwareEvents` za historię serwisu. `useRuntime` składa je z jednym silnikiem
+audio i stanem widoków. Stare callbacki zamkniętego socketa są ignorowane.
+
+168 testów frontendu PASS, TypeScript/Vite build PASS, rebuild orchestra PASS.
+Nowe testy obejmują StrictMode, brak powielonych heartbeatów, timeout 120 s,
+requestId, disposal, upload po odmontowaniu, stary socket/właściciel i historię.
+Jawna naprawa reconnect: `VirtualOutput.resetSession()` kasuje stare epoki i
+próbkę synchronizacji po hello, zachowując odblokowany kontekst audio. Dzięki
+regresji epoch20→nowy backend0/1 przeglądarka nie milknie po restarcie backendu.
+Pakiety z poprzedniej epoki w tej samej sesji nadal są odrzucane.
+
+
+### Etap 8 — zakończony, 2026-10-26
+
+Końcowy raport: [refactoring-verification-2026-10-26.json](../reports/refactoring-verification-2026-10-26.json).
+Pełny backend: 917 testów PASS (w tym dostępne testy offline C++/protokołu i
+adaptera). Frontend: 168 testów PASS, TypeScript/Vite build PASS. Guard AST/
+symtable obejmuje 57 modułów; generator katalogu presetów `--check` PASS.
+Sprawdzono lokalne odnośniki zmienionej dokumentacji i `git diff --check`.
+
+Mały baseline: 117/117 dokładnie zgodnych przypadków we wszystkich 13 presetach,
+z wariantami AUTO/STRICT_TRACKS i wyłączonymi partnerami. Pełny korpus: 483
+ścieżki, 164 unikalne SHA; 163 poprawne MIDI × 3 strategie = 489/489 identycznych
+planów i kolejek. Porównanie obejmuje pełne czasy, wysokości, urządzenia,
+sidecary, extras i uporządkowane komendy, bez zaokrąglania float. `touhou4.mid`
+ma ten sam błąd parsera `list index out of range` przed i po zmianach; nie
+zaliczono go do 489 udanych planowań. Referencja:
+[pełny korpus](../reports/refactoring-corpus-before-2026-10-26.json).
+
+Aktualne odpowiedzialności i granice opisuje [ARCHITECTURE.md](ARCHITECTURE.md),
+a kolejność przekształceń muzycznych [ARRANGEMENT.md](ARRANGEMENT.md).
+Po ostatnich zmianach aplikacji przebudowano i uruchomiono `orchestra`; healthy,
+`/api/state` 200. Serwowany `/assets/index-B2hB1m-r.js` jest bajtowo identyczny
+z lokalnym buildem (SHA-256 w raporcie). Smoke test `/settings` pokazał poprawny
+stan i katalog urządzeń bez uruchamiania REAL. Dalsze zmiany dotyczyły raportu
+i dokumentacji, więc nie wymagały kolejnej przebudowy aplikacji.
+
+Pozostawiony dług jest jawny: diagnostyczny import `compile_plan` przez
+`universal_recovery`, stare eksporty modelu z `playback.virtual` oraz projekcja
+`extra:N` dla zgodności odbiorców. Guard nie zastępuje pełnej analizy typów,
+przepływu ani współbieżności. Zamrożone źródła korpusu są w lokalnym `/tmp`;
+raport zapisuje ich manifest SHA, ale ich przetrwanie wymaga osobnej kopii.
+Pozostało ostrzeżenie deprecacyjne Starlette/httpx.
+
+Plan zakończony. Brak zmian firmware lub konfiguracji, uploadu ESP32, POWER ON,
+ruchu urządzeń i odsłuchów fizycznych. Wyniki nie potwierdzają brzmienia ani
+bezpieczeństwa termicznego. Zmiany pozostawiono niezacommitowane; bez push.
+
+
+### Podział na commity — na późniejsze polecenie użytkownika
+
+Po zakończeniu weryfikacji użytkownik zlecił zapis wszystkich zmian. Podzielono
+je na osiem logicznych commitów; wcześniejsze stwierdzenie o braku commitów
+opisuje stan w chwili zamknięcia etapu 8. Zapis historii nie zmienił plików
+aplikacji ani konfiguracji, więc nie wymagał kolejnego rebuilda kontenera.
+
+| Commit | Zakres | Sprawdzenie wyodrębnionej wersji |
+| --- | --- | --- |
+| `febdfe9` | Stałe pary Adaptive Legato | 33 testy PASS |
+| `2a42a24` | Jeden importer MIDI i zapis plików | 59 testów PASS |
+| `c753d46` | Katalog presetów i kontrakty | 65 backend + 25 frontend, build PASS |
+| `ce5a20f` | Scenariusze i własność stanu runtime | 138 testów PASS |
+| `e031887` | Narzędzia i zamrożone baseline’y | 4 testy narzędzia PASS |
+| `297f690` | Kontekst i etapy planowania | 906 testów hosta PASS |
+| `03d2dc5` | Podział runtime frontendu | 168 testów, build PASS |
+| Końcowy commit tego dokumentu | Kontrola architektury, dokumentacja i raport | 917 testów hosta, guard, generator, odnośniki PASS |
+
+Wersje etapów sprawdzono w osobnym katalogu z tymi samymi lokalnymi MIDI;
+nie przełączano działającej aplikacji na pośrednie rewizje. Opisy commitów
+zawierają cel, zakres, wyniki oraz ograniczenie do testów offline/VIRTUAL.
+Bez push, uploadu ESP32, POWER ON i prób fizycznych.

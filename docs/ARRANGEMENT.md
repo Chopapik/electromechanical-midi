@@ -73,7 +73,7 @@ Zmiana potwierdza STOP i przelicza plan, bez autoplay.
 | `universal` — Universal | Dobór głosów fraz, pokrycie partii przed dodatkowymi nutami akordu, rezerwy wokalu/FX, długie DVD, odzyskiwanie wolnej pojemności | Uproszczenia wielogłosu i jawne późniejsze wejścia; pozytywny odsłuch VIRTUAL nie kwalifikuje REAL |
 | `fdd_expressive` — FDD Expressive · 4 partie + akcenty | Cztery logiczne głosy Universal w parach FDD1–2, 3–4, 5–6, 7–8; zwykła nuta na jednej stacji, akcent z krótszą kopią; gate z MIDI, tempa i następnego ataku | Do czterech głosów, zależnie od dostępności par; więcej źródłowych nut kosztem liczby równoległych kopii. Parametry wymagają odsłuchu REAL |
 | `fdd_expressive_solo` — FDD Expressive · bez kopii akcentów | Porównanie A/B z pełnym Expressive: identyczne główne nuty, ich urządzenia, pitch, onset i gate; na końcu usuwane tylko dodatkowe `FDD_ACCENT` | Zwolniona pojemność pozostaje niewykorzystana, aby porównanie izolowało kopie. Krótkie główne nuty pozostają krótkie; efekt akustyczny wymaga odsłuchu |
-| `adaptive_legato` — Adaptive Legato · ochrona rytmu | Lokalny wybór artykulacji źródłowej partii: ochrona krótkich rytmicznych ataków, legato w płynnych fragmentach | Osobny eksperyment; ograniczenia FDD nadal wymuszają redukcję zbyt szybkich nut. DVD, speakery i HDD zachowują plan Expressive |
+| `adaptive_legato` — Adaptive Legato · ochrona rytmu | Lokalny wybór artykulacji źródłowej partii: ochrona krótkich rytmicznych ataków, legato w płynnych fragmentach; cztery stałe pary grające unisono | Partner powtarza dokładnie wysokość, start i gate każdej zachowanej nuty, także w spokojnych fragmentach. Kopie podlegają ustawieniom unisono i walidacji mechanicznej; DVD, speakery i HDD zachowują plan Expressive |
 | `fdd_legato` — FDD Legato · ciągłe frazy | Frazowe przeorganizowanie puli FDD z Expressive: jedna stacja na frazę, ciągłe zmiany wysokości, scalanie powtórzeń i wybór ważniejszych ataków | Cztery logiczne głosy w parach; pozostałe instrumenty identyczne jak w Expressive. Celowo mniej ataków MIDI i dłuższa ciągła praca; jakość i temperatura wymagają oceny fizycznej |
 | `instrument_roles` — FDD Riffs + DVD Tło | Krótkie riffy FDD, stabilne długie głosy DVD i sustain tła; bez dowolnego dodatkowego UNISON FDD | Krótsze FDD i skończona polifonia mogą pomijać część akordu |
 | `instrument_roles_unison` — Pary Unisono | FDD1+2 jedna partia, FDD3+4 druga; w parze ta sama nuta jednocześnie | Dwie partie zamiast czterech niezależnych; więcej kopii nie oznacza więcej zachowanych nut |
@@ -120,8 +120,9 @@ Szczegóły istotne dla porównań:
   Dopiero po tych etapach usuwa dodatkowe kopie `FDD_ACCENT`; nie dobiera
   nowych nut i nie wydłuża istniejących. Wszystkie podstawowe zdarzenia,
   pozostałe extras i komendy DVD/HDD/speakerów pozostają identyczne.
-  Indeksy sidecarów są przeliczane, a pozostała chronologia FDD ponownie
-  sprawdzana, ponieważ usunięcie kroków zmienia model pozycji/nawrotów.
+  Wewnętrzne powiązania artykulacji z dodatkowymi zdarzeniami zachowują tożsamość;
+  indeksy `extra:N` są tylko zgodną projekcją API. Pozostała chronologia FDD jest
+  ponownie sprawdzana, ponieważ usunięcie kroków zmienia model pozycji/nawrotów.
   Przy niewykonalności plan kończy się błędem zamiast pomijać kolejne nuty.
   `hardware.fddExpressive` raportuje `accentCopies: 0`, liczbę
   `suppressedAccentCopies` i `allocationPreserved: true`. Liczniki wykonanych
@@ -546,13 +547,26 @@ Nowy profil zachowuje wszystkie powtórzenia jako kandydatów do selekcji.
 Dzięki temu późniejszy powrót do wysokości nadal jest dostępny, nawet jeśli
 pierwszy powrót następuje za szybko. Scalanie wybranych powtórzeń jest dozwolone
 dopiero po selekcji, wyłącznie gdy nie są chronione. Stare Legato pozostaje
-punktem odniesienia A/B. Dłuższe wzmocnienia na partnerach par mogą występować
-w płynnych fragmentach; istniejące zasady nie pozwalają im wypełniać przerw
-w chronionej partii.
+punktem odniesienia A/B.
+
+Każdy głos ma stałą parę FDD1–2, 3–4, 5–6 lub 7–8. Partner powtarza dokładnie
+wybraną wysokość, czas wejścia i gate nuty głównej; dotyczy to spokojnych i mocnych
+fragmentów. Nie tworzymy niezależnej melodii ani kopii wchodzącej w połowie nuty.
+Przerwy chronionych ataków pozostają takie same na obu stacjach. To zastępuje
+opcjonalne wzmocnienie wyłącznie mocnych fragmentów używane przez stare Legato.
+Wyłączony partner, `fddUnisonEnabled=false`, `fddUnisonMaxVoices<2` lub weto
+profilu/chronologii pozostawiają nutę główną bez kopii; nie pożyczamy stacji z innej
+pary i nie usuwamy nut podstawowych, aby uzyskać unisono. Zwiększona aktywność
+mechaniczna wymaga oddzielnej oceny odsłuchowej i termicznej na REAL.
 
 `hardware.adaptiveLegato` raportuje liczbę ataków chronionych, płynnych i
 zachowanych. Nie jest to procent jakości muzycznej. Raport obejmuje tylko
 pulę po alokacji. Redukcje i fizyczne weta pozostają w `hardware.fddLegato`.
+`hardware.adaptiveLegato.pairUnison` zapisuje liczbę kopii, nut bez partnera,
+przyczyny odrzucenia i liczbę dodatkowych odrzuconych nut podstawowych (zawsze 0).
+Kopie mają rodzaj `FDD_PAIR_UNISON`. Wcześniejszy benchmark poniżej opisuje wersję
+z opcjonalnym wzmocnieniem; jego liczby STOP i czasu pracy nie są pomiarem wersji
+ze stałym unisono w parach.
 
 Benchmark offline: `scripts/benchmark_adaptive_legato.py --midi-dir ~/Music/MIDI`
 porównuje oba presety na plikach deduplikowanych SHA-256, zapisuje błędy parsera,
@@ -562,3 +576,19 @@ między czytelnością rytmu a odgłosami ruszania głowicy. Testy nie potwierdz
 bezpieczeństwa termicznego ciągłej pracy.
 
 Wyniki całej biblioteki i kompromisy: [benchmark Adaptive Legato](research/arrangement-benchmarks.md#adaptive-legato--2026-10-26-offline).
+
+
+### Kontrakt etapów planowania
+
+Publiczne `runtime.arranger.arrange` deleguje do nazwanych kroków w
+`runtime.planning_pipeline`: alokacja, ekspresja, ograniczenia FDD, opcjonalne
+recovery z ponowną walidacją oraz rejestr DVD i artykulacja presetu. Wybrany
+preset i współdzielona strategia alokacji są osobnymi danymi. Refaktoryzacja
+zachowuje kolejność i liczby muzyczne; nie dostraja parametrów.
+
+`PlanningContext` przechowuje grupy FDD i flagę łączenia stykających się tonów.
+Raport `hardware.fddLegato` opisuje wynik, a jego obecność nie włącza zachowania
+kompilatora. Artykulacja extras ma stabilne wewnętrzne powiązania także po
+filtrowaniu lub zmianie indeksów. Publiczne `executionArticulation['extra:N']`
+pozostaje zgodne ze starszym API. Historyczne raporty opisują ówczesne wersje;
+[plan i dziennik refaktoryzacji](REFACTORING_PLAN.md) zawiera wyniki porównań.

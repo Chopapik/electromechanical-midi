@@ -21,12 +21,63 @@ MIDI → MidiSource → Arranger → PerformancePlan → compiler → ExecutionT
                                           REAL / BLE     VIRTUAL / Web Audio
 ```
 
+## Granice modułów i własność stanu
+
+| Obszar | Odpowiedzialność |
+| --- | --- |
+| [HTTP/WebSocket](../host/web/server.py) | Origin, walidacja komunikatu, serializacja, odpowiedzi i mapowanie błędów |
+| [Application](../host/runtime/application.py) | Scenariusze play/pause/stop/seek, wyjście, sesja audio/lab, instalacja planu i delegowanie do serwisu; używalne bez FastAPI |
+| [MidiLibrary](../host/web/library.py) | Rozwiązywanie nazwy, jeden importer, walidacja MidiSource, kolizje, zapis i cache metadanych; wyjątki niezależne od HTTP |
+| [DeviceRegistry](../host/runtime/registry.py) | Katalog i zwalidowane profile/parametry urządzeń |
+| [SpeakerSettingsStore](../host/runtime/speaker_settings.py) | Wczytanie preferencji i atomowy zapis istniejącego JSON; bez decyzji o dopuszczalnych poziomach |
+| [Planning pipeline](../host/runtime/planning_pipeline.py) | Dobór i kolejność nazwanych etapów; etapy modyfikują plan, bez połączeń i stanu odtwarzania |
+| [PlanningContext](../host/playback/planning_context.py) | Dane potrzebne do wykonania: fizyczne lanes, grupy FDD, łączenie tonów i powiązania artykulacji extras |
+| [Player](../host/runtime/player.py) / [Router](../host/runtime/router.py) | Odpowiednio zegar/epoka/właściciel wykonania oraz wybór wyjścia/mute |
+| [RealOutput / VirtualOutput](../host/runtime/outputs.py) | Własny stan wyjścia, gotowość, wykonanie i bariery STOP; stan logiczny POWER i właściciel Web Audio |
+| [DeviceService](../host/runtime/device_service.py) | Wyłączność serwisu, kolejność safe upload i odzyskanie BLE; zmiany stanu wyjścia przez jego operacje |
+
+Katalog presetów jest w [arrangement_presets.py](../host/arrangement_presets.py).
+[Generator](../scripts/generate_preset_catalog.py) tworzy dane i typy używane przez
+Settings; kontrola `--check` wykrywa nieodświeżony plik. Walidacja backendu korzysta
+z tego samego katalogu. [Kontrakty WS](../host/web/contracts.py) sprawdzają pola
+przychodzących komend, a [kontrakty klienta](../web/src/contracts.ts) sprawdzają
+odpowiedzi JSON przed przekazaniem ich do stanu lub audio. Kształt poprawnych
+komunikatów i ich `requestId` pozostaje zgodny; niepoprawne dane dostają błąd
+kontrolera. Typy nie zastępują sprawdzenia stanu sesji, profilu ani Origin.
+
+Importer zachowuje limit 5 MiB, walidację przez tymczasowy plik MidiSource i
+konwencję kolizji `stem-1.mid`, `stem-2.mid`. Kontroler czyta najwyżej limit +1
+bajt, a biblioteka wybiera nazwę i zapisuje plik. Wyłączne tworzenie `xb`
+chroni istniejące pliki i dowiązania symboliczne, również dangling symlink;
+nie nadpisuje celu spoza biblioteki. Błąd zapisu usuwa częściowy nowy plik.
+Brak metadanych, uszkodzone MIDI i błędy rozmiaru/nazwy są mapowane na zachowane
+statusy HTTP. Nie dodano naprawiania nieprawidłowego MIDI.
+
+`DeviceService` rezerwuje operację pod krótką blokadą serwisu. Gdy potrzeba obu
+blokad, kolejność to `player.lock` → `service.lock`; oczekiwanie na Playera ani
+POWER/STOP ACK nie trzyma blokady serwisu. ACK audio i heartbeat pozostają poza
+kolejką komend i blokadą Playera, aby nie zablokować STOP oczekującego na ACK.
+Zmiana wyjścia podczas planowania nadal omija kolejkę całego renderu.
+`RealOutput.power()` stosuje wyłącznie potwierdzony wynik GPIO; adapter linku
+unieważnia status FDD po OFF i logiczny ATX po braku potwierdzenia.
+`VirtualOutput.claim_owner/release_owner` pilnują właściciela: wygasająca sesja
+po disconnect nie może wyczyścić nowego właściciela audio.
+
 [MidiSource](../host/midi_source.py) parsuje nuty, tempo, metrum, programy,
 kontrolery i lyrics. [Runtime Arranger](../host/runtime/arranger.py) przekazuje
-AUTO do [alokatora sprzętowego](../host/playback/hardware_arranger.py):
+planowanie do [pipeline'u](../host/runtime/planning_pipeline.py), a AUTO korzysta
+z [alokatora sprzętowego](../host/playback/hardware_arranger.py):
 normalizacja duplikatów, role i kandydaci, zajętość oraz profile, artykulacja,
 rezerwacje dodatkowe i walidacja. Kolejność refinements wewnątrz alokatora
 zależy od presetu; [algorytmy](ARRANGEMENT.md) są opisane w jednym miejscu.
+
+Pipeline ma kolejność: `allocate_backbone` → `resolve_expression` →
+`enforce_fdd_limits` → opcjonalne `recover_voices` z ponowną walidacją →
+`finish_articulation`. `ArrangementStrategy` odróżnia wybrany preset od
+współdzielonej alokacji Expressive; nie zmienia tymczasowo konfiguracji
+użytkownika. STRICT_TRACKS zachowuje osobną ścieżkę. Modele urządzeń i profili
+są w neutralnym [device_models.py](../host/playback/device_models.py);
+`playback.virtual` zachowuje importy zgodności dla historycznych CLI/podglądu.
 
 Runtime dodaje ekspresję tonalną i artykulację HDD, po czym wykonuje wspólny
 pass ograniczania ataków FDD. Universal ma po nim dodatkowe odzyskiwanie głosów,
@@ -47,13 +98,24 @@ kopiami przebiegu legato (`FDD_LEGATO_REINFORCEMENT`). Decyzja wynika z ataków
 źródłowych, także powtórzeń scalonych w długi ton. Dodatkowe rezerwacje
 zachowują wszystkie przyszłe główne nuty. Ponownie sprawdza pełną chronologię
 i odświeża stany FDD.
+Adaptive Legato używa tego samego tła i lokalnej ochrony ataków. Każdy zachowany
+głos ma stałą parę FDD1–2, 3–4, 5–6 lub 7–8 o identycznym pitch/start/gate
+(`FDD_PAIR_UNISON`), także w spokojnych fragmentach. Brak partnera, wyłączone
+unisono lub weto mechaniczne pozostawiają głos bez kopii.
 `PerformancePlan` zawiera
 źródłowe dane, wykonane zdarzenia, pominięcia z powodami, extras i sidecary ekspresji.
 Nie jest jeszcze kolejką transportową.
 
+Wewnętrzny `PlanningContext` nie jest raportem `hardware`. Grupy FDD i flaga
+`join_fdd_tones` trafiają do wykonania bez odczytywania diagnostyki.
+Reinforcement ma deterministyczne powiązanie `extra-event:N` z artykulacją,
+zachowane przy filtrowaniu i zastępowaniu zdarzeń. Publiczne `extra:N` pozostaje
+projekcją zgodności raportu/API; starsze wejścia można jednokrotnie zaadaptować.
+Usunięcie słownika diagnostycznego nie zmienia zachowania kompilatora.
+
 [compile_plan](../host/runtime/compiler.py) tworzy uporządkowany
 `ExecutionTimeline`: tone/hit/stop ze stabilnym `device_id`. Stykające się tony
-nie mają pośredniego STOP; dla DVD i jawnego passu `fdd_legato` tolerancja
+nie mają pośredniego STOP; dla DVD i jawnego `join_fdd_tones` tolerancja
 błędu float granicy wynosi 1 ns.
 Rzeczywiste przerwy nadal generują STOP. Liczenie STOP i ciągłych odcinków pracy
 musi korzystać z tej warstwy, obejmując również dodatkowe głosy.
@@ -75,7 +137,7 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
 Konfiguracja wysyła FDD5–8 PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
 automatyczny homing TRACK0 czeka na potwierdzenie FDD5–8 przed PLAY.
-HDD1–4 zachowują ENABLE 1 i wykonanie HIT.
+Domyślnie HDD1–2 dostają ENABLE 1 i wykonują HIT; HDD3–4 pozostają wyłączone.
 Registry oraz `bind_devices(..., 2)` liczą ordynały również wyłączonych pozycji,
 więc wyłączenie FDD1 nie przenosi FDD2 na kanał 1. OrchestraLink sprawdza
 osobne granice FDD 1–8, SLED 1–4 i HDD 1–4, odrzucając także ID typu bool.
@@ -101,6 +163,15 @@ syntezuje dźwięk proceduralnie. Nie parsuje MIDI i nie układa drugiej aranża
 Velocity/CC i obwiednia modelu audio nie są fizyczną regulacją amplitudy FDD/DVD.
 Utrata synchronizacji wycisza audio; brzmienie, poziom i rezonanse wymagają
 osobnej kalibracji wobec urządzeń.
+
+Frontendowy [useRuntime](../web/src/runtime.ts) składa klienta komunikacji,
+proces importu, historię firmware i pojedynczy silnik audio. Jego moduły:
+[RuntimeClient](../web/src/runtimeClient.ts) zarządza WebSocket, reconnect,
+heartbeat i oczekującymi `requestId`; [MidiImportProcess](../web/src/midiImport.ts)
+prowadzi STOP z ACK → upload → `set_file` z ACK; [FirmwareEvents](../web/src/firmwareEvents.ts)
+utrzymuje historię UI. Zwykłe wysłanie komendy nadal różni się od oczekiwania
+na ACK. Zamknięcie klienta odrzuca oczekujące żądania i anuluje jego timery,
+a odmontowanie kończy import i audio. Firmware upload/recovery wykonuje backend.
 
 [DeviceService](../host/runtime/device_service.py) po potwierdzonym STOP
 przejmuje wyłączne sterowanie na czas USB uploadu, homingu lub operacji POWER.
@@ -253,6 +324,8 @@ obecnych ścieżek UI ani protokołu aplikacji z raportów starego renderera.
 npm --prefix web test
 npm --prefix web run build
 .venv/bin/python scripts/generate_hardware_profiles.py --check
+.venv/bin/python scripts/generate_preset_catalog.py --check
+.venv/bin/python scripts/check_architecture.py
 pio run -d firmware/controller -e esp32
 ```
 
@@ -280,3 +353,27 @@ docker compose --profile test run --rm --build frontend-tests
 Benchmarki uruchamiaj według zapisu konkretnego badania, z tym samym inventory,
 MIDI hash i polityką. Testy deterministyczności, chronologii i wspólnego timeline
 nie dowodzą poprawności akustycznej ani termicznej na REAL.
+
+## Kontrola granic i ograniczenia refaktoryzacji
+
+[check_architecture.py](../scripts/check_architecture.py) używa wyłącznie AST i
+`symtable`, bez importowania aplikacji. Obejmuje moduły runtime/web/playback
+oraz MidiSource, pitch i katalog presetów: wykrywa niezdefiniowane odwołania
+globalne, wildcard imports i wybrane niedozwolone importy między warstwami.
+Nie zastępuje analizy przepływu, typów, dynamicznych importów ani testów
+współbieżności. Nie wykrywa wszystkich lokalnych odczytów przed przypisaniem.
+
+Pozostawiony wyjątek granic jest jawny: `universal_recovery` importuje dokładnie
+`runtime.compiler.compile_plan` do diagnostycznego fingerprintu szkieletu.
+Guard dopuszcza tylko tę istniejącą zależność, bez ogólnego zezwolenia na importy
+runtime w planowaniu. Historyczny eksport `VirtualDeviceInstance` z virtual i
+publiczne sidecary `extra:N` pozostają adapterami zgodności; nie są drugim modelem
+urządzeń ani osobną artykulacją.
+
+Porównania [baseline'u](research/refactoring-baseline.md),
+[końcowy raport weryfikacji](../reports/refactoring-verification-2026-10-26.json)
+i [plan wykonania etapów](REFACTORING_PLAN.md) dokumentują zgodność poleceń
+offline. Czyste przenosiny kodu nie zmieniają MIDI, harmonogramów ani firmware.
+Osobne naprawy granicy importu plików i przeplotów sesji/blokad mają własne testy;
+nie należy ukrywać ich jako zmian muzycznych lub nowych zabezpieczeń sprzętowych.
+Oprogramowanie nadal nie mierzy temperatury, prądu ani zaniku napięcia ATX.

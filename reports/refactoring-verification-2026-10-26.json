@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "date": "2026-10-26",
+  "result": "PASS",
+  "baseGit": "ea0b26c5ddad30a9dc5042dbd4e34daf6abdc0f8",
+  "uncommitted": true,
+  "sourceFingerprint": {
+    "algorithm": "SHA256 of canonical sorted JSON path-to-SHA256 map; host/scripts/web/src/config .py/.ts/.tsx/.json excluding .runtime",
+    "files": 212,
+    "sha256": "a6dda4dc6a0b95dc41350350ac79e0d162f2384a342e1f878bede549955b1f5d"
+  },
+  "smallBaseline": {
+    "path": "reports/refactoring-baseline-2026-10-26.jsonl.gz",
+    "sha256": "7140fcdfcd094c5ec3a571797e6c62227199655aa664e147d254b89953826948",
+    "cases": 117,
+    "presets": 13,
+    "result": "exact match; complete execution projection; floats not rounded",
+    "scope": "five explicit 48-second excerpts and two synthetic fixtures; AUTO/STRICT_TRACKS/disabled partners"
+  },
+  "fullCorpus": {
+    "reference": "reports/refactoring-corpus-before-2026-10-26.json",
+    "referenceSHA256": "462d62485ec5c7890dbceceb7b9b1a72769157157fee73b874749c988084c765",
+    "configurationFingerprint": "ec32501de1e2c9dd67fe8152f0eafcb75205540bea4508ab7d68b2e4a1510862",
+    "paths": 483,
+    "uniqueSources": 164,
+    "readableSources": 163,
+    "parseErrors": 1,
+    "planningErrors": 0,
+    "presets": [
+      "universal",
+      "fdd_expressive",
+      "adaptive_legato"
+    ],
+    "matchingSuccessfulPlans": 489,
+    "differences": 0,
+    "parseErrorsUnchanged": [
+      {
+        "name": "touhou4.mid",
+        "sha256": "0ba21f8c9363a39a602e717842a33bf4eea22523d090f9b60124d2b56bb4722a",
+        "error": "MidiSourceError: nie moge wczytac /Users/krzysztof/Music/MIDI/touhou4.mid: list index out of range",
+        "unchanged": true
+      }
+    ],
+    "verifyExitCode": 0,
+    "verificationLogSHA256": "19d4d870d99449c0e2c661f52ef170e5649495013282e8b9cc77073defc8aa37",
+    "scope": "complete songs; complete unrounded execution projection digests, not just counts",
+    "frozenSourceSnapshot": "/tmp/orchestra-refactoring-before-2026-10-26",
+    "snapshotSHA256": "ac836931e32de2e027fbf6f18f05a3c5ac1db634fa7199b77de2a2ca22edc44b",
+    "snapshotTiming": "after separately requested fixed Adaptive Legato pairs and nonmusical stages 1–4; before planner refactoring stages 5–6"
+  },
+  "validation": {
+    "hostTests": 917,
+    "frontendTests": 168,
+    "typescriptViteBuild": "PASS",
+    "architectureGuardModules": 57,
+    "presetGeneratorCheck": "PASS",
+    "localMarkdownLinks": "checked in changed documentation",
+    "deployment": {
+      "stateHTTP": 200,
+      "asset": "/assets/index-B2hB1m-r.js",
+      "bytes": 993083,
+      "sha256": "e8113e179fe435ccf9ec355ef24fd9752c2221bf49c0086a9c6819a9c16b35d4",
+      "matchesLocalBuild": true,
+      "containerHealth": "healthy"
+    }
+  },
+  "separateBehaviorFixes": [
+    "Fixed Adaptive Legato unison pairs were frozen before refactoring baseline; see reports/adaptive-legato-pairs.json",
+    "Exclusive MIDI file creation prevents dangling symlink writes and collision overwrite",
+    "Consistent player-to-service lock ordering prevents connection deadlock",
+    "Expired browser owner cannot clear a newer owner",
+    "VIRTUAL hello resets obsolete backend epoch while preserving unlocked AudioContext"
+  ],
+  "limitations": [
+    "Offline software verification only; no acoustic, electrical or thermal measurements",
+    "No firmware/configuration changes, physical upload, POWER ON or actuator motion",
+    "All 13 presets covered by small baseline; full corpus covers three shared major planner strategies",
+    "Frozen source snapshot is local temporary state; its manifest hash is recorded but it is not stored in Git",
+    "Legacy virtual model exports and extra:N serialization retained for compatibility",
+    "Diagnostic universal_recovery -> runtime.compiler.compile_plan import remains explicitly allowed",
+    "AST/symtable guard is not full type, control-flow or concurrency analysis",
+    "Existing Starlette/httpx deprecation warning remains"
+  ]
+}

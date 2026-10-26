@@ -6,7 +6,7 @@ Audyt obejmuje wszystkie 31 śledzonych wcześniej plików Markdown, w tym AGENT
 raporty w `benchmarks/`, diagnostykę oraz badanie teoretyczne.
 Konsolidacja zweryfikowała lokalne `main` po `cf51be4`, z uwzględnieniem
 `8b6724f`, `98bad14`, `bc03c79`, następnie zapisano ją w `9c1bd17`.
-Aktualny układ **2026-10-22**: 8 FDD / 4 DVD / 4 HDD / 2 speakery,
+Aktualny układ **2026-10-26**: 8 FDD / 4 DVD / 4 HDD / 2 speakery,
 6 rejestrów i 6 wykorzystywanych DRV8833. Host ma 18 wpisów, z czego 16 aktywnych;
 HDD3–4 są wyłączone w konfiguracji, z zachowaniem profili i obsługi firmware.
 Aktualizacja **2026-10-20** aktywuje FDD5–8 w planowaniu, VIRTUAL i REAL jako
@@ -21,7 +21,13 @@ drugą grupę 4× unisono. Są zadeklarowane jako podłączone (`present:true`,
 | [HARDWARE_DEVICES.md](HARDWARE_DEVICES.md) | Inventory, profile, zakresy, kalibracja, mechanika i ograniczenia dowodów |
 | [HARDWARE_TESTING.md](HARDWARE_TESTING.md) | Kontrola przewodów, boot, BLE, HOME, lab, STOP i diagnostyka awarii |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Jeden runtime MIDI → REAL/VIRTUAL, obsługa UI/API, uruchamianie i testy |
-| [ARRANGEMENT.md](ARRANGEMENT.md) | Wspólna klasyfikacja, dziewięć presetów, Source Continuity, UNISON, sustain i recovery |
+| [ARRANGEMENT.md](ARRANGEMENT.md) | Wspólna klasyfikacja, presety z jednego katalogu, Source Continuity, UNISON, sustain i recovery |
+
+Architektura obejmuje oddzielne scenariusze aplikacyjne, jeden importer MIDI,
+typowane i sprawdzane kontrakty WS, magazyn preferencji speakerów oraz jawny
+pipeline/kontekst planowania. [REFACTORING_PLAN.md](REFACTORING_PLAN.md) zawiera
+kolejność prac, bramki i dziennik wykonania; opis bieżących granic jest w
+[ARCHITECTURE.md](ARCHITECTURE.md#granice-modułów-i-własność-stanu).
 
 Czytaj schemat → urządzenia → testy przy budowie układu. Nie zastępuj brakujących
 wartości zasilania/rezystorów parametrami znalezionymi w archiwum. Topologia jest
@@ -78,6 +84,7 @@ mają osobne miejsce poniżej. AGENTS.md pozostaje instrukcją pracy w repozytor
   [Extreme](research/benchmarks/TONAL_EXTREME_DIAGNOSTIC.md),
   [Extreme v2](research/benchmarks/TONAL_EXTREME_V2_DIAGNOSTIC.md)
 - [Artykulacja HDD](research/benchmarks/HDD_ARTICULATION_REPORT.md)
+- [Punkt odniesienia refaktoryzacji: historyczny kontrakt API, stan i współbieżność](research/refactoring-baseline.md)
 
 Surowe JSON/PNG pozostają pod dotychczasowymi ścieżkami `reports/`, `benchmarks/`
 i `docs/diagnostics/`, używanymi przez generatory. Nie duplikujemy ani nie
