@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 from .instrument_roles import contexts
 from .mechanical_arrangement import ChronologyCache
+from .planning_context import replace_extras
 
 MIN_HZ = 200.
 MAX_HZ = 800.
@@ -133,8 +134,9 @@ def apply(plan, registry, source):
     plan.events = [replace(e, hardware={**e.hardware, **evaluations[e.id],
         'dvdRegister': {'allocatedHz': entries[e.id][1], 'octaves': shifts[e.id]}})
         if e.id in evaluations else e for e in new_events]
-    plan.reinforcements = new_extras
-    plan.execution_articulation = new_art
+    replace_extras(plan, enumerate(new_extras),
+                   articulations={i: new_art.get('extra:'+str(i)) for i in range(len(new_extras))},
+                   primary={key: value for key, value in new_art.items() if not key.startswith('extra:')})
     plan.hardware['dvdRegister'] = {'minimumHz': MIN_HZ, 'maximumHz': MAX_HZ,
         'preferredOctaves': 1, 'phrases': len(groups), 'individualFoldPhrases': fallback,
         'curveSamplesFolded': curve_folds, 'notes': len(entries),

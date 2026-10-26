@@ -92,7 +92,7 @@ class FddUnison4Tests(unittest.TestCase):
     def test_runtime_attack_ceiling_remains_synchronized(self):
         tracks=[('Fast riff',0,[(i*.05,i*.05+.035,60+i%3) for i in range(30)])]
         r=self.selected(dvd=0);p=self.plan(tracks,r)
-        with patch('runtime.arranger.allocate',return_value=p): final=arrange(self.source(tracks),r)
+        with patch('runtime.planning_pipeline.allocate',return_value=p): final=arrange(self.source(tracks),r)
         tones=self.assert_unison(final)
         self.assertLess(len(tones),30)
         self.assertTrue(all(b.time-a.time>=.12-1e-9 for a,b in zip(tones,tones[1:])))

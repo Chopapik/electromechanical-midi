@@ -64,6 +64,7 @@ def pair_unison(plan, registry):
     from .capabilities import capabilities_for
     from .mechanical_arrangement import ChronologyCache
     from .performance import ReinforcementEvent
+    from .planning_context import append_extra
 
     report = {'mode': 'fixed_pair_unison', 'copies': 0, 'unpairedPrimaryNotes': 0,
               'rejected': {}, 'primaryDropsAdded': 0}
@@ -80,7 +81,7 @@ def pair_unison(plan, registry):
     caps = capabilities_for(config.instances())
     rejected = Counter()
     interval = plan.policy['fddMinAttackIntervalMs']/1000.
-    for group in plan.hardware['fddExpressive']['groups']:
+    for group in plan.internal_context.fdd_groups:
         if len(group) != 2:
             rejected['missingPartner'] += sum(len(primary[d]) for d in group)
             continue
@@ -121,8 +122,7 @@ def pair_unison(plan, registry):
                         rejected['physicalVeto'] += 1
                 copies = accepted
             for extra in copies:
-                plan.execution_articulation['extra:'+str(len(plan.reinforcements))] = {
-                    **plan.execution_articulation[extra.source_id], 'gate': extra.duration}
-                plan.reinforcements.append(extra)
+                append_extra(plan, extra, {
+                    **plan.execution_articulation[extra.source_id], 'gate': extra.duration})
             report['copies'] += len(copies)
     report.update(unpairedPrimaryNotes=total-report['copies'], rejected=dict(rejected))

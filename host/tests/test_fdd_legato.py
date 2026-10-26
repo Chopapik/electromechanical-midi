@@ -251,8 +251,10 @@ class LegatoTests(unittest.TestCase):
                   replace(events[1],device_id=ident,actual_start=.3,actual_duration=.2)]
         self.assertEqual(sum(c.kind=='stop' for c in self.commands(p)),1)
         p.hardware.pop('fddLegato')
+        self.assertEqual(sum(c.kind=='stop' for c in self.commands(p)),1)
+        p.internal_context.join_fdd_tones=False
         self.assertEqual(sum(c.kind=='stop' for c in self.commands(p)),2)
-        p.hardware['fddLegato']={}
+        p.internal_context.join_fdd_tones=True
         p.events[0]=replace(p.events[0],actual_duration=.199)
         self.assertEqual(sum(c.kind=='stop' for c in self.commands(p)),2)
 

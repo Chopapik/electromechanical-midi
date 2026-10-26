@@ -356,6 +356,8 @@ def arrange(plan, config, context, pins=None, *, source=None):
             logicalVoiceBudget=sum(bool(pair) for pair in pairs),
             groups=[list(pair) for pair in pairs])
     if expressive:
+        plan.internal_context.expressive_fdd = True
+        plan.internal_context.fdd_groups = tuple(tuple(pair) for pair in pairs)
         plan.hardware['fddExpressive'] = {'version': 1, 'logicalVoiceBudget': sum(bool(p) for p in pairs),
             'groups': [list(p) for p in pairs], 'fixedToneMs': 0.,
             'primaryNotes': sum(e.played for e in replacements.values()), 'accentCopies': len(extras),
@@ -422,19 +424,19 @@ def synchronize_unison4(plan, registry):
             articulation.pop(source_id, None)
         elif source_id in articulation:
             articulation[source_id] = {**articulation[source_id], 'gate': kept[source_id]}
-    extras = []
+    from .planning_context import extra_articulation, replace_extras
+    extras, extra_art = [], {}
     for i, extra in enumerate(plan.reinforcements):
         is_fdd = types[extra.device_id] == 'FDD'
         if is_fdd and extra.source_id not in kept:
             continue
         if is_fdd:
             extra = replace(extra, duration=kept[extra.source_id])
-        art = plan.execution_articulation.get('extra:'+str(i))
+        art = extra_articulation(plan, i)
         if art is not None:
-            articulation['extra:'+str(len(extras))] = {**art, 'gate': extra.duration} if is_fdd else art
-        extras.append(extra)
-    plan.reinforcements = extras
-    plan.execution_articulation = articulation
+            extra_art[i] = {**art, 'gate': extra.duration} if is_fdd else art
+        extras.append((i, extra))
+    replace_extras(plan, extras, articulations=extra_art, primary=articulation)
     for ident, state in states.items():
         plan.hardware['states'][ident] = state.as_dict()
         index = device_group[ident]

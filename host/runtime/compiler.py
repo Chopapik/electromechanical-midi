@@ -23,6 +23,8 @@ class ExecutionTimeline:
 def compile_plan(plan):
     commands = []
     articulation = plan.execution_articulation
+    from playback.planning_context import ensure_extra_bindings
+    bindings = ensure_extra_bindings(plan)
     kinds = {d['id']:d['type'] for d in plan.devices}
     def add(ident, start, duration, hz, velocity, track, source, art=None):
         kind = 'hit' if kinds[ident]=='HDD_VCM' else 'tone'
@@ -33,7 +35,7 @@ def compile_plan(plan):
         if e.played:
             add(e.device_id,e.actual_start,e.actual_duration,e.played_hz,e.velocity,e.track,e.id,articulation.get(e.id))
     for i,e in enumerate(plan.reinforcements):
-        art = articulation.get("extra:"+str(i))
+        art = bindings[i].articulation
         add(e.device_id,e.start,e.duration,e.hz,e.velocity,None,e.source_id,art)
     # Touching tones change pitch without an extra actuator STOP, as before.
     starts={(c.device_id,c.time) for c in commands if c.kind=='tone'}
@@ -43,7 +45,7 @@ def compile_plan(plan):
     dvd_starts = {}
     for c in commands:
         if c.kind == 'tone' and (kinds[c.device_id] == 'DVD_SLED' or
-                                kinds[c.device_id] == 'FDD' and 'fddLegato' in plan.hardware):
+                                kinds[c.device_id] == 'FDD' and plan.internal_context.join_fdd_tones):
             dvd_starts.setdefault(c.device_id, []).append(c.time)
     for times in dvd_starts.values(): times.sort()
     def dvd_touch(c):

@@ -1,5 +1,6 @@
 """Optional fixed FDD gate experiment shared by every arrangement preset."""
 from dataclasses import replace
+from .planning_context import replace_extras
 
 
 def apply(plan):
@@ -18,13 +19,13 @@ def apply(plan):
                             sustain_added=event.sustain_added+duration-event.actual_duration)
         events.append(event)
     extras = []
-    for extra in plan.reinforcements:
+    for index, extra in enumerate(plan.reinforcements):
         if types.get(extra.device_id) == 'FDD':
             changed += abs(extra.duration-duration) > 1e-9
             extra = replace(extra, duration=duration)
-        extras.append(extra)
+        extras.append((index, extra))
     plan.events = events
-    plan.reinforcements = extras
+    replace_extras(plan, extras)
     plan.hardware['fddToneDuration'] = {
         'enabled': True, 'fixedMs': milliseconds, 'changedReservations': changed}
     return changed

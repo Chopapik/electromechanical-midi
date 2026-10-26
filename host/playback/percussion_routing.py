@@ -100,16 +100,15 @@ def limit_plan(plan):
                                      actual_duration=0.,sustain_added=0.)
             plan.execution_articulation.pop(e.id,None)
     old_art = plan.execution_articulation
-    plan.execution_articulation = {key:value for key,value in old_art.items() if not key.startswith('extra:')}
+    primary_art = {key:value for key,value in old_art.items() if not key.startswith('extra:')}
+    from .planning_context import replace_extras
     retained, removed = [], 0
     for i,e in enumerate(plan.reinforcements):
         if e.device_id in hdd and 'extra:'+str(i) not in chosen:
             removed += 1
             continue
-        if 'extra:'+str(i) in old_art:
-            plan.execution_articulation['extra:'+str(len(retained))] = old_art['extra:'+str(i)]
-        retained.append(e)
-    plan.reinforcements = retained
+        retained.append((i, e))
+    replace_extras(plan, retained, primary=primary_art)
     previous = plan.articulation.get('hddRateLimit',{})
     plan.articulation['hddRateLimit'] = {
         'maxHitsPerSecond':MAX_HDD_HITS_PER_SECOND,'windowSeconds':1.,

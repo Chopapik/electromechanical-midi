@@ -11,6 +11,7 @@ from .capabilities import capabilities_for
 from .hardware_arranger import fold_for_profile
 from .hardware_profiles import HardwareDeviceState, HardwareNote, Verdict, evaluate, advance_state, min_note_ms
 from .performance import ReinforcementEvent
+from .planning_context import append_extra
 
 PRESET = 'fdd_legato'
 EPS = 1e-9
@@ -163,7 +164,7 @@ def reinforce(plan, registry, pool, clock):
         return
     windows = strong_windows(pool, clock)
     report['strongWindows'] = len(windows)
-    groups = plan.hardware['fddExpressive']['groups']
+    groups = plan.internal_context.fdd_groups
     primary = defaultdict(list)
     runs = defaultdict(list)
     for event in plan.events:
@@ -234,10 +235,9 @@ def reinforce(plan, registry, pool, clock):
                                 rejected['physicalVeto'] += 1
                                 continue
                             for extra in copies:
-                                plan.execution_articulation['extra:'+str(len(plan.reinforcements))] = {
+                                append_extra(plan, extra, {
                                     'kind':'fdd_legato', 'gate':extra.duration, 'legato':True,
-                                    'frequency':{'times':(0.,), 'values':(extra.hz,)}}
-                                plan.reinforcements.append(extra)
+                                    'frequency':{'times':(0.,), 'values':(extra.hz,)}})
                             extras += copies
                             report['blocks'] += 1
                             report['tones'] += len(copies)
@@ -246,13 +246,13 @@ def reinforce(plan, registry, pool, clock):
 
 
 def apply(plan, registry, source, adaptive=False):
-    if 'fddExpressive' not in plan.hardware:  # STRICT_TRACKS is deliberately unchanged.
+    if not plan.internal_context.expressive_fdd:  # STRICT_TRACKS is deliberately unchanged.
         return
     clock = Clock(source)
     config = registry.configuration()
     devices = {d.id: d for d in config.instances()}
     caps = capabilities_for(list(devices.values()))
-    groups = plan.hardware['fddExpressive']['groups']
+    groups = plan.internal_context.fdd_groups
     group_for = {ident: i for i, group in enumerate(groups) for ident in group}
     pool = defaultdict(list)
     for event in plan.events:
@@ -366,6 +366,7 @@ def apply(plan, registry, source, adaptive=False):
     for ident in replacements:
         plan.execution_articulation.pop(ident,None)
     plan.execution_articulation.update(sidecars)
+    plan.internal_context.join_fdd_tones = True
     plan.hardware['fddLegato'] = {'version':2,'phrases':phrase_count,'baselineNotes':sum(map(len,pool.values())),
         'selectedNotes':len(sidecars),'reductions':dict(reasons),
         'dwellRangeMs':[MIN_DWELL*1000,MAX_DWELL*1000],
@@ -384,7 +385,8 @@ def apply(plan, registry, source, adaptive=False):
     # Refresh final FDD counters/states and validate the complete changed travel.
     from .fdd_expression import without_accents
     without_accents(plan,registry)
-    plan.hardware['fddExpressive']['allocationPreserved'] = False
+    if 'fddExpressive' in plan.hardware:
+        plan.hardware['fddExpressive']['allocationPreserved'] = False
     pairs = plan.hardware['fddPairs']
     pairs.update(mode='phrase_legato',primaryNotes=len(sidecars),
         notSelected=pairs['notSelected']+sum(reasons.values()),

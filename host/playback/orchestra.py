@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from .virtual import PROFILES, VirtualDeviceInstance
+from .device_models import PROFILES, VirtualDeviceInstance
 
 # Preset BALANCED: chroni lead i bas, korzysta z kazdego wolnego urzadzenia,
 # dopuszcza krotkie przesuniecie, dropuje dopiero w ostatecznosci.

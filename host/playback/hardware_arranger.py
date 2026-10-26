@@ -454,6 +454,7 @@ def validate_plan(plan, profiles, lanes, attempts, requested, rejected, excluded
         final.append(dataclasses.replace(event, hardware={**ev.as_dict(), 'lane':lanes[ident],
                                                          'candidates':attempts.get(event.id, {})}))
     plan.events = final
+    plan.internal_context.physical_lanes = dict(lanes)
     plan.hardware = {'schemaVersion':1, 'scope':'planned; not measured physical execution',
                      'physicalLanes':lanes, 'profiles':{d:p.as_dict() for d,p in profiles.items()},
                      'states':{d:s.as_dict() for d,s in states.items()}, 'counters':counters,

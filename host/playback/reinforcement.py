@@ -12,7 +12,7 @@ from collections import Counter, defaultdict
 from .capabilities import capabilities_for
 from .performance import PerformancePlan, ReinforcementEvent
 from .orchestra import parse_idle
-from .virtual import VirtualDeviceInstance, effective_profile
+from .device_models import VirtualDeviceInstance, effective_profile
 
 EPS = 1e-9
 REJECTIONS = ('deviceBusy', 'deviceNeededSoon', 'incompatibleRole', 'outOfRange',

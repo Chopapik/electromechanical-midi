@@ -202,7 +202,7 @@ class FddPairTests(unittest.TestCase):
         r.document['parameters']['arrangementPreset'] = PRESETS[0]
         paired = pair_plan(base, r.configuration(), PlanningProfiles(r))
         self.assertFalse(next(e for e in paired.events if e.id == source_note.id).played)
-        with patch('runtime.arranger.allocate', return_value=paired):
+        with patch('runtime.planning_pipeline.allocate', return_value=paired):
             final = arrange(self.source(tracks), r)
         command = next(c for c in compile_plan(final).commands if c.device_id == 'DVD_STEPPER_1' and c.kind == 'tone')
         # Expression survives the omitted FDD source; only the final DVD

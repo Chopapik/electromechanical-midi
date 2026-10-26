@@ -12,6 +12,7 @@ ponownie i nie dropuje niczego "po swojemu" - inaczej dwie sciezki
 from __future__ import annotations
 
 import dataclasses
+from .planning_context import PlanningContext
 
 # Mozliwe wyniki dla pojedynczego zdarzenia. Kolejnosc = precedencja przy
 # raportowaniu: gdy nuta byla i przesunieta, i przypisana do innego
@@ -184,6 +185,10 @@ class PerformancePlan:
     hardware: dict = dataclasses.field(default_factory=dict)
     execution_articulation: dict = dataclasses.field(default_factory=dict)
     strict_report: dict = dataclasses.field(default_factory=dict)
+    # Execution inputs belong here; hardware/analysis dictionaries are reports.
+    # This internal field is deliberately absent from as_dict()/report().
+    internal_context: PlanningContext = dataclasses.field(default_factory=PlanningContext,
+                                                         repr=False, compare=False)
 
     @property
     def duration(self) -> float:

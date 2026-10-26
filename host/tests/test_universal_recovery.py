@@ -204,7 +204,7 @@ class RecoveryTests(unittest.TestCase):
         self.with_idle_dvd(r,p)
         p.devices.append(deepcopy(r.by_id['DVD_STEPPER_1']))
         p.expression={'0':[{'kind':'pitchwheel','value':4096,'time':1.}]}
-        with patch('runtime.arranger.allocate',side_effect=lambda *a,**k:deepcopy(p)):
+        with patch('runtime.planning_pipeline.allocate',side_effect=lambda *a,**k:deepcopy(p)):
             with patch('playback.universal_recovery.recover',return_value=set()):
                 before=arrange(source,r)
             after=arrange(source,r)

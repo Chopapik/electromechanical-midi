@@ -11,7 +11,7 @@ from typing import Any
 
 from midi_source import MidiSource, NoteSpan, drum_name
 from pitch import note_name
-from .virtual import VirtualDeviceInstance
+from .device_models import VirtualDeviceInstance
 
 SCHEMA_VERSION = 1
 

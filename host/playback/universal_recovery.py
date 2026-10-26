@@ -19,6 +19,7 @@ from .hardware_profiles import (min_note_ms, sled_frequency_range, HardwareDevic
 from .instrument_roles import contexts
 from .mechanical_arrangement import _chronology
 from .universal import Phrases
+from .planning_context import append_extra
 
 EPS = 1e-9
 RELEASE = .003
@@ -200,7 +201,7 @@ def recover(plan, registry, source):
                     min_note_ms(profile,extra.hz)/1000.>extra.duration+EPS):
                 report['mechanicalVetoes']+=1
                 continue
-            plan.reinforcements.append(extra);extras[ident].append(extra)
+            append_extra(plan, extra);extras[ident].append(extra)
             books[ident]=reservations(ident);starts[ident]=[a for a,b,hz in books[ident]]
             report['continuations']+=1;report['continuationSeconds']+=extra.duration
             break

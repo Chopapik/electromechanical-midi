@@ -27,7 +27,8 @@ from .timeline import (
     LANE_FDD,
     LANE_HDD,
 )
-from .virtual import VirtualDeviceInstance, VirtualOrchestra
+from .device_models import VirtualDeviceInstance
+from .virtual import VirtualOrchestra
 
 # Ktory typ instrumentu obsluguje ktora linia Serial.
 LANE_FOR_TYPE = {

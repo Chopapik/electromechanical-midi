@@ -11,6 +11,7 @@ from types import SimpleNamespace
 
 from .hardware_profiles import min_note_ms
 from .instrument_roles import contexts
+from .planning_context import extra_articulation, replace_extras
 
 PRESET = 'fdd_expressive'
 SOLO_PRESET = 'fdd_expressive_solo'
@@ -72,10 +73,10 @@ class Phrases:
 def finalize(plan):
     """A rejected optional copy never rejects the primary; orphans cannot play."""
     report = plan.hardware.get('fddExpressive')
-    if report is None:
+    if not plan.internal_context.expressive_fdd:
         return
     sources = {e.id: e for e in plan.events}
-    extras, articulation = [], {k: v for k, v in plan.execution_articulation.items()
+    extras, extra_art, articulation = [], {}, {k: v for k, v in plan.execution_articulation.items()
                                 if not k.startswith('extra:')}
     for index, extra in enumerate(plan.reinforcements):
         if extra.kind == 'FDD_ACCENT':
@@ -85,19 +86,19 @@ def finalize(plan):
                     or abs(source.played_hz-extra.hz) > 1e-6):
                 continue
             extra = replace(extra, duration=min(extra.duration, source.actual_duration))
-        art = plan.execution_articulation.get('extra:'+str(index))
+        art = extra_articulation(plan, index)
         if art is not None:
-            articulation['extra:'+str(len(extras))] = ({**art, 'gate': extra.duration}
+            extra_art[index] = ({**art, 'gate': extra.duration}
                 if extra.kind == 'FDD_ACCENT' else art)
-        extras.append(extra)
-    plan.reinforcements = extras
-    plan.execution_articulation = articulation
+        extras.append((index, extra))
+    replace_extras(plan, extras, articulations=extra_art, primary=articulation)
     primaries = [e for e in plan.events if e.played and e.device_type == 'FDD']
-    accents = [e for e in extras if e.kind == 'FDD_ACCENT']
-    report.update(primaryNotes=len(primaries), accentCopies=len(accents),
-        singleDriveNotes=len(primaries)-len(accents),
-        gateRangeMs=[min((e.actual_duration for e in primaries), default=0)*1000,
-                     max((e.actual_duration for e in primaries), default=0)*1000])
+    accents = [e for e in plan.reinforcements if e.kind == 'FDD_ACCENT']
+    if report is not None:
+        report.update(primaryNotes=len(primaries), accentCopies=len(accents),
+            singleDriveNotes=len(primaries)-len(accents),
+            gateRangeMs=[min((e.actual_duration for e in primaries), default=0)*1000,
+                         max((e.actual_duration for e in primaries), default=0)*1000])
 
 
 def without_accents(plan, registry):
@@ -108,12 +109,12 @@ def without_accents(plan, registry):
     remaining chronology without shortening, moving or dropping any primary.
     """
     report = plan.hardware.get('fddExpressive')
-    if report is None:  # STRICT_TRACKS retains its existing articulation.
+    if not plan.internal_context.expressive_fdd:  # STRICT_TRACKS retains its existing articulation.
         return
     from .mechanical_arrangement import ChronologyCache
     from .hardware_profiles import Verdict
 
-    extras = []
+    extras, selected, extra_art = [], [], {}
     articulation = {k: v for k, v in plan.execution_articulation.items()
                     if not k.startswith('extra:')}
     removed = defaultdict(int)
@@ -121,14 +122,15 @@ def without_accents(plan, registry):
         if extra.kind == 'FDD_ACCENT':
             removed[extra.device_id] += 1
             continue
-        key = 'extra:'+str(index)
-        if key in plan.execution_articulation:
-            articulation['extra:'+str(len(extras))] = plan.execution_articulation[key]
+        art = extra_articulation(plan, index)
+        if art is not None:
+            extra_art[index] = art
         extras.append(extra)
+        selected.append((index, extra))
 
     chronologies = {}
     for device in plan.devices:
-        if device['type'] != 'FDD' or device['id'] not in plan.hardware['physicalLanes']:
+        if device['type'] != 'FDD' or device['id'] not in plan.internal_context.physical_lanes:
             continue
         ident = device['id']
         primary = [e for e in plan.events if e.played and e.device_id == ident]
@@ -138,8 +140,7 @@ def without_accents(plan, registry):
             raise ValueError('FDD Expressive bez kopii: niewykonalna chronologia '+ident)
         chronologies[ident] = chronology
 
-    plan.reinforcements = extras
-    plan.execution_articulation = articulation
+    replace_extras(plan, selected, articulations=extra_art, primary=articulation)
     for ident, chronology in chronologies.items():
         plan.hardware['states'][ident] = chronology.states[-1].as_dict()
         counter = plan.hardware['counters'][ident]
@@ -154,8 +155,10 @@ def without_accents(plan, registry):
                             ('outsidePreferredRange', 'OUTSIDE_PREFERRED_RANGE'),
                             ('outsideStableRange', 'OUTSIDE_STABLE_RANGE')):
             counter[key] = sum(reason in e.quality_reasons for e in chronology.values)
-    report.update(accentCopiesEnabled=False, baselinePreset=PRESET,
-        suppressedAccentCopies=report.get('suppressedAccentCopies',0)+sum(removed.values()), allocationPreserved=True,
-        scope='baseline Expressive with only accent copies muted; acoustic effect unmeasured')
-    plan.hardware['fddPairs']['unisonCopies'] = sum(e.device_id in chronologies for e in extras)
+    if report is not None:
+        report.update(accentCopiesEnabled=False, baselinePreset=PRESET,
+            suppressedAccentCopies=report.get('suppressedAccentCopies',0)+sum(removed.values()), allocationPreserved=True,
+            scope='baseline Expressive with only accent copies muted; acoustic effect unmeasured')
+    if 'fddPairs' in plan.hardware:
+        plan.hardware['fddPairs']['unisonCopies'] = sum(e.device_id in chronologies for e in extras)
     finalize(plan)

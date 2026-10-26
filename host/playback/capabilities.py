@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import dataclasses
 
-from .virtual import PROFILES, VirtualDeviceInstance, effective_profile
+from .device_models import PROFILES, VirtualDeviceInstance, effective_profile
 
 TONAL = 'tonal'
 PERCUSSIVE = 'percussive'

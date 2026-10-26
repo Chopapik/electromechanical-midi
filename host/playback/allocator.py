@@ -37,7 +37,7 @@ from .articulation import params_from_policy, apply_source_continuity
 from .capabilities import MIN_NOTE_S, DeviceCapability, capabilities_for
 from .orchestra import OrchestraConfig, parse_policy
 from .performance import PerformanceEvent, PerformancePlan, ReinforcementEvent
-from .virtual import VirtualDeviceInstance
+from .device_models import VirtualDeviceInstance
 from .reinforcement import apply_reinforcement
 from .sound_roles import UNPITCHED_EFFECT, UNSUPPORTED_EFFECT, source_effects
 

@@ -105,19 +105,19 @@ def apply(plan, registry):
             articulation.pop(e.id, None)
         elif ('primary', i) in durations and e.id in articulation:
             articulation[e.id] = {**articulation[e.id], 'gate': e.actual_duration}
-    extras = []
+    from .planning_context import extra_articulation, replace_extras
+    extras, extra_art = [], {}
     for i, e in enumerate(plan.reinforcements):
         if ('extra', i) in removed:
             continue
         if ('extra', i) in durations:
             e = replace(e, duration=durations['extra', i])
-        art = plan.execution_articulation.get('extra:'+str(i))
+        art = extra_articulation(plan, i)
         if art is not None:
             # Preserve non-FDD copies exactly, even when their source is omitted.
-            articulation['extra:'+str(len(extras))] = ({**art, 'gate': e.duration}
+            extra_art[i] = ({**art, 'gate': e.duration}
                 if types[e.device_id] == 'FDD' else art)
-        extras.append(e)
-    plan.reinforcements = extras
-    plan.execution_articulation = articulation
+        extras.append((i, e))
+    replace_extras(plan, extras, articulations=extra_art, primary=articulation)
     plan.articulation['fddAttackRate'] = report
     return report
