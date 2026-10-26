@@ -1,6 +1,7 @@
 import {describe,expect,it} from 'vitest'
 import {parseFileList,parseServerMessage,parseUploadResult,type ClientCommand,type State} from './contracts'
 import {arrangementPresets,isArrangementPreset} from './generated/arrangementPresets'
+import type {useRuntime} from './runtime'
 
 const state:State={state:'stopped',position:0,duration:1,file:'test.mid',epoch:1,owner:'orchestra',revision:1,error:null,audioOwner:null,
  devices:[{id:'fdd-1',name:'FDD #1',type:'FDD',enabled:true,volume:.6,bands:[[100,410]],reason:null}],
@@ -53,6 +54,17 @@ describe('application wire contracts',()=>{
 
 // Compile-time checks exercised by the regular TypeScript build.
 if(false){
+ const send=null as unknown as ReturnType<typeof useRuntime>['send']
+ void send('stop')
+ void send('set_file',{file:'test.mid'})
+ // @ts-expect-error command requires its payload
+ void send('set_file')
+ // @ts-expect-error unknown command
+ void send('missing')
+ // @ts-expect-error wrong payload type
+ void send('mute',{deviceId:'fdd-1',muted:'false'})
+ // @ts-expect-error only catalog IDs are accepted
+ void send('arrangement_preset',{preset:'missing'})
  const valid:ClientCommand={action:'lab_test',deviceId:'fdd-1',duration:null}
  void valid
  // @ts-expect-error service operation is required

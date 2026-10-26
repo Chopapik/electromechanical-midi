@@ -2,7 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest'
 import {act,cleanup,renderHook,render,screen,fireEvent} from '@testing-library/react'
 import {useRuntime} from './runtime'
 import {MidiFileSelector} from './components/MidiFileSelector'
-vi.mock('./virtualOutput',()=>({VirtualOutput:class {stop(){} close(){} state(){} }}))
+vi.mock('./virtualOutput',()=>({VirtualOutput:class {resetSession(){} stop(){} close(){} state(){} }}))
 class FakeSocket {
  static OPEN=1
  static instances:FakeSocket[]=[]

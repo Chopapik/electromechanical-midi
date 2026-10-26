@@ -16,6 +16,11 @@ export class VirtualOutput {
   private lastHeartbeat=0
   private watchdog:ReturnType<typeof setInterval>|null=null
   constructor(private now=()=>performance.now()/1000) {}
+  resetSession(){
+    // Epochs and clock samples belong to one backend session. Keep the user's
+    // unlocked AudioContext, but never carry old scheduled voices into hello.
+    this.stop();this.epoch=-1;this.offset=null;this.lastHeartbeat=0
+  }
   async unlock() {
     this.context??=new AudioContext()
     await this.context.resume()

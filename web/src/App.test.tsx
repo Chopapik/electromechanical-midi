@@ -193,6 +193,7 @@ it('selects adaptive legato with honest rhythm protection guidance',()=>{
  mount('/settings')
  expect(screen.getByRole('option',{name:'Adaptive Legato · ochrona rytmu'})).toBeTruthy()
  expect(screen.getByText(/Lokalna ochrona krótkich, rytmicznych fraz/)).toBeTruthy()
+ expect(screen.getByText(/Cztery stałe pary FDD1–2, 3–4, 5–6 i 7–8 grają wewnętrznie tę samą wysokość, start i długość nuty/)).toBeTruthy()
  expect(screen.queryByText(/każdy zachowany ton trwa 200 ms/)).toBeNull()
  fireEvent.change(screen.getByLabelText('Preset aranżacji'),{target:{value:'adaptive_legato'}})
  expect(send).toHaveBeenCalledWith('arrangement_preset',{preset:'adaptive_legato'})

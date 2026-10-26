@@ -116,3 +116,17 @@ describe('Phrase-legato FDD audio',()=>{
   expect(ctx.sources[1].stop).toHaveBeenLastCalledWith()
  })
 })
+
+
+it('resets epochs and queued voices only at a new backend session',async()=>{
+ const ctx=await setup()
+ output.schedule({epoch:20,origin:100.1,serverTime:100,commands:[note()]},devices)
+ output.resetSession()
+ expect(ctx.sources[0].disconnect).toHaveBeenCalled()
+ output.sync(100,100)
+ output.state(0,false)
+ output.schedule({epoch:1,origin:100.1,serverTime:100,commands:[note()]},devices)
+ expect(ctx.sources).toHaveLength(2)
+ output.schedule({epoch:0,origin:100.1,serverTime:100,commands:[note()]},devices)
+ expect(ctx.sources).toHaveLength(2)
+})
