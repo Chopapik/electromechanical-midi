@@ -49,3 +49,80 @@ class Articulation:
         return {'version': 1, 'protectedSourceAttacks': len(self.protected),
                 'flowingSourceAttacks': len(self.evidence)-len(self.protected),
                 'scope': 'local MIDI heuristics; not recognition or acoustic measurement'}
+
+
+PAIR_UNISON = 'FDD_PAIR_UNISON'
+
+
+def pair_unison(plan, registry):
+    """Mirror whole tones within a fixed pair, never adding an independent voice.
+
+    Keep every primary unchanged. Missing partners and physical vetoes remain
+    visible as single voices; they never trigger an alternative pitch or onset.
+    """
+    from collections import Counter
+    from .capabilities import capabilities_for
+    from .mechanical_arrangement import ChronologyCache
+    from .performance import ReinforcementEvent
+
+    report = {'mode': 'fixed_pair_unison', 'copies': 0, 'unpairedPrimaryNotes': 0,
+              'rejected': {}, 'primaryDropsAdded': 0}
+    plan.hardware['adaptiveLegato']['pairUnison'] = report
+    config = registry.configuration()
+    primary = defaultdict(list)
+    for event in plan.events:
+        if event.played and event.device_type == 'FDD':
+            primary[event.device_id].append(event)
+    total = sum(map(len, primary.values()))
+    if not config.policy['fddUnisonEnabled'] or config.policy['fddUnisonMaxVoices'] < 2:
+        report.update(unpairedPrimaryNotes=total, rejected={'userDisabled': total})
+        return
+    caps = capabilities_for(config.instances())
+    rejected = Counter()
+    interval = plan.policy['fddMinAttackIntervalMs']/1000.
+    for group in plan.hardware['fddExpressive']['groups']:
+        if len(group) != 2:
+            rejected['missingPartner'] += sum(len(primary[d]) for d in group)
+            continue
+        for target, source in (group, tuple(reversed(group))):
+            events = sorted(primary[source], key=lambda e: (e.actual_start, e.id))
+            chronology = ChronologyCache(registry.profile(target))
+            extras = [e for e in plan.reinforcements if e.device_id == target]
+            baseline = chronology.check(primary[target], extras)
+            if baseline is None:
+                raise ValueError('Adaptive Legato: invalid primary chronology '+target)
+            scores = {e.id: baseline[e.id].score for e in primary[target]}
+            copies = []
+            for event in events:
+                cap = caps[target]
+                if not cap.min_hz <= event.played_hz <= cap.max_hz:
+                    rejected['frequency'] += 1
+                    continue
+                copies.append(ReinforcementEvent(event.id, target, event.actual_start,
+                    event.actual_duration, event.played_hz, event.velocity, kind=PAIR_UNISON,
+                    source_device=source, reason='complete fixed-pair unison',
+                    semantic_compatibility='identical pitch, onset, gate and source voice', role=event.role))
+
+            def feasible(additions):
+                attacks = sorted([e.actual_start for e in primary[target]]+
+                                 [e.start for e in extras+additions])
+                if any(b-a < interval-1e-9 for a,b in zip(attacks,attacks[1:])):
+                    return False
+                evaluation = chronology.check(primary[target], extras+additions)
+                return evaluation is not None and all(
+                    evaluation[ident].score+1e-9 >= score for ident,score in scores.items())
+
+            if not feasible(copies):
+                accepted = []
+                for extra in copies:
+                    if feasible(accepted+[extra]):
+                        accepted.append(extra)
+                    else:
+                        rejected['physicalVeto'] += 1
+                copies = accepted
+            for extra in copies:
+                plan.execution_articulation['extra:'+str(len(plan.reinforcements))] = {
+                    **plan.execution_articulation[extra.source_id], 'gate': extra.duration}
+                plan.reinforcements.append(extra)
+            report['copies'] += len(copies)
+    report.update(unpairedPrimaryNotes=total-report['copies'], rejected=dict(rejected))

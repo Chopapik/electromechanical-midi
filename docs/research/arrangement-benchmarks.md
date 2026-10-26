@@ -852,3 +852,23 @@ requires subsequent REAL listening before judging improvement.
 Validation: 836 host tests, 129 frontend tests, frontend production build passed.
 Docker `orchestra` rebuilt and healthy; served bundle includes the new preset.
 No firmware changes, uploads, power commands or actuator tests were performed.
+
+
+## Adaptive Legato — stałe pary unisono (2026-10-26)
+
+Po wcześniejszym benchmarku zmieniono wyłącznie wzmocnienia Adaptive Legato:
+partner dubluje teraz każdy kompletny zachowany ton, także w cichym fragmencie
+lub chronionym rytmie. Dawny raport całej biblioteki opisuje wariant sprzed tej
+zmiany. [Porównanie czterech utworów](../../reports/adaptive-legato-pairs.json)
+obejmuje Sail to the Moon, Bodysnatchers, Let Down i No Surprises.
+
+Na wszystkich czterech plikach każda para FDD1–2, 3–4, 5–6 i 7–8 ma identyczne
+skompilowane tony (Hz, start, gate, velocity): zero niedopasowanych tonów.
+W Sail to the Moon przed zmianą pary miały odpowiednio 62, 175, 33 i 29
+niedopasowanych tonów; po zmianie wszystkie mają zero. Wszystkie główne zdarzenia
+i kompletne harmonogramy urządzeń innych niż FDD są identyczne z wersją sprzed
+zmiany. Nie odnotowano konfliktów mechanicznych, overlapów ani naruszeń odstępu
+ataków FDD. Brak fizycznego partnera, wyłączenie unisono przez użytkownika lub
+weto jego profilu pozostawiają jawnie raportowany pojedynczy głos. Nie podstawiamy
+wtedy innej wysokości. To walidacja offline; zmiana może zwiększyć głośność oraz
+czas pracy partnerów i nadal wymaga odsłuchu REAL.

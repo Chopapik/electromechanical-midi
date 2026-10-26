@@ -1,0 +1,506 @@
+{
+  "scope": "offline compiled timeline comparison; fixed Adaptive Legato FDD pairs; no acoustic or thermal measurements",
+  "baselineCommit": "ea0b26c",
+  "songs": [
+    {
+      "before": {
+        "file": "0065-03-radiohead_2003-sail_to_the_moon.mid",
+        "sha": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+        "primary": "ce566bad56b673a5988988c350098e2168c6857baa7d4104377beaa9d5f1e691",
+        "nonFdd": "d134a82432ba840b00a62e1cd9011c497bc14b529b90c2d71174d96f65f767ed",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 60,
+            "right": 78,
+            "unmatched": 62
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 188,
+            "right": 195,
+            "unmatched": 175
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 65,
+            "right": 56,
+            "unmatched": 33
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 24,
+            "right": 23,
+            "unmatched": 29
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 187,
+        "longest": 48.482,
+        "work": 754.782,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 32,
+          "flowingSourceAttacks": 556,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 20,
+          "selectedSourceAttacks": 440
+        }
+      },
+      "after": {
+        "file": "0065-03-radiohead_2003-sail_to_the_moon.mid",
+        "sha": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+        "primary": "ce566bad56b673a5988988c350098e2168c6857baa7d4104377beaa9d5f1e691",
+        "nonFdd": "d134a82432ba840b00a62e1cd9011c497bc14b529b90c2d71174d96f65f767ed",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 80,
+            "right": 80,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 261,
+            "right": 261,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 67,
+            "right": 67,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 32,
+            "right": 32,
+            "unmatched": 0
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 220,
+        "longest": 48.482,
+        "work": 1011.507,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 32,
+          "flowingSourceAttacks": 556,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 20,
+          "selectedSourceAttacks": 440,
+          "pairUnison": {
+            "mode": "fixed_pair_unison",
+            "copies": 440,
+            "unpairedPrimaryNotes": 0,
+            "rejected": {},
+            "primaryDropsAdded": 0
+          }
+        }
+      }
+    },
+    {
+      "before": {
+        "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+        "sha": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+        "primary": "85fe5da57244840aaed5872ea4df281223fc07e8d41a34f8b50276d92cd40143",
+        "nonFdd": "ef6e51d92c1b1f30b0d535b51d3d4f6d59903b66aa5b175d63095a5ddc4f864b",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 633,
+            "right": 631,
+            "unmatched": 54
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 500,
+            "right": 476,
+            "unmatched": 166
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 452,
+            "right": 443,
+            "unmatched": 221
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 359,
+            "right": 394,
+            "unmatched": 221
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 1781,
+        "longest": 11.423,
+        "work": 1134.331,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 1791,
+          "flowingSourceAttacks": 1988,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 965,
+          "selectedSourceAttacks": 2270
+        }
+      },
+      "after": {
+        "file": "0080-02-radiohead_2007-bodysnatchers-[k].mid",
+        "sha": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+        "primary": "85fe5da57244840aaed5872ea4df281223fc07e8d41a34f8b50276d92cd40143",
+        "nonFdd": "ef6e51d92c1b1f30b0d535b51d3d4f6d59903b66aa5b175d63095a5ddc4f864b",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 658,
+            "right": 658,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 570,
+            "right": 570,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 557,
+            "right": 557,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 485,
+            "right": 485,
+            "unmatched": 0
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 2428,
+        "longest": 11.423,
+        "work": 1272.443,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 1791,
+          "flowingSourceAttacks": 1988,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 965,
+          "selectedSourceAttacks": 2270,
+          "pairUnison": {
+            "mode": "fixed_pair_unison",
+            "copies": 2270,
+            "unpairedPrimaryNotes": 0,
+            "rejected": {},
+            "primaryDropsAdded": 0
+          }
+        }
+      }
+    },
+    {
+      "before": {
+        "file": "0036-05-radiohead_1997-let_down-[k].mid",
+        "sha": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+        "primary": "36109150a99a5544c9a72ccf5350c975de9239d7f39f833df01cdd74f6819a9b",
+        "nonFdd": "b000e0bfe0f1c2fd42ad8acbf9017fa51706363bd2a9f7683f68d580ee4cc03d",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 388,
+            "right": 413,
+            "unmatched": 453
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 385,
+            "right": 361,
+            "unmatched": 226
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 291,
+            "right": 263,
+            "unmatched": 192
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 214,
+            "right": 213,
+            "unmatched": 149
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 1289,
+        "longest": 39.832,
+        "work": 1387.918,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 462,
+          "flowingSourceAttacks": 2082,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 430,
+          "selectedSourceAttacks": 1690
+        }
+      },
+      "after": {
+        "file": "0036-05-radiohead_1997-let_down-[k].mid",
+        "sha": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+        "primary": "36109150a99a5544c9a72ccf5350c975de9239d7f39f833df01cdd74f6819a9b",
+        "nonFdd": "b000e0bfe0f1c2fd42ad8acbf9017fa51706363bd2a9f7683f68d580ee4cc03d",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 615,
+            "right": 615,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 464,
+            "right": 464,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 345,
+            "right": 345,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 266,
+            "right": 266,
+            "unmatched": 0
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 1906,
+        "longest": 39.832,
+        "work": 1748.9,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 462,
+          "flowingSourceAttacks": 2082,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 430,
+          "selectedSourceAttacks": 1690,
+          "pairUnison": {
+            "mode": "fixed_pair_unison",
+            "copies": 1690,
+            "unpairedPrimaryNotes": 0,
+            "rejected": {},
+            "primaryDropsAdded": 0
+          }
+        }
+      }
+    },
+    {
+      "before": {
+        "file": "0041-10-radiohead_1997-no_surprises-[k].mid",
+        "sha": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+        "primary": "b762a2234e6984dd019353afa54067e1285c7909881b9b186a972eb72e2ca456",
+        "nonFdd": "b353df0db7ef4946f09e5d133af9f329236ac8432460a668e74af70a37bd5d8d",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 238,
+            "right": 225,
+            "unmatched": 301
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 215,
+            "right": 194,
+            "unmatched": 207
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 202,
+            "right": 194,
+            "unmatched": 284
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 174,
+            "right": 162,
+            "unmatched": 224
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 1164,
+        "longest": 12.762,
+        "work": 867.26,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 1221,
+          "flowingSourceAttacks": 908,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 772,
+          "selectedSourceAttacks": 1275
+        }
+      },
+      "after": {
+        "file": "0041-10-radiohead_1997-no_surprises-[k].mid",
+        "sha": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+        "primary": "b762a2234e6984dd019353afa54067e1285c7909881b9b186a972eb72e2ca456",
+        "nonFdd": "b353df0db7ef4946f09e5d133af9f329236ac8432460a668e74af70a37bd5d8d",
+        "pairs": [
+          {
+            "pair": [
+              1,
+              2
+            ],
+            "left": 372,
+            "right": 372,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              3,
+              4
+            ],
+            "left": 301,
+            "right": 301,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              5,
+              6
+            ],
+            "left": 335,
+            "right": 335,
+            "unmatched": 0
+          },
+          {
+            "pair": [
+              7,
+              8
+            ],
+            "left": 267,
+            "right": 267,
+            "unmatched": 0
+          }
+        ],
+        "conflicts": 0,
+        "overlaps": 0,
+        "spacing": 0,
+        "stops": 2020,
+        "longest": 12.762,
+        "work": 1275.536,
+        "adaptation": {
+          "version": 1,
+          "protectedSourceAttacks": 1221,
+          "flowingSourceAttacks": 908,
+          "scope": "local MIDI heuristics; not recognition or acoustic measurement",
+          "protectedAttacksRetained": 772,
+          "selectedSourceAttacks": 1275,
+          "pairUnison": {
+            "mode": "fixed_pair_unison",
+            "copies": 1275,
+            "unpairedPrimaryNotes": 0,
+            "rejected": {},
+            "primaryDropsAdded": 0
+          }
+        }
+      }
+    }
+  ]
+}

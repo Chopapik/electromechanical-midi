@@ -44,6 +44,9 @@ Upraszcza szybkie przebiegi;
 to osobny eksperyment artykulacji FDD, z niezmienionym planem innych instrumentów.
 **Adaptive Legato · ochrona rytmu** dobiera artykulację lokalnie: krótkie,
 rytmiczne frazy zachowują rozdzielone ataki, a płynne partie korzystają z legato.
+Każdy z czterech głosów ma stałą parę FDD1–2, 3–4, 5–6 lub 7–8, grającą
+tę samą wysokość, start i długość nuty także w spokojnych fragmentach.
+Kopie wymagają włączonego partnera, zgody ustawień unisono i zgodności mechanicznej.
 Chroni powtórzenia przed przedwczesnym scaleniem; nie jest gwarancją rozpoznawalności
 utworu. Pozostałe instrumenty zachowują plan Expressive.
 Domyślnie uruchamia się **2×4 FDD Unisono · eksperymentalny**: dwa logiczne głosy FDD,

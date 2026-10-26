@@ -376,7 +376,11 @@ def apply(plan, registry, source, adaptive=False):
         plan.hardware['adaptiveLegato'].update(
             protectedAttacksRetained=sum(e.id in articulation.protected for e in replacements.values() if e.played),
             selectedSourceAttacks=len(sidecars))
-    reinforce(plan, registry, pool, clock)
+    if adaptive:
+        from .adaptive_legato import pair_unison
+        pair_unison(plan, registry)
+    else:
+        reinforce(plan, registry, pool, clock)
     # Refresh final FDD counters/states and validate the complete changed travel.
     from .fdd_expression import without_accents
     without_accents(plan,registry)
