@@ -1,8 +1,19 @@
 """MIDI library and bounded import metadata."""
 from pathlib import Path
-from fastapi import HTTPException
+import tempfile
 from midi_source import MidiSource, MidiSourceError
 MIDI_SUFFIXES=(".mid", ".midi")
+MAX_UPLOAD_BYTES=5*1024*1024
+
+
+class MidiLibraryError(ValueError):
+    """Library failure described without HTTP or another transport's statuses."""
+
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+
+
 def _is_polyphonic(notes) -> bool:
     """Czy w tracku cokolwiek brzmi jednoczesnie (dwie nuty na raz)."""
     last_end = -1.0
@@ -26,67 +37,54 @@ class MidiLibrary:
     def resolve(self, name: str) -> Path:
         """Bezpieczne rozwiazanie nazwy pliku (bez wyjscia z katalogu)."""
         if not name or "/" in name or "\\" in name or name.startswith("."):
-            raise HTTPException(status_code=400, detail="niepoprawna nazwa pliku")
+            raise MidiLibraryError('invalid_name', "niepoprawna nazwa pliku")
 
         path = (self.directory / name).resolve()
         root = self.directory.resolve()
 
         if path != root and root not in path.parents:
-            raise HTTPException(status_code=400, detail="plik poza katalogiem midi/")
+            raise MidiLibraryError('outside_library', "plik poza katalogiem midi/")
 
         if not path.is_file():
-            raise HTTPException(status_code=404, detail=f"nie ma pliku {name}")
+            raise MidiLibraryError('not_found', f"nie ma pliku {name}")
 
         return path
 
     def save_upload(self, filename: str, data: bytes) -> Path:
-        """Zapisuje wgrany plik MIDI do katalogu biblioteki.
+        """Validate with the playback parser and import without overwriting.
 
-        Nazwa jest czyszczona (bez sciezek), a przy kolizji dokladamy
-        " (2)", " (3)"... - nigdy nie nadpisujemy istniejacego utworu.
+        Keep the established endpoint's basename and ``stem-N.mid`` collision
+        convention. Exclusive creation also treats dangling symlinks as occupied.
         """
-        name = Path(filename or "").name.strip()
-
-        if not name or name.startswith("."):
-            raise HTTPException(status_code=400, detail="niepoprawna nazwa pliku")
-
-        suffix = Path(name).suffix.lower()
-
-        if suffix not in MIDI_SUFFIXES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"dozwolone rozszerzenia: {', '.join(MIDI_SUFFIXES)}",
-            )
-
-        if not data:
-            raise HTTPException(status_code=400, detail="pusty plik")
-
-        if len(data) > MAX_UPLOAD_BYTES:
-            raise HTTPException(
-                status_code=413,
-                detail=f"plik wiekszy niz {MAX_UPLOAD_BYTES // (1024 * 1024)} MB",
-            )
-
-        # Walidacja: plik musi byc czytelnym MIDI (zanim cokolwiek zapiszemy).
-        try:
-            mido.MidiFile(file=io.BytesIO(data))
-        except Exception as exc:
-            raise HTTPException(
-                status_code=400, detail=f"to nie wyglada na plik MIDI: {exc}"
-            ) from exc
-
+        name = Path(filename or '').name
+        if not name or name.startswith('.') or Path(name).suffix.lower() not in MIDI_SUFFIXES:
+            raise MidiLibraryError('invalid_upload_name', 'Wybierz plik MIDI')
+        if len(data)>MAX_UPLOAD_BYTES:
+            raise MidiLibraryError('upload_too_large', 'MIDI przekracza 5 MB')
         self.directory.mkdir(parents=True, exist_ok=True)
-
+        with tempfile.NamedTemporaryFile(dir=self.directory, suffix='.mid') as temp:
+            temp.write(data)
+            temp.flush()
+            try:
+                MidiSource(Path(temp.name))
+            except Exception as exc:
+                raise MidiLibraryError('invalid_midi', str(exc)) from exc
         target = self.directory / name
-        stem, index = Path(name).stem, 2
-
-        while target.exists():
-            target = self.directory / f"{stem} ({index}){suffix}"
-            index += 1
-
-        target.write_bytes(data)
-
-        return target
+        stem, index = target.stem, 1
+        while True:
+            try:
+                output=target.open('xb')
+            except FileExistsError:
+                target=self.directory/f'{stem}-{index}.mid'
+                index+=1
+                continue
+            try:
+                with output:
+                    output.write(data)
+            except BaseException:
+                target.unlink(missing_ok=True)
+                raise
+            return target
 
     def list_files(self) -> list[dict]:
         if not self.directory.is_dir():
@@ -120,7 +118,7 @@ class MidiLibrary:
         try:
             source = MidiSource(path)
         except MidiSourceError as exc:
-            raise HTTPException(status_code=422, detail=str(exc)) from exc
+            raise MidiLibraryError('invalid_midi', str(exc)) from exc
 
         tracks = []
 

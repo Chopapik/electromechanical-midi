@@ -13,12 +13,20 @@ if str(HOST_DIR) not in sys.path: sys.path.insert(0,str(HOST_DIR))
 from fastapi import FastAPI, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from midi_source import MidiSource
 from runtime.application import Application
 from runtime.registry import DeviceRegistry
-from web.library import MidiLibrary
+from web.library import MidiLibrary, MidiLibraryError, MAX_UPLOAD_BYTES
 
-MAX_UPLOAD_BYTES=5*1024*1024
+LIBRARY_HTTP_STATUS = {'invalid_name':400, 'outside_library':400, 'not_found':404,
+                       'invalid_upload_name':422, 'invalid_midi':422, 'upload_too_large':413}
+
+
+def _library_call(operation, *args):
+    """Keep transport statuses at the controller boundary, including WS errors."""
+    try:
+        return operation(*args)
+    except MidiLibraryError as exc:
+        raise HTTPException(LIBRARY_HTTP_STATUS[exc.code], str(exc)) from exc
 
 def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_path=None):
     library=MidiLibrary(Path(midi_dir or HOST_DIR.parent/'midi'))
@@ -75,25 +83,11 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
     @app.get('/api/files')
     def files(): return library.list_files()
     @app.get('/api/files/{name}')
-    def metadata(name:str): return library.metadata(name)
+    def metadata(name:str): return _library_call(library.metadata,name)
     @app.post('/api/files')
     async def upload(file:UploadFile=File(...)):
-        name=Path(file.filename or '').name
-        if not name or name.startswith('.') or Path(name).suffix.lower() not in ('.mid','.midi'):
-            raise HTTPException(422,'Wybierz plik MIDI')
         data=await file.read(MAX_UPLOAD_BYTES+1)
-        if len(data)>MAX_UPLOAD_BYTES: raise HTTPException(413,'MIDI przekracza 5 MB')
-        library.directory.mkdir(parents=True,exist_ok=True)
-        import tempfile
-        with tempfile.NamedTemporaryFile(dir=library.directory,suffix='.mid') as temp:
-            temp.write(data); temp.flush()
-            try: MidiSource(Path(temp.name))
-            except Exception as exc: raise HTTPException(422,str(exc)) from exc
-        path=library.directory/name
-        if path.exists():
-            stem=path.stem; i=1
-            while path.exists(): path=library.directory/f'{stem}-{i}.mid'; i+=1
-        path.write_bytes(data)
+        path=_library_call(library.save_upload,file.filename,data)
         return {'name':path.name}
     async def action(peer, owner, message):
         operation=message.get('action'); request=message.get('requestId')
@@ -108,7 +102,7 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
                         raise ValueError('Sterowanie ATX i upload wymagają lokalnego połączenia z poprawnym Origin')
                 if runtime.service.busy: raise ValueError('DeviceService jest zajęty')
                 p=runtime.player
-                if operation=='set_file': runtime.load(library.resolve(message['file']))
+                if operation=='set_file': runtime.load(_library_call(library.resolve,message['file']))
                 elif operation=='arrangement_preset': runtime.set_preset(message['preset'])
                 elif operation=='play':
                     if runtime.router.mode=='VIRTUAL':
