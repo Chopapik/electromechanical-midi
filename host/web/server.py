@@ -101,10 +101,10 @@ def create_app(*, midi_dir=None, runtime=None, connect_on_start=True, registry_p
         operation=message.get('action'); request=message.get('requestId')
         try:
             runtime.require_available()
-            if command_lock.locked() and operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware'):
+            if command_lock.locked() and operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware','firmware_ble'):
                 raise ValueError('DeviceService jest zajęty')
             def perform():
-                if operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware'):
+                if operation=='service' and message.get('operation') in ('power_on','power_off','power_status','firmware','firmware_ble'):
                     origin=urlsplit(peer.headers.get('origin',''))
                     if origin.scheme not in ('http','https') or origin.hostname not in ('localhost','127.0.0.1','::1') or origin.netloc!=peer.headers.get('host'):
                         raise ValueError('Sterowanie ATX i upload wymagają lokalnego połączenia z poprawnym Origin')

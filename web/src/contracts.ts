@@ -10,9 +10,9 @@ export interface State {
   activity?:Record<string,Command>; homing?:boolean; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
   arrangementPreset?:ArrangementPreset;revision:number;error:string|null;audioOwner:string|null;devices:Device[];
   output:{mode:'REAL'|'VIRTUAL';connected:boolean;unknown:boolean;message:string;muted:string[]};
-  service:{power?:{state:'ON'|'OFF'|'UNKNOWN'|'UNAVAILABLE';available:boolean;operation:string|null;error:string|null;reason:string|null;measured:false};busy:boolean;error:string|null;reset:{available:boolean;reason:string|null};home:{available:boolean;reason:string|null};firmware:{available:boolean;reason:string|null;port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
+  service:{power?:{state:'ON'|'OFF'|'UNKNOWN'|'UNAVAILABLE';available:boolean;operation:string|null;error:string|null;reason:string|null;measured:false};busy:boolean;error:string|null;reset:{available:boolean;reason:string|null};home:{available:boolean;reason:string|null};firmware:{available:boolean;reason:string|null;bleAvailable?:boolean;bleReason?:string|null;transport?:'USB'|'BLE';port?:string|null;ports?:string[];stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}}
 }
-export interface FirmwareEvent {type:'firmware_event';seq:number;kind:'status'|'log';line?:string;stage?:string;flash?:string;ble?:string;progress?:number|null;error?:string|null}
+export interface FirmwareEvent {type:'firmware_event';seq:number;kind:'status'|'log';line?:string;stage?:string;flash?:string;ble?:string;transport?:'USB'|'BLE';progress?:number|null;error?:string|null}
 export interface MidiLoading {name:string;stage:'stopping'|'uploading'|'planning'}
 export interface FileEntry {name:string;size:number;modified:number}
 interface Modulation {mode?:'off'|'sine'|'triangle';depth?:number;period?:number}
@@ -24,7 +24,7 @@ export interface ClientPayloads {
   mute:{deviceId:string;muted:boolean};speaker_waveform:{deviceId:string;waveform:SpeakerWaveform};
   speaker_volume:{deviceId:string;output:'REAL'|'VIRTUAL';value:number};
   lab_test:LabPayload;lab_update:LabPayload;lab_stop:{deviceId:string};
-  service:{operation:'home'|'firmware'|'power_on'|'power_off'|'power_status'|'reset';confirmed?:boolean};
+  service:{operation:'home'|'firmware'|'firmware_ble'|'power_on'|'power_off'|'power_status'|'reset';confirmed?:boolean};
   audio_error:{epoch:number;message?:string};audio_ack:{token:string};sync:{sent:number};
 }
 export type ClientAction=keyof ClientPayloads
@@ -87,6 +87,8 @@ function snapshot(value:unknown):value is State{
     availability(service.firmware)&&record(service.firmware)&&
     ['stage','flash','ble'].every(key=>optional(service.firmware as Record<string,unknown>,key,string))&&
     optional(service.firmware,'port',nullableString)&&optional(service.firmware,'ports',strings)&&
+    optional(service.firmware,'bleAvailable',boolean)&&optional(service.firmware,'bleReason',nullableString)&&
+    optional(service.firmware,'transport',value=>value==='USB'||value==='BLE')&&
     optional(service.firmware,'progress',nullableNumber)&&optional(service.firmware,'error',nullableString)&&optional(service,'power',power)&&
     optional(value,'arrangementPreset',isArrangementPreset)&&optional(value,'homing',boolean)&&
     optional(value,'activity',items=>dictionary(items,command))&&
@@ -95,7 +97,7 @@ function snapshot(value:unknown):value is State{
 function firmware(value:Record<string,unknown>){
   return number(value.seq)&&(value.kind==='status'||value.kind==='log')&&
     ['line','stage','flash','ble'].every(key=>optional(value,key,string))&&
-    optional(value,'progress',nullableNumber)&&optional(value,'error',nullableString)
+    optional(value,'progress',nullableNumber)&&optional(value,'error',nullableString)&&optional(value,'transport',item=>item==='USB'||item==='BLE')
 }
 
 /** Unknown future message types are ignored; malformed known messages never reach audio. */

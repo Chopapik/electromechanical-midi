@@ -53,6 +53,7 @@ struct CommandProtocol {
  ResponseSink& sink;
  TestOutput& led;
  bool testOn = false;
+ bool maintenance = false;
  CommandLine usbLine, bleLine;
  uint32_t bleSession = 0;
  bool bleInputHealthy = true;
@@ -76,6 +77,12 @@ struct CommandProtocol {
  }
  void execute(Transport origin, const char* line) {
   if (strlen(line) >= sizeof(usbLine.text)) { reply(origin, "ERR LINE_TOO_LONG"); return; }
+  if(maintenance && strcmp(line,"PING") && strncmp(line,"SYNC ",5) &&
+     strcmp(line,"ALL STOP") && strncmp(line,"ALL STOP ",9) &&
+     strcmp(line,"POWER OFF") && strncmp(line,"POWER OFF ",10) &&
+     strcmp(line,"POWER STATUS") && strncmp(line,"POWER STATUS ",13)){
+   reply(origin,"ERR OTA_BUSY");return;
+  }
   // Read-only barrier, reached only after preceding bytes have been parsed on
   // loopTask. It neither drives instruments nor refreshes the motor watchdog.
   if (!strncmp(line,"SYNC ",5)) {

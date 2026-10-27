@@ -27,7 +27,7 @@ class Gateway:
         self.socket = socket.create_connection((host, port), timeout=25)
         self.reader = self.socket.makefile('rb')
         try:
-            if self.line() != 'BLE CONNECTED': raise RuntimeError('Missing BLE connection header')
+            if self.line() not in ('BLE CONNECTED','BLE CONNECTED ota=1'): raise RuntimeError('Missing BLE connection header')
             self.socket.settimeout(3)
         except BaseException:
             self.close(); raise

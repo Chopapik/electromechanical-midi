@@ -92,3 +92,8 @@ Upload ESP32 wyłącznie przez Settings → Serwis albo
 `.venv/bin/python scripts/safe_upload.py`: wspólna procedura wymaga potwierdzonego
 POWER OFF. Stary firmware wymaga osobno zatwierdzonego ręcznego bootstrapu;
 [procedura i ograniczenia zasilania](docs/HARDWARE_TESTING.md#firmware-i-sama-logika).
+Po pierwszym provisioningu przez USB dostępne jest także
+`.venv/bin/python scripts/safe_upload.py --transport ble` oraz **Settings →
+Serwis → Wgraj firmware przez BLE**. Aktualizacja blokuje odtwarzanie, sprawdza
+podpis i SHA-256 obrazu oraz zapisuje drugi slot aplikacji. Zachowaj prywatny
+klucz OTA w wolumenie settings. [Procedura BLE OTA](docs/HARDWARE_TESTING.md#aktualizacja-firmware-przez-ble).

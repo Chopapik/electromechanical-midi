@@ -119,12 +119,38 @@ namespace NimBLEDevice {
  NimBLEAdvertising* getAdvertising(){return &fakeAdvertising;}
 }
 '''
+OTA_FLASH = r'''
+#pragma once
+#include "ble_ota.h"
+namespace orchestra { namespace ota {
+struct EspStorage:Storage {
+ int begun=0,written=0,selected=0,restarted=0,aborted=0;
+ uint32_t capacity()override{return 4096;}
+ void random(uint8_t* p,size_t n)override{memset(p,42,n);}
+ bool authenticate(const uint8_t*,const uint8_t*)override{return true;}
+ bool begin(uint32_t)override{++begun;return true;}
+ bool write(const uint8_t*,size_t n)override{written+=n;return true;}
+ bool finish(const uint8_t*)override{return true;}
+ bool select()override{++selected;return true;}
+ void abort()override{++aborted;}
+ void restart()override{++restarted;}
+};
+}}
+'''
 SOURCE = r'''
 #include <cassert>
 //PRODUCTION_INCLUDE
 void connectBle(){fakeServer.callbacks->onConnect(&fakeServer);bleTx->callbacks->onSubscribe(bleTx,nullptr,1);}
 void writeBle(const std::string& value){auto* rx=fakeServer.svc.chars[0];rx->value=value;rx->callbacks->onWrite(rx);}
 void drainInput(){for(int i=0;i<100;++i)pollBle();}
+void writeOta(const std::vector<uint8_t>& bytes){bleOta->value=std::string(bytes.begin(),bytes.end());bleOta->callbacks->onWrite(bleOta);}
+void drainOtaInput(){for(int i=0;i<100;++i)pollOta();}
+void beginOta(){
+ bleOta->callbacks->onSubscribe(bleOta,nullptr,1);writeOta({ota::Query});drainOtaInput();
+ uint8_t meta[100]={4};
+ for(int offset=0;offset<100;offset+=18){std::vector<uint8_t> p={ota::Meta,uint8_t(offset)};for(int i=offset;i<offset+18&&i<100;++i)p.push_back(meta[i]);writeOta(p);}
+ writeOta({ota::Begin});drainOtaInput();
+}
 std::string drainBle(){BleReply packet;std::string text;while(xQueueReceive(bleTxQueue,&packet,0)==pdTRUE){bleNotify(packet);}for(auto& fragment:bleTx->notifications){assert(fragment.size()<=20);text+=fragment;}return text;}
 int main(int argc,char** argv){
  std::string c=argv[1];for(int pin:orchestra::map::track0)gpio[pin]=HIGH;
@@ -260,6 +286,29 @@ int main(int argc,char** argv){
   bleAck->callbacks->onSubscribe(bleAck,nullptr,1);
   for(int i=0;i<9;++i){writeBle("SYNC 1\n");drainInput();}
   assert(uxQueueMessagesWaiting(bleAckQueue)==8&&bleTxOverflow.load()==bleEpoch.load());
+ }else if(c=="ota_callback_deferred"){
+  ctrl.command("POWER OFF");size_t before=writes.size();
+  bleOta->callbacks->onSubscribe(bleOta,nullptr,1);writeOta({ota::Query});
+  assert(otaStorage.begun==0&&uxQueueMessagesWaiting(bleOtaTxQueue)==0&&writes.size()==before);
+  drainOtaInput();assert(uxQueueMessagesWaiting(bleOtaTxQueue)==1&&writes.size()==before);
+  drainOtaReplies();assert(bleOta->notifications.back().size()==18);
+ }else if(c=="ota_motion_lock"){
+  ctrl.command("POWER OFF");beginOta();assert(otaSession.busy()&&protocol.maintenance&&otaStorage.begun==1);
+  writeBle("POWER ON 1\nFDD 1 HOME\nVHS FREQ 440\n");drainInput();
+  assert(!ctrl.powerOn&&!ctrl.fdd[0].homing&&ctrl.frequency==0);
+  assert(drainBle()=="ERR OTA_BUSY\nERR OTA_BUSY\nERR OTA_BUSY\n");
+  writeBle("ALL STOP 7\n");drainInput();assert(drainBle().find("STOPPED 7\n")!=std::string::npos);
+  writeOta({uint8_t(ota::Data|0x80),0,0,0,0,1,2,3,4});drainOtaInput();
+  assert(otaStorage.written==4&&otaStorage.selected==0);
+  writeOta({ota::End});drainOtaInput();assert(otaStorage.selected==0);
+  writeOta({ota::Commit});drainOtaInput();assert(otaStorage.selected==1&&!ctrl.powerOn);
+  fakeUs+=500001;pollOta();assert(otaStorage.restarted==1);
+ }else if(c=="ota_disconnect"){
+  ctrl.command("POWER OFF");beginOta();assert(otaSession.busy());
+  fakeServer.callbacks->onDisconnect(&fakeServer);pollOta();
+  assert(!otaSession.busy()&&!protocol.maintenance&&otaStorage.selected==0&&!ctrl.powerOn);
+ }else if(c=="ota_unsafe"){
+  assert(ctrl.powerOn);beginOta();assert(!otaSession.busy()&&otaStorage.begun==0&&ctrl.powerOn);
  }else if(c=="empty_write"){
   writeBle("");assert(uxQueueMessagesWaiting(bleRxQueue)==0);writeBle("PING\n");drainInput();assert(drainBle()=="PONG\n");
  }else assert(false);
@@ -276,7 +325,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
         cls.directory = tempfile.TemporaryDirectory()
         root = Path(cls.directory.name)
         (root/'driver').mkdir()
-        for name, content in [('driver/ledc.h',LEDC),('Arduino.h', ARDUINO), ('SPI.h', SPI), ('NimBLEDevice.h', NIMBLE)]:
+        for name, content in [('driver/ledc.h',LEDC),('Arduino.h', ARDUINO), ('SPI.h', SPI), ('NimBLEDevice.h', NIMBLE),('esp_ble_ota_flash.h',OTA_FLASH)]:
             (root/name).write_text(content)
         source = root/'ble.cpp'
         production = ROOT/'firmware/controller/src/esp32/main.cpp'
@@ -290,7 +339,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('speaker_pnp','power','serial_boot_once', 'boot', 'callback_deferred', 'four_sleds', 'motor_deferred', 'routing', 'reconnect',
-             'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority', 'execution_ack', 'ack_during_status', 'ack_queue_bound'):
+             'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority', 'execution_ack', 'ack_during_status', 'ack_queue_bound', 'ota_callback_deferred','ota_motion_lock','ota_disconnect','ota_unsafe'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32BleAdapterTests, 'test_'+case, run)

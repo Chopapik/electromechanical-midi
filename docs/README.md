@@ -34,6 +34,10 @@ wartości zasilania/rezystorów parametrami znalezionymi w archiwum. Topologia j
 opisana od ESP32 do obciążeń, ale identyfikacja modeli FDD/modułów i elementów
 mocy speakerów pozostaje konieczna do bezpiecznego uruchomienia całości.
 
+[Aktualizacja firmware przez BLE](HARDWARE_TESTING.md#aktualizacja-firmware-przez-ble)
+wymaga jednorazowego provisioningu USB. Wspólny DeviceService potwierdza STOP i
+POWER OFF; podczas OTA orkiestra nie gra. [Opis trybu serwisowego i kluczy](ARCHITECTURE.md#aktualizacje-firmware-przez-ble).
+
 ## Źródła prawdy i rozstrzygnięte sprzeczności
 
 Kod i aktywna konfiguracja mają pierwszeństwo przed opisem i historycznym raportem.

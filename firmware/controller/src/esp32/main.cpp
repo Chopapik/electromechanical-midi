@@ -4,6 +4,7 @@
 #include <atomic>
 #include <driver/ledc.h>
 #include "orchestra_protocol.h"
+#include "esp_ble_ota_flash.h"
 using namespace orchestra;
 class EspIO:public IO {
 public:
@@ -60,11 +61,15 @@ void drainTx(){size_t available=Serial.availableForWrite();while(available--&&tx
 struct BleInput { uint32_t session; uint16_t length; uint8_t bytes[512]; };
 struct BleReply { uint32_t session; uint16_t length; uint8_t bytes[160]; };
 QueueHandle_t bleRxQueue, bleTxQueue, bleAckQueue;
+QueueHandle_t bleOtaRxQueue, bleOtaTxQueue;
 NimBLECharacteristic* bleTx = nullptr;
 NimBLECharacteristic* bleAck = nullptr;
+NimBLECharacteristic* bleOta = nullptr;
 std::atomic<uint32_t> bleEpoch{0}, bleRxOverflow{0}, bleTxOverflow{0};
 std::atomic<bool> bleConnected{false}, bleSubscribed{false};
 std::atomic<bool> bleAckSubscribed{false};
+std::atomic<bool> bleOtaSubscribed{false};
+std::atomic<uint32_t> bleOtaOverflow{0};
 std::atomic<int> notifyCode{-1};
 
 // These callbacks only copy input/update transport flags. No parser, GPIO,
@@ -93,12 +98,26 @@ class BleAckCallbacks : public NimBLECharacteristicCallbacks {
  }
  void onStatus(NimBLECharacteristic*, Status, int code) override { notifyCode.store(code); }
 } bleAckCallbacks;
+class BleOtaCallbacks : public NimBLECharacteristicCallbacks {
+ void onWrite(NimBLECharacteristic* characteristic) override {
+  const auto value=characteristic->getValue();uint32_t epoch=bleEpoch.load();
+  if(!bleConnected.load()||!value.length())return;
+  BleInput packet{};packet.session=epoch;packet.length=value.length();
+  if(packet.length>sizeof(packet.bytes)){bleOtaOverflow.store(epoch);return;}
+  memcpy(packet.bytes,value.data(),packet.length);
+  if(xQueueSend(bleOtaRxQueue,&packet,0)!=pdTRUE)bleOtaOverflow.store(epoch);
+ }
+ void onSubscribe(NimBLECharacteristic*, ble_gap_conn_desc*, uint16_t value) override {
+  bleOtaSubscribed.store((value&1)!=0);
+ }
+ void onStatus(NimBLECharacteristic*,Status,int code)override{notifyCode.store(code);}
+} bleOtaCallbacks;
 class BleServerCallbacks : public NimBLEServerCallbacks {
  void onConnect(NimBLEServer*) override {
-  bleSubscribed.store(false); bleAckSubscribed.store(false); bleEpoch.fetch_add(1); bleConnected.store(true);
+  bleSubscribed.store(false); bleAckSubscribed.store(false); bleOtaSubscribed.store(false); bleEpoch.fetch_add(1); bleConnected.store(true);
  }
  void onDisconnect(NimBLEServer*) override {
-  bleConnected.store(false); bleSubscribed.store(false); bleAckSubscribed.store(false); bleEpoch.fetch_add(1);
+  bleConnected.store(false); bleSubscribed.store(false); bleAckSubscribed.store(false); bleOtaSubscribed.store(false); bleEpoch.fetch_add(1);
  }
 } bleServerCallbacks;
 
@@ -124,6 +143,32 @@ public:
  void set(bool on) override { digitalWrite(ble::testPin,on?HIGH:LOW); }
 } testLed;
 CommandProtocol protocol(ctrl,replies,testLed);
+ota::EspStorage otaStorage;
+class OtaReplies:public ota::Replies {
+ void send(const uint8_t* bytes,size_t size,uint32_t epoch)override{
+  if(!bleOtaSubscribed.load()||!bleConnected.load()||epoch!=bleEpoch.load())return;
+  BleReply packet{};packet.session=epoch;packet.length=size;memcpy(packet.bytes,bytes,size);
+  if(xQueueSend(bleOtaTxQueue,&packet,0)!=pdTRUE)bleOtaOverflow.store(epoch);
+ }
+} otaReplies;
+ota::Session otaSession(otaStorage,otaReplies);
+void pollOta(){
+ if(!bleOtaRxQueue||!bleOtaTxQueue)return;
+ uint32_t epoch=bleEpoch.load();
+ if(bleOtaOverflow.load()==epoch&&bleConnected.load()){
+  xQueueReset(bleOtaRxQueue);otaSession.overflow();bleOtaOverflow.compare_exchange_strong(epoch,0);
+ }
+ otaSession.tick(micros(),epoch,!ctrl.powerOn);
+ BleInput packet{};
+ // Flash can block: it is only reached after authenticated BEGIN with ATX OFF.
+ // One bounded packet per loop leaves STOP/USB and transport polling available.
+ if(xQueueReceive(bleOtaRxQueue,&packet,0)==pdTRUE&&bleConnected.load()&&packet.session==bleEpoch.load()){
+  bool wasBusy=otaSession.busy();
+  otaSession.input(packet.bytes,packet.length,packet.session,micros(),!ctrl.powerOn);
+  if(!wasBusy&&otaSession.busy())ctrl.allStop();
+ }
+ protocol.maintenance=otaSession.busy();
+}
 
 // NimBLE notify can allocate/wait inside the stack. Keep it OFF loopTask
 // (motor scheduler, core 1). Only this core-0 worker transmits notifications.
@@ -131,6 +176,11 @@ bool currentBleSession(uint32_t epoch) {
  return bleConnected.load() && bleSubscribed.load() && epoch==bleEpoch.load();
 }
 void bleNotify(const BleReply& packet, NimBLECharacteristic* output=nullptr);
+void drainOtaReplies(){
+ BleReply packet{};
+ while(xQueueReceive(bleOtaTxQueue,&packet,0)==pdTRUE)
+  if(bleOtaSubscribed.load())bleNotify(packet,bleOta);
+}
 void drainBleAcks() {
  BleReply ack{};
  while(xQueueReceive(bleAckQueue,&ack,0)==pdTRUE) {
@@ -142,7 +192,7 @@ void bleNotify(const BleReply& packet, NimBLECharacteristic* output) {
  for(size_t offset=0;offset<packet.length && currentBleSession(packet.session);) {
   // Run only on core-0 TX worker, between telemetry fragments. ACK has its own
   // characteristic so a partial STATUS line remains byte-for-byte intact.
-  if(output==bleTx) drainBleAcks();
+  if(output==bleTx){drainOtaReplies();drainBleAcks();}
   size_t count=packet.length-offset; if(count>20) count=20; // Works with MTU=23.
   notifyCode.store(-1);
   output->notify(packet.bytes+offset,count);
@@ -158,6 +208,7 @@ void bleNotify(const BleReply& packet, NimBLECharacteristic* output) {
 }
 void bleTransmitTask(void*) {
  for(;;) {
+  drainOtaReplies();
   drainBleAcks();
   BleReply packet{};
   if(xQueueReceive(bleTxQueue,&packet,pdMS_TO_TICKS(20))==pdTRUE) bleNotify(packet);
@@ -173,7 +224,8 @@ void beginBle() {
  bleRxQueue=xQueueCreate(8,sizeof(BleInput));
  bleTxQueue=xQueueCreate(32,sizeof(BleReply));
  bleAckQueue=xQueueCreate(8,sizeof(BleReply));
- if(!bleRxQueue || !bleTxQueue || !bleAckQueue) { queue("ERR BLE_INIT"); return; }
+ bleOtaRxQueue=xQueueCreate(8,sizeof(BleInput));bleOtaTxQueue=xQueueCreate(8,sizeof(BleReply));
+ if(!bleRxQueue || !bleTxQueue || !bleAckQueue || !bleOtaRxQueue || !bleOtaTxQueue) { queue("ERR BLE_INIT"); return; }
  NimBLEDevice::init(ble::name);
  auto* server=NimBLEDevice::createServer();server->setCallbacks(&bleServerCallbacks,false);
  server->advertiseOnDisconnect(true);
@@ -184,6 +236,12 @@ void beginBle() {
  bleTx->setCallbacks(&bleTxCallbacks);
  bleAck=service->createCharacteristic(ble::ack,NIMBLE_PROPERTY::NOTIFY,20);
  bleAck->setCallbacks(&bleAckCallbacks);
+ if(otaStorage.capacity()){
+  bleOta=service->createCharacteristic(ota::controlUuid,NIMBLE_PROPERTY::WRITE_NR|NIMBLE_PROPERTY::NOTIFY,20);
+  bleOta->setCallbacks(&bleOtaCallbacks);
+  auto* data=service->createCharacteristic(ota::dataUuid,NIMBLE_PROPERTY::WRITE_NR,512);
+  data->setCallbacks(&bleOtaCallbacks);
+ }
  service->start();
  if(xTaskCreatePinnedToCore(bleTransmitTask,"ble-tx",4096,nullptr,1,nullptr,0)!=pdPASS) {
   queue("ERR BLE_INIT");return;
@@ -217,6 +275,7 @@ void setup(){
 }
 void loop(){
  ctrl.tick();
+ pollOta();
  protocol.pollErrors();
  // Separate 16-byte budgets: neither transport can starve the other or STEP.
  for(int budget=16;budget&&Serial.available();--budget) protocol.input(Transport::Usb,Serial.read());

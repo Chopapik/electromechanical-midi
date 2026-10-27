@@ -12,6 +12,7 @@ from collections import deque
 from pathlib import Path
 from ble_link import BleBytes
 from ble_diagnostics import WriteHistory
+from ble_ota import MAX_IMAGE
 
 log = logging.getLogger('orchestra.ble')
 
@@ -27,21 +28,42 @@ async def serve_client(reader, writer):
     latest_loop_lag = max_loop_lag = 0.
     inflight = None
     pending = deque()
+    maintenance_completed = False
     try:
         link = await asyncio.to_thread(BleBytes)
         log.info('BLE connected: payload=%d bytes, delivery=%s, latency limit=%d ms',
                  getattr(link, 'write_size', 20),
                  'execution-ack' if getattr(link, '_application_ack', False) else 'att-response (legacy)',
                  MAX_COMMAND_AGE * 1000)
-        writer.write(b'BLE CONNECTED\n'); await writer.drain()
+        writer.write(b'BLE CONNECTED ota=1\n' if getattr(link,'supports_ota',False) else b'BLE CONNECTED\n'); await writer.drain()
         command_ready = asyncio.Event()
         oldest_inflight = None
         clock = asyncio.get_running_loop().time
         async def receive():
+            nonlocal maintenance_completed
             # Read independently of slow GATT writes, so STOP can overtake
             # queued notes. Finish one in-flight line, then STOP, never replay it.
             while True:
                 data = await reader.readuntil(b'\n')
+                if data.startswith(b'GATEWAY OTA '):
+                    # Exclusive maintenance only, never mix binary image/key
+                    # bytes with the line-oriented musical command queue.
+                    size_text=data[len(b'GATEWAY OTA '):-1]
+                    if not size_text.isdigit() or len(size_text)>8 or not 1<=int(size_text)<=MAX_IMAGE:
+                        raise ValueError('Invalid BLE OTA size')
+                    if not getattr(link,'supports_ota',False):raise ValueError('Firmware without BLE OTA')
+                    deadline=clock()+MAX_COMMAND_AGE
+                    while oldest_inflight is not None and clock()<deadline:await asyncio.sleep(.005)
+                    if pending or oldest_inflight is not None:raise ValueError('BLE OTA requires an idle command queue')
+                    writer.write(b'BLE OTA READY\n');await writer.drain()
+                    payload=await asyncio.wait_for(reader.readexactly(32+int(size_text)),15)
+                    loop=asyncio.get_running_loop()
+                    def progress(percent):
+                        loop.call_soon_threadsafe(writer.write,f'BLE OTA PROGRESS {percent}\n'.encode('ascii'))
+                    await asyncio.to_thread(link.upload_firmware,payload[32:],payload[:32],progress)
+                    maintenance_completed=True
+                    writer.write(b'BLE OTA COMPLETE\n');await writer.drain()
+                    return
                 if len(data) > 96:
                     raise ValueError('BLE command too long')
                 command = data.strip()
@@ -123,7 +145,8 @@ async def serve_client(reader, writer):
         if link:
             # Cancellation of to_thread does not cancel a GATT write. BleBytes'
             # write lock orders this STOP after that one in-flight packet.
-            with contextlib.suppress(Exception): await asyncio.to_thread(link.write, b'ALL STOP\n')
+            if not maintenance_completed:
+                with contextlib.suppress(Exception): await asyncio.to_thread(link.write, b'ALL STOP\n')
             await asyncio.to_thread(link.close)
         writer.close()
         with contextlib.suppress(Exception): await writer.wait_closed()

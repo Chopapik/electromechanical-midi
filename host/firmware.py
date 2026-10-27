@@ -6,6 +6,7 @@ import collections
 import os
 import signal
 from pathlib import Path
+from firmware_ota import prepare_build
 
 PROJECT = Path(__file__).resolve().parents[1] / 'firmware' / 'controller'
 
@@ -23,6 +24,7 @@ def platformio() -> str:
 def run_firmware(tool: str, port: str | None = None, target: str = 'uno', on_line=None) -> str:
     if target not in ('uno', 'esp32'):
         raise ValueError('unknown firmware target')
+    if target=='esp32':prepare_build(PROJECT)
     command = [tool, 'run', '-d', str(PROJECT), '-e', target]
     if port is not None:
         command += ['--target', 'upload', '--upload-port', port]

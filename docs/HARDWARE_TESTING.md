@@ -324,6 +324,55 @@ Telemetria `/api/monitor/raw` pokazuje ruch komend; nie jest analizatorem STEP
 ani pomiarem prądu. Zapisuj wersję kodu, profil, kanał, zasilanie, czas, temperaturę,
 prąd i metodę pomiaru przy każdej nowej kwalifikacji sprzętu.
 
+### Aktualizacja firmware przez BLE
+
+Pierwsza instalacja obsługi OTA wymaga USB i zwykłego safe uploadu. Wykonuj
+wyłącznie po autoryzacji użytkownika i przygotowaniu układu opisanym wyżej:
+
+```sh
+.venv/bin/python scripts/safe_upload.py
+```
+
+Następne aktualizacje można uruchomić w `/settings` → **Serwis → Wgraj firmware
+przez BLE** lub tym samym narzędziem:
+
+```sh
+.venv/bin/python scripts/safe_upload.py --transport ble
+```
+
+Nie jest potrzebne Wi-Fi ani drugi klient Bluetooth. WebSocket aplikacji
+pozostaje połączeniem laptop–backend i pokazuje logi/postęp. Orkiestra i OTA
+używają jednej sesji BLE w osobnych trybach. Serwis zatrzymuje odtwarzanie,
+wymaga świeżych STOPPED i POWER OFF, odczekuje 1 s i blokuje PLAY/HOME/HIT oraz
+POWER ON na czas aktualizacji. Brak komunikacji/ACK kończy operację; nie ma
+automatycznego retry, włączania ATX ani wznowienia utworu.
+
+Klucz prywatny podpisów ECDSA jest w trwałym wolumenie settings, plik
+`/app/settings/ble-ota-key` (`ORCHESTRA_OTA_KEY`). Zachowaj go przy przenoszeniu
+instalacji. Nie publikuj go i nie usuwaj wolumenu w celu zwykłego restartu.
+Do firmware i przez BLE trafia tylko klucz publiczny/podpis, nigdy prywatny.
+Utrata klucza wymaga USB; program nie zastępuje go automatycznie podczas BLE.
+
+Obraz zapisuje się w drugim slocie aplikacji, po sprawdzeniu podpisu świeżego
+challenge, rozmiaru i SHA-256. Dopiero końcowy COMMIT wybiera obraz do bootu.
+Przerwanie przed COMMIT pozostawia poprzednią partycję startową. Brak końcowego
+ACK po COMMIT daje niepewny wynik — sprawdź recovery zamiast ponawiać transfer.
+Nie deklarujemy automatycznego rollbacku po awarii nowej aplikacji; w takim
+przypadku potrzebna może być naprawa przez USB. BLE OTA nie aktualizuje tabeli
+partycji ani bootloadera i nie zastępuje fizycznej weryfikacji zasilania.
+
+Po uploadzie sprawdź **Flash: zakończony**, następnie **BLE: zweryfikowano
+handshake**, logiczny ATX OFF i brak ruchu. Pierwszy test łącza wykonaj jako
+cichy PING/PONG, bez włączania ATX i bez instrumentów. Samo potwierdzenie
+transferu nie jest testem muzycznym ani dowodem niezawodności długich występów.
+
+Walidacja 2026-10-27: pierwsze USB wgrane, odzyskane BLE, logiczne OFF i wykryta
+obsługa OTA; klucz zachowany po rebuildzie. 986 testów hosta i 170 frontendowych
+PASS, build ESP32 PASS. Nowy transport przeszedł cichy test 1200 PONG z potwierdzonym
+początkowym/końcowym STOP. **Pełny transfer obrazu przez radio BLE nie został
+jeszcze wykonany na fizycznym urządzeniu**; testy transferu/podpisów są offline.
+[Raport i surowe RTT](../reports/ble-ota-validation-2026-10-27.json).
+
 ### Cichy test BLE PING/PONG
 
 [probe_ble_ping.py](../scripts/probe_ble_ping.py) nie uruchamia instrumentów:

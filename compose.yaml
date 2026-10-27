@@ -12,6 +12,8 @@ services:
       - "127.0.0.1:${APP_PORT:-5173}:8000"
     environment:
       ORCHESTRA_SPEAKER_SETTINGS: /app/settings/speaker-volumes.json
+      # Private OTA installation key persists across container rebuilds.
+      ORCHESTRA_OTA_KEY: /app/settings/ble-ota-key
       ORCHESTRA_OFFLINE: ${ORCHESTRA_OFFLINE:-0}
       ORCHESTRA_SERIAL_DIR: /host-dev
       # Native macOS BLE gateway; never substitutes Serial if unavailable.

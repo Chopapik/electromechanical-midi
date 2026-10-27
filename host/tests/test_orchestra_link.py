@@ -101,7 +101,7 @@ class ProtocolTests(unittest.TestCase):
         self.assertTrue(unmapped)
 
     def test_build_target(self):
-        with patch('firmware.subprocess.run',return_value=Mock(returncode=0,stdout='built')) as run:
+        with patch('firmware.prepare_build'),patch('firmware.subprocess.run',return_value=Mock(returncode=0,stdout='built')) as run:
             run_firmware('pio',target='esp32')
         self.assertIn('esp32',run.call_args.args[0])
         with self.assertRaises(ValueError): run_firmware('pio',target='bad')

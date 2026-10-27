@@ -11,6 +11,8 @@ from firmware import run_firmware, PROJECT
 
 
 class FirmwareTest(unittest.TestCase):
+    def setUp(self):
+        self.key=patch('firmware.prepare_build');self.key.start();self.addCleanup(self.key.stop)
     def test_streams_carriage_return_progress_and_rejects_failed_process(self):
         class Process:
             def __init__(self,code):

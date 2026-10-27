@@ -148,11 +148,26 @@ fragmentację STATUS, RX overflow, reconnect, STOP i nieodświeżanie watchdoga.
 testy BLE PASS; guard architektury 57 modułów PASS; build PlatformIO ESP32 PASS.
 [Raport walidacji poprawki](../../reports/ble-execution-ack-validation-2026-10-27.json).
 
-**Nie przeprowadzono jeszcze próby nowego trybu na fizycznym ESP32 i nie
-stwierdzamy, że wszystkie zaniki radiowe zostały usunięte.** Fizyczne ESP32
-nie zostało w tym etapie flashowane; wymaga osobnej zgody, USB i safe upload.
+**Powyższy raport dotyczy etapu przed fizycznym wdrożeniem.** Fizyczne ESP32
+nie zostało w tamtym etapie flashowane; wymagało osobnej zgody, USB i safe upload.
 Usunięto zależność od zmierzonego miejsca oczekiwania ATT; nie dowiedziono,
 że ACK będzie terminowy w tych samych warunkach radiowych. Po uploadzie
 należy najpierw porównać cichy PING/PONG w `delivery=execution-ack`, z tym samym
 limitem 250 ms. Dopiero później oceniać odtwarzanie muzyki. Instrumentów ani ATX
 nie uruchamiano w ramach weryfikacji tej poprawki.
+
+### Dalsza walidacja po USB i dodaniu BLE OTA — 2026-10-27
+
+Po jednoznacznej zgodzie użytkownika wykonano USB safe upload z potwierdzonym
+STOP/POWER OFF. Nowe firmware odzyskało BLE, potwierdziło logiczny OFF i
+uruchomiło `delivery=execution-ack`. Osobny cichy probe zakończył 1200 PONG:
+124,594 s łącznie, średnia 57,579 ms, p95 83,423 ms, p99 97,695 ms,
+maksimum RTT 196,158 ms, bez błędu transportu, z początkowym i końcowym STOP ACK.
+Nie wysyłano PLAY/HOME/HIT/POWER w probe i nie uruchamiano instrumentów.
+
+To pomiar nowego trybu na fizycznym ESP32, ale nie gwarancja działania przez
+cały występ. Warunki zasilania różniły się od wcześniejszej próby: tutaj ATX był
+odłączony od sieci według użytkownika i logicznie OFF, wcześniej logicznie ON.
+Nie jest to kontrolowane porównanie A/B ani izolacja wszystkich przyczyn.
+Transfer firmware przez BLE sprawdzono offline; fizycznie wykonano tylko USB.
+[Raport, walidacja OTA i pełne próbki RTT](../../reports/ble-ota-validation-2026-10-27.json).

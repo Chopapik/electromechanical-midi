@@ -28,6 +28,22 @@ beforeEach(()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>({json:async()=>[]})))
 })
 afterEach(()=>{cleanup();vi.unstubAllGlobals()})
+it('offers BLE only when available and shows its own transfer progress',async()=>{
+ render(<Harness/>)
+ const socket=FakeSocket.instances[0]
+ await act(async()=>{socket.onopen?.();socket.deliver({type:'hello',session:'browser'});socket.deliver({type:'state',state})})
+ expect((screen.getByRole('button',{name:'Wgraj firmware przez BLE'}) as HTMLButtonElement).disabled).toBe(true)
+ const ready={...state,service:{...state.service,firmware:{...state.service.firmware,bleAvailable:true}}}
+ await act(async()=>socket.deliver({type:'state',state:ready}))
+ fireEvent.click(screen.getByRole('button',{name:'Wgraj firmware przez BLE'}))
+ expect(socket.sent.map(text=>JSON.parse(text)).find(message=>message.action==='service')).toMatchObject({operation:'firmware_ble'})
+ await act(async()=>socket.deliver({type:'firmware_event',seq:1,kind:'status',stage:'upload_ble',flash:'running',ble:'idle',transport:'BLE',progress:62}))
+ expect(screen.getByText('Etap: Upload przez BLE')).toBeTruthy()
+ expect((screen.getByRole('progressbar',{name:'Postęp uploadu'}) as HTMLProgressElement).value).toBe(62)
+ await act(async()=>socket.deliver({type:'firmware_event',seq:2,kind:'status',stage:'reboot_wait',flash:'success',ble:'waiting',transport:'BLE'}))
+ expect(screen.getByText('Flash BLE: zakończony pomyślnie')).toBeTruthy()
+ expect(screen.queryByText('✓ Firmware ESP32 zostało pomyślnie wgrane przez USB.')).toBeNull()
+})
 it('uses the live socket from React through USB upload and verified BLE status',async()=>{
  render(<Harness/>)
  const socket=FakeSocket.instances[0]

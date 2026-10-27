@@ -253,6 +253,47 @@ Natywnie domyślnie `config/.runtime/speaker-volumes.json`; override przez
 
 ## Uruchamianie
 
+### Aktualizacje firmware przez BLE
+
+Oba transporty aktualizacji należą do `DeviceService`: `firmware` oznacza USB,
+`firmware_ble` oznacza BLE OTA. Wspólny początek to wyłączność serwisu, zatrzymanie
+odtwarzania, skorelowane STOP i POWER OFF oraz 1 s oczekiwania. USB zwalnia BLE;
+OTA zachowuje połączenie, lecz odłącza je od RealOutput, aby heartbeat i komendy
+muzyczne nie mieszały się z transferem. WebSocket laptop–backend nadal przesyła
+postęp. Nie potrzeba drugiego połączenia BLE ani Wi-Fi.
+
+Pierwszy build przez serwis tworzy prywatny klucz ECDSA P-256 w
+`ORCHESTRA_OTA_KEY` (Compose: `/app/settings/ble-ota-key` w trwałym wolumenie).
+Wygenerowany nagłówek `.generated/ble_ota_key.h` zawiera wyłącznie klucz publiczny.
+Oba pliki są wyłączone z Git i kontekstu Docker. Utrata klucza prywatnego wymaga
+ponownego provisioningu przez USB; nie generujemy zastępczego klucza przy próbie
+BLE. Samodzielny build PlatformIO bez nagłówka pozostawia OTA wyłączone.
+
+Charakterystyki NUS `...0005` (control/notify) i `...0006` (data) realizują osobny
+protokół binarny. ESP32 wydaje losowy challenge 16 B; host podpisuje challenge,
+rozmiar i SHA-256 obrazu. Manifest ma 100 B: uint32 LE, SHA-256 32 B i podpis
+ECDSA r||s 64 B. Publiczny klucz i podpis obrazu mogą być widoczne w transmisji;
+klucz prywatny nie trafia do firmware ani do radia. Transfer nie zapewnia
+poufności samego obrazu ani sprzętowego Secure Boot.
+
+Po poprawnej autoryzacji i potwierdzeniu logicznego ATX OFF firmware blokuje
+komendy ruchu/POWER ON na USB i NUS. Callback tylko kolejkuje bajty; zapis Flash
+wykonuje loopTask. Okno zawiera najwyżej 6 ramek przy 8 miejscach RX; każde ma
+offset, a ostatnia ramka okna wymaga potwierdzenia liczby zapisanych bajtów.
+Nie ma automatycznych powtórzeń. Timeout OTA wynosi 10 s na odpowiedź/bezczynność,
+cały transfer jest ograniczony do 900 s; nie zmienia to progu 250 ms dla muzyki.
+
+Zapis obejmuje wyłącznie nieaktywną partycję aplikacji. Default ESP32 layout ma
+`ota_0`/`ota_1` po `0x140000` B i `otadata`; bootloader, NVS i tabela partycji
+pozostają bez zmian podczas BLE OTA. END sprawdza pełne SHA-256 i obraz ESP32,
+COMMIT dopiero wybiera partycję, odsyła ACK i planuje restart po 500 ms. Przerwanie
+przed COMMIT nie wybiera nowej aplikacji. Brak ACK po COMMIT oznacza niepewny
+wynik; nie ponawiamy uploadu. Zwykły reconnect weryfikuje protokół i POWER OFF,
+nie przywraca ATX ON ani utworu. Automatyczny rollback po błędzie uruchomienia
+aplikacji nie jest włączony przez tę implementację; USB pozostaje drogą naprawy.
+
+[Uruchamianie i ograniczenia OTA](HARDWARE_TESTING.md#aktualizacja-firmware-przez-ble).
+
 W katalogu repozytorium:
 
 ```sh

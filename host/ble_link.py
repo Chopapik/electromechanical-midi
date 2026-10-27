@@ -11,6 +11,7 @@ import time
 from floppy_link import SerialLinkError
 from orchestra_link import OrchestraLink
 from ble_diagnostics import WriteHistory, LoopTiming
+import ble_ota
 
 NAME = 'Electromechanical-MIDI'
 SERVICE = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E'
@@ -80,6 +81,7 @@ class BleBytes:
             self._application_ack = False
             await client.start_notify(TX, self._notification)
             services = getattr(client, 'services', None)
+            self.supports_ota = services is not None and services.get_characteristic(ble_ota.CONTROL) is not None and services.get_characteristic(ble_ota.DATA) is not None
             if services is not None and services.get_characteristic(ACK) is not None:
                 # New firmware advertises a separate execution-barrier stream.
                 # Do not just switch to unconfirmed writes on legacy firmware.
@@ -217,6 +219,19 @@ class BleBytes:
                 'deliveryMode':'execution-ack' if getattr(self,'_application_ack',False) else 'att-response',
                 'bleLoop':self._loop_timing.snapshot() if hasattr(self,'_loop_timing') else None}
 
+    def upload_firmware(self, image, key, on_progress=None):
+        self._check()
+        if not getattr(self,'supports_ota',False):
+            raise SerialLinkError('Firmware bez BLE OTA; wgraj obsługę raz przez USB')
+        async def transfer():
+            async with self._write_lock:
+                return await ble_ota.upload(self._client,image,key,on_progress)
+        future=asyncio.run_coroutine_threadsafe(transfer(),self._loop)
+        try:return future.result(timeout=930)
+        except BaseException:
+            future.cancel()
+            raise
+
     def write(self, data):
         self._check()
         trace = self._write_history.add(data)
@@ -261,8 +276,9 @@ class GatewayBytes:
                 chunk = self._socket.recv(1)
                 if not chunk: break
                 header.extend(chunk)
-            if bytes(header) != b'BLE CONNECTED\n':
+            if bytes(header) not in (b'BLE CONNECTED\n', b'BLE CONNECTED ota=1\n'):
                 raise SerialLinkError(header.decode(errors='replace').strip() or 'BLE bridge disconnected')
+            self.supports_ota = b'ota=1' in header
             self._socket.settimeout(2)
         except Exception:
             self.close()
@@ -292,6 +308,34 @@ class GatewayBytes:
             raise SerialLinkError(f'BLE bridge write: {exc}') from exc
         return len(data)
 
+    def upload_firmware(self, image, key, on_progress=None):
+        if not getattr(self,'supports_ota',False):raise SerialLinkError('Firmware bez BLE OTA; pierwsze wgranie przez USB')
+        if len(key)!=32 or not 1<=len(image)<=ble_ota.MAX_IMAGE:raise ValueError('Invalid OTA payload')
+        with self._write_lock:
+            self._socket.settimeout(15)
+            def line():
+                data=bytearray()
+                while not data.endswith(b'\n') and len(data)<4096:
+                    chunk=self._socket.recv(1)
+                    if not chunk:raise SerialLinkError('BLE OTA: gateway disconnected')
+                    data.extend(chunk)
+                text=data.decode('ascii').strip()
+                if text.startswith(('BLE ERROR ','ERR ')):raise SerialLinkError(text)
+                if len(data)>=4096:raise SerialLinkError('BLE OTA invalid reply')
+                return text
+            try:
+                self._socket.sendall(f'GATEWAY OTA {len(image)}\n'.encode('ascii'))
+                if line()!='BLE OTA READY':raise SerialLinkError('BLE OTA: missing gateway readiness')
+                self._socket.sendall(key+image)
+                while True:
+                    response=line()
+                    if response=='BLE OTA COMPLETE':return {'bytes':len(image)}
+                    if response.startswith('BLE OTA PROGRESS '):
+                        percent=int(response.rsplit(' ',1)[1])
+                        if not 0<=percent<=100:raise SerialLinkError('BLE OTA invalid progress')
+                        if on_progress:on_progress(percent)
+            finally:self._socket.settimeout(2)
+
     def close(self):
         self._socket.close()
 
@@ -301,6 +345,12 @@ class BleOrchestraLink(OrchestraLink):
     protocol_version = 2
     board = 'esp32'
     transport_kind = 'ble'
+
+    @property
+    def supports_ota(self):return getattr(self._serial,'supports_ota',False)
+
+    def upload_firmware(self,image,key,on_progress=None):
+        return self._serial.upload_firmware(image,key,on_progress)
 
     def send_batch(self, commands):
         """One ordered operation; BleBytes locks across all ATT fragments."""

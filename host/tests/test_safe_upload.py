@@ -9,6 +9,18 @@ spec=importlib.util.spec_from_file_location('safe_upload',Path(__file__).resolve
 cli=importlib.util.module_from_spec(spec);spec.loader.exec_module(cli)
 
 class SafeUploadTests(unittest.IsolatedAsyncioTestCase):
+    async def test_ble_uses_the_same_local_service_barrier(self):
+        class Socket:
+            async def send(self,text):self.request=json.loads(text)
+            def __aiter__(self):return self
+            async def __anext__(self):return json.dumps({'type':'ack','requestId':self.request['requestId']})
+        socket=Socket()
+        class Connection:
+            async def __aenter__(self):return socket
+            async def __aexit__(self,*args):pass
+        with patch('websockets.asyncio.client.connect',return_value=Connection()):
+            await cli.upload('ws://127.0.0.1:5173/ws','ble')
+        self.assertEqual(socket.request['operation'],'firmware_ble')
     async def test_only_local_websocket_origin_and_shared_firmware_action(self):
         class Socket:
             async def send(self,text):self.request=json.loads(text)

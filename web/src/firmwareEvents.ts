@@ -6,9 +6,9 @@ export class FirmwareEvents {
   private sequence=0
   private request:string|null=null
   constructor(private publish:(events:FirmwareEvent[])=>void){}
-  prepare(request:string){
+  prepare(request:string,transport?:'BLE'|'USB'){
     this.request=request
-    this.events=[...this.events,{type:'firmware_event',seq:0,kind:'status',stage:'prepare',flash:'running',ble:'idle'}]
+    this.events=[...this.events,{type:'firmware_event',seq:0,kind:'status',stage:'prepare',flash:'running',ble:'idle',...(transport?{transport}:{})}]
     this.publish(this.events)
   }
   accept(message:ServerMessage){

@@ -4,7 +4,8 @@ import re
 import threading
 import time
 from ble_link import BleOrchestraLink
-from firmware import platformio, run_firmware
+from firmware import platformio, run_firmware, PROJECT
+from firmware_ota import key_path, read_key, image_path
 from floppy_link import esp32_upload_ports, scan_ports
 from .outputs import OutputError
 
@@ -58,10 +59,15 @@ class DeviceService:
             power_available=self.real.link is not None and power!='UNAVAILABLE' and not self.busy and not self.connecting
             power_reason=('DeviceService jest zajęty' if self.busy or self.connecting else 'Brak BLE lub firmware bez POWER' if not power_available else None)
             firmware_reason=self.firmware_reason or (power_reason if not power_available else None)
+            ota_capable=bool(self.real.link and getattr(self.real.link,'supports_ota',False))
+            ble_reason=(power_reason if not power_available else
+                        'Pierwsze wgranie obsługi BLE OTA wymaga USB' if not ota_capable else
+                        'Brak prywatnego klucza tej instalacji OTA; wymagane USB' if not key_path().is_file() else None)
             return {'power':{'state':power,'available':power_available,'operation':self.operation,'error':self.power_error,'reason':power_reason,'measured':False},'busy':self.busy,'connecting':self.connecting,'error':self.error,
                 'reset':{'available':False,'reason':'Firmware ESP32 nie udostępnia komendy resetu przez BLE.'},
                 'home':{'available':self.real.link is not None and power=='ON' and not self.busy,'reason':None if power=='ON' else 'ATX '+power},
                 'firmware':{'available':self.upload_port is not None and power_available,'reason':firmware_reason,
+                            'bleAvailable':ble_reason is None,'bleReason':ble_reason,
                             'port':self.upload_port,'ports':self.ports.copy(),**self.firmware_state}}
 
     def connect(self, expected_generation=None):
@@ -151,25 +157,28 @@ class DeviceService:
             self.power_error=str(exc)
             raise OutputError(str(exc)) from exc
 
-    def prepare_safe_upload(self):
+    def prepare_safe_upload(self, *, release=True):
         """Only called under service exclusivity and player lock, after confirmed STOP."""
         self._state(stage='power_off')
         self._power('OFF')
         self._event(kind='log',line='Potwierdzono GPIO19 LOW; to nie jest pomiar napięcia ATX. Odczekiwanie 1 s.')
         time.sleep(self.power_off_delay)
-        self.real.detach()
+        if release:self.real.detach()
 
     def run(self, operation, *, confirmed=False):
         if operation=='reset': raise OutputError(self.status()['reset']['reason'])
-        if operation not in ('home','firmware','power_on','power_off','power_status'): raise ValueError('Unknown maintenance operation')
+        if operation not in ('home','firmware','firmware_ble','power_on','power_off','power_status'): raise ValueError('Unknown maintenance operation')
+        firmware_operation=operation in ('firmware','firmware_ble')
+        ble_upload=operation=='firmware_ble'
+        ota_link=None
         if operation=='power_on' and confirmed is not True: raise OutputError('Włączenie fizycznego ATX wymaga potwierdzenia użytkownika')
         with self.lock:
             if self.busy or self.connecting: raise OutputError('DeviceService jest zajęty')
             self.busy=True; self.operation=operation; self.error=None; self.power_error=None
-            if operation=='firmware': self._generation+=1
+            if firmware_operation: self._generation+=1
             generation=self._generation
-        if operation=='firmware':
-            self._state(stage='prepare',flash='running',ble='idle',progress=None,error=None)
+        if firmware_operation:
+            self._state(stage='prepare',flash='running',ble='idle',progress=None,error=None,transport='BLE' if ble_upload else 'USB')
             self._event(kind='log',line='Przygotowanie: zatrzymanie odtwarzania i połączenia BLE')
         try:
             # Wait for a previously started BLE scan/handshake to release its link.
@@ -185,10 +194,29 @@ class DeviceService:
                 self.real.stop()
                 if operation.startswith('power_'):
                     return {'ok':True,'power':self._power('ON' if operation=='power_on' else 'OFF')}
-                if operation=='firmware': self.prepare_safe_upload()
+                if firmware_operation:
+                    if ble_upload:
+                        if not self.real.link or not getattr(self.real.link,'supports_ota',False):
+                            raise OutputError('Firmware bez BLE OTA; pierwszą instalację wykonaj przez USB')
+                        try:read_key()
+                        except OSError as exc:raise OutputError('Brak klucza tej instalacji BLE OTA; wymagane USB') from exc
+                    self.prepare_safe_upload(release=not ble_upload)
+                    if ble_upload:
+                        ota_link=self.real.link
+                        self.real.detach(close=False) # No heartbeat/musical writes during maintenance.
             if operation=='home':
                 self.real.home_all()
                 return {'ok':True}
+            if ble_upload:
+                self._state(stage='build')
+                run_firmware(platformio(),target='esp32',on_line=lambda text:self._event(kind='log',line=text))
+                image=image_path(PROJECT).read_bytes();key=read_key()
+                self._state(stage='upload_ble',progress=0)
+                ota_link.upload_firmware(image,key,on_progress=lambda value:self._state(progress=value))
+                self._state(stage='flash_confirmed',flash='success',progress=100)
+                self._event(kind='log',line='ESP32 potwierdziło SHA-256 obrazu i wybór partycji OTA; oczekiwanie na restart.')
+                self._state(stage='reboot_wait',ble='waiting',progress=None)
+                return {'ok':True,'flash':'success','transport':'BLE'}
             candidates=esp32_upload_ports(scan_ports())
             if len(candidates)!=1: raise OutputError('Podłącz dokładnie jeden port USB CP2102 przed uploadem')
             port=candidates[0].device; tool=platformio()
@@ -211,14 +239,17 @@ class DeviceService:
             return {'ok':True,'flash':'success'}
         except Exception as exc:
             self.error=str(exc)
-            if operation=='firmware': self._state(stage='failed',flash='failed',ble='idle',progress=None,error=str(exc))
+            if firmware_operation: self._state(stage='failed',flash='failed',ble='idle',progress=None,error=str(exc))
             try: self.real.stop()
             except Exception: pass
             raise
         finally:
+            if ota_link:
+                try:ota_link.close()
+                except Exception:pass
             if operation!='power_status':
                 with self.player.lock: self.player.owner='orchestra'
             with self.lock: self.busy=False; self.operation=None
-            if operation=='firmware' and self.real.link is None and not self._closed.is_set():
+            if firmware_operation and self.real.link is None and not self._closed.is_set():
                 self._recovery=threading.Thread(target=self._recover,args=(generation,),daemon=True,name='firmware-ble-recovery')
                 self._recovery.start()

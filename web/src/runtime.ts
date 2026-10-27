@@ -54,8 +54,8 @@ export function useRuntime(){
       if(!transport?.connected)throw new Error('Brak połączenia z backendem')
       if((action==='play'||action==='lab_test')&&state?.output.mode==='VIRTUAL')await audio.current.unlock()
       let requestId:string|undefined
-      if(action==='service'&&'operation' in payload&&payload.operation==='firmware'){
-        requestId=crypto.randomUUID();history.current?.prepare(requestId)
+      if(action==='service'&&'operation' in payload&&(payload.operation==='firmware'||payload.operation==='firmware_ble')){
+        requestId=crypto.randomUUID();history.current?.prepare(requestId,payload.operation==='firmware_ble'?'BLE':undefined)
       }
       transport.send({action,...payload,...(requestId?{requestId}:{})} as ClientCommand)
     }catch(error){setError(String(error))}

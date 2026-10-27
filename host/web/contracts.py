@@ -80,7 +80,7 @@ class LabStopCommand(Request):
 
 class ServiceCommand(Request):
     action: Literal['service']
-    operation: Literal['home', 'firmware', 'power_on', 'power_off', 'power_status', 'reset']
+    operation: Literal['home', 'firmware', 'firmware_ble', 'power_on', 'power_off', 'power_status', 'reset']
     confirmed: NotRequired[bool]
 
 
@@ -170,7 +170,7 @@ def validate_command(raw: object) -> ClientCommand:
                     _field(modulation, name, _number, 'modulation '+name)
     elif action == 'service':
         _field(raw, 'operation', lambda value:isinstance(value, str) and value in (
-            'home', 'firmware', 'power_on', 'power_off', 'power_status', 'reset'), 'maintenance operation', 'Unknown maintenance operation')
+            'home', 'firmware', 'firmware_ble', 'power_on', 'power_off', 'power_status', 'reset'), 'maintenance operation', 'Unknown maintenance operation')
         if 'confirmed' in raw:
             _field(raw, 'confirmed', lambda value:isinstance(value, bool), 'confirmation')
     elif action == 'audio_error':
