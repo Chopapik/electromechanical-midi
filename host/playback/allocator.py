@@ -26,25 +26,29 @@ brak czasu biezacego, brak losowosci).
 from __future__ import annotations
 
 import dataclasses
-import statistics
 
-from midi_source import MidiSource, NoteSpan, drum_name
-from pitch import fold_note, midi_to_hz, note_name
+from midi_source import MidiSource, NoteSpan
+from pitch import fold_note, midi_to_hz
 from . import analysis as analysis_module
 from .analysis import BASS, HARMONY, LEAD, PERCUSSION, MidiAnalysis
 from .articulation import apply as apply_articulation
 from .articulation import params_from_policy, apply_source_continuity
-from .capabilities import MIN_NOTE_S, DeviceCapability, capabilities_for
+from .capabilities import DeviceCapability, capabilities_for
 from .orchestra import OrchestraConfig, parse_policy
-from .performance import PerformanceEvent, PerformancePlan, ReinforcementEvent
+from .performance import PerformanceEvent, PerformancePlan
 from .device_models import VirtualDeviceInstance
 from .reinforcement import apply_reinforcement
-from .sound_roles import UNPITCHED_EFFECT, UNSUPPORTED_EFFECT, source_effects
+
+# Compatibility exports for existing CLI/tests. Implementations live in neutral
+# modules; hardware allocation and refinements import those modules directly.
+from .allocation_models import ManualPin, AllocationSlot as _Slot, AllocationCandidate as _Candidate
+from .allocation_operations import (note_priority as _priority, clip_duration as _clip,
+    adaptive_cap as _adaptive_cap, dropped_event as _dropped, commit_event as _commit,
+    place_event as _place)
+from .allocation_input import (source_notes as _source_notes,
+    partition_effects as _partition_effects, duplicate_kpis as _duplicate_kpis)
 
 EPS = 1e-9
-
-# Priorytety chronienia rol. Lead > bas > perkusja > harmonia.
-_BASE_PRIORITY = {LEAD: 100.0, BASS: 80.0, PERCUSSION: 60.0, HARMONY: 40.0}
 
 # Odstep miedzy powtorzona ta sama wysokoscia na tym samym urzadzeniu
 # (mechanika musi zdazyc sie zatrzymac - patrz timeline.ARTICULATION_S).
@@ -61,60 +65,6 @@ _PERCUSSION_CLASS = {
 
 # Nominalna dlugosc uderzenia, gdy profil nie podaje cyklu.
 _MIN_HIT_S = 0.05
-
-# Kolejnosc obslugi nut o tym samym czasie startu. Lead i bas dostaja glosy
-# przed harmonia; harmonia wewnatrz sortowana po dlugosci (najkrotsze pierwsze).
-_BAND = {LEAD: 0, BASS: 1, PERCUSSION: 1, HARMONY: 2, UNPITCHED_EFFECT: 3}
-
-
-@dataclasses.dataclass(frozen=True)
-class ManualPin:
-    """Reczna decyzja uzytkownika (z Arrangement JSON) - tylko preferencja."""
-
-    device_id: str | None
-    rule_id: str
-    articulation: str | None = None
-    transpose: int = 0
-    gate: float = 1.0
-    octave_fold: bool = True
-
-
-@dataclasses.dataclass
-class _Slot:
-    """Stan jednego urzadzenia w trakcie allokacji."""
-
-    device: VirtualDeviceInstance
-    capability: DeviceCapability
-    busy_until: float = 0.0
-    last_played: int | None = None
-    event_index: int | None = None      # indeks aktywnego zdarzenia (do voice steal)
-
-    @property
-    def headroom(self) -> int:
-        """Wysokosc ostatnio granej nuty - do prowadzenia glosow i travelu."""
-        return self.last_played if self.last_played is not None else 60
-
-
-@dataclasses.dataclass(frozen=True)
-class _Candidate:
-    slot: _Slot
-    played: int
-    hz: float
-    folded: bool
-
-
-def _priority(role: str, velocity: int, duration: float, policy: dict) -> float:
-    base = _BASE_PRIORITY.get(role, _BASE_PRIORITY[HARMONY])
-
-    if role == LEAD and not policy.get('preserveLead', True):
-        base = _BASE_PRIORITY[HARMONY]
-    elif role == BASS and not policy.get('preserveBass', True):
-        base = _BASE_PRIORITY[HARMONY]
-
-    if role == PERCUSSION:
-        return base + velocity / 127.0 * 20.0
-
-    return base + velocity / 127.0 * 10.0 + min(duration, 0.6) * 12.0
 
 
 def _fold(note: int, capability: DeviceCapability, transpose: int,
@@ -133,112 +83,6 @@ def _fold(note: int, capability: DeviceCapability, transpose: int,
     hz = midi_to_hz(shifted)
 
     return shifted, hz, False, capability.min_hz <= hz <= capability.max_hz
-
-
-def _clip(duration: float, minimum: float, policy: dict,
-          key: str = 'maxNoteSeconds') -> float:
-    """Dlugosc nuty w planie: nie krotsza niz mechanika i nie dluzsza niz budzet.
-
-    Monofoniczna orkiestra gra raczej krotkim gate'em niz sustainem: bez
-    limitu dlugie nuty blokuja glosy i wypychaja z planu cala reszte.
-    """
-    duration = max(duration, minimum)
-    cap = float(policy.get(key) or 0.0)
-
-    return min(duration, cap) if cap > 0 else duration
-
-
-def _solve_cap(durations: list[float], budget: float) -> float:
-    """Najwieksza dlugosc nuty, przy ktorej suma dlugosci <= budzet."""
-    low, high = MIN_NOTE_S, max(durations)
-
-    for _ in range(40):
-        middle = (low + high) / 2.0
-
-        if sum(min(duration, middle) for duration in durations) <= budget:
-            low = middle
-        else:
-            high = middle
-
-    return round(low, 4)
-
-
-def _adaptive_cap(notes: list[dict], slots: list[_Slot], policy: dict,
-                  roles: frozenset[str]) -> float:
-    """Budzet dlugosci nuty dla monofonicznej orkiestry.
-
-    N glosow x dlugosc utworu to twarda pojemnosc. Gdy suma dlugosci nut ja
-    przekracza, czesc materialu MUSI wypasc - chyba ze skrocimy nuty, tak jak
-    robi to kazdy instrument monofoniczny grajacy akordy.
-
-    Punktem odniesienia jest MEDIANA dlugosci nuty w tym utworze: nuta dluzsza
-    od typowej blokuje glos bez muzycznego uzasadnienia. Solver pojemności
-    dziala tylko jako bezpiecznik, gdyby mediana wciaz nie wystarczala.
-    """
-    # Budzet liczymy OSOBNO dla kazdej puli: akompaniament nie moze zjadac
-    # pojemnosci zarezerwowanej dla leadu i odwrotnie.
-    tonal = [note for note in notes if note['role'] in roles]
-
-    if not tonal or not slots:
-        return 0.0
-
-    durations = [note['span'].duration for note in tonal]
-    start = min(note['span'].start for note in tonal)
-    end = max(note['span'].end for note in tonal)
-    capacity = max(1e-6, end - start) * len(slots)
-
-    if roles == frozenset({LEAD}) and sum(durations) <= capacity:
-        return 0.0                       # nie skracamy rzadkiej linii leadu
-
-    # Doswiadczalny zapas: glosy nigdy nie wypelniaja 100% czasu (artykulacja,
-    # fragmentacja, nuty krotsze od limitu).
-    budget = capacity * float(policy.get('capacitySafety', 1.6))
-    cap = max(statistics.median(durations), MIN_NOTE_S)
-
-    if sum(min(duration, cap) for duration in durations) > budget:
-        cap = _solve_cap(durations, budget)
-
-    return round(min(cap, max(durations)), 4)
-
-
-def _source_notes(source: MidiSource, midi_analysis: MidiAnalysis, policy: dict) -> list[dict]:
-    """Wszystkie nuty pliku z rola, w deterministycznej kolejnosci.
-
-    W obrebie jednego uderzenia (ten sam start) najpierw dostaja urzadzenia
-    nuty WAZNIEJSZE. Inaczej o tym, ktora z 8 rownoczesnych nut przezyje
-    na 4 glosach, decydowalaby przypadkowa kolejnosc trackow.
-    """
-    result = []
-    effects = source_effects(source)
-
-    for track in source.tracks:
-        for span in source.notes(track.index):
-            note_id = f'{track.index}:{span.order}'
-            role = UNPITCHED_EFFECT if note_id in effects else midi_analysis.roles.get(note_id, HARMONY)
-            result.append({
-                'id': note_id, 'span': span, 'track': track.index,
-                'track_name': track.name, 'role': role, 'order': span.order,
-                'priority': _priority(role, span.velocity, span.duration, policy),
-                'name': effects.get(note_id) or (drum_name(span.note) if track.is_drums else note_name(span.note)),
-                'source_tracks': tuple(getattr(track, 'source_tracks', (track.index,))),
-                'group_id': getattr(track, 'group_id', None),
-                'duplicate_confidence': getattr(track, 'duplicate_confidence', None),
-            })
-
-    # W obrebie jednego uderzenia: najpierw wazniejsze role (lead, bas, perkusja),
-    # a w tej samej roli NAJKROTSZE nuty pierwsze. To klasyczne SPT - maksymalizuje
-    # liczbe zagranych nut, nie wypychajac przy tym melodii ani basu.
-    result.sort(key=lambda item: (item['span'].start, _BAND[item['role']],
-                                  item['span'].duration, item['track'], item['order']))
-
-    return result
-
-
-def _partition_effects(notes, pins):
-    """Keep unsupported triggers out of allocation, density and phrase budgets."""
-    return ([note for note in notes if note['role'] != UNPITCHED_EFFECT],
-            [_dropped(note, UNSUPPORTED_EFFECT, UNPITCHED_EFFECT, None, pins.get(note['id']))
-             for note in notes if note['role'] == UNPITCHED_EFFECT])
 
 
 def _classify_slots(devices: list[VirtualDeviceInstance]):
@@ -266,58 +110,6 @@ def _classify_slots(devices: list[VirtualDeviceInstance]):
             accompaniment.append(slot)
 
     return lead, accompaniment, percussion
-
-
-def _dropped(note: dict, outcome_reason: str, role: str,
-             preferred: str | None, pin: ManualPin | None) -> PerformanceEvent:
-    span: NoteSpan = note['span']
-
-    return PerformanceEvent(
-        id=note['id'], track=note['track'], track_name=note['track_name'],
-        note=span.note, name=note['name'], velocity=span.velocity,
-        channel=span.channel, start=span.start, duration=span.duration,
-        device_id=None, device_type=None, played_note=None, played_hz=None,
-        actual_start=span.start, actual_duration=0.0, outcome='DROPPED',
-        role=role, preferred_device=preferred,
-        rule_id=pin.rule_id if pin else None, reason=outcome_reason,
-        source_tracks=note.get('source_tracks', ()),
-        duplicate_group_id=note.get('group_id'),
-        duplicate_confidence=note.get('duplicate_confidence'))
-
-
-def _commit(slot: _Slot, events: list[PerformanceEvent], event: PerformanceEvent,
-            start: float, duration: float) -> None:
-    events.append(event)
-    slot.event_index = len(events) - 1
-    slot.busy_until = start + duration + slot.capability.retrigger_s
-    slot.last_played = event.played_note
-
-
-def _place(slot: _Slot, candidate: _Candidate, note: dict, outcome: str,
-           actual_start: float, duration: float, role: str, pin: ManualPin | None,
-           preferred: str, events: list[PerformanceEvent]) -> PerformanceEvent:
-    span: NoteSpan = note['span']
-    final = outcome
-
-    if candidate.folded and outcome == 'ACCEPTED':
-        final = 'FOLDED'
-
-    event = PerformanceEvent(
-        id=note['id'], track=note['track'], track_name=note['track_name'],
-        note=span.note, name=note['name'], velocity=span.velocity,
-        channel=span.channel, start=span.start, duration=span.duration,
-        device_id=slot.device.id, device_type=slot.device.type,
-        played_note=candidate.played, played_hz=candidate.hz,
-        actual_start=actual_start, actual_duration=duration,
-        outcome=final, role=role, preferred_device=preferred,
-        articulation=pin.articulation if pin else None,
-        rule_id=pin.rule_id if pin else None,
-        source_tracks=note.get('source_tracks', ()),
-        duplicate_group_id=note.get('group_id'),
-        duplicate_confidence=note.get('duplicate_confidence'))
-    _commit(slot, events, event, actual_start, duration)
-
-    return event
 
 
 def _choose_preferred(candidates: list[_Candidate], role: str) -> _Candidate:
@@ -631,56 +423,6 @@ def _allocate_percussion(note: dict, slots: list[_Slot], events: list[Performanc
                            preferred.device.id, pin))
 
 
-def _duplicate_kpis(source, notes: list[dict], accompaniment_slots: list[_Slot],
-                    report) -> dict:
-    """Ile falszywej polifonii zniknelo i jak bardzo odciazylo to FDD."""
-    tonal = [note for note in notes if note['role'] != PERCUSSION]
-
-    if not tonal:
-        return {}
-
-    start = min(note['span'].start for note in tonal)
-    end = max(note['span'].end for note in tonal)
-    span = max(1e-6, end - start)
-    capacity = span * max(1, len(accompaniment_slots))
-    lead_tracks = {note['track'] for note in tonal if note['role'] == LEAD}
-    logical_accompaniment = sum(note['span'].duration for note in tonal
-                                if note['role'] != LEAD)
-    lead_group: set[int] = set()
-
-    for track in lead_tracks:
-        group = report.group_of(track)
-        lead_group |= set(group.tracks) if group is not None else {track}
-
-    raw = getattr(source, 'source', None)
-    raw_accompaniment = logical_accompaniment
-
-    if raw is not None:
-        raw_accompaniment = sum(
-            span_.duration
-            for track in raw.tracks
-            if not track.is_drums and track.index not in lead_group
-            for span_ in raw.notes(track.index))
-
-    def clamp_demand(value: float) -> float:
-        return value / capacity if capacity > 0 else 0.0
-
-    return {
-        'groupsFound': len(report.groups),
-        'tracksCollapsed': report.collapsed_tracks,
-        'rawTonalEvents': report.raw_tonal_events,
-        'logicalTonalEvents': report.logical_tonal_events,
-        'duplicateEventsCollapsed': report.events_removed,
-        'accompanimentDemandSecondsBefore': round(raw_accompaniment, 1),
-        'accompanimentDemandSecondsAfter': round(logical_accompaniment, 1),
-        'demandCapacityBefore': round(clamp_demand(raw_accompaniment), 3),
-        'demandCapacityAfter': round(clamp_demand(logical_accompaniment), 3),
-        'capacitySeconds': round(capacity, 1),
-        'groups': [group.as_dict() for group in report.groups],
-        'pairs': [pair.as_dict() for pair in report.pairs],
-    }
-
-
 def manual_pins(arrangement, source: MidiSource) -> dict[str, ManualPin]:
     """Zamienia reczne reguly Arrangement na preferencje allokatora.
 
@@ -704,7 +446,6 @@ def manual_pins(arrangement, source: MidiSource) -> dict[str, ManualPin]:
                     device_id=None, rule_id=route.get('ruleId') or 'manual-drop'))
 
     return pins
-
 
 
 def allocate(source: MidiSource, config: OrchestraConfig, *,

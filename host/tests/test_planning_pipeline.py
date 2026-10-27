@@ -8,12 +8,14 @@ import test_runtime as helpers
 from playback.device_models import DeviceInstance
 from playback.virtual import VirtualDeviceInstance
 from runtime.planning_pipeline import ArrangementStrategy
+from playback.arrangement_strategy import FddGrouping, HardwareAllocationStrategy
+from arrangement_presets import PRESET_IDS
 
 
 class PipelineContractTests(unittest.TestCase):
     def test_allocation_strategy_does_not_mutate_requested_config(self):
         registry=helpers.DeviceRegistry()
-        for preset in ('balanced','universal','fdd_expressive_solo','fdd_legato','adaptive_legato'):
+        for preset in PRESET_IDS:
             registry.document['parameters']['arrangementPreset']=preset
             config=registry.configuration();before=copy.deepcopy(config.as_dict())
             strategy=ArrangementStrategy.for_preset(preset)
@@ -22,6 +24,22 @@ class PipelineContractTests(unittest.TestCase):
             self.assertEqual(config.policy['arrangementPreset'],preset)
             self.assertEqual(allocated.policy['arrangementPreset'],strategy.allocation)
             self.assertIsNot(allocated.policy,config.policy)
+
+    def test_hardware_strategy_preserves_requested_configuration(self):
+        registry = helpers.DeviceRegistry()
+        for preset in PRESET_IDS:
+            with self.subTest(preset=preset):
+                registry.document['parameters']['arrangementPreset'] = preset
+                config = registry.configuration()
+                before = copy.deepcopy(config.as_dict())
+                strategy = HardwareAllocationStrategy.for_config(config, FddGrouping())
+                self.assertEqual(config.as_dict(), before)
+                self.assertEqual(strategy.requested_config.policy['arrangementPreset'], preset)
+
+    def test_legacy_grouping_retains_bool_and_integer_distinction(self):
+        self.assertEqual(FddGrouping.from_legacy(True).size, 4)
+        self.assertEqual(FddGrouping.from_legacy(2).size, 2)
+        self.assertFalse(FddGrouping.from_legacy(False).enabled)
 
     def test_legacy_device_class_is_the_neutral_model(self):
         self.assertIs(DeviceInstance,VirtualDeviceInstance)

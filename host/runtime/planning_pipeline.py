@@ -4,7 +4,7 @@ Stages may mutate the plan, never transports or application playback state.
 The selected preset and its shared allocation strategy are separate inputs.
 """
 from collections import defaultdict
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, replace
 from playback.tonal_articulation import resolve, retarget
 from playback.hdd_articulation import classify, adapt
 from playback.allocator import allocate
@@ -13,35 +13,14 @@ from playback.strict_tracks import allocate_strict
 from playback.fdd_duration import apply as fix_fdd_duration
 from playback.fdd_attack_rate import apply as limit_fdd_attacks
 from playback.fdd_pairs import synchronize_unison4
-from playback.fdd_expression import (PRESET as EXPRESSIVE, SOLO_PRESET,
+from playback.fdd_expression import (
     finalize as finalize_fdd_expression, without_accents)
-from playback.fdd_legato import PRESET as LEGATO, apply as phrase_legato
-from playback.adaptive_legato import PRESET as ADAPTIVE
+from playback.fdd_legato import apply as phrase_legato
 from playback.dvd_register import apply as set_dvd_register
 from playback.planning_context import (ensure_extra_bindings, import_extra_articulation,
                                        set_extra_articulation)
+from playback.arrangement_strategy import ArrangementStrategy
 from .registry import PlanningProfiles
-
-
-@dataclass(frozen=True)
-class ArrangementStrategy:
-    requested: str
-    allocation: str
-    remove_accents: bool = False
-    phrase_legato: bool = False
-    adaptive: bool = False
-
-    @classmethod
-    def for_preset(cls, preset):
-        derived = preset in (SOLO_PRESET, LEGATO, ADAPTIVE)
-        return cls(preset, EXPRESSIVE if derived else preset, derived,
-                   preset in (LEGATO, ADAPTIVE), preset == ADAPTIVE)
-
-    def allocation_config(self, requested_config):
-        # A distinct config expresses the shared allocator strategy. The user's
-        # requested configuration is never temporarily relabelled or modified.
-        return replace(requested_config, policy={**requested_config.policy,
-                       'arrangementPreset': self.allocation})
 
 
 def allocate_backbone(source, registry, strategy):
@@ -63,31 +42,32 @@ def resolve_expression(plan):
     fix_fdd_duration(plan)
     preserved_articulation = plan.execution_articulation
     tonal,_=resolve(plan)
-    plan.execution_articulation={key:asdict(art) for key,art in tonal.items()}
+    plan.execution_articulation={key:asdict(articulation) for key,articulation in tonal.items()}
     plan.execution_articulation.update(preserved_articulation)
     import_extra_articulation(plan)
-    sources={e.id:e for e in plan.events}
-    percussion=defaultdict(list)
+    source_events={event.id:event for event in plan.events}
+    percussion_events=defaultdict(list)
     gaps={}
-    for e in plan.events:
-        if e.played and e.device_type=='HDD_VCM':percussion[e.device_id].append(e)
-    for events in percussion.values():
-        events.sort(key=lambda e:(e.actual_start,e.id))
-        for i,e in enumerate(events):
-            gaps[e.id]=min((abs(events[j].actual_start-e.actual_start) for j in (i-1,i+1)
+    for event in plan.events:
+        if event.played and event.device_type=='HDD_VCM':
+            percussion_events[event.device_id].append(event)
+    for events in percussion_events.values():
+        events.sort(key=lambda event:(event.actual_start,event.id))
+        for index,event in enumerate(events):
+            gaps[event.id]=min((abs(events[j].actual_start-event.actual_start) for j in (index-1,index+1)
                             if 0<=j<len(events)),default=float('inf'))
-    for e in plan.events:
-        if e.played and e.device_type=='HDD_VCM':
-            art=adapt(classify(e.note,e.channel,e.velocity,e.articulation),gaps[e.id])
-            plan.execution_articulation[e.id]=asdict(art)
-    types={d['id']:d['type'] for d in plan.devices}
-    for i,e in enumerate(plan.reinforcements):
-        if 'extra:'+str(i) in preserved_articulation:
+    for event in plan.events:
+        if event.played and event.device_type=='HDD_VCM':
+            articulation=adapt(classify(event.note,event.channel,event.velocity,event.articulation),gaps[event.id])
+            plan.execution_articulation[event.id]=asdict(articulation)
+    device_types={d['id']:d['type'] for d in plan.devices}
+    for index,event in enumerate(plan.reinforcements):
+        if 'extra:'+str(index) in preserved_articulation:
             continue
-        if e.source_id in tonal:
-            set_extra_articulation(plan, i, asdict(retarget(tonal[e.source_id],types[e.device_id],e.duration,e.velocity,e.start-sources[e.source_id].actual_start)))
-        elif e.source_id in plan.execution_articulation:
-            set_extra_articulation(plan, i, plan.execution_articulation[e.source_id])
+        if event.source_id in tonal:
+            set_extra_articulation(plan, index, asdict(retarget(tonal[event.source_id],device_types[event.device_id],event.duration,event.velocity,event.start-source_events[event.source_id].actual_start)))
+        elif event.source_id in plan.execution_articulation:
+            set_extra_articulation(plan, index, plan.execution_articulation[event.source_id])
 
 
 def enforce_fdd_limits(plan, registry):
@@ -147,7 +127,7 @@ def run(source, registry):
     resolve_expression(plan)
     enforce_fdd_limits(plan, registry)
     auto = registry.document.get('routing', {'mode':'AUTO'})['mode'] == 'AUTO'
-    if auto and strategy.allocation in ('universal','instrument_roles_unison4',EXPRESSIVE):
+    if auto and strategy.supports_recovery:
         recover_voices(plan, registry, source)
     finish_articulation(plan, registry, source, strategy)
     return plan

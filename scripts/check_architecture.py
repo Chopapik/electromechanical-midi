@@ -72,6 +72,18 @@ def _imports(tree,path):
 def _boundary(path,module):
     family=module.split('.')[0]
     if path.startswith('host/playback/'):
+        if (path == 'host/playback/arrangement_strategy.py' and family == 'playback'
+                and module != 'playback.orchestra'):
+            return 'strategy descriptions depend on preset data/configuration, not algorithm implementations'
+        neutral = Path(path).stem in {
+            'allocation_models', 'allocation_input', 'allocation_operations',
+            'arrangement_strategy',
+        }
+        if neutral and module in {'playback.allocator', 'playback.hardware_arranger',
+                                  'playback.virtual'}:
+            return 'shared allocation contracts must not import allocator implementations or preview'
+        if path != 'host/playback/allocator.py' and module == 'playback.allocator':
+            return 'planning refinements must use neutral allocation contracts, not the entry point'
         if family in {'runtime','web'}|TRANSPORTS:
             return 'planning must not import application controllers or live transports'
         if path=='host/playback/device_models.py' and module=='playback.virtual':

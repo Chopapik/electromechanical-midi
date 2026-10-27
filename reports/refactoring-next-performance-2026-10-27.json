@@ -1,0 +1,126 @@
+{
+  "before": {
+    "sourceRoot": "/private/tmp/orchestra-refactoring-next-f394d33",
+    "python": "3.14.8",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "scope": "offline arrange+compile; one warmup, five untraced timed runs; one separate tracemalloc run; 48-second SHA-checked excerpts; concurrent corpus jobs may affect times",
+    "cases": [
+      {
+        "case": "bodysnatchers",
+        "preset": "fdd_expressive",
+        "seconds": [
+          1.9486212090123445,
+          2.0105972919845954,
+          1.9993840840179473,
+          2.0149545000167564,
+          2.155969792045653
+        ],
+        "medianSeconds": 2.0105972919845954,
+        "peakTracedBytes": 22106053,
+        "events": 1793,
+        "commands": 2932
+      },
+      {
+        "case": "no-surprises",
+        "preset": "adaptive_legato",
+        "seconds": [
+          1.2007352079963312,
+          1.2017718330025673,
+          1.2218336670193821,
+          1.257302958983928,
+          1.224292999948375
+        ],
+        "medianSeconds": 1.2218336670193821,
+        "peakTracedBytes": 13335293,
+        "events": 947,
+        "commands": 1392
+      },
+      {
+        "case": "dense-drums-counting-stars",
+        "preset": "universal",
+        "seconds": [
+          0.6471588750137016,
+          0.6701942910440266,
+          0.6839482079958543,
+          0.6945632500573993,
+          0.7168605000479147
+        ],
+        "medianSeconds": 0.6839482079958543,
+        "peakTracedBytes": 11936209,
+        "events": 694,
+        "commands": 965
+      }
+    ]
+  },
+  "after": {
+    "sourceRoot": "/Users/krzysztof/Documents/GitHub/electromechanical-midi",
+    "python": "3.14.8",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "scope": "offline arrange+compile; one warmup, five untraced timed runs; one separate tracemalloc run; 48-second SHA-checked excerpts; concurrent corpus jobs may affect times",
+    "cases": [
+      {
+        "case": "bodysnatchers",
+        "preset": "fdd_expressive",
+        "seconds": [
+          1.76642754196655,
+          1.626512249931693,
+          1.6858526670839638,
+          1.6732843330828473,
+          1.7512402080465108
+        ],
+        "medianSeconds": 1.6858526670839638,
+        "peakTracedBytes": 22106061,
+        "events": 1793,
+        "commands": 2932
+      },
+      {
+        "case": "no-surprises",
+        "preset": "adaptive_legato",
+        "seconds": [
+          1.1115472499513999,
+          1.2235475410707295,
+          1.0872334159212187,
+          1.040441166027449,
+          1.1168928330298513
+        ],
+        "medianSeconds": 1.1115472499513999,
+        "peakTracedBytes": 13335117,
+        "events": 947,
+        "commands": 1392
+      },
+      {
+        "case": "dense-drums-counting-stars",
+        "preset": "universal",
+        "seconds": [
+          0.6510348339797929,
+          0.6580771669978276,
+          0.6529685419518501,
+          0.701957666897215,
+          0.9761482080211863
+        ],
+        "medianSeconds": 0.6580771669978276,
+        "peakTracedBytes": 11936209,
+        "events": 694,
+        "commands": 965
+      }
+    ]
+  },
+  "comparison": [
+    {
+      "case": "bodysnatchers",
+      "timeRatio": 0.838,
+      "peakMemoryRatio": 1.0
+    },
+    {
+      "case": "no-surprises",
+      "timeRatio": 0.91,
+      "peakMemoryRatio": 1.0
+    },
+    {
+      "case": "dense-drums-counting-stars",
+      "timeRatio": 0.962,
+      "peakMemoryRatio": 1.0
+    }
+  ],
+  "interpretation": "No material increase of traced planning allocation in these inputs. Timings collected while corpus jobs were active; compare conservatively, not a performance SLA."
+}

@@ -15,15 +15,20 @@ from .device_service import DeviceService
 class Application:
     def __init__(self, registry=None, emit=lambda message:None, connect=None):
         self.registry=registry or DeviceRegistry()
-        self.real=RealOutput(self.registry); self.virtual=VirtualOutput(emit)
+        self.real=RealOutput(self.registry)
+        self.virtual=VirtualOutput(emit)
         self.router=Router(self.registry,self.real,self.virtual)
         self.player=Player(self.router)
         self.lab=Laboratory(self.registry,self.player)
         self.service=DeviceService(self.player,**({'connect':connect} if connect else {}))
-        self.source=None; self.plan=None; self.timeline=None; self.revision=0
+        self.source=None
+        self.plan=None
+        self.timeline=None
+        self.revision=0
 
     def require_available(self):
-        if self.service.busy: raise ValueError('DeviceService jest zajęty')
+        if self.service.busy:
+            raise ValueError('DeviceService jest zajęty')
 
     def play(self, session):
         self.require_available()
@@ -72,7 +77,8 @@ class Application:
     def test_laboratory(self, session, ident, hz=200, duration=1, modulation=None, *, update=False):
         self.require_available()
         self.lab.require_session(session)
-        if self.router.mode=='VIRTUAL': self.virtual.claim_owner(session)
+        if self.router.mode=='VIRTUAL':
+            self.virtual.claim_owner(session)
         self.lab.test(session,ident,hz,duration,modulation,update=update)
 
     def stop_laboratory(self, session, ident):
@@ -105,14 +111,17 @@ class Application:
         if self.virtual.owner==session:
             # Preserve owner through STOP timeout, then allow the browser lease
             # to expire. No acknowledgement is inferred from a disconnected peer.
-            with contextlib.suppress(Exception): self.player.stop()
+            with contextlib.suppress(Exception):
+                self.player.stop()
             time.sleep(.6)
             self.virtual.release_owner(session)
         if self.lab.session==session:
-            with contextlib.suppress(Exception): self.lab.leave(session)
+            with contextlib.suppress(Exception):
+                self.lab.leave(session)
 
     def close(self):
-        with contextlib.suppress(Exception): self.player.close()
+        with contextlib.suppress(Exception):
+            self.player.close()
         self.service.shutdown()
         self.real.detach()
 
@@ -123,34 +132,44 @@ class Application:
         with self.player.lock:
             self.player.load(timeline)
             self.lab.session=None
-            self.source=source; self.plan=plan; self.timeline=timeline; self.revision+=1
+            self.source=source
+            self.plan=plan
+            self.timeline=timeline
+            self.revision+=1
     def set_preset(self, preset):
-        if not is_preset(preset): raise ValueError('Unknown arrangement preset')
+        if not is_preset(preset):
+            raise ValueError('Unknown arrangement preset')
         with self.player.lock:
-            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            if self.service.busy:
+                raise ValueError('DeviceService jest zajęty')
             self.player.stop()  # STOP confirmation/cancellation precedes any planning.
             parameters=self.registry.document.setdefault('parameters',{})
             old=parameters.get('arrangementPreset','balanced')
             parameters['arrangementPreset']=preset
             try:
                 if self.source:
-                    plan=arrange(self.source,self.registry);timeline=compile_plan(plan)
+                    plan=arrange(self.source,self.registry)
+                    timeline=compile_plan(plan)
                     self.player.load(timeline)
-                    self.plan=plan;self.timeline=timeline;self.lab.session=None
+                    self.plan=plan
+                    self.timeline=timeline
+                    self.lab.session=None
                 self.revision+=1
             except Exception:
                 parameters['arrangementPreset']=old
                 raise
     def set_speaker_volume(self, ident, output, value):
         with self.player.lock:
-            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            if self.service.busy:
+                raise ValueError('DeviceService jest zajęty')
             self.registry.set_volume(ident,output,value)
             if output=='REAL' and self.router.mode=='REAL' and ident not in self.router.muted:
                 self.real.set_speaker_amplitude(ident)
 
     def set_speaker_waveform(self,ident,waveform):
         with self.player.lock:
-            if self.service.busy: raise ValueError('DeviceService jest zajęty')
+            if self.service.busy:
+                raise ValueError('DeviceService jest zajęty')
             self.registry.validate_waveform(ident,waveform)
             if self.router.mode=='REAL' and ident in self.real.active_speakers:
                 self.real.require_waveform(waveform)
@@ -159,8 +178,10 @@ class Application:
                 self.real.set_speaker_waveform(ident)
 
     def orchestra(self):
-        self.player.select_owner('orchestra'); self.lab.session=None
-        if self.timeline: self.player.load(self.timeline)
+        self.player.select_owner('orchestra')
+        self.lab.session=None
+        if self.timeline:
+            self.player.load(self.timeline)
     def snapshot(self):
         return {**self.player.snapshot(),'file':self.source.path.name if self.source else None,
                 'revision':self.revision,'arrangementPreset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced'),'devices':self.registry.catalog(),'service':self.service.status(),

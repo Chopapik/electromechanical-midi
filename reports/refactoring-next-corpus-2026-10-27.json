@@ -1,0 +1,3328 @@
+{
+  "schema": 1,
+  "scope": "exact complete planning digests; offline only",
+  "presets": [
+    "universal",
+    "fdd_expressive",
+    "adaptive_legato"
+  ],
+  "paths": 363,
+  "manifest": [
+    {
+      "sha256": "03adf5c5e76ac7e09796ebd6bcca1e3e5a43c1dd10f67702d3ee87eef6ccafdb",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0051-09-radiohead_2000-morning_bell-[k].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0051-09-radiohead_2000-morning_bell-[k].mid"
+      ]
+    },
+    {
+      "sha256": "0769f09d6e7e0724e21d8d28bb412d3dcb864e6395136227dba0a2ff91b55688",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Paranoid_black_sabbath.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Paranoid_black_sabbath.mid"
+      ]
+    },
+    {
+      "sha256": "09572c5638b2c72d5606b7d46d4802d67e6bfa3f641f0f43df94863a423586f2",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Final Countdown - Europe.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Final Countdown - Europe.mid"
+      ]
+    },
+    {
+      "sha256": "0a65891453ac5c936d73c33271f4118a6d984feb2585824930c910cf0a6a83ee",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Tainted Love (Karaoke).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Tainted Love (Karaoke).mid"
+      ]
+    },
+    {
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Every breath you take.mid"
+      ]
+    },
+    {
+      "sha256": "0d8b25ea09e31992e930ca9b0327366ab682580919f9a57955c989340e6134e0",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/necros_-_introspection.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/necros_-_introspection.mid"
+      ]
+    },
+    {
+      "sha256": "13291d893edf89c5f802f4089c0966c88d68285c412c98c35a752c7733ac0bc6",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Awolnation_-_Sail__Intricacy_20130130013340.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Awolnation_-_Sail__Intricacy_20130130013340.mid"
+      ]
+    },
+    {
+      "sha256": "1364df4d9ee8de694621967f9da6a7e6265aa1b1de4cdea485fc3e9111724aef",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Pink_Floyd_-_Time.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Pink_Floyd_-_Time.mid"
+      ]
+    },
+    {
+      "sha256": "1490a17cea801b8d82051badca61bd5320dfe8b25fbefcb3606a3ae68175c6ab",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Owl-City-Fireflies-adi12-20201220170008-nonstop2k.com.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Owl-City-Fireflies-adi12-20201220170008-nonstop2k.com.mid"
+      ]
+    },
+    {
+      "sha256": "163db355cc29260c2a1937965abaf8f809d89e77d19651daebdb3c53850d46cf",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0045-02-radiohead_2000-kid_a.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0045-02-radiohead_2000-kid_a.mid"
+      ]
+    },
+    {
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k] (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-17.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-18.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-19.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-20.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-21.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-22.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-23.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-24.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k]-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0080-02-radiohead_2007-bodysnatchers-[k].mid"
+      ]
+    },
+    {
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0054-02-radiohead_2001-pyramid_song-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0054-02-radiohead_2001-pyramid_song-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0054-02-radiohead_2001-pyramid_song.mid"
+      ]
+    },
+    {
+      "sha256": "1bcad0dc366ccce0a2a154d91060b80ce9ce493547e71207ea4f499b207849f1",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/flcl.mid"
+      ]
+    },
+    {
+      "sha256": "1ccb3bd04eef433883095ef6f7d143656af2f990324383c8056262b1e1c09c2b",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/popcorn.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/popcorn.mid"
+      ]
+    },
+    {
+      "sha256": "209ba5c32aabf3e70207dea6f81c57dd7a4fc81bac1150cfddb13fb076174f19",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Black Sabbath Iron Man (Edited MIDI).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Black Sabbath Iron Man (Edited MIDI).mid"
+      ]
+    },
+    {
+      "sha256": "21be30973f48b317a6a97957e553d1fa7419c3517ecf6e888431ee39bdfef92c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/godknows-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/godknows-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/godknows.mid"
+      ]
+    },
+    {
+      "sha256": "288c249fdb56c534714797e9bd5593e314c23b25cfa01e75f69d19c193f73c93",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay_A_Sky_Full_of_Stars.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay_A_Sky_Full_of_Stars.mid"
+      ]
+    },
+    {
+      "sha256": "2c1fe8de529fa294299442296d9dd56d30a5706c63b394d5490cd6763f0d54ef",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/gotye-somebody_that_i_used_to_know-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/gotye-somebody_that_i_used_to_know-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/gotye-somebody_that_i_used_to_know.mid"
+      ]
+    },
+    {
+      "sha256": "317bb1aae459983fed30f9faa234fd3d2fe6ae20f71f0d2c241fe936e3bf0f96",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/PSX_Bios_zb.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/PSX_Bios_zb.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/sony-playstation-startup-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/sony-playstation-startup-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/sony-playstation-startup-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/sony-playstation-startup.mid"
+      ]
+    },
+    {
+      "sha256": "3279bf71139e30db9680d4be8a6c842159886cdfadfbf4fc329ea91ad270f64c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/stromae-formidable.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/stromae-formidable.mid"
+      ]
+    },
+    {
+      "sha256": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0065-03-radiohead_2003-sail_to_the_moon.mid"
+      ]
+    },
+    {
+      "sha256": "41be59146b6219e0e3572ab03873683889ae805cf3fd8e76e03c5f3605465e01",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/PET SHOP BOYS.Always on my mind K.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/PET SHOP BOYS.Always on my mind K.mid"
+      ]
+    },
+    {
+      "sha256": "441b44a841c48ef9c9925649adfde3740217a6a0117e1521a3e2836e417c8cce",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0082-04-radiohead_2007-weird_fishes-arpegi.mid"
+      ]
+    },
+    {
+      "sha256": "454bb4054fd63ef0609d48965c0dbfc7b57018b0aedf8e75d44bc4846d3544cf",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0088-10-radiohead_2007-videotape-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0088-10-radiohead_2007-videotape-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0088-10-radiohead_2007-videotape-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0088-10-radiohead_2007-videotape-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0088-10-radiohead_2007-videotape.mid"
+      ]
+    },
+    {
+      "sha256": "486253a317a26e2a580cd00a745e8d13777aa59de9f42b26003d1eee6df74133",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0037-06-radiohead_1997-karma_police-[k].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0037-06-radiohead_1997-karma_police-[k].mid"
+      ]
+    },
+    {
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k]-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0032-01-radiohead_1997-airbag-[k].mid"
+      ]
+    },
+    {
+      "sha256": "529c04959f3d7de8e1205cab273a23dc2a908af4cc4eda4bd47dd4625fe66069",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0043-12-radiohead_1997-the_tourist-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0043-12-radiohead_1997-the_tourist-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0043-12-radiohead_1997-the_tourist-[k].mid"
+      ]
+    },
+    {
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k] (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k] (4).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k]-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0041-10-radiohead_1997-no_surprises-[k].mid"
+      ]
+    },
+    {
+      "sha256": "5bc05b4fc8fdd69a1b934916996706381cbdae0b9fe21336f668aef928e87a83",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle (1).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle (1).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/The Police - Message in a Bottle.mid"
+      ]
+    },
+    {
+      "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Queen - Bohemian Rhapsody (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Queen - Bohemian Rhapsody (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Queen - Bohemian Rhapsody (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Queen - Bohemian Rhapsody (4).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Queen - Bohemian Rhapsody.mid"
+      ]
+    },
+    {
+      "sha256": "64658ddba1818073b5d00999aa24f7ed68d8289a1ac5b490570d2f352926602d",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Stay_Shakespears_Sister (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Stay_Shakespears_Sister (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Stay_Shakespears_Sister.mid"
+      ]
+    },
+    {
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0081-03-radiohead_2007-nude.mid"
+      ]
+    },
+    {
+      "sha256": "65c1d0aa5fa55af435b6cda74ecc9e3dd77b51fae1e2b428c140b737628c2744",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/coldplaythe_scientist.mid"
+      ]
+    },
+    {
+      "sha256": "66cadd7217789fba2090020f81bbb8097b09ed39983bb7da5c492b548954aa6a",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou3.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou3.mid"
+      ]
+    },
+    {
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-17.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-18.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-19.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-20.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-21.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-22.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-23.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-24.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-25.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-26.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-27.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-28.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-29.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-30.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/One_Republic_Counting_stars.mid"
+      ]
+    },
+    {
+      "sha256": "6fca5116e879faee53507390c3e9d5c144f1fb03c1b7d6fc360f1d3e09f1d59d",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/hometown-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/hometown-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/hometown.mid"
+      ]
+    },
+    {
+      "sha256": "770095b6d0063608e06aa34d9a3000b8359df7f9db53e521df269357c1f2b922",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0084-06-radiohead_2007-faust_arp.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0084-06-radiohead_2007-faust_arp.mid"
+      ]
+    },
+    {
+      "sha256": "77309b18d07c1b3b9b6bed3964c2dc8ca0a2a9961307ebef17d87d59389b2a7c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0044-01-radiohead_2000-everything_in_its_right_place.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0044-01-radiohead_2000-everything_in_its_right_place.mid"
+      ]
+    },
+    {
+      "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k]-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0036-05-radiohead_1997-let_down-[k].mid"
+      ]
+    },
+    {
+      "sha256": "8378baca612772b50a24c1c47c3f6724909224c10be5fe5fb810bb8b48472b18",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Popcorn.mid.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Popcorn.mid.mid"
+      ]
+    },
+    {
+      "sha256": "8453058c3ab17210496d2f31f9b40227476acd9a4387879676aaf4466b6225de",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0026-07-radiohead_1995-just-[k].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0026-07-radiohead_1995-just-[k].mid"
+      ]
+    },
+    {
+      "sha256": "8c0c0223dcdbc577545429df843a27738f262f1e62c6e07c21776e225d0d7d66",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0035-04-radiohead_1997-exit_music_(for_a_film)-[k].mid"
+      ]
+    },
+    {
+      "sha256": "8cefed0f5be45e150cf8bd870dbe6931ea273d66a78e6d58a696a750b6f1e756",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0038-07-radiohead_1997-fitter_happier.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0038-07-radiohead_1997-fitter_happier.mid"
+      ]
+    },
+    {
+      "sha256": "8f839ec8a3a2d0a8b43ff223cc14daef47883bb0551fb7c3788b58efb9f57754",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Owl City - Fireflies.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Owl City - Fireflies.mid"
+      ]
+    },
+    {
+      "sha256": "902aecc35c1c33f1c6fa11f3d5a46f90727411b9fcbcf48b68ee065a816bb983",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou1-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou1-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou1-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou1.mid"
+      ]
+    },
+    {
+      "sha256": "90dc1a80def4c2f8e9944bb8449f8e1a26b6a9a8be05dd0cc6045c8cf19c11e5",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0025-06-radiohead_1995-(nice_dream)-[k].mid"
+      ]
+    },
+    {
+      "sha256": "91dd1cd17d3c4b7bf97b67c117eddf36108f322883447c61438640bd151da729",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0014-14-radiohead_1993-inside_my_head.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0014-14-radiohead_1993-inside_my_head.mid"
+      ]
+    },
+    {
+      "sha256": "948943ee28e174ab99a1acb6fcac116464df7f980b47e9fa0acc7117c08087e1",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0015-04-radiohead_1994-banana_co-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0015-04-radiohead_1994-banana_co-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0015-04-radiohead_1994-banana_co.mid"
+      ]
+    },
+    {
+      "sha256": "981cb285acf86b6d4e74d1a3f80a184a0604c0e023a92fac4383f47419fc1cb2",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0008-08-radiohead_1993-vegetable-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0008-08-radiohead_1993-vegetable-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0008-08-radiohead_1993-vegetable-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0008-08-radiohead_1993-vegetable.mid"
+      ]
+    },
+    {
+      "sha256": "9bc7dd2ef1bf87fba0e9584b61029c5c41be146b7bb69983b94175e7c142f05c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Bastille_Pompeii-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Bastille_Pompeii-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Bastille_Pompeii.mid"
+      ]
+    },
+    {
+      "sha256": "9e711509438cb419f99d5f7ec708b9224d03a13cb00f748c613523950f1af57e",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Coldplay - The Scientist.mid"
+      ]
+    },
+    {
+      "sha256": "9f504a6fc5c9fd8b868eab10d2cc94a0e8b7176d508dc7817d95787d2512f696",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0122-radiohead_1998-how_i_made_my_millions.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0122-radiohead_1998-how_i_made_my_millions.mid"
+      ]
+    },
+    {
+      "sha256": "a08c2139af1e31ec4ceb0d2fa5696ae9842c9ad26093496c53e82ebec1c062ce",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-17.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-18.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0005-05-radiohead_1993-thinking_about_you.mid"
+      ]
+    },
+    {
+      "sha256": "a35f843b908f7f91b0141ded4c630a5f0c8a998b5e57f108bbfd65af4e04b0d8",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes)-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes)-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0126-radiohead_2003-there_there_&_2+2=5_(live_eurockeennes).mid"
+      ]
+    },
+    {
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k] (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k] (4).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0002-02-radiohead_1993-creep-[k].mid"
+      ]
+    },
+    {
+      "sha256": "a4f1b71a938ce921f1393c495c4dd746eaea905e2f647e82191ebfa716e4ad63",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0027-08-radiohead_1995-my_iron_lung-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0027-08-radiohead_1995-my_iron_lung-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0027-08-radiohead_1995-my_iron_lung-[k].mid"
+      ]
+    },
+    {
+      "sha256": "aa8324e99320213f907bf484651566a29f5369cc9277da3469a04c6adcc9e2e3",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0033-02-radiohead_1997-paranoid_android-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0033-02-radiohead_1997-paranoid_android-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0033-02-radiohead_1997-paranoid_android-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0033-02-radiohead_1997-paranoid_android-[k].mid"
+      ]
+    },
+    {
+      "sha256": "acc3055039f43ba3976d311fa010733e7449f6e83d30d9571fe824e4f1170f30",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0056-05-radiohead_2001-i_might_be_wrong.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0056-05-radiohead_2001-i_might_be_wrong.mid"
+      ]
+    },
+    {
+      "sha256": "af2ed20ab0120f51bbff3953e48c84f73e3b87efc8562865a8f2a232b1bbb9e1",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0091-05-radiohead_2007-last_flowers.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0091-05-radiohead_2007-last_flowers.mid"
+      ]
+    },
+    {
+      "sha256": "af93dab3e5803769c77d00ae6bd2d624ddc502b3ac59d545d5cade7ee9519e70",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0098-06-radiohead_2011-codex-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0098-06-radiohead_2011-codex-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0098-06-radiohead_2011-codex.mid"
+      ]
+    },
+    {
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0031-12-radiohead_1995-street_spirit_(fade_out)-[k].mid"
+      ]
+    },
+    {
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place (4).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-17.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0087-09-radiohead_2007-jigsaw_falling_into_place.mid"
+      ]
+    },
+    {
+      "sha256": "be6a0107f5592614286009c0255b610a23c6e5b9e950ac767a1ad7e1f15335a9",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0022-03-radiohead_1995-high_and_dry-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0022-03-radiohead_1995-high_and_dry-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0022-03-radiohead_1995-high_and_dry-[k].mid"
+      ]
+    },
+    {
+      "sha256": "c13d8318345a12556e42e07f8d4b1e4eb80c53ca61a3ae7b24f07ed6d9306341",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0067-05-radiohead_2003-go_to_sleep-[k].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0067-05-radiohead_2003-go_to_sleep-[k].mid"
+      ]
+    },
+    {
+      "sha256": "c3bec792de58440ac6adefe68c7be0dc075bfce82066ebcfa73e862b0df4d6de",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0079-01-radiohead_2007-15_step-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0079-01-radiohead_2007-15_step-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0079-01-radiohead_2007-15_step-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0079-01-radiohead_2007-15_step-[k].mid"
+      ]
+    },
+    {
+      "sha256": "c4f45c64aa965655304656e5d7f7ece9bafa1ec008cb3248d4713f0d09461576",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/pokemon-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/pokemon-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/pokemon.mid"
+      ]
+    },
+    {
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k] (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k]-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0063-01-radiohead_2003-2+2=5-[k].mid"
+      ]
+    },
+    {
+      "sha256": "c8e0d1ff0c75de624c283fdc2061eee3485eebe4c4234d5eaafdca47d45e2304",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Pink - Try [MIDIfind.com] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Pink - Try [MIDIfind.com] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Pink - Try [MIDIfind.com].mid"
+      ]
+    },
+    {
+      "sha256": "ce19521f7feb85da2bb4799bd16597b9c1c845153f907ab9b78e707658798f39",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0050-08-radiohead_2000-idioteque-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0050-08-radiohead_2000-idioteque-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0050-08-radiohead_2000-idioteque-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0050-08-radiohead_2000-idioteque.mid"
+      ]
+    },
+    {
+      "sha256": "d1f1954bbb60aeab8a54c80a45a55d2008debd907b933ac3bee926720bb9d3b0",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0083-05-radiohead_2007-all_i_need.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0083-05-radiohead_2007-all_i_need.mid"
+      ]
+    },
+    {
+      "sha256": "d2d8c6d3f3fd5ceca622e314805a734fca6999ab7ea671c43ca1b3222635285c",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0052-10-radiohead_2000-motion_picture_soundtrack-[k].mid"
+      ]
+    },
+    {
+      "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1) (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1) (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Radiohead \u2014 Sail to the Moon [MIDIfind.com] (1).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Radiohead \u2014 Sail to the Moon [MIDIfind.com].mid"
+      ]
+    },
+    {
+      "sha256": "d63e99b7a3faa361a5356579b144b618eef4cdae7aec2b8a1d6203481f09b0b7",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0039-08-radiohead_1997-electioneering.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0039-08-radiohead_1997-electioneering.mid"
+      ]
+    },
+    {
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k] (2).mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k] (2).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k] (3).mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0071-09-radiohead_2003-there_there-[k].mid"
+      ]
+    },
+    {
+      "sha256": "d94011ddb062ce74339e0bda439beea903455efae37799fa7cde3cce9f0c4ec9",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/range-test.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/range-test.mid"
+      ]
+    },
+    {
+      "sha256": "dc6dd3622f3911770b660a7f3260ace79d475642019dc7a6a6754aea678ba473",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/test.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/test.mid"
+      ]
+    },
+    {
+      "sha256": "e0bc91c130cd169b3ed636adb21e957f83a5f6bb8a41e883e8100982236091d3",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0013-13-radiohead_1993-pop_is_dead.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0013-13-radiohead_1993-pop_is_dead.mid"
+      ]
+    },
+    {
+      "sha256": "e1c50eaef1e15eccdc7d5c7032e652112f8cead40f0dd20d508cf5436fb464c6",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/dragonb-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/dragonb-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/dragonb-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/dragonb.mid"
+      ]
+    },
+    {
+      "sha256": "e64932ccf5abe2ecfefa5ee00c18853cbed183575df76eeb58121c4a52256b0b",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0001-01-radiohead_1993-you-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0001-01-radiohead_1993-you-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0001-01-radiohead_1993-you.mid"
+      ]
+    },
+    {
+      "sha256": "e6b2de76774ec7f05a8ba183dc997ad7541931028f4207160334dffc74dca1cc",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0016-08-radiohead_1994-creep_(acoustic)-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0016-08-radiohead_1994-creep_(acoustic)-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0016-08-radiohead_1994-creep_(acoustic)-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0016-08-radiohead_1994-creep_(acoustic).mid"
+      ]
+    },
+    {
+      "sha256": "e98715f1d378d44d48a7dd6c01949db2e850a396c9c84985d9d3e1198ad7b104",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0020-01-radiohead_1995-planet_telex.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0020-01-radiohead_1995-planet_telex.mid"
+      ]
+    },
+    {
+      "sha256": "ee4bacbe4b9bdc706d4cfcb52d30c43fa4e7eb52b85b4871e7c66a21143b8ede",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Mitski - Washing Machine Heart (cover) [MIDIfind.com].mid"
+      ]
+    },
+    {
+      "sha256": "eeb1a97cdde6ece920bcdf82e362192adee80615bd050b5004c2fe8f98856bc7",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k]-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k]-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k]-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k]-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k]-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0023-04-radiohead_1995-fake_plastic_trees-[k].mid"
+      ]
+    },
+    {
+      "sha256": "f245be435b6b1f7dd33363e56647d103dd0542d6830e9a1d0155c2120ec50509",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou2.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/touhou2.mid"
+      ]
+    },
+    {
+      "sha256": "f54991424a09ecd3b55a7e59c14c17d079ad786fb4363c87d7041d3c9053fccf",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-10.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-11.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-12.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-13.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-14.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-15.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-16.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-17.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-18.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-19.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-20.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-21.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-5.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-6.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-7.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-8.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin-9.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0068-06-radiohead-2003-where_i_end_and_you_begin.mid"
+      ]
+    },
+    {
+      "sha256": "f5c7393bed9175930ab93ebfe09b1082c010b0df840eb32bee8a024436f11fb0",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0004-04-radiohead_1993-stop_whispering.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/0004-04-radiohead_1993-stop_whispering.mid"
+      ]
+    },
+    {
+      "sha256": "faec8a53f8ef66b3e63623bff41fac8e134ed7a2ab2fec3581fa1295fa30343e",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/badapple!!midifull-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/badapple!!midifull-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/badapple!!midifull.mid"
+      ]
+    },
+    {
+      "sha256": "fde6af0fc7c14e52d01bd034d139f1acf939edb2c5076e56fadade5ab3737fdd",
+      "path": "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels-1.mid",
+      "aliases": [
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels-1.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels-2.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels-3.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels-4.mid",
+        "/Users/krzysztof/Documents/GitHub/electromechanical-midi/midi/Avicii_Levels.mid"
+      ]
+    }
+  ],
+  "configuration": {
+    "values": {
+      "registry": {
+        "schemaVersion": 1,
+        "name": "8 FDD + 4 DVD + 4 HDD + 2 PC Speakers (16 active)",
+        "devices": [
+          {
+            "id": "fdd-1",
+            "name": "FDD #1",
+            "type": "FDD",
+            "lane": "fdd:1",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-2",
+            "name": "FDD #2",
+            "type": "FDD",
+            "lane": "fdd:2",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-3",
+            "name": "FDD #3",
+            "type": "FDD",
+            "lane": "fdd:3",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-4",
+            "name": "FDD #4",
+            "type": "FDD",
+            "lane": "fdd:4",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-5",
+            "name": "FDD #5",
+            "type": "FDD",
+            "lane": "fdd:5",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "realEnabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-6",
+            "name": "FDD #6",
+            "type": "FDD",
+            "lane": "fdd:6",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "realEnabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-7",
+            "name": "FDD #7",
+            "type": "FDD",
+            "lane": "fdd:7",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "realEnabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "fdd-8",
+            "name": "FDD #8",
+            "type": "FDD",
+            "lane": "fdd:8",
+            "profile": "FDD_CURRENT",
+            "hardwareProfile": "FDD",
+            "enabled": true,
+            "realEnabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": -12,
+            "overrides": {
+              "preferredMinHz": {
+                "value": 80,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
+              },
+              "preferredMaxHz": {
+                "value": 200,
+                "provenance": "ESTIMATED",
+                "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
+              }
+            }
+          },
+          {
+            "id": "DVD_STEPPER_1",
+            "name": "DVD Stepper 1",
+            "type": "DVD_SLED",
+            "lane": "sled:1",
+            "profile": "DVD_REFERENCE",
+            "hardwareProfile": "DVD_SLED",
+            "enabled": true,
+            "volume": 0.2,
+            "pan": 0.0
+          },
+          {
+            "id": "DVD_STEPPER_2",
+            "name": "DVD Stepper 2",
+            "type": "DVD_SLED",
+            "lane": "sled:2",
+            "profile": "DVD_REFERENCE",
+            "hardwareProfile": "DVD_SLED",
+            "enabled": true,
+            "volume": 0.2,
+            "pan": 0.0
+          },
+          {
+            "id": "DVD_STEPPER_3",
+            "name": "DVD Stepper 3",
+            "type": "DVD_SLED",
+            "lane": "sled:3",
+            "profile": "DVD_REFERENCE",
+            "hardwareProfile": "DVD_SLED",
+            "enabled": true,
+            "volume": 0.2,
+            "pan": 0.0
+          },
+          {
+            "id": "DVD_STEPPER_4",
+            "name": "DVD Stepper 4",
+            "type": "DVD_SLED",
+            "lane": "sled:4",
+            "profile": "DVD_REFERENCE",
+            "hardwareProfile": "DVD_SLED",
+            "enabled": true,
+            "volume": 0.2,
+            "pan": 0.0
+          },
+          {
+            "id": "vhs-1",
+            "name": "PC Speaker",
+            "type": "VHS",
+            "lane": "drum:1",
+            "profile": "VHS_CURRENT",
+            "hardwareProfile": "VHS",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0,
+            "transpose": 0,
+            "waveform": "pulse"
+          },
+          {
+            "id": "pc-speaker-fx",
+            "name": "PC Speaker FX",
+            "type": "VHS",
+            "role": "fx",
+            "lane": "drum:2",
+            "profile": "VHS_CURRENT",
+            "hardwareProfile": "VHS",
+            "enabled": true,
+            "volume": 0.4,
+            "pan": 0.25,
+            "waveform": "pulse"
+          },
+          {
+            "id": "hdd_vcm-1",
+            "name": "HDD_VCM #1",
+            "type": "HDD_VCM",
+            "lane": "hdd:1",
+            "profile": "WD_CAVIAR_CURRENT",
+            "hardwareProfile": "HDD_PERCUSSION",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0
+          },
+          {
+            "id": "hdd_vcm-2",
+            "name": "HDD_VCM #2",
+            "type": "HDD_VCM",
+            "lane": "hdd:2",
+            "profile": "WD_CAVIAR_CURRENT",
+            "hardwareProfile": "HDD_PERCUSSION",
+            "enabled": true,
+            "volume": 0.6,
+            "pan": 0.0
+          },
+          {
+            "id": "hdd_vcm-3",
+            "name": "HDD_VCM #3",
+            "type": "HDD_VCM",
+            "lane": "hdd:3",
+            "profile": "WD_CAVIAR_CURRENT",
+            "hardwareProfile": "HDD_PERCUSSION",
+            "enabled": false,
+            "volume": 0.6,
+            "pan": 0.0
+          },
+          {
+            "id": "hdd_vcm-4",
+            "name": "HDD_VCM #4",
+            "type": "HDD_VCM",
+            "lane": "hdd:4",
+            "profile": "WD_CAVIAR_CURRENT",
+            "hardwareProfile": "HDD_PERCUSSION",
+            "enabled": false,
+            "volume": 0.6,
+            "pan": 0.0
+          }
+        ],
+        "parameters": {
+          "sourceContinuity": true,
+          "sourceContinuityAmount": 1.0,
+          "mechanicalAware": true,
+          "dvdSustainThresholdMs": 500.0,
+          "dvdContinuousSustain": true,
+          "dvdDynamicAware": true,
+          "dvdMaxBridgeMs": 200.0,
+          "fddUnisonEnabled": true,
+          "fddUnisonMaxVoices": 2,
+          "fddFixedToneMs": 200.0,
+          "arrangementPreset": "instrument_roles_unison4"
+        },
+        "dvdMode": "independent",
+        "idleReinforcement": {
+          "enabled": false,
+          "maxCopiesPerEvent": 1,
+          "lookAheadMs": 80.0,
+          "deviceTypes": [
+            "FDD",
+            "DVD_SLED",
+            "HDD_VCM"
+          ],
+          "minScore": 75.0,
+          "minDurationMs": 40.0,
+          "percussionCooldownMs": 250.0,
+          "vhsEnabled": false
+        },
+        "routing": {
+          "mode": "AUTO",
+          "tracks": [
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      },
+      "hardwareProfiles": {
+        "config/hardware-profiles/instances.json": {
+          "schemaVersion": 1,
+          "instances": {
+            "FDD:1": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "stableHz": {
+                  "value": [
+                    130,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "measured upper endpoint 410 Hz (38/40); retained lower 130 Hz, NOT a measured musical minimum",
+                  "evidenceType": "DERIVED",
+                  "confidence": "HIGH"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                },
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "existing tested firmware soft limit; not a measured physical position",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "existing working STEP/DIR setup timing; not a datasheet identification",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "round(1e6/410), measured upper comfort bound",
+                  "evidenceType": "DERIVED",
+                  "confidence": "HIGH"
+                }
+              }
+            },
+            "SLED:1": {
+              "present": true,
+              "profile": "DVD_SLED",
+              "quantities": {
+                "travelSteps": {
+                  "value": 140,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "user DVD1 calibrated working SOFTWARE TRAVEL LIMIT, bf75d47; manual start required",
+                  "evidenceType": "MEASURED",
+                  "confidence": "MEDIUM"
+                },
+                "stableStepRate": {
+                  "value": [
+                    50,
+                    470
+                  ],
+                  "unit": "steps/s",
+                  "uncertainty": null,
+                  "source": "envelope derived from newer individual DVD1 allowedBandsHz sweep; supersedes earlier 250\u2013300 Hz bring-up; gaps still blocked by measured bands",
+                  "evidenceType": "DERIVED",
+                  "confidence": "MEDIUM"
+                },
+                "allowedBandsHz": {
+                  "value": [
+                    [
+                      50,
+                      120
+                    ],
+                    [
+                      180,
+                      190
+                    ],
+                    [
+                      270,
+                      300
+                    ],
+                    [
+                      340,
+                      470
+                    ]
+                  ],
+                  "unit": "Hz (step frequency; PLAY Hz at calibration pitchRatio=1)",
+                  "uncertainty": {
+                    "sweepStepHz": 10,
+                    "betweenBands": "unqualified; reject conservatively"
+                  },
+                  "source": "user physical DVD1 sweep 50\u2013500 Hz every 10 Hz, existing Sled::tick ramps and auto reversal at pitchRatio=1; resonance bands excluded; individual SLED:1 only",
+                  "evidenceType": "MEASURED",
+                  "confidence": "MEDIUM"
+                },
+                "musicalStepRate": {
+                  "value": [
+                    50,
+                    470
+                  ],
+                  "unit": "steps/s",
+                  "uncertainty": null,
+                  "source": "outer envelope derived from individual DVD1 measured allowedBandsHz; gaps remain forbidden",
+                  "evidenceType": "DERIVED",
+                  "confidence": "MEDIUM"
+                },
+                "pitchRatio": {
+                  "value": 0.5,
+                  "unit": "acoustic Hz / steps per second",
+                  "uncertainty": {
+                    "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+                    "quantitativeError": null
+                  },
+                  "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "HDD:1": {
+              "present": true,
+              "profile": "HDD_PERCUSSION",
+              "quantities": {}
+            },
+            "FDD:2": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "HDD:2": {
+              "present": true,
+              "profile": "HDD_PERCUSSION",
+              "quantities": {}
+            },
+            "FDD:3": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "HDD:3": {
+              "present": true,
+              "profile": "HDD_PERCUSSION",
+              "quantities": {}
+            },
+            "FDD:4": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "existing shared FDD controller execution configuration; restored for full orchestra; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "FACT",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "HDD:4": {
+              "present": true,
+              "profile": "HDD_PERCUSSION",
+              "quantities": {}
+            },
+            "DRUM:1": {
+              "present": true,
+              "profile": "VHS",
+              "quantities": {}
+            },
+            "SLED:2": {
+              "present": true,
+              "profile": "DVD_SLED",
+              "quantities": {
+                "travelSteps": {
+                  "value": 140,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+                  "evidenceType": "FACT",
+                  "confidence": "MEDIUM"
+                },
+                "pitchRatio": {
+                  "value": 0.5,
+                  "unit": "acoustic Hz / steps per second",
+                  "uncertainty": {
+                    "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+                    "quantitativeError": null
+                  },
+                  "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "SLED:3": {
+              "present": true,
+              "profile": "DVD_SLED",
+              "quantities": {
+                "travelSteps": {
+                  "value": 140,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+                  "evidenceType": "FACT",
+                  "confidence": "MEDIUM"
+                },
+                "pitchRatio": {
+                  "value": 0.5,
+                  "unit": "acoustic Hz / steps per second",
+                  "uncertainty": {
+                    "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+                    "quantitativeError": null
+                  },
+                  "source": "User tuner observations: commanded 200 Hz reads about 100 Hz; commanded 500 Hz reads about 250 Hz. Calibration hypothesis applied to DVD1\u20133; no spectral measurement or precise per-motor identification (2026-10-11).",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "SLED:4": {
+              "present": true,
+              "profile": "DVD_SLED",
+              "quantities": {
+                "travelSteps": {
+                  "value": 140,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "user confirmed DVD2\u20134 use the same working software travel limit of 140 as DVD1; manual start required",
+                  "evidenceType": "FACT",
+                  "confidence": "MEDIUM"
+                },
+                "pitchRatio": {
+                  "value": 0.5,
+                  "unit": "acoustic Hz / steps per second",
+                  "uncertainty": {
+                    "method": "guitar tuner; possible octave/harmonic detection ambiguity",
+                    "quantitativeError": null
+                  },
+                  "source": "User reports DVD3 and DVD4 are the same motor type: requested 440 Hz reads about 440 Hz on DVD3 (ratio 0.5), but about 220 Hz on DVD4 (previous ratio 1.0). Individual DVD4 correction hypothesis; no spectral, current or temperature measurement (2026-10-19).",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "fdd:5": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "fdd:6": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "fdd:7": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            },
+            "fdd:8": {
+              "present": true,
+              "profile": "FDD",
+              "quantities": {
+                "travelSteps": {
+                  "value": 72,
+                  "unit": "steps",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "reversalIntervalMs": {
+                  "value": 5,
+                  "unit": "ms",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "executionMinStepUs": {
+                  "value": 2439,
+                  "unit": "us",
+                  "uncertainty": null,
+                  "source": "firmware fddDefaults fallback to FDD1; not an individual drive measurement",
+                  "evidenceType": "DERIVED",
+                  "confidence": "LOW"
+                },
+                "musicalHz": {
+                  "value": [
+                    80,
+                    410
+                  ],
+                  "unit": "Hz",
+                  "uncertainty": null,
+                  "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
+                  "evidenceType": "HYPOTHESIS",
+                  "confidence": "LOW"
+                }
+              }
+            }
+          }
+        },
+        "config/hardware-profiles/theoretical.json": {
+          "schemaVersion": 1,
+          "purpose": "theoretical planning priors; NOT safety ratings",
+          "source": "docs/research/orkiestra-model-teoretyczny.md",
+          "profiles": {
+            "FDD": {
+              "preferredHz": {
+                "value": [
+                  100,
+                  300
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "stableHz": {
+                "value": [
+                  65,
+                  330
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "musicalHz": {
+                "value": [
+                  80,
+                  500
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "User-requested FDD working lower limit 80 Hz; musical policy, not measured low-frequency qualification. Firmware input range remains 40-500 Hz",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "aggressiveHz": {
+                "value": [
+                  400,
+                  800
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "pitchRatio": {
+                "value": 1.0,
+                "unit": "",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "datasheetMinStepMs": {
+                "value": 3,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md S1/S2 (reference models only)",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "reversalIntervalMs": {
+                "value": 18,
+                "unit": "ms",
+                "uncertainty": [
+                  4,
+                  18
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "reversalByModelMs": {
+                "value": {
+                  "TEAC_C891": 4,
+                  "SAMSUNG_SFD321B": 18,
+                  "PANASONIC_JU257A6P": 18
+                },
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "travelSteps": {
+                "value": 60,
+                "unit": "steps",
+                "uncertainty": [
+                  40,
+                  75
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "minNoteFloorMs": {
+                "value": 20,
+                "unit": "ms",
+                "uncertainty": [
+                  10,
+                  40
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "minCycles": {
+                "value": 4,
+                "unit": "cycles",
+                "uncertainty": [
+                  3,
+                  8
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "preferredNoteMs": {
+                "value": 80,
+                "unit": "ms",
+                "uncertainty": [
+                  50,
+                  150
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "maxNoteChangeRatePerSec": {
+                "value": 15,
+                "unit": "1/s",
+                "uncertainty": [
+                  8,
+                  25
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "safePeakCurrentA": {
+                "value": null,
+                "unit": "A",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              }
+            },
+            "DVD_SLED": {
+              "continuousRotation": {
+                "value": true,
+                "unit": "",
+                "uncertainty": null,
+                "source": "User requested continuous DVD stepper rotation without travel or calibrated frequency restrictions, 2026-10-10",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "driveMode": {
+                "value": "two_phase_full_step",
+                "unit": "",
+                "uncertainty": null,
+                "source": "firmware/controller/include/orchestra_core.h phase sequence",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "referenceMotor": {
+                "value": "Minebea PL15S-020 (reference only)",
+                "unit": "",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "referencePhaseResistanceOhm": {
+                "value": 10,
+                "unit": "ohm",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "referenceVoltageV": {
+                "value": 5,
+                "unit": "V",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "referenceStepsPerRev": {
+                "value": 20,
+                "unit": "steps/rev",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "HIGH"
+              },
+              "referenceHoldingTorqueMNm": {
+                "value": 3,
+                "unit": "mNm",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "MEDIUM"
+              },
+              "referencePullOut": {
+                "value": [
+                  [
+                    400,
+                    2.5
+                  ],
+                  [
+                    1400,
+                    1.3
+                  ]
+                ],
+                "unit": "PPS,mNm",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "MEDIUM"
+              },
+              "referencePullInPPS": {
+                "value": 1450,
+                "unit": "PPS",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md; reference Minebea PL15S-020, not measured on this drive",
+                "evidenceType": "FACT",
+                "confidence": "MEDIUM"
+              },
+              "preferredStepRate": {
+                "value": [
+                  150,
+                  600
+                ],
+                "unit": "steps/s",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "stableStepRate": {
+                "value": [
+                  100,
+                  600
+                ],
+                "unit": "steps/s",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "musicalStepRate": {
+                "value": [
+                  80,
+                  1000
+                ],
+                "unit": "steps/s",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "pitchRatio": {
+                "value": 1.0,
+                "unit": "",
+                "uncertainty": [
+                  1,
+                  0.5,
+                  0.25,
+                  2
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "accelerationLimit": {
+                "value": 5000,
+                "unit": "steps/s\u00b2",
+                "uncertainty": [
+                  1000,
+                  20000
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "travelSteps": {
+                "value": null,
+                "unit": "steps",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "minNoteFloorMs": {
+                "value": 30,
+                "unit": "ms",
+                "uncertainty": [
+                  15,
+                  60
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "minCycles": {
+                "value": 4,
+                "unit": "cycles",
+                "uncertainty": [
+                  3,
+                  8
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "preferredNoteMs": {
+                "value": 100,
+                "unit": "ms",
+                "uncertainty": [
+                  60,
+                  200
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "maxNoteChangeRatePerSec": {
+                "value": 10,
+                "unit": "1/s",
+                "uncertainty": [
+                  5,
+                  20
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "safePeakCurrentA": {
+                "value": null,
+                "unit": "A",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              }
+            },
+            "HDD_PERCUSSION": {
+              "pulseMs": {
+                "value": [
+                  0.2,
+                  5
+                ],
+                "unit": "ms",
+                "uncertainty": [
+                  0.1,
+                  10
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "pulseTypicalMs": {
+                "value": 1,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "maxContinuousHitsPerSec": {
+                "value": 5,
+                "unit": "1/s",
+                "uncertainty": [
+                  2,
+                  10
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "maxBurstHitsPerSec": {
+                "value": 10,
+                "unit": "1/s",
+                "uncertainty": [
+                  5,
+                  20
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "burstWindowMs": {
+                "value": 500,
+                "unit": "ms",
+                "uncertainty": [
+                  100,
+                  1000
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "preferredHitRate": {
+                "value": [
+                  1,
+                  5
+                ],
+                "unit": "1/s",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "nominalStartToStartMs": {
+                "value": 200,
+                "unit": "ms",
+                "uncertainty": [
+                  100,
+                  500
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "safePulseMaxMs": {
+                "value": null,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "safePeakCurrentA": {
+                "value": null,
+                "unit": "A",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "safeImpactEnergyJ": {
+                "value": null,
+                "unit": "J",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "thermalRth": {
+                "value": null,
+                "unit": "K/W",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "thermalCth": {
+                "value": null,
+                "unit": "J/K",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "parkMs": {
+                "value": 40,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "existing ESP32 percussion baseline",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              },
+              "settleMs": {
+                "value": 40,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "existing ESP32 percussion baseline",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              },
+              "strikeMs": {
+                "value": 4,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "existing ESP32 percussion baseline",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              },
+              "baselineStrikeMs": {
+                "value": 4,
+                "unit": "ms",
+                "uncertainty": null,
+                "source": "existing ESP32 DRV8833 bridge baseline; not a safe pulse rating",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              }
+            },
+            "HDD_TONAL": {
+              "musicalHz": {
+                "value": [
+                  100,
+                  1500
+                ],
+                "unit": "Hz",
+                "uncertainty": {
+                  "lower": [
+                    50,
+                    200
+                  ],
+                  "upper": [
+                    800,
+                    3000
+                  ]
+                },
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "preferredHz": {
+                "value": [
+                  200,
+                  800
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "stableHz": {
+                "value": null,
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "candidateResonances": {
+                "value": [
+                  [
+                    3000,
+                    5000
+                  ]
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "FACT",
+                "confidence": "MEDIUM"
+              },
+              "referenceResonancesHz": {
+                "value": [
+                  4500,
+                  5400,
+                  5550,
+                  5670,
+                  7300,
+                  7450,
+                  8000,
+                  9650
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "FACT",
+                "confidence": "MEDIUM"
+              },
+              "avoidBands": {
+                "value": null,
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "allowedExcursionRad": {
+                "value": null,
+                "unit": "rad",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "safePeakCurrentA": {
+                "value": null,
+                "unit": "A",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "thermalRth": {
+                "value": null,
+                "unit": "K/W",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "thermalCth": {
+                "value": null,
+                "unit": "J/K",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "minNoteFloorMs": {
+                "value": 20,
+                "unit": "ms",
+                "uncertainty": [
+                  10,
+                  50
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "minCycles": {
+                "value": 4,
+                "unit": "cycles",
+                "uncertainty": [
+                  3,
+                  8
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "preferredNoteMs": {
+                "value": 80,
+                "unit": "ms",
+                "uncertainty": [
+                  50,
+                  200
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "maxNoteChangeRatePerSec": {
+                "value": 15,
+                "unit": "1/s",
+                "uncertainty": [
+                  5,
+                  30
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "transitionCycles": {
+                "value": 3,
+                "unit": "cycles",
+                "uncertainty": [
+                  2,
+                  6
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              },
+              "modalTransientMs": {
+                "value": 10,
+                "unit": "ms",
+                "uncertainty": [
+                  5,
+                  120
+                ],
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "LOW"
+              }
+            },
+            "VHS": {
+              "musicalHz": {
+                "value": [
+                  20,
+                  2000
+                ],
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "existing VHS protocol range",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              },
+              "preferredHz": {
+                "value": null,
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "stableHz": {
+                "value": null,
+                "unit": "Hz",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "safePeakCurrentA": {
+                "value": null,
+                "unit": "A",
+                "uncertainty": null,
+                "source": "docs/research/orkiestra-model-teoretyczny.md",
+                "evidenceType": "HYPOTHESIS",
+                "confidence": "UNKNOWN"
+              },
+              "baselineDrive": {
+                "value": 38,
+                "unit": "",
+                "uncertainty": null,
+                "source": "host/playback/timeline.py",
+                "evidenceType": "FACT",
+                "confidence": "LOW"
+              }
+            }
+          },
+          "protocolConstants": {
+            "fddStepLowUs": 30,
+            "fddHomePeriodUs": 5000,
+            "fddHomeTimeoutUs": 2000000,
+            "hostWatchdogUs": 3000000,
+            "spiClockHz": 1000000,
+            "sledMinPeriodUs": 100,
+            "fddProtocolMinHz": 40,
+            "fddProtocolMaxHz": 500,
+            "fddDirSetupUs": 5000,
+            "sledRampMaxTickUs": 5000,
+            "sledBrakingGuardSteps": 2
+          }
+        }
+      },
+      "speakerPreferences": {}
+    },
+    "fingerprint": "c112e4df7ebfe91066f2f89be515f671745061d08236b2fa9f55014a5c0e7f60"
+  },
+  "provenance": {
+    "sourceRoot": "/Users/krzysztof/Documents/GitHub/electromechanical-midi",
+    "git": "f394d3329318e8922277bb45d20adce2c4d98bf5"
+  },
+  "songs": [
+    {
+      "sha256": "03adf5c5e76ac7e09796ebd6bcca1e3e5a43c1dd10f67702d3ee87eef6ccafdb",
+      "presets": {
+        "universal": "476450669c945004a5fcb56e04aeb309f22fac83d0cb5c10671dd85e49aca3ff",
+        "fdd_expressive": "a127f8cafb910a9e2e51d7b7a72196179616cfd91cb1855fba708175b19d50ef",
+        "adaptive_legato": "c7bfe4d5013960c1d12c6e2b8dd74d0da2bfce40c5c2642004829e300edd66b9"
+      },
+      "planningSeconds": 31.256755082984455
+    },
+    {
+      "sha256": "0769f09d6e7e0724e21d8d28bb412d3dcb864e6395136227dba0a2ff91b55688",
+      "presets": {
+        "universal": "6b7ccfc561ad19f496d3b594918d94cb7d5357818b5d0df0d33c45b65d6bcf0f",
+        "fdd_expressive": "581608029d1429eea967b6c838977dc2f60ecec3129ac283ba4cf19cc3d4e736",
+        "adaptive_legato": "a2dffac3d71b81712b8174a2bd82f99ead3877e5d4bbb0e8715e998fcee06fb7"
+      },
+      "planningSeconds": 14.262271707993932
+    },
+    {
+      "sha256": "09572c5638b2c72d5606b7d46d4802d67e6bfa3f641f0f43df94863a423586f2",
+      "presets": {
+        "universal": "c8cbd3dff3424fcdeb4bc644b92d88f95b07576b7c428c09f62601677fd5d721",
+        "fdd_expressive": "074f612a44705fccd3a3e9f5e8dcf7eb4248591454f4c6df4fb733f2c2b4e931",
+        "adaptive_legato": "f310f2cb83213ca724f9691ff7ff3b74dc460525f737b7eebb7c87b5bac4c57c"
+      },
+      "planningSeconds": 94.29976833297405
+    },
+    {
+      "sha256": "0a65891453ac5c936d73c33271f4118a6d984feb2585824930c910cf0a6a83ee",
+      "presets": {
+        "universal": "0c7a3fc8d4d06506e559141cf69c73344bc5cc65fb4c3d3cd9c034043b05d8df",
+        "fdd_expressive": "dc395bf5b2fcc3415459c411748fe7def77c801f9b124c30222e2ca22a81fbf9",
+        "adaptive_legato": "568884d3c28a516ca0e11ae1354679e6daffbbb8e0deae6c53564257f6bf9ee6"
+      },
+      "planningSeconds": 4.099931292003021
+    },
+    {
+      "sha256": "0c114cd28a41930572c494450898d81f51b2e8a9eedc6cbb9012ca0ba4060337",
+      "presets": {
+        "universal": "f57ad2e1f493d52cc2717344c5c2e6cffab9ea2e40c5738e26476c0a22f9ae76",
+        "fdd_expressive": "226b7e5077c5dc452713f43f092fc21ea2493511496781f7c93c9eaa3f6384b5",
+        "adaptive_legato": "c032bd7e0d2123bd6b69d4c805665950517ff051eef5119edbe43dc6aae92bd9"
+      },
+      "planningSeconds": 12.502960083074868
+    },
+    {
+      "sha256": "0d8b25ea09e31992e930ca9b0327366ab682580919f9a57955c989340e6134e0",
+      "presets": {
+        "universal": "095e959d75ce1826fb67c7a772d0222db1df542658643f8aaacc9bd4279ee207",
+        "fdd_expressive": "8a8414f7423b07f8f59294210514df7b3dca5342274938f8f445d2f0e76b2ea0",
+        "adaptive_legato": "953c81a5c4272dbcdd6bfaaacc1ea1344158dd9a4f6ef7964972c32fab69af79"
+      },
+      "planningSeconds": 34.32739895803388
+    },
+    {
+      "sha256": "13291d893edf89c5f802f4089c0966c88d68285c412c98c35a752c7733ac0bc6",
+      "presets": {
+        "universal": "06c3295127ec8064c8dbbbbbbbb1021bdb52b6333a4d9c409211e739606a2f86",
+        "fdd_expressive": "5725948f80fa7ee16f034d8c2577225ae315528a76e48a0eb3bf9d9313c9534c",
+        "adaptive_legato": "10aad387f7298fb8294844fca921bab6cb0d950d35f65e7b27c8ce46503d5aac"
+      },
+      "planningSeconds": 6.35932116699405
+    },
+    {
+      "sha256": "1364df4d9ee8de694621967f9da6a7e6265aa1b1de4cdea485fc3e9111724aef",
+      "presets": {
+        "universal": "40053ac56d7745b1a71fe4df79f68edcabc0530509b570d73957709d7ffe3fe7",
+        "fdd_expressive": "57f33f17411daaeca9085d65875f4d52efd705552c0503bc2204649f2988cb67",
+        "adaptive_legato": "759faab90f8c3b7bcf645c32ce70bfa5ef5e93e85e8b76314a968f97d7aaa3c6"
+      },
+      "planningSeconds": 22.65016049996484
+    },
+    {
+      "sha256": "1490a17cea801b8d82051badca61bd5320dfe8b25fbefcb3606a3ae68175c6ab",
+      "presets": {
+        "universal": "9db71c723050437360eda24a755190118449eab076ef5fec02176f5af116b61a",
+        "fdd_expressive": "b18f7c676a3bddf77ba85fdc0cee2cb7d2a62ca0739e29e5fa6af04b0beaa365",
+        "adaptive_legato": "b1a12af1217ad7a2a89ed03c8abd1cada8d4cf98fcdb22134e994d6982fc11be"
+      },
+      "planningSeconds": 5.257450625067577
+    },
+    {
+      "sha256": "163db355cc29260c2a1937965abaf8f809d89e77d19651daebdb3c53850d46cf",
+      "presets": {
+        "universal": "786410be8021b2e52acf3b8416d1819326b2986139cabe90ab3c33d559da2710",
+        "fdd_expressive": "7f102346106b8b60a3d97906d5fd2f618a0ff683576ff1a9c6de9eb1333f407c",
+        "adaptive_legato": "f28aaaaca97c48915ca66d36400409a661c4c5b907eb3c9aeeeab94c5a34b864"
+      },
+      "planningSeconds": 8.891271458007395
+    },
+    {
+      "sha256": "1642e2ebcf4591f7fae9c32b2ffdadbd3fc4c229525711e0a8059bbbb4f19bbb",
+      "presets": {
+        "universal": "c8926fd94ab9895a7b53892f245173940f15b4836831612ccbbaa728dca7607a",
+        "fdd_expressive": "0a33f0bf6b7a22c6393e6465185691f9dad16d3fad0049e7ec6ccf34491e0cab",
+        "adaptive_legato": "bf9dfa71c738ef5793652da707cf402281eb5848f458e1b4c4fea1b63fe41bb8"
+      },
+      "planningSeconds": 27.28173795901239
+    },
+    {
+      "sha256": "1ae270cb84f7935ff919e807def4a0be1d7c1873d0bc682ec796afc570de959e",
+      "presets": {
+        "universal": "4d97f58993b71d1c98281b0db55e3c8b742febe32fa04cc7613c7fe918e48a7f",
+        "fdd_expressive": "bfd9ce17b16a1e8b947276af048f2a93c3003e4e870925324903f2e840e8bc3e",
+        "adaptive_legato": "de30e21381141516c431512ac3d8ac3d0c920c09245b1236e8f640f5b432ff11"
+      },
+      "planningSeconds": 11.654048332944512
+    },
+    {
+      "sha256": "1bcad0dc366ccce0a2a154d91060b80ce9ce493547e71207ea4f499b207849f1",
+      "presets": {
+        "universal": "763a597aeab1917276e24387efe8d6fc5bcb629110b9a7e434da8370240696e9",
+        "fdd_expressive": "6b45a27b0cb37ee87e49e2c774eedba8d9dfa82bb06219c3daaead16d4b6aaf8",
+        "adaptive_legato": "30664246cd576cd9239325a77a72894d6ef6a7d5e8c041711f9791f5750eaf3d"
+      },
+      "planningSeconds": 5.564411459024996
+    },
+    {
+      "sha256": "1ccb3bd04eef433883095ef6f7d143656af2f990324383c8056262b1e1c09c2b",
+      "presets": {
+        "universal": "fd49d66683c5db8f0fd8f13ccbed6ff5e5aaed27a29f3f3955f20aadb635e528",
+        "fdd_expressive": "3959559cf53629071bd107d428fb582f26bc57bfb44e917a9d8925f22ca560fd",
+        "adaptive_legato": "ac01c3528fcf872f618bf073342773bbe99875638a56b25e97186617c5adbe95"
+      },
+      "planningSeconds": 23.017646834021434
+    },
+    {
+      "sha256": "209ba5c32aabf3e70207dea6f81c57dd7a4fc81bac1150cfddb13fb076174f19",
+      "presets": {
+        "universal": "67b3f3ae08bca933af0ab75b654788dcae1aa99c3e2a4d4ace20a67911037863",
+        "fdd_expressive": "16eecaae5ff033bdc79c76cbbba724d4b42a372b382bcb8db85acf9b4cbaaa72",
+        "adaptive_legato": "933231eea92c93cd5fca77475718418e8d4868a1bdb1eb72bcbdebf684caf086"
+      },
+      "planningSeconds": 18.147466624970548
+    },
+    {
+      "sha256": "21be30973f48b317a6a97957e553d1fa7419c3517ecf6e888431ee39bdfef92c",
+      "presets": {
+        "universal": "da014f3e42000e3cda71a2ecc24198ce42a148f984c32c4b5c493d573fe641b3",
+        "fdd_expressive": "4b02d307ea0977d349f72d2a17e41581a33e0fb8fb72ea467dee87aa19614b0e",
+        "adaptive_legato": "522a1f36f911a439e5755a66afdddd079ca93cedd1b9b7991154275a7cad7fe4"
+      },
+      "planningSeconds": 28.2033255409915
+    },
+    {
+      "sha256": "288c249fdb56c534714797e9bd5593e314c23b25cfa01e75f69d19c193f73c93",
+      "presets": {
+        "universal": "e2f3d5289a8316424e0c83c6ee97ed180178a09fb856696e3112433c50e2232d",
+        "fdd_expressive": "09d54c6b6fb7787d27e1aaa657fe877a6d83cf137dd75f41af1a176dc58d102b",
+        "adaptive_legato": "a056323465e565dc6792e73e882424453107a58a8776b926af6cdcbab846740a"
+      },
+      "planningSeconds": 8.655730874976143
+    },
+    {
+      "sha256": "2c1fe8de529fa294299442296d9dd56d30a5706c63b394d5490cd6763f0d54ef",
+      "presets": {
+        "universal": "41a8331fbb07644b25c4aefa92754a81280fd31433c437db8ed1fae95aaf7543",
+        "fdd_expressive": "ad8544ecbcc173a3ad31fb9bce1a35152f55e0fe2a98981035a5810e03233c84",
+        "adaptive_legato": "2392ed7f46a57cbbccffb87cbcb30dd9ddc2127f765ead8d92125c4e6cc67d71"
+      },
+      "planningSeconds": 19.087954208021984
+    },
+    {
+      "sha256": "317bb1aae459983fed30f9faa234fd3d2fe6ae20f71f0d2c241fe936e3bf0f96",
+      "presets": {
+        "universal": "0ed0a1455857f6d5c059fe97d029b5ec5e6250779329724fa0fb5e6213f50a36",
+        "fdd_expressive": "6be04fd066838355b4411b43596f2bc6f69d7f93424209c79371580b13a23409",
+        "adaptive_legato": "0311ff77651c48bed17097f401d960c59f6c254a23239830bc11ff1ee2d0284b"
+      },
+      "planningSeconds": 0.18016150000039488
+    },
+    {
+      "sha256": "3279bf71139e30db9680d4be8a6c842159886cdfadfbf4fc329ea91ad270f64c",
+      "presets": {
+        "universal": "2d2ebcd0e0b5f9e676ab50a6fb79e1b35077fe049603a20ba5d0cc695aa390de",
+        "fdd_expressive": "be2c38a264cef4d7826a2a1f953a098b3263bf6e090bd3f5fa9b5eb5b17d2b41",
+        "adaptive_legato": "4bfe8130d0864ca8f6de3f20d93734403f13a8ac93541a1163c31d269c08423f"
+      },
+      "planningSeconds": 14.04907633305993
+    },
+    {
+      "sha256": "3e835febea80b0c5203a989b342dd0c16186efcb2a0b99305590207f482edbb8",
+      "presets": {
+        "universal": "31ccdaf518c05c767286d7a31d27cf080860d54837198516c63e67fb861023c0",
+        "fdd_expressive": "cbfb004f6af62ebca98c03c3ed6a02fe76d7a65822e6079c4a70d8817f08537c",
+        "adaptive_legato": "42a8526a71d6bef701588f2b423bf7be15bc691e99dffd7c47704737346ac8f0"
+      },
+      "planningSeconds": 9.011519958032295
+    },
+    {
+      "sha256": "41be59146b6219e0e3572ab03873683889ae805cf3fd8e76e03c5f3605465e01",
+      "presets": {
+        "universal": "7d31845094027b1556673a1c54de523e01fe9f8609057d8d79faab2748c19ca1",
+        "fdd_expressive": "d315a6e1708aaefb82e3724f0114ba1c9f2ce7373190b200db23a42a59c8772b",
+        "adaptive_legato": "488b07f505b6c942f8ac33d4f5beee2ec7546bd7b5cb87d0cd8d2d707577f57e"
+      },
+      "planningSeconds": 23.88762399996631
+    },
+    {
+      "sha256": "441b44a841c48ef9c9925649adfde3740217a6a0117e1521a3e2836e417c8cce",
+      "presets": {
+        "universal": "d77af236dc310a47ce3e90434065da67f711af0c19824ffbdcefbd151a3246fb",
+        "fdd_expressive": "317b0cb7ea718da575993b8709a7c8aabfcd31aba75fe0f4bfad1b4a87f7fee1",
+        "adaptive_legato": "4096ade2b3f7cb01d1cf3f2a45d36eeefa4b74a14714723d1850f17d906978af"
+      },
+      "planningSeconds": 15.888545458088629
+    },
+    {
+      "sha256": "454bb4054fd63ef0609d48965c0dbfc7b57018b0aedf8e75d44bc4846d3544cf",
+      "presets": {
+        "universal": "7804908402793a59c60049bd9eb6bcd88039711c134796b2568ef61bffe40232",
+        "fdd_expressive": "bb9c9673aaa01298af22d3ee6f95f4ad3150aa0f18ddfb5aff878841c7dbd673",
+        "adaptive_legato": "38b4e6282b0187708c2b9068cd32a9e3c19a294634017487415fb0cc8c686c61"
+      },
+      "planningSeconds": 12.324364749947563
+    },
+    {
+      "sha256": "486253a317a26e2a580cd00a745e8d13777aa59de9f42b26003d1eee6df74133",
+      "presets": {
+        "universal": "88eb47040c97a7d87667a66f59b13e9a156402b1400b97f1c53b0a81bc240d50",
+        "fdd_expressive": "71ad2eeafd2e2bda99a247bf9333364b17c9f38c3767efafab0f80a489bdece1",
+        "adaptive_legato": "a42f6a99980ccb538d24bddd7140507f0a75edba917b288030cc02c15abfa727"
+      },
+      "planningSeconds": 24.90410804201383
+    },
+    {
+      "sha256": "5032e0a773a971bdeb96554ee32944b2e1bfd4d6ede584a92993b705fbb0c1d0",
+      "presets": {
+        "universal": "78233fc7953de55c7c5ab9ec079d3287f705acb19d34ee8b5589b59a3d87901f",
+        "fdd_expressive": "e4eadccd983f2d08c07d7cb11a28c7cba96324af3189f7f2a5a3510624939e06",
+        "adaptive_legato": "5d39b30baaa4326acc0c3ea1717b0b58a721796eb5874d9c9c146b5ef1ca1126"
+      },
+      "planningSeconds": 16.816022792016156
+    },
+    {
+      "sha256": "529c04959f3d7de8e1205cab273a23dc2a908af4cc4eda4bd47dd4625fe66069",
+      "presets": {
+        "universal": "3728ab7aa533e303dd2f5ff65786c795e75feec5d3d30953fa697fe15b159e62",
+        "fdd_expressive": "c17d29f6ee2a318168d9bc04a9afda9203d275ea9a3477511e34916a16412429",
+        "adaptive_legato": "25f58c5c76914862219ec00edfbecfcf12aad9a20d40d6ae00492f863deb2be0"
+      },
+      "planningSeconds": 11.592336416942999
+    },
+    {
+      "sha256": "590f5397be17b87c59b8193245f0435216da7f8aee0516fca04ab87b8fe72dea",
+      "presets": {
+        "universal": "da0ce666fe8c669cf4f84efa7a8891e52b4b365d2ab5fd4ef207772cf67f7f6f",
+        "fdd_expressive": "13ad242a3a00c54fa96d0b9468f2e479ec62e7c537efc6b9cfa60c9a1711a98f",
+        "adaptive_legato": "697470c464fdf94b4c8a949e443e5ab93445796e2754b61776d35ee154d1a0aa"
+      },
+      "planningSeconds": 20.32912208302878
+    },
+    {
+      "sha256": "5bc05b4fc8fdd69a1b934916996706381cbdae0b9fe21336f668aef928e87a83",
+      "presets": {
+        "universal": "b5bd19adf311494016b7287865f952a1bc5060a4c07d1dcb98ce7cd63453ceac",
+        "fdd_expressive": "eb92a7c37c8885185f509cb8e13097df169df5e6db8ceecf1f3d5c3294ec4521",
+        "adaptive_legato": "4016226e5710420062014541b669c00e9e578845b5d352bae4829209e0cc9eab"
+      },
+      "planningSeconds": 24.62472970795352
+    },
+    {
+      "sha256": "5e468ed7b8f4f31b87fca059e60617b8089960a1b7dad1d406c1982320bd961a",
+      "presets": {
+        "universal": "1fd6a0876ef830dffea757ea181276fcf788629ed89335249da317001bd46b39",
+        "fdd_expressive": "7afe4df7db0b1754cda003629bcdbd2d948717ce1da1d785c5b06fa9ca919db9",
+        "adaptive_legato": "430060454c42a69520dfc58fd4d7f4d636547414fa51a2981f28d814be5dd8c2"
+      },
+      "planningSeconds": 25.44104712503031
+    },
+    {
+      "sha256": "64658ddba1818073b5d00999aa24f7ed68d8289a1ac5b490570d2f352926602d",
+      "presets": {
+        "universal": "2c710b5aa9bd05d12c011be47af5cbf7f586e801f7bdfabfd3f9da1287c2c1db",
+        "fdd_expressive": "6709eea2ffd241f90fd23685d859ea1c3c4ff89bf8a7e9c32b9742d151ecbc2b",
+        "adaptive_legato": "b9f9565cadf914a6242b8efd62f6c49ebcace436a9c5b4c4115b8c8c257a4a1f"
+      },
+      "planningSeconds": 6.047497958992608
+    },
+    {
+      "sha256": "64afb52a1a27d97e63f142fb78fc7a5ed2bdcd7ff026d17be7d6055e19ed0624",
+      "presets": {
+        "universal": "6cbdf0639f2e0ece3eb8051510c8d1aa0929f80c9eab2a39436fefcbf26a7a41",
+        "fdd_expressive": "8af4dcd815ad0984b132a9b20a19c25e55b00a0e5ff5c7855e08b44fccb68a48",
+        "adaptive_legato": "454c2486a096f086197157b9aa501db96e7e942c17921947373b141851d83a5f"
+      },
+      "planningSeconds": 6.473165374947712
+    },
+    {
+      "sha256": "65c1d0aa5fa55af435b6cda74ecc9e3dd77b51fae1e2b428c140b737628c2744",
+      "presets": {
+        "universal": "ea6f58848e404c7f6f252497762e5e9fe5f8e4adcb1dd3f45ba83e7341af7e31",
+        "fdd_expressive": "e75454b1aacd8c229b5b08545d5f0b54ab5032e5972d6301b66bcb595a46da8e",
+        "adaptive_legato": "85bdac50d2d24e9ec02d7d503512f599007671ff069f672fc5f70b0bd76e4bf8"
+      },
+      "planningSeconds": 47.37493137491401
+    },
+    {
+      "sha256": "66cadd7217789fba2090020f81bbb8097b09ed39983bb7da5c492b548954aa6a",
+      "presets": {
+        "universal": "65950ce45ff89c2455e2e94f54d07342b07a010be38f16b6bb1844ed7f091d00",
+        "fdd_expressive": "cbedca345dd6ba719deed88e8e813c5d07067be065013540f316ad3792b24e4f",
+        "adaptive_legato": "61b959404e8e96e4f5554a7aa07eace7a1baf33645cefbca1c3a24c28f994b30"
+      },
+      "planningSeconds": 21.58934379206039
+    },
+    {
+      "sha256": "6c17d6920e5d6d92c47cde79f46de75ff514070991bca95d6dbd7ef7d5a3258e",
+      "presets": {
+        "universal": "f5ed6225593af9f1be9cfb4b1392981115a92653c4ac5977935cb43a42717e67",
+        "fdd_expressive": "39880cee622e455e59f056ae1749ea49443c311b9f6fc874ddc033f55a24fac9",
+        "adaptive_legato": "2a8a8c080caa136fd7f44b0abfc627d5c1b4892a92714a17dc543e5ffaa1da13"
+      },
+      "planningSeconds": 19.377623250009492
+    },
+    {
+      "sha256": "6fca5116e879faee53507390c3e9d5c144f1fb03c1b7d6fc360f1d3e09f1d59d",
+      "presets": {
+        "universal": "a1c58cfa6ea2cbb69716b24bbdc1a8439802f98c39fa2e7491a1a92da2fbf1cf",
+        "fdd_expressive": "78e4662115ced8dc39f6bc947422ed891e499cc976b3696fd6bc3fe12bef9f1c",
+        "adaptive_legato": "9226fb0bc34d558dcbcdd111356d72497670d1593b71be6c673064bedf36935e"
+      },
+      "planningSeconds": 23.313743124948815
+    },
+    {
+      "sha256": "770095b6d0063608e06aa34d9a3000b8359df7f9db53e521df269357c1f2b922",
+      "presets": {
+        "universal": "20b63de4a5458d7245e3db16b5ec0f96caa889c3209ea0856e22ad5108b5e4b5",
+        "fdd_expressive": "138e30f94a52f23f6125b67cc29bf465eb5f7c53e19268793a04f2daab32aee6",
+        "adaptive_legato": "f0b01a30162a6e6b161e2e013dd5f8b2812e6fe5aeb807cd571d190e3a01bf89"
+      },
+      "planningSeconds": 3.470010832999833
+    },
+    {
+      "sha256": "77309b18d07c1b3b9b6bed3964c2dc8ca0a2a9961307ebef17d87d59389b2a7c",
+      "presets": {
+        "universal": "46b2b0be0a69c33cc85936315006410f7039b04598d60477dbb0f3e294fef0d2",
+        "fdd_expressive": "d43b96ce035859b31ca68f88c75f30f0d6dbb6f2afcf58560e7247240213c5b5",
+        "adaptive_legato": "7abc725c23326b929417cb4e08cc459885f4f99387f387ccbd2141869ed37b3f"
+      },
+      "planningSeconds": 24.277511499938555
+    },
+    {
+      "sha256": "7de236e489cc36acc1c59b08cc999e199e81d5c7b1959092223c27f9bb2ef8f1",
+      "presets": {
+        "universal": "130358afaaf665d7a1707436bba3f22df212e43d4ef8733cb9fb48547123a49f",
+        "fdd_expressive": "967da37114b083143d07adc675c8ba2ad50f7230d41575094af0d8d2e12899b4",
+        "adaptive_legato": "89d4119ba100b373fd8438aa68f9b23363ec9e741d04fafb9988275f76a8046a"
+      },
+      "planningSeconds": 42.654072541045025
+    },
+    {
+      "sha256": "8378baca612772b50a24c1c47c3f6724909224c10be5fe5fb810bb8b48472b18",
+      "presets": {
+        "universal": "2df3a510f9feb002b11a4d58b62a187fad45ade68eca47a9447fc950fe675fe6",
+        "fdd_expressive": "a95cfb7d3f78449132dbdce23c63ea754794908211dbd7a7a6a5a88199a80d12",
+        "adaptive_legato": "b1702ba1f8f99db6c6b2575d75796c5bb5394043ef9d1617ff53aa511da62471"
+      },
+      "planningSeconds": 1.4016370419412851
+    },
+    {
+      "sha256": "8453058c3ab17210496d2f31f9b40227476acd9a4387879676aaf4466b6225de",
+      "presets": {
+        "universal": "b718b373f61e1decbc5834960f71b44f4015efb1d5a34a76752254ae6d2f0027",
+        "fdd_expressive": "99d8022f46b54c48e27f4be0f42f95cd4684cece236ff8f55d4b6735abb460e5",
+        "adaptive_legato": "37873a638454fbc15fcee1588f3326be5db80db5a228f6f5fbbac05bb316474e"
+      },
+      "planningSeconds": 63.70924100000411
+    },
+    {
+      "sha256": "8c0c0223dcdbc577545429df843a27738f262f1e62c6e07c21776e225d0d7d66",
+      "presets": {
+        "universal": "0cea7397313bc6d968bf041e6419a415ba09b88142a518543054b74810584a09",
+        "fdd_expressive": "044ea762e7b2150b9b12821d01f964a1c3931c4103c3d48d46c539a1cea83bb1",
+        "adaptive_legato": "38489c8f0e7e50831f007f1eed6e4aa01ebb91014ec177537e4d9be1e916a1b2"
+      },
+      "planningSeconds": 20.83106062503066
+    },
+    {
+      "sha256": "8cefed0f5be45e150cf8bd870dbe6931ea273d66a78e6d58a696a750b6f1e756",
+      "presets": {
+        "universal": "33bc17269b0164fdc8ee99b49d069094b410a2682931ce5bca25aa291a848fa3",
+        "fdd_expressive": "ed1af32c0d128637c76ad5b627c1aafa9203244a8ca430638643a823653ff25d",
+        "adaptive_legato": "960dffcbbf54e1d08e3910884af1acd0d964686a484053306ed6881191dc9d16"
+      },
+      "planningSeconds": 0.5310352920787409
+    },
+    {
+      "sha256": "8f839ec8a3a2d0a8b43ff223cc14daef47883bb0551fb7c3788b58efb9f57754",
+      "presets": {
+        "universal": "a4f784ebca3725e5bf8489776b2e302a47872c9d344a808e72ecd6f44c65737a",
+        "fdd_expressive": "880d91395d30f9d3beba2e8bbbfa640bba289feba85163577d155c0181d759e3",
+        "adaptive_legato": "eeb6c9d8ab8d0433e5f2a0210a33463bc0a56d360ea7aae14c840da34365fd64"
+      },
+      "planningSeconds": 7.823789541958831
+    },
+    {
+      "sha256": "902aecc35c1c33f1c6fa11f3d5a46f90727411b9fcbcf48b68ee065a816bb983",
+      "presets": {
+        "universal": "1a5a6d98730b8d0dc6faefebe3a8ab0f0eb03826a4f538e6b3dc1589dbbd0a70",
+        "fdd_expressive": "a907c1e804ec61fb1ee8f32a934e8fca09c12bbc60f6be3c993e3f8824de10b9",
+        "adaptive_legato": "6ab925e0a5cc47b3f1b8d8b26ec4525525c10e26a9c17b85749840afa33c5cd6"
+      },
+      "planningSeconds": 45.56642475002445
+    },
+    {
+      "sha256": "90dc1a80def4c2f8e9944bb8449f8e1a26b6a9a8be05dd0cc6045c8cf19c11e5",
+      "presets": {
+        "universal": "30061a54420abeb985e3d47fd52b76d213b05ac568be841688cd3c0c5071594a",
+        "fdd_expressive": "9c2f7ff185070e3ab75f9733eb9d7238fac7936d918824ec7e4ae5b2f34ccf5b",
+        "adaptive_legato": "12a99b69da460fab951fcaea31e6a87be4587ef871d75e5b50e9ceea0c86e4f0"
+      },
+      "planningSeconds": 72.8974587500561
+    },
+    {
+      "sha256": "91dd1cd17d3c4b7bf97b67c117eddf36108f322883447c61438640bd151da729",
+      "presets": {
+        "universal": "171d19fa523bfb5696a122d19d5a27d6f0210a52174d8c68b3909b97a2d6ce00",
+        "fdd_expressive": "5e5d2ced3374d28116cb7952f584c9dfa2b250dd2a396a4db6d22df5571d65be",
+        "adaptive_legato": "9b993412c5d4c5ecda29c3f00b0682548428b65c1f6d17a6acfa9255afbe41e0"
+      },
+      "planningSeconds": 12.133225167053752
+    },
+    {
+      "sha256": "948943ee28e174ab99a1acb6fcac116464df7f980b47e9fa0acc7117c08087e1",
+      "presets": {
+        "universal": "9a60450d498eb07131fa3404092c78509487f49737b6b022ddeecef8bb4edb5a",
+        "fdd_expressive": "1a987dabae5ac276020fe77e69d1dfabf52046a9a813da54fe25fb1243b432e3",
+        "adaptive_legato": "7398c9b4a608ea984a36d2405fbce74b20b409c64ab20725ae7c26e981993509"
+      },
+      "planningSeconds": 19.559251500060782
+    },
+    {
+      "sha256": "981cb285acf86b6d4e74d1a3f80a184a0604c0e023a92fac4383f47419fc1cb2",
+      "presets": {
+        "universal": "8b555b892697fbcc7f74fdd7f4ff67d7f428d92a25e557fb4d2e5192eeeea2eb",
+        "fdd_expressive": "9874831eaad954bb41a9400f687374b790617a06d9a780bdce22e9762e2508f8",
+        "adaptive_legato": "b80e97a127363aa6f406b13e6f517e5ef9ac3ceac6c3f09468073acac7ec74c9"
+      },
+      "planningSeconds": 28.653233250021003
+    },
+    {
+      "sha256": "9bc7dd2ef1bf87fba0e9584b61029c5c41be146b7bb69983b94175e7c142f05c",
+      "presets": {
+        "universal": "c68144fad916c84e3688816d10450def5120c220a4d27c13443f9a5b7c9caded",
+        "fdd_expressive": "f63469e17422010e58c099cd90fb45a424dfc5a33dcac51faa5f31142ee7bab0",
+        "adaptive_legato": "f56dbb559316225877ff00195a94115cc9f2d72ccabe02ee9ecec1520fefb006"
+      },
+      "planningSeconds": 3.4661425420781597
+    },
+    {
+      "sha256": "9e711509438cb419f99d5f7ec708b9224d03a13cb00f748c613523950f1af57e",
+      "presets": {
+        "universal": "1ef71e54e36287e7ac00f7cc88b14c2f7ebdd183ed574c8a676527bfa9b5042d",
+        "fdd_expressive": "f4ea85a41c4bee7720094a2bf05cab70cb05d1c5aee755abeb9dab947e077360",
+        "adaptive_legato": "4d635ba2f5b70403d741b7d6d195a87d94dd149d06eb6d40b6f28ef1ad7e49c2"
+      },
+      "planningSeconds": 0.43180000002030283
+    },
+    {
+      "sha256": "9f504a6fc5c9fd8b868eab10d2cc94a0e8b7176d508dc7817d95787d2512f696",
+      "presets": {
+        "universal": "74f276cfe067dbad038cd98f18644809eab22a5db6b05f1b7627ada2000ee822",
+        "fdd_expressive": "7c8ee8f038318d21c61909ae17d5b7923c3898e137ca93e7dfa51a8896a02f4a",
+        "adaptive_legato": "4e90ae33f66b3a06285c10ed0b63d7861b5d0a0c972692d5be072fc723ecbf52"
+      },
+      "planningSeconds": 1.8951595830731094
+    },
+    {
+      "sha256": "a08c2139af1e31ec4ceb0d2fa5696ae9842c9ad26093496c53e82ebec1c062ce",
+      "presets": {
+        "universal": "f8e8195b1abba1e0dee7183e3c691219a184956d7404374945bc060a7d91c7db",
+        "fdd_expressive": "ce924ccd5d21364492a5d27c03b3d7521d8ca22ba188b5eb69c03043aa86313a",
+        "adaptive_legato": "b2893a11219ee8055f4ca7ee9b3301ecc6ca36b243397b82cbdca5fe1f84c5e0"
+      },
+      "planningSeconds": 35.497108583920635
+    },
+    {
+      "sha256": "a35f843b908f7f91b0141ded4c630a5f0c8a998b5e57f108bbfd65af4e04b0d8",
+      "presets": {
+        "universal": "6fc8064b4e2877ee382b69db77238842c58f027ae12ab6f36160720fab9483fd",
+        "fdd_expressive": "f84d9a534073a503487815bf0404b7acd053bfd7fc90578b0cd10e10469bdba1",
+        "adaptive_legato": "39de829b7383f2f16de9ae839686e64b59159f92e37d0c912cf58df4bba68f60"
+      },
+      "planningSeconds": 54.20828729099594
+    },
+    {
+      "sha256": "a4ca185c027b70bf7a72a000ddcf41063d168a144472f3395f0c4138a421bac8",
+      "presets": {
+        "universal": "d630c6438ab3b0332273d0ba43a20bc5810e0dedf6a49bc2ef7a19ed4c713986",
+        "fdd_expressive": "66785ccb78f02ee9e17b0dbfb3682c12f197b986ce0c5bc00e045a588f1ed155",
+        "adaptive_legato": "91b4917e61c5ca6324129ccd1f103e3f262677b88abd9fb0f83a38c10fb3e51d"
+      },
+      "planningSeconds": 27.197933084098622
+    },
+    {
+      "sha256": "a4f1b71a938ce921f1393c495c4dd746eaea905e2f647e82191ebfa716e4ad63",
+      "presets": {
+        "universal": "69bf18a6a8a4806744ff4030bc6ab4f1b87d1f7129ddc22cf79d56fd1108892f",
+        "fdd_expressive": "b23de42104170fcd16a93b22a8f5cd10a7600ae1f1a7a5c018fb00d4e8f9d996",
+        "adaptive_legato": "381286638f47a8a40437f89c32e6f494d1d4feac8259a05e58a1651802e4fd4d"
+      },
+      "planningSeconds": 26.796285957912914
+    },
+    {
+      "sha256": "aa8324e99320213f907bf484651566a29f5369cc9277da3469a04c6adcc9e2e3",
+      "presets": {
+        "universal": "dafa29b03077bb8386ac2c458a2cef571220ac8bbded5bdf96bda4b9b2b195eb",
+        "fdd_expressive": "39b9aed6e6ef5c03ea797b59eb7351a2da55074d4d0841fef93e7c0b2fcc901f",
+        "adaptive_legato": "4cd998def7508a8c4c691016621430f2f8be80fad997efc0cbe3728542ef0fff"
+      },
+      "planningSeconds": 107.52789766690694
+    },
+    {
+      "sha256": "acc3055039f43ba3976d311fa010733e7449f6e83d30d9571fe824e4f1170f30",
+      "presets": {
+        "universal": "879daffd6bbfe931cde936e61f8b42f7d3efe17452aadd9e08faa12ca88d6640",
+        "fdd_expressive": "c11754fc05441f338f3795de1c05c3cae09d87675d2fb623c3adbb0afce81082",
+        "adaptive_legato": "e9f223a7b4035caa564e795ebbfbcfff0954b670a6ca57c49de2a52f00878cf3"
+      },
+      "planningSeconds": 15.177358042099513
+    },
+    {
+      "sha256": "af2ed20ab0120f51bbff3953e48c84f73e3b87efc8562865a8f2a232b1bbb9e1",
+      "presets": {
+        "universal": "ed7ff71bfcab942b50c827b99232d24ef97b75e1e9e9a4b11db821d5267a58c0",
+        "fdd_expressive": "5f7a79691edbec28ae0c603aa787e101dca78bb1a2f378f250a25a909a04d650",
+        "adaptive_legato": "5fe8af6499c417323286295d054a4bd98ef9824dc37fbb3771d77504ae03a358"
+      },
+      "planningSeconds": 10.930091999936849
+    },
+    {
+      "sha256": "af93dab3e5803769c77d00ae6bd2d624ddc502b3ac59d545d5cade7ee9519e70",
+      "presets": {
+        "universal": "2286db6b08e5d6b743ba5c1b1bc42a3a144cd3dd1f9a3a817083e8ddfff1327b",
+        "fdd_expressive": "9a959aa236fe33bbe6e5ef1cfe11eaaee321e23cdf4d54744ddb64c68a5ba185",
+        "adaptive_legato": "8278795ac7c12ca288117aa2186477cc4df1eacd2ee2f92f4c6e1b47ee5d80ae"
+      },
+      "planningSeconds": 13.18643450003583
+    },
+    {
+      "sha256": "b021a1015068d5d03b7c5d99bc9f8050bef06c05d6b6f8d143c0a817b616f827",
+      "presets": {
+        "universal": "37d89bcfcf7c2c62efddaa8a9d7d1854d012f45b6c2dabcf1f13bdc4b29d753d",
+        "fdd_expressive": "7f5e6949d835ffa21af05918b1446481523c4762dce90615287e1385c5e977ba",
+        "adaptive_legato": "9688f5bb2268355bcb1e8f25bcd1f24e7995ef3a7595349a2e5d78663879a8df"
+      },
+      "planningSeconds": 13.941613208968192
+    },
+    {
+      "sha256": "b480b465df4b21348e5ad3da07f378790d69635bddab50e66c6aebdd7f509f6c",
+      "presets": {
+        "universal": "20f00a3379bb159a529e7d5adc07065b5ecdaa678e678b486446a561c2e25801",
+        "fdd_expressive": "7fbf13edb6b7d6bbbf06b7e044e0c2a9e222733425b5932664cc8e3964bda386",
+        "adaptive_legato": "0b5bdf4372d758024ca5105ab5486f03c4750054858e9de32ec990f277064ec0"
+      },
+      "planningSeconds": 45.482817541924305
+    },
+    {
+      "sha256": "be6a0107f5592614286009c0255b610a23c6e5b9e950ac767a1ad7e1f15335a9",
+      "presets": {
+        "universal": "b935a8eb9e9f18b6aa7aed2bd6038fb44d608a03c4f0b28ef5ccff5c1135803e",
+        "fdd_expressive": "68ff01923deb0df21ec3caa634f7cd845e692b9cc14c51a07a749b9345b35679",
+        "adaptive_legato": "2880a2fdf5fb0874d3ccfbe090c71517d7bbbe45d9bac66a8f89767ea1f40652"
+      },
+      "planningSeconds": 60.92587124998681
+    },
+    {
+      "sha256": "c13d8318345a12556e42e07f8d4b1e4eb80c53ca61a3ae7b24f07ed6d9306341",
+      "presets": {
+        "universal": "68ccd31e62f7da0fd6e0bb52c961c2557b27362763d789cff647a0df977907bc",
+        "fdd_expressive": "c3825350c28212a78e37d92f645e36badf816871e307d8319adc3edc34c3a482",
+        "adaptive_legato": "74914e320559d6a322c67afa82a02b3a9cf2b0d1ed44085aabf71782a16f7979"
+      },
+      "planningSeconds": 40.30991112499032
+    },
+    {
+      "sha256": "c3bec792de58440ac6adefe68c7be0dc075bfce82066ebcfa73e862b0df4d6de",
+      "presets": {
+        "universal": "353610818c8857426913d16e410642da3aafd57e07bff912c9cfdfea4a5c359b",
+        "fdd_expressive": "edd1b79db3eb11042046cbe3b0f2eabaff785a99d853f17547039ac79c20f5d1",
+        "adaptive_legato": "fb99b418d5b0e789262478cf49d037ccc3c691a88ded2e33d0bd1cefcbb57621"
+      },
+      "planningSeconds": 9.793721583904698
+    },
+    {
+      "sha256": "c4f45c64aa965655304656e5d7f7ece9bafa1ec008cb3248d4713f0d09461576",
+      "presets": {
+        "universal": "1353882bc07375cf1eb0ce7b871d64c0e954cd42f789900f33f058aa25da0fcc",
+        "fdd_expressive": "fd1c311d641813638ac259f17377c8867066dccac4751f0885de985019a09192",
+        "adaptive_legato": "77ff5691da57948b7a55c6e9fb7734d337ad20faf8c74c358e7cd11cc31ae73b"
+      },
+      "planningSeconds": 6.145636291010305
+    },
+    {
+      "sha256": "c4ff35d0f8fb0d84c0d75105607f6a2f360063d242ba84ace668763d432a5e52",
+      "presets": {
+        "universal": "980556a632379684d88395c957a251e21ee4aa8581c04aed2f79c0fdfe8f0ab7",
+        "fdd_expressive": "85f63d4c31fcb8591ced161d92e75b8fe6f3c9a0c381bf3307eb7f291c200859",
+        "adaptive_legato": "42d5097d9f20c88ce1165df13e7820b0d2891a4c4bda61c27e5807dc6625f81a"
+      },
+      "planningSeconds": 49.636932917055674
+    },
+    {
+      "sha256": "c8e0d1ff0c75de624c283fdc2061eee3485eebe4c4234d5eaafdca47d45e2304",
+      "presets": {
+        "universal": "b01ce731ae013bb1bba7dae0468df9ca0082a5e822477dc502b40c2ca7271088",
+        "fdd_expressive": "51ecb73f7f3428d8bddc3f4074832908b79f7dde9a8d171aa43945d58d5e3cac",
+        "adaptive_legato": "9a2d79f8eb2ef33f72e7b44b22aa722a6e0619a06ba29740685bc532c76db724"
+      },
+      "planningSeconds": 36.31392083398532
+    },
+    {
+      "sha256": "ce19521f7feb85da2bb4799bd16597b9c1c845153f907ab9b78e707658798f39",
+      "presets": {
+        "universal": "002329c2feb1f65028ebceb220d98301d8c28a4067018dd015ea70995c5a63ad",
+        "fdd_expressive": "16a8e31879c732d501d33b8a750ffd675bed34c08ecbab32e9e46370ee90021b",
+        "adaptive_legato": "0b7fc5b4e3d4af82bd227c9b50fd4d41fbd74a74d51beec76ec5079a441c821a"
+      },
+      "planningSeconds": 31.08142245793715
+    },
+    {
+      "sha256": "d1f1954bbb60aeab8a54c80a45a55d2008debd907b933ac3bee926720bb9d3b0",
+      "presets": {
+        "universal": "2f0607aa1d590389978d882b93bc7df1851d07bcb3d970c58cabd087c644daeb",
+        "fdd_expressive": "3dcfe3cc9b3fb02abf438765069c3ae98bd6e582327343beafb37058e2c65b80",
+        "adaptive_legato": "babc4ab066d96b97f265bc66e1bd9ba4bcce9bae9b9fab37ae943bd60aaf1ca0"
+      },
+      "planningSeconds": 19.06048029102385
+    },
+    {
+      "sha256": "d2d8c6d3f3fd5ceca622e314805a734fca6999ab7ea671c43ca1b3222635285c",
+      "presets": {
+        "universal": "cf555dd38b35bcfc77f93c87ae3ba2d0f51f229335eba07cee77dd9fcf9de0b2",
+        "fdd_expressive": "1d8a5e7bfec8a95f1f4a8f5c87c75f703cd512920d68ecfed2bb506a16139d06",
+        "adaptive_legato": "1ec4b95ca5ba3417238a1ff093285accb37bcaa47ce883b5ab733f3ec5384ddf"
+      },
+      "planningSeconds": 12.784029708011076
+    },
+    {
+      "sha256": "d362a5bb5da4b45cac0e42f27559bc88d3bbf66116d382502b996e8aec589caa",
+      "presets": {
+        "universal": "c1880b14004ab93fdc36b5a16afb60b0be11663f94a7b5cd3b29aebeb6969ca1",
+        "fdd_expressive": "46732a9e995597bdd0a58d1023fd01fdf6d82e4af5167a054b2ede9d0f2a3e70",
+        "adaptive_legato": "39b5c61f98e1beb84cd0d9d7f7128a70e2161993d57ad7c4a32eccb6ee6edc6c"
+      },
+      "planningSeconds": 6.03776920796372
+    },
+    {
+      "sha256": "d63e99b7a3faa361a5356579b144b618eef4cdae7aec2b8a1d6203481f09b0b7",
+      "presets": {
+        "universal": "9be642860b4c9cd839c87cb3340e89724f85e41ff06ccfedbc554dba1e4cbad4",
+        "fdd_expressive": "a2b1078d86198d98ad8ee87289c9956fb72c58e09df9c312c3fa3c2ae86d72fc",
+        "adaptive_legato": "07a472334c8a99d45a1a832c557706990f3515911d666df33ba354e1c2a29e5b"
+      },
+      "planningSeconds": 92.13353783299681
+    },
+    {
+      "sha256": "d6515689c237e8127b61caf04d6ab6fbec65e9b76da5ba38b5dd239ad9884163",
+      "presets": {
+        "universal": "9e490fc23cbe605cd93597382a74784b1cbeeef859b37d99a756165d6416e5df",
+        "fdd_expressive": "c6cbab8c383a477bd8e489fa394e1e70cc5c13eabbc53dcf2085b993520079ca",
+        "adaptive_legato": "e7820d13f5e63d92c29dc54882f7b24edb6e5d02990e13ce2680c7e20e93d0ae"
+      },
+      "planningSeconds": 54.76973483408801
+    },
+    {
+      "sha256": "d94011ddb062ce74339e0bda439beea903455efae37799fa7cde3cce9f0c4ec9",
+      "presets": {
+        "universal": "cf9dd71a1da8d3461df140ac197826e650a57221ef751f96dfd6ab11e2b510b3",
+        "fdd_expressive": "515eb497a6521e29b8950c4f287dede00339e4d7905be33d238f5e8cfd504b1a",
+        "adaptive_legato": "60341591b537bde11480aec177802f6b545f4c70d13a81cb82cea917253c3cc5"
+      },
+      "planningSeconds": 0.2350623341044411
+    },
+    {
+      "sha256": "dc6dd3622f3911770b660a7f3260ace79d475642019dc7a6a6754aea678ba473",
+      "presets": {
+        "universal": "8aac1710319ed6c15e12fe3759e70fa8e65b8125a8da233b5baa13279cde1c04",
+        "fdd_expressive": "aaea2d1ffbb80805c45d5fa2335e2ea0e81c3459ba271f21baa26f4e8e4f35c6",
+        "adaptive_legato": "91038c6445ff82b91111e85a08d8711a58993adccaa0d770f2bf5dbc82d0f344"
+      },
+      "planningSeconds": 0.18386687501333654
+    },
+    {
+      "sha256": "e0bc91c130cd169b3ed636adb21e957f83a5f6bb8a41e883e8100982236091d3",
+      "presets": {
+        "universal": "860d4eacca8b9d4c1fbd37887f51002c532f09c1738cc698447cebaee2a93908",
+        "fdd_expressive": "8f1c3c5b8ff2c0dd4fe688daaaa4794533fe52acad3ddd1195929af33f359fac",
+        "adaptive_legato": "478b06103386b9596194009c4e2503b24cebad9c884f4266f911ae8ca40f3691"
+      },
+      "planningSeconds": 15.047738999943249
+    },
+    {
+      "sha256": "e1c50eaef1e15eccdc7d5c7032e652112f8cead40f0dd20d508cf5436fb464c6",
+      "presets": {
+        "universal": "36f005a564167419de3cd4baf46748353f0a32f34b0c509ffc77ef288617af77",
+        "fdd_expressive": "c82b74aef16d3e8fb55fc283495ff84691d52f73617b8fb7c6f52888d817ee27",
+        "adaptive_legato": "7ef7006a811a5a6a548ccc6c93f5ac2265edad56bf4154d965e475e165443f12"
+      },
+      "planningSeconds": 10.800648625008762
+    },
+    {
+      "sha256": "e64932ccf5abe2ecfefa5ee00c18853cbed183575df76eeb58121c4a52256b0b",
+      "presets": {
+        "universal": "9bb21d1f88af94d9c5ef1b23563f14a81560fb977a239c968726db5921537769",
+        "fdd_expressive": "6d5fd94fee32138c699471878befb0dc4686b8bbb94287aa8ccca8527e7d8a7c",
+        "adaptive_legato": "b1ead7eb976f9faf71304026336e85324888cfde690b0ed32098fce01e8684e4"
+      },
+      "planningSeconds": 47.24613187497016
+    },
+    {
+      "sha256": "e6b2de76774ec7f05a8ba183dc997ad7541931028f4207160334dffc74dca1cc",
+      "presets": {
+        "universal": "b29f660d7e94703ac7989d018f5de8e90285a4e452ce0f1f020ae4d97ccbbdda",
+        "fdd_expressive": "f03e351cfe6bd87bf0598e9ab8974e3d094e6a31ef468e241d07bc848fed70cb",
+        "adaptive_legato": "53382a474e3e870397045c3f7b0fa8651c9ead0874c41914861320380d18cfa8"
+      },
+      "planningSeconds": 24.338123290915973
+    },
+    {
+      "sha256": "e98715f1d378d44d48a7dd6c01949db2e850a396c9c84985d9d3e1198ad7b104",
+      "presets": {
+        "universal": "18ccb1a7a6ce6ccf91cd99ea8d251032513472a39a111abfea069dc45639b4c3",
+        "fdd_expressive": "f760b070634862b2822f09fbf448c6b4b0b7fd34fa543a5559f9524bd90dd871",
+        "adaptive_legato": "a9bb9dceb6c658c3a645f17c8d9cb9295da4035b2f23695b6533c07f2ca86362"
+      },
+      "planningSeconds": 24.649906208040193
+    },
+    {
+      "sha256": "ee4bacbe4b9bdc706d4cfcb52d30c43fa4e7eb52b85b4871e7c66a21143b8ede",
+      "presets": {
+        "universal": "3fb8ee0999d14e4e4da231004dd47fdd80ad04e2be10388cd7121b33adb943b9",
+        "fdd_expressive": "58b59294d32876ad7ac98123dfce43ec6c1b1f27e429d420f1748147c70276f5",
+        "adaptive_legato": "d0f2ac8165f87f81adf52ddea6bff3efd05941bae3d8427f6652fd6c772e86fa"
+      },
+      "planningSeconds": 3.049485750030726
+    },
+    {
+      "sha256": "eeb1a97cdde6ece920bcdf82e362192adee80615bd050b5004c2fe8f98856bc7",
+      "presets": {
+        "universal": "1ab404a274484f0fe65a7b8acc77eaf8998349fd31658f147e19812286651c2f",
+        "fdd_expressive": "94e40ae5ddd66f3eb56a756b3164673a99572311ad00e0c456dbd059be388369",
+        "adaptive_legato": "e9cf37404bc49db5b322d00d05220fae541838a9a47e99e9eeb5afd3cd6ca8f5"
+      },
+      "planningSeconds": 25.33860024996102
+    },
+    {
+      "sha256": "f245be435b6b1f7dd33363e56647d103dd0542d6830e9a1d0155c2120ec50509",
+      "presets": {
+        "universal": "68697e9a68bbb7c7190126bab86ffccc51a24aaeb14d7e1c59b8df5f0e2de290",
+        "fdd_expressive": "0ff7ee7a2457b9066c95e460378a3112a9464c7c3933a9f27f78f8c509e8fd53",
+        "adaptive_legato": "cf0e609ee21af14ec624d66ba2d2772c1c87c15619d68770493b9ebc8205e1bf"
+      },
+      "planningSeconds": 28.265683957957663
+    },
+    {
+      "sha256": "f54991424a09ecd3b55a7e59c14c17d079ad786fb4363c87d7041d3c9053fccf",
+      "presets": {
+        "universal": "4c990344c2eabab26e53dd431987498d119de5b83f5592ab762e35d82ed1a1a5",
+        "fdd_expressive": "dfeac795506b7719c4ece9321209a1301f128d93b8a0af517b2b0e6fb2e110a2",
+        "adaptive_legato": "a980e8ab745c6a5ff9eabfe28c1088bee56a3f79fd8be31a219b1449836d4fcb"
+      },
+      "planningSeconds": 64.51613720797468
+    },
+    {
+      "sha256": "f5c7393bed9175930ab93ebfe09b1082c010b0df840eb32bee8a024436f11fb0",
+      "presets": {
+        "universal": "e5d5209d6b394250e56e4608af2f5a6b9d0bec8d98b1ee96e55c395f625f400d",
+        "fdd_expressive": "2420ff6bd876490fa7303d9faac694ffd19293434469b9a4657699d3b36ca3d0",
+        "adaptive_legato": "407aa302fbf6fe14f47f80e0e1a43dbb0667b8e645581e9ad41cf83d0aca643e"
+      },
+      "planningSeconds": 77.38284849992488
+    },
+    {
+      "sha256": "faec8a53f8ef66b3e63623bff41fac8e134ed7a2ab2fec3581fa1295fa30343e",
+      "presets": {
+        "universal": "4bd7852bcdc5cd91577824a01e4f96cbf3054eceebcbd7525d36b940aeb10c2e",
+        "fdd_expressive": "1fb49672515771bab9ded9e7c19465a11e57c53fc658f80608f64366352e99b4",
+        "adaptive_legato": "913b047f28a4e75ab35a2763e060f3dcd9c833dc73faaa32a55141b18fa1a13f"
+      },
+      "planningSeconds": 82.89041695802007
+    },
+    {
+      "sha256": "fde6af0fc7c14e52d01bd034d139f1acf939edb2c5076e56fadade5ab3737fdd",
+      "presets": {
+        "universal": "973023c4981aa0117e83d916ce5bcf41e39c84a18d0c02377c7b24e00568fdd6",
+        "fdd_expressive": "08e53a139846b2857d35b16b014cdff6cdf35788e855902f3c4278fe1207ae9a",
+        "adaptive_legato": "974b1dc5712537b61546381709a4c7228720220221e38051dbde9ac38471ddea"
+      },
+      "planningSeconds": 24.543997542001307
+    }
+  ],
+  "summary": {
+    "uniqueSources": 88,
+    "readableSources": 88,
+    "parseErrors": 0,
+    "planningErrors": 0
+  }
+}

@@ -29,6 +29,11 @@ pipeline/kontekst planowania. [REFACTORING_PLAN.md](REFACTORING_PLAN.md) zawiera
 kolejność prac, bramki i dziennik wykonania; opis bieżących granic jest w
 [ARCHITECTURE.md](ARCHITECTURE.md#granice-modułów-i-własność-stanu).
 
+[REFACTORING_NEXT.md](REFACTORING_NEXT.md) to plan i zapis wykonania kolejnej rundy
+dla agenta AI: zależności aranżera, czytelność oraz stan i wyłączność serwisu BLE.
+Zawiera etapy, niezmienniki, testy i kryteria ukończenia oraz dziennik realizacji
+zleconej 2026-10-27.
+
 Czytaj schemat → urządzenia → testy przy budowie układu. Nie zastępuj brakujących
 wartości zasilania/rezystorów parametrami znalezionymi w archiwum. Topologia jest
 opisana od ESP32 do obciążeń, ale identyfikacja modeli FDD/modułów i elementów

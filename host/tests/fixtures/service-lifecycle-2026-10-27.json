@@ -1,0 +1,939 @@
+[
+  {
+    "operation": "firmware",
+    "failure": null,
+    "outcome": {
+      "ok": true,
+      "flash": "success"
+    },
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "close",
+      "build",
+      "upload"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "upload",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 8,
+        "kind": "log",
+        "line": "Writing at 0x00001000... (37 %)"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 9,
+        "kind": "status",
+        "stage": "upload",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 37,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 10,
+        "kind": "status",
+        "stage": "flash_confirmed",
+        "flash": "success",
+        "ble": "idle",
+        "progress": 100,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 11,
+        "kind": "log",
+        "line": "PlatformIO potwierdzi\u0142o zako\u0144czenie flashowania"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 12,
+        "kind": "status",
+        "stage": "reboot_wait",
+        "flash": "success",
+        "ble": "waiting",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware",
+    "failure": "stop",
+    "outcome": "OutputError: Nieznany stan sprz\u0119tu: no STOPPED",
+    "effects": [],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "Nieznany stan sprz\u0119tu: no STOPPED",
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware",
+    "failure": "off",
+    "outcome": "OutputError: off failed",
+    "effects": [
+      "POWER OFF"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "off failed",
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware",
+    "failure": "build",
+    "outcome": "RuntimeError: build failed",
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "close",
+      "build"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "build failed",
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware",
+    "failure": "upload",
+    "outcome": "RuntimeError: upload failed",
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "close",
+      "build",
+      "upload"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "upload",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 8,
+        "kind": "log",
+        "line": "Writing at 0x00001000... (37 %)"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 9,
+        "kind": "status",
+        "stage": "upload",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 37,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 10,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "upload failed",
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware",
+    "failure": "port",
+    "outcome": "OutputError: Port USB zosta\u0142 od\u0142\u0105czony lub zmieniony przed uploadem",
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "close",
+      "build"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "USB"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "Port USB zosta\u0142 od\u0142\u0105czony lub zmieniony przed uploadem",
+        "transport": "USB"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware_ble",
+    "failure": null,
+    "outcome": {
+      "ok": true,
+      "flash": "success",
+      "transport": "BLE"
+    },
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "build",
+      "upload",
+      "close"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "upload_ble",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 0,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 8,
+        "kind": "status",
+        "stage": "upload_ble",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 50,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 9,
+        "kind": "status",
+        "stage": "upload_ble",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 100,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 10,
+        "kind": "status",
+        "stage": "flash_confirmed",
+        "flash": "success",
+        "ble": "idle",
+        "progress": 100,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 11,
+        "kind": "log",
+        "line": "ESP32 potwierdzi\u0142o SHA-256 obrazu i wyb\u00f3r partycji OTA; oczekiwanie na restart."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 12,
+        "kind": "status",
+        "stage": "reboot_wait",
+        "flash": "success",
+        "ble": "waiting",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware_ble",
+    "failure": "stop",
+    "outcome": "OutputError: Nieznany stan sprz\u0119tu: no STOPPED",
+    "effects": [],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "Nieznany stan sprz\u0119tu: no STOPPED",
+        "transport": "BLE"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware_ble",
+    "failure": "off",
+    "outcome": "OutputError: off failed",
+    "effects": [
+      "POWER OFF"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "off failed",
+        "transport": "BLE"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware_ble",
+    "failure": "build",
+    "outcome": "RuntimeError: build failed",
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "build",
+      "close"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "build failed",
+        "transport": "BLE"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  },
+  {
+    "operation": "firmware_ble",
+    "failure": "upload",
+    "outcome": "RuntimeError: upload failed",
+    "effects": [
+      "POWER OFF",
+      "wait",
+      "build",
+      "upload",
+      "close"
+    ],
+    "commands": [
+      "ALL STOP token",
+      "ALL STOP token",
+      "ALL STOP token",
+      "POWER OFF"
+    ],
+    "events": [
+      {
+        "type": "firmware_event",
+        "seq": 1,
+        "kind": "status",
+        "stage": "prepare",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 2,
+        "kind": "log",
+        "line": "Przygotowanie: zatrzymanie odtwarzania i po\u0142\u0105czenia BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 3,
+        "kind": "status",
+        "stage": "power_off",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 4,
+        "kind": "log",
+        "line": "Potwierdzono GPIO19 LOW; to nie jest pomiar napi\u0119cia ATX. Odczekiwanie 1 s."
+      },
+      {
+        "type": "firmware_event",
+        "seq": 5,
+        "kind": "status",
+        "stage": "build",
+        "flash": "running",
+        "ble": "idle",
+        "progress": null,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 6,
+        "kind": "log",
+        "line": "BUILD SUCCESSFUL"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 7,
+        "kind": "status",
+        "stage": "upload_ble",
+        "flash": "running",
+        "ble": "idle",
+        "progress": 0,
+        "error": null,
+        "transport": "BLE"
+      },
+      {
+        "type": "firmware_event",
+        "seq": 8,
+        "kind": "status",
+        "stage": "failed",
+        "flash": "failed",
+        "ble": "idle",
+        "progress": null,
+        "error": "upload failed",
+        "transport": "BLE"
+      }
+    ],
+    "busy": false,
+    "owner": "orchestra",
+    "state": "stopped"
+  }
+]

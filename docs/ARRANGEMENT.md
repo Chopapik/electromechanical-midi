@@ -586,6 +586,47 @@ recovery z ponowną walidacją oraz rejestr DVD i artykulacja presetu. Wybrany
 preset i współdzielona strategia alokacji są osobnymi danymi. Refaktoryzacja
 zachowuje kolejność i liczby muzyczne; nie dostraja parametrów.
 
+Wspólne modele, przygotowanie nut i operacje zdarzeń są w `allocation_models`,
+`allocation_input`, `allocation_operations`. `allocator` jest wejściem, a nie
+biblioteką prywatnych pomocników dla `hardware_arranger`. Zachowane aliasy
+`_source_notes`, `_priority` i pozostałe używane przez starsze wejścia wskazują
+na te same implementacje. Nowy kod importuje neutralne moduły; guard odrzuca
+zależność zwrotną. Aliasy można usunąć dopiero po migracji konsumentów CLI/testów.
+
+`arrangement_strategy` opisuje bazową konfigurację, `FddGrouping` i końcowy
+refinement. ID pochodzą z istniejącego katalogu `arrangement_presets`. Strategia
+nie importuje algorytmów, więc nie tworzy cyklu z Legato ani aranżerem.
+`allocate_hardware` uruchamia pojedynczy backbone i ewentualnie jeden refinement,
+bez rekurencyjnego wywoływania siebie. Historyczny parametr `logical_fdd=True`
+oznacza nadal grupę czterech, a liczba `2` pary; wewnątrz jest jawny rozmiar grupy.
+
+| Preset | Backbone fizyczny | Refinement po backbone | Recovery runtime AUTO |
+| --- | --- | --- | --- |
+| balanced | balanced | brak | nie |
+| fdd_quality | fdd_quality | brak | nie |
+| dvd_lead_low_fdd | dvd_lead_low_fdd | brak | nie |
+| fdd_quality_adaptive | fdd_quality bez DVD sustain | adaptive quality | nie |
+| instrument_roles | instrument_roles | brak | nie |
+| instrument_roles_unison | instrument_roles | pary unison | nie |
+| instrument_roles_duet | instrument_roles | pary duet | nie |
+| instrument_roles_unison4 | universal, grupy 4 | revoicing quad | tak |
+| fdd_expressive | universal, grupy 2; fixed gate 0, unison false | revoicing expressive | tak |
+| fdd_expressive_solo | jak expressive | expressive; na końcu bez akcentów | tak |
+| fdd_legato | jak expressive | expressive; na końcu bez akcentów i phrase legato | tak |
+| adaptive_legato | jak expressive | expressive; na końcu bez akcentów i adaptive legato | tak |
+| universal | universal | brak | tak |
+
+| Etap runtime | Wejście i mutacje | Warunek wyjścia |
+| --- | --- | --- |
+| allocate_backbone | MIDI, kopia konfiguracji, profile; tworzy events, extras, policy i context | Fizyczna alokacja/refinement albo odrębne STRICT_TRACKS |
+| resolve_expression | Plan; ustawia gate i artykulację głównych nut oraz extras | Zachowane powiązania istniejących sidecarów |
+| enforce_fdd_limits | Plan; limity ataków, synchronizacja grup, finalizacja Expressive | Spójne gate/rezerwacje FDD |
+| recover_voices | Tylko uprawnione presety AUTO; nowe rezerwacje i ich ekspresja | Ponowne enforce_fdd_limits, pełna chronologia |
+| finish_articulation | Rejestr DVD, opcjonalne usunięcie akcentów i Legato | Publiczny preset odtworzony bez zmiany wyboru użytkownika |
+
+Tabela opisuje kolejność i dotychczasowe wyjątki. Nie jest nowym algorytmem ani
+drugim katalogiem presetów. Ograniczenia mechaniczne nadal obowiązują w każdym etapie.
+
 `PlanningContext` przechowuje grupy FDD i flagę łączenia stykających się tonów.
 Raport `hardware.fddLegato` opisuje wynik, a jego obecność nie włącza zachowania
 kompilatora. Artykulacja extras ma stabilne wewnętrzne powiązania także po

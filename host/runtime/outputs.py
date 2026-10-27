@@ -4,7 +4,8 @@ import time
 import uuid
 from playback.hardware_profiles import execution_command
 
-class OutputError(RuntimeError): pass
+class OutputError(RuntimeError):
+    pass
 
 class RealOutput:
     lookahead = 0.
@@ -36,28 +37,33 @@ class RealOutput:
 
     def require_power(self):
         state = self.power_state()
-        if state != 'ON': raise OutputError('ATX '+state+': włącz zasilanie w Settings przed ruchem REAL')
+        if state != 'ON':
+            raise OutputError('ATX '+state+': włącz zasilanie w Settings przed ruchem REAL')
 
     def invalidate_configuration(self):
         self.configured=False
 
     def detach(self, *, close=True):
         """Release a session without claiming STOP or clearing unknown motion."""
-        if self.link and close:self.link.close()
+        if self.link and close:
+            self.link.close()
         self.power_state()
         self.link=None
         self.invalidate_configuration()
 
     def power(self, action):
         """Apply only acknowledged logical GPIO power state, never rail voltage."""
-        if not self.link:raise OutputError('Brak BLE: nie można potwierdzić POWER '+action)
+        if not self.link:
+            raise OutputError('Brak BLE: nie można potwierdzić POWER '+action)
         try:
             result=self.link.power(action)
             self.power_state()
             if action!='STATUS' and result!=action:
                 raise OutputError('Niepoprawne potwierdzenie POWER '+action)
             if action=='OFF':
-                self.active=False;self.unknown=False;self.error=None
+                self.active=False
+                self.unknown=False
+                self.error=None
                 self.active_speakers.clear()
                 self.speaker_frequencies.clear()
                 self.link.invalidate_fdd_reference()
@@ -67,8 +73,11 @@ class RealOutput:
             raise OutputError(str(exc)) from exc
 
     def home_all(self):
-        if not self.link:raise OutputError('Brak połączenia z ESP32')
-        self.require_power();self.configure();self.active=True
+        if not self.link:
+            raise OutputError('Brak połączenia z ESP32')
+        self.require_power()
+        self.configure()
+        self.active=True
         self.write(['FDD ALL HOME'])
         if not self.link.wait_homed(echo=lambda _:None):
             raise OutputError('Homing TRACK0 nie został potwierdzony')
@@ -79,24 +88,30 @@ class RealOutput:
                 'message':self.error or ('ESP32 BLE connected' if self.link else 'Brak połączenia z ESP32')}
 
     def write(self, lines, *, configuration=False):
-        if not self.link: raise OutputError('Brak połączenia z ESP32')
+        if not self.link:
+            raise OutputError('Brak połączenia z ESP32')
         try:
             send = getattr(self.link, 'send_configuration', self.link.send_batch) if configuration else self.link.send_batch
             send(lines)
             self.sent.extend(lines)
             self.sent[:] = self.sent[-200:]
         except Exception as exc:
-            self.lost(str(exc)); raise OutputError(self.error) from exc
+            self.lost(str(exc))
+            raise OutputError(self.error) from exc
 
     def lost(self, reason):
         self.unknown = self.unknown or self.active
         self.error = ('Nieznany stan sprzętu. ' if self.unknown else '') + reason
         if self.link:
             if self.active:
-                try: self.link.all_stop()
-                except Exception: pass
-            try: self.link.close()
-            except Exception: pass
+                try:
+                    self.link.all_stop()
+                except Exception:
+                    pass
+            try:
+                self.link.close()
+            except Exception:
+                pass
         self.detach(close=False)
         self.homing_devices = ()
         self.homing_status_pending = False
@@ -136,8 +151,10 @@ class RealOutput:
         self.error = None
 
     def configure(self):
-        if not self.link: raise OutputError('Brak połączenia z ESP32')
-        if self.configured: return
+        if not self.link:
+            raise OutputError('Brak połączenia z ESP32')
+        if self.configured:
+            return
         if self.link.controller_status.get('hardware_profiles') != '1':
             raise OutputError('Firmware nie obsługuje wymaganych profili sprzętowych')
         routing = self.registry.document.get('routing', {'mode':'AUTO'})
@@ -152,16 +169,20 @@ class RealOutput:
             on = (d['enabled'] and d.get('realEnabled', d['enabled'])
                   and p is not None and (not strict or strict_fdd))
             profile = execution_command(p,d['lane']) if p else None
-            if on and d['type'] in ('FDD','DVD_SLED','HDD_VCM') and not profile: on=False
+            if on and d['type'] in ('FDD','DVD_SLED','HDD_VCM') and not profile:
+                on=False
             if on and p.get('continuousRotation') and self.link.controller_status.get('dvd_continuous')!='1':
                 raise OutputError('Wgraj nowe firmware ESP32: wymagany ciągły ruch DVD Stepper')
             if on and d['type']=='VHS' and self.link.controller_status.get('speaker_waves')=='1':
                 lines.append(f"{prefix} WAVE {d.get('waveform','pulse')}")
-            if on and profile: lines.append(profile)
+            if on and profile:
+                lines.append(profile)
             lines.append(f'{prefix} ENABLE {int(on)}')
-            if on and p.get('continuousRotation'): lines.append(f'{prefix} DIR FWD')
+            if on and p.get('continuousRotation'):
+                lines.append(f'{prefix} DIR FWD')
         if strict:
-            if self.link.controller_status.get('strict_tracks')!='1': raise OutputError('Firmware bez STRICT TRACKS')
+            if self.link.controller_status.get('strict_tracks')!='1':
+                raise OutputError('Firmware bez STRICT TRACKS')
             lines.append('TRACKS SET '+' '.join(str(t if t is not None else -1) for t in routing['tracks']))
         self.write(lines, configuration=True)
         base_generation = self.link.status_generation
@@ -175,7 +196,8 @@ class RealOutput:
         deadline=time.monotonic()+3
         while time.monotonic()<deadline:
             response=self.link.poll_lines()
-            if any(s.startswith('ERR') for s in response): raise OutputError('; '.join(response))
+            if any(s.startswith('ERR') for s in response):
+                raise OutputError('; '.join(response))
             if (self.link.status_generation > base_generation
                     and (not extended or getattr(self.link, 'extended_status_generation', 0) > extended_generation)):
                 self.configured=True
@@ -184,8 +206,10 @@ class RealOutput:
         raise OutputError('Brak potwierdzenia konfiguracji ESP32')
 
     def ready(self, commands=(), *, auto_home=False, require_homed=True):
-        if not self.link: raise OutputError('Brak połączenia z ESP32')
-        if self.unknown: raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
+        if not self.link:
+            raise OutputError('Brak połączenia z ESP32')
+        if self.unknown:
+            raise OutputError('Nieznany stan sprzętu; wymagane potwierdzenie STOP')
         blocked = sorted({self.registry.by_id[c.device_id]['name'] for c in commands
                           if c.kind!='stop' and not self.registry.by_id[c.device_id].get(
                               'realEnabled', self.registry.by_id[c.device_id]['enabled'])})
@@ -201,14 +225,18 @@ class RealOutput:
         self.configure()
         missing_home=[]
         for c in commands:
-            if c.kind=='stop': continue
+            if c.kind=='stop':
+                continue
             d=self.registry.by_id[c.device_id]
             key=('VHS2' if d['lane']=='drum:2' else 'VHS') if d['type']=='VHS' else d['lane'].upper()
             status=self.link.device_status.get(key,{})
-            if status.get('enabled')!='1': raise OutputError(d['name']+': firmware nie potwierdził ENABLE')
+            if status.get('enabled')!='1':
+                raise OutputError(d['name']+': firmware nie potwierdził ENABLE')
             if require_homed and d['type']=='FDD' and (status.get('homed')!='1' or status.get('homing')=='1'):
-                if not auto_home: raise OutputError(d['name']+': wymagany homing TRACK0')
-                if d['id'] not in missing_home: missing_home.append(d['id'])
+                if not auto_home:
+                    raise OutputError(d['name']+': wymagany homing TRACK0')
+                if d['id'] not in missing_home:
+                    missing_home.append(d['id'])
         if missing_home:
             self.stop() # Confirm a stopped baseline before mechanical preparation.
             self.homing_devices=tuple(missing_home)
@@ -222,11 +250,14 @@ class RealOutput:
         return True
 
     def homing_ready(self):
-        if not self.link or self.unknown: raise OutputError('Homing: utracono połączenie lub nieznany stan sprzętu')
+        if not self.link or self.unknown:
+            raise OutputError('Homing: utracono połączenie lub nieznany stan sprzętu')
         self.require_power()
-        if not self.homing_devices: return True
+        if not self.homing_devices:
+            return True
         now=time.monotonic()
-        if now>=self.homing_deadline: raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.homing_devices))
+        if now>=self.homing_deadline:
+            raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.homing_devices))
         generations=(self.link.status_generation,
                      getattr(self.link, 'extended_status_generation', 0))
         require_base,require_extended=self.homing_status_requirements
@@ -262,20 +293,24 @@ class RealOutput:
     def dispatch(self, commands, **_):
         # An offline attempt cannot have started physical motion. Keep genuine
         # write failures conservative: a connected batch may be partially sent.
-        if not self.link: raise OutputError('Brak połączenia z ESP32')
+        if not self.link:
+            raise OutputError('Brak połączenia z ESP32')
         blocked = sorted({self.registry.by_id[c.device_id]['name'] for c in commands
                           if c.kind!='stop' and not self.registry.by_id[c.device_id].get(
                               'realEnabled', self.registry.by_id[c.device_id]['enabled'])})
         if blocked:
             raise OutputError('Urządzenia dostępne tylko w VIRTUAL; REAL zablokowany: '
                               +', '.join(blocked))
-        if any(c.kind!='stop' for c in commands): self.require_power()
+        if any(c.kind!='stop' for c in commands):
+            self.require_power()
         lines=[]
         for c in commands:
             prefix=self.prefix(c.device_id)
             d=self.registry.by_id[c.device_id]
-            if c.kind=='stop': lines.append(prefix+' STOP')
-            elif c.kind=='hit': lines.append(prefix+' HIT')
+            if c.kind=='stop':
+                lines.append(prefix+' STOP')
+            elif c.kind=='hit':
+                lines.append(prefix+' HIT')
             elif d['type']=='VHS':
                 if d.get('realAmplitude',50)==0:
                     lines.append(prefix+' STOP')
@@ -286,10 +321,12 @@ class RealOutput:
             else:
                 text=f'{prefix} PLAY {c.hz:.2f}'
                 if self.registry.document.get('routing',{}).get('mode')=='STRICT_TRACKS' and d['type']=='FDD':
-                    if c.track is None: raise OutputError('STRICT TRACKS: brak pochodzenia nuty')
+                    if c.track is None:
+                        raise OutputError('STRICT TRACKS: brak pochodzenia nuty')
                     text+=f' TRACK {c.track}'
                 lines.append(text)
-        if any(c.kind!='stop' for c in commands): self.active=True
+        if any(c.kind!='stop' for c in commands):
+            self.active=True
         self.write(lines)
         for c in commands:
             if self.registry.by_id[c.device_id]['type']=='VHS':
@@ -310,7 +347,8 @@ class RealOutput:
             self.write([f'{self.prefix(ident)} WAVE {waveform}'])
 
     def set_speaker_amplitude(self, ident):
-        if not self.link: return
+        if not self.link:
+            return
         prefix=self.prefix(ident)
         amplitude=self.registry.by_id[ident].get('realAmplitude',50)
         if amplitude==0:
@@ -325,19 +363,23 @@ class RealOutput:
             self.write([self.prefix(ident)+' STOP'])
             self.active_speakers.discard(ident)
             self.speaker_frequencies.pop(ident,None)
-        elif self.active or self.unknown: raise OutputError('Nieznany stan sprzętu; STOP urządzenia niepotwierdzony')
+        elif self.active or self.unknown:
+            raise OutputError('Nieznany stan sprzętu; STOP urządzenia niepotwierdzony')
 
     def poll(self):
-        if not self.link: return
+        if not self.link:
+            return
         try:
             lines=self.link.poll_lines()
             faults = [s for s in lines if s.startswith(('ERR','READY protocol='))]
             if faults:
                 raise OutputError('; '.join(faults))
             if time.monotonic()-self.last_ping>.3:
-                self.link.ping(); self.last_ping=time.monotonic()
+                self.link.ping()
+                self.last_ping=time.monotonic()
         except Exception as exc:
-            self.lost(str(exc)); raise OutputError(self.error) from exc
+            self.lost(str(exc))
+            raise OutputError(self.error) from exc
 
 class VirtualOutput:
     """Browser scheduling packets; STOP acknowledgement is a cancellation barrier."""
@@ -359,15 +401,18 @@ class VirtualOutput:
     def release_owner(self, owner):
         """An expired browser lease cannot release a newer audio session."""
         with self.lock:
-            if self.owner!=owner:return False
+            if self.owner!=owner:
+                return False
             self.active=False
             self.owner=None
             return True
 
     def ready(self, commands=()):
-        if self.owner is None: raise OutputError('Brak przeglądarki z aktywnym Web Audio')
+        if self.owner is None:
+            raise OutputError('Brak przeglądarki z aktywnym Web Audio')
 
-    def status(self): return {'connected':self.owner is not None,'message':'Web Audio · debug','unknown':False}
+    def status(self):
+        return {'connected':self.owner is not None,'message':'Web Audio · debug','unknown':False}
 
     def dispatch(self, commands, **clock):
         self.active=True
@@ -377,19 +422,29 @@ class VirtualOutput:
     def acknowledge(self, owner, token):
         with self.lock:
             item=self.pending.get(token)
-            if item and item[0]==owner: item[1].set()
+            if item and item[0]==owner:
+                item[1].set()
 
     def cancel(self, device=None):
-        if not self.active: return
-        if self.owner is None: raise OutputError('Brak potwierdzenia wyciszenia Web Audio')
-        token=uuid.uuid4().hex; done=threading.Event()
-        with self.lock: self.pending[token]=(self.owner,done)
+        if not self.active:
+            return
+        if self.owner is None:
+            raise OutputError('Brak potwierdzenia wyciszenia Web Audio')
+        token=uuid.uuid4().hex
+        done=threading.Event()
+        with self.lock:
+            self.pending[token]=(self.owner,done)
         self.emit({'type':'audio_cancel','owner':self.owner,'token':token,'deviceId':device,'epoch':self.epoch+1 if device is None else None})
         try:
-            if not done.wait(1.5): raise OutputError('Przeglądarka nie potwierdziła wyciszenia Web Audio')
+            if not done.wait(1.5):
+                raise OutputError('Przeglądarka nie potwierdziła wyciszenia Web Audio')
         finally:
-            with self.lock: self.pending.pop(token,None)
-        if device is None: self.active=False
+            with self.lock:
+                self.pending.pop(token,None)
+        if device is None:
+            self.active=False
 
-    def stop(self): self.cancel()
-    def stop_device(self, ident): self.cancel(ident)
+    def stop(self):
+        self.cancel()
+    def stop_device(self, ident):
+        self.cancel(ident)

@@ -1,0 +1,155 @@
+{
+  "status": "PASS; all planned stages complete",
+  "date": "2026-10-27T23:29:17.049192+01:00",
+  "inputHead": "f394d33",
+  "scope": "offline refactoring; no physical device tests or firmware upload",
+  "baseline": {
+    "path": "reports/refactoring-next-baseline-2026-10-27.jsonl.gz",
+    "sha256": "d2f745e01e94d1aa0bf37a0cec6def08b4a64dc44be6c9c8ec7e2f06b0ea0219",
+    "cases": 117,
+    "presets": [
+      "balanced",
+      "fdd_quality",
+      "dvd_lead_low_fdd",
+      "fdd_quality_adaptive",
+      "instrument_roles",
+      "instrument_roles_unison",
+      "instrument_roles_duet",
+      "instrument_roles_unison4",
+      "fdd_expressive",
+      "fdd_expressive_solo",
+      "adaptive_legato",
+      "fdd_legato",
+      "universal"
+    ],
+    "initialCaptureVerify": "PASS",
+    "stage1Verify": "PASS",
+    "stage2Verify": "PASS",
+    "finalVerify": "PASS"
+  },
+  "hostBefore": {
+    "tests": 994,
+    "result": "PASS"
+  },
+  "hostAfter": {
+    "tests": 1008,
+    "seconds": 54.657,
+    "result": "PASS"
+  },
+  "frontend": {
+    "tests": 170,
+    "result": "PASS",
+    "build": "PASS; existing large-bundle warning"
+  },
+  "architecture": {
+    "modules": 62,
+    "result": "PASS",
+    "scope": "selected static boundaries and unresolved globals; not complete type or concurrency proof"
+  },
+  "service": {
+    "frozenTraces": 11,
+    "result": "exact command/event/effect equality",
+    "fixture": "host/tests/fixtures/service-lifecycle-2026-10-27.json",
+    "lifecycleTests": 9,
+    "lifecycleResult": "PASS",
+    "oldSnapshotRegressions": {
+      "tests": 3,
+      "failures": 4,
+      "scope": "late ACK attach, callback reservation leak, refusal after shutdown"
+    }
+  },
+  "performance": "reports/refactoring-next-performance-2026-10-27.json",
+  "sourceArchive": "reports/refactoring-next-source-2026-10-27.tar.gz",
+  "corpus": {
+    "status": "PASS",
+    "expectedUniqueSources": 168,
+    "baseline": "reports/refactoring-next-full-corpus-2026-10-27.json",
+    "localSubset": "reports/refactoring-next-corpus-2026-10-27.json",
+    "capturedSummary": {
+      "uniqueSources": 168,
+      "readableSources": 167,
+      "parseErrors": 1,
+      "planningErrors": 0
+    },
+    "localCaptureMatchesFull": true,
+    "stage1LocalSubsetVerification": {
+      "sources": 88,
+      "plans": 264,
+      "result": "PASS"
+    },
+    "verifiedSources": 168,
+    "verifiedPlans": 501,
+    "unchangedParseErrors": 1,
+    "presets": [
+      "universal",
+      "fdd_expressive",
+      "adaptive_legato"
+    ],
+    "sha256": "6e1d42e1db613e9506c18294f98f51d0b769d1de4964e5ab60226a5ab8469988"
+  },
+  "deployment": {
+    "result": "PASS",
+    "container": "orchestra",
+    "health": "healthy",
+    "apiHttpStatus": 200,
+    "frontendBundle": "/assets/index-CZz3cXKD.js",
+    "checkedSourceSha256": {
+      "host/runtime/device_service.py": "1040440f7bba5623aaafc98a5ceb9716e63fcce3d3b9004369263d16da90e875",
+      "host/playback/hardware_arranger.py": "e3ca895a5eafed2b329371ba6ffaff02260aa1e21976df7e97cc75271bb8477c",
+      "host/playback/arrangement_strategy.py": "5e0cef645e36a2442ba7c2d3fd5d79ddfb3e6f8ee9a193294b6689533317d2fa"
+    },
+    "allProductionSourcesMatch": true,
+    "matchedFiles": 13,
+    "testFixturesMatch": true,
+    "assets": [
+      "/assets/index-CZz3cXKD.js",
+      "/assets/index-CjX-8mK9.css"
+    ],
+    "finalRebuild": "PASS"
+  },
+  "productionSha256": {
+    "host/arrangement_presets.py": "7562c6c7b3f2ed80d4a890e37f3ffbb533db6d343431a49f4dc5ffe721ed29df",
+    "host/playback/allocation_input.py": "45a812d9e23772071d8963ed82a68adfc8397f6aedafe3f97d08ec9bd083ff0c",
+    "host/playback/allocation_models.py": "4636ffe42e44bbe3f45b93bcf41516c3fb300977b9119ebbec69233d901f8f3d",
+    "host/playback/allocation_operations.py": "356bdb3269b9f7e937b4899e6b37499bf0f1d9d1663d03093aa264db9f4ffc18",
+    "host/playback/allocator.py": "e35452c6da395ef0a8a8c8fbff4f933896739b9dc12c44e4dcec592b7cbed120",
+    "host/playback/arrangement_strategy.py": "5e0cef645e36a2442ba7c2d3fd5d79ddfb3e6f8ee9a193294b6689533317d2fa",
+    "host/playback/fdd_pairs.py": "7541d5a1bf2833c5b1fc0bd1b9dfa86393d84aee5f378a2d6bc8382f00004139",
+    "host/playback/hardware_arranger.py": "e3ca895a5eafed2b329371ba6ffaff02260aa1e21976df7e97cc75271bb8477c",
+    "host/runtime/application.py": "f5cbc47b5e33601948b6d5dd5f3133a26a7a993bc8b0870164171725380f9666",
+    "host/runtime/device_service.py": "1040440f7bba5623aaafc98a5ceb9716e63fcce3d3b9004369263d16da90e875",
+    "host/runtime/outputs.py": "f1818dee4e325389ca9de8f472d53bf0fd8f0e9fef56aa9391cf0074a2ec7ae9",
+    "host/runtime/planning_pipeline.py": "b3f8c150b53a5486f5dfbd24af626c76cb24dcb35404c04a06baab155779aa11",
+    "host/runtime/service_models.py": "1d5b0555e7890baec230c24ba40e62c7c3d655ebb8a4f37d78f7f9900bf0d436"
+  },
+  "semanticExceptions": [
+    "cleanup after prepare callback failure",
+    "refuse late attach/status after shutdown",
+    "refuse new maintenance after shutdown"
+  ],
+  "commits": "Implementation was uncommitted at verification time; subsequent commit is recorded in Git history.",
+  "tools": {
+    "python": "3.14.8",
+    "mido": "1.3.3",
+    "node": "v24.10.0",
+    "npm": "11.6.0"
+  },
+  "completedAt": "2026-10-27T23:56:32.203208+01:00",
+  "sourceArchiveSha256": "bb949ac467dc12cfb6d81e3ca9dddb4872002d6f93b8768fe58eb4753061120b",
+  "limitations": [
+    "Offline/fake links and VIRTUAL only; no physical actuator, power rail or acoustic measurements.",
+    "One pre-existing parser failure: touhou4.mid; verified unchanged.",
+    "Full corpus covers three presets; all 13 presets are covered by the separate 117-case baseline.",
+    "Performance measured on three 48-second excerpts while corpus jobs were active; not an SLA."
+  ],
+  "commitPreparation": {
+    "date": "2026-10-28",
+    "change": "Remove redundant EOF blank lines in three allocation modules; AST unchanged.",
+    "files": [
+      "host/playback/allocation_input.py",
+      "host/playback/allocation_models.py",
+      "host/playback/allocation_operations.py"
+    ],
+    "deployment": "Rebuilt orchestra is healthy; API HTTP 200 and all 13 production hashes match after EOF normalization."
+  }
+}

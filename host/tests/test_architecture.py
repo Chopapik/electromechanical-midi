@@ -67,6 +67,28 @@ class ArchitectureTests(unittest.TestCase):
                 with self.subTest(path=path,source=source):
                     self.assertEqual(self.codes(source,path),['import-boundary'])
 
+    def test_shared_allocation_contracts_cannot_depend_on_allocators(self):
+        for name in ('allocation_models', 'allocation_operations', 'allocation_input', 'arrangement_strategy'):
+            path = 'host/playback/'+name+'.py'
+            for source in ('from .allocator import allocate\n',
+                           'from . import hardware_arranger\n',
+                           'def call():\n    import playback.virtual\n'):
+                with self.subTest(path=path, source=source):
+                    self.assertIn('import-boundary', self.codes(source, path))
+
+    def test_refinements_cannot_restore_an_allocator_dependency(self):
+        for path in ('host/playback/hardware_arranger.py', 'host/playback/fdd_pairs.py'):
+            for source in ('from .allocator import _clip\n', 'from . import allocator\n'):
+                self.assertIn('import-boundary', self.codes(source, path))
+
+    def test_strategy_descriptions_do_not_import_refinement_implementations(self):
+        # A top-level fdd_legato import used to create an initialization cycle
+        # through hardware_arranger. IDs now come from the public data catalog.
+        for source in ('from .fdd_legato import PRESET\n', 'from . import fdd_pairs\n'):
+            self.assertIn('import-boundary', self.codes(source, 'host/playback/arrangement_strategy.py'))
+        self.assertEqual(self.codes('from arrangement_presets import FDD_LEGATO\n',
+                                    'host/playback/arrangement_strategy.py'), [])
+
     def test_wildcard_and_invalid_syntax_are_explicit_failures(self):
         self.assertIn('wildcard-import',self.codes('from math import *\n'))
         self.assertEqual(self.codes('def invalid(:\n'),['syntax'])

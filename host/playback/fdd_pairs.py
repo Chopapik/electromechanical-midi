@@ -29,7 +29,7 @@ def enabled(policy):
 
 
 def arrange(plan, config, context, pins=None, *, source=None):
-    from .allocator import _clip
+    from .allocation_operations import clip_duration
     from .hardware_arranger import fold_for_profile
 
     pins = pins or {}
@@ -140,7 +140,7 @@ def arrange(plan, config, context, pins=None, *, source=None):
         fixed = plan.policy.get('fddFixedToneMs',0)/1000.
         duration = (expression.gate(event, fold.hz, profile, caps[ident].min_note_s,
                                    covered[event.id], max(.003, plan.policy['releaseGapMs']/1000.))
-                    if expression else fixed or fdd_gate(_clip(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id]))
+                    if expression else fixed or fdd_gate(clip_duration(event.duration, caps[ident].min_note_s, plan.policy), covered[event.id]))
         if duration is None:
             return None
         times = attacks[part(event)]

@@ -32,9 +32,13 @@ MIDI → MidiSource → Arranger → PerformancePlan → compiler → ExecutionT
 | [SpeakerSettingsStore](../host/runtime/speaker_settings.py) | Wczytanie preferencji i atomowy zapis istniejącego JSON; bez decyzji o dopuszczalnych poziomach |
 | [Planning pipeline](../host/runtime/planning_pipeline.py) | Dobór i kolejność nazwanych etapów; etapy modyfikują plan, bez połączeń i stanu odtwarzania |
 | [PlanningContext](../host/playback/planning_context.py) | Dane potrzebne do wykonania: fizyczne lanes, grupy FDD, łączenie tonów i powiązania artykulacji extras |
+| [Wspólne modele alokacji](../host/playback/allocation_models.py) | SourceNote, ManualPin, slot i kandydat; stan slotu należy do pojedynczej alokacji |
+| [Przygotowanie alokacji](../host/playback/allocation_input.py) / [operacje](../host/playback/allocation_operations.py) | Deterministyczne nuty źródłowe, duplikaty, priorytet, budżety gate i tworzenie zdarzeń; bez importowania alokatorów |
+| [Strategie](../host/playback/arrangement_strategy.py) | Opis bazowego presetu, grup FDD i końcowego refinement; korzysta z kanonicznych ID katalogu, bez importowania implementacji algorytmów |
 | [Player](../host/runtime/player.py) / [Router](../host/runtime/router.py) | Odpowiednio zegar/epoka/właściciel wykonania oraz wybór wyjścia/mute |
 | [RealOutput / VirtualOutput](../host/runtime/outputs.py) | Własny stan wyjścia, gotowość, wykonanie i bariery STOP; stan logiczny POWER i właściciel Web Audio |
 | [DeviceService](../host/runtime/device_service.py) | Wyłączność serwisu, kolejność safe upload i odzyskanie BLE; zmiany stanu wyjścia przez jego operacje |
+| [Kontrakty serwisu](../host/runtime/service_models.py) | Rodzaj operacji, ticket generacji, typ statusu firmware i własność odłączonej sesji OTA; bez przechowywania klucza |
 
 Katalog presetów jest w [arrangement_presets.py](../host/arrangement_presets.py).
 [Generator](../scripts/generate_preset_catalog.py) tworzy dane i typy używane przez
@@ -62,6 +66,42 @@ Zmiana wyjścia podczas planowania nadal omija kolejkę całego renderu.
 unieważnia status FDD po OFF i logiczny ATX po braku potwierdzenia.
 `VirtualOutput.claim_owner/release_owner` pilnują właściciela: wygasająca sesja
 po disconnect nie może wyczyścić nowego właściciela audio.
+
+### Cykl życia serwisu
+
+`_exclusive_operation` rezerwuje i zwalnia operację w jednym zakresie, obejmując
+także błąd pierwszego callbacku statusu. Publiczne `busy`, `connecting` i
+`operation` zachowują dotychczasowy kontrakt. Ticket niesie rodzaj operacji i
+generację recovery; nie stanowi drugiej kopii statusu. `_state` aktualizuje status
+i numerowane zdarzenie atomowo, a callback wywołuje po zwolnieniu blokady.
+
+| Przejście | Właściciel i warunek |
+| --- | --- |
+| idle → operacja | `_exclusive_operation`; brak busy/connecting i niezamknięty serwis |
+| idle/retry → connecting | `connect`; aktualna generacja, REAL, brak linku i operacji |
+| connecting → link RealOutput | Zgodny boot/STATUS/protokół, POWER STATUS i wymagane OFF; attach potwierdza STOP. Ponowna kontrola generacji/shutdown po ACK. |
+| prepare → power_off | Wyłącznie pod player.lock, po potwierdzonym STOP; BLE wymaga także capability OTA i istniejącego klucza |
+| power_off → build | Potwierdzone OFF i 1 s; USB oddaje link i sprawdza port, BLE przenosi link z RealOutput do FirmwareSession |
+| build → upload/upload_ble | USB ponownie sprawdza ten sam port; BLE czyta obraz i lokalny klucz do podpisu |
+| upload → flash_confirmed → reboot_wait | Potwierdzony wynik transferu; flash i recovery mają odrębny stan |
+| błąd → failed | Próba STOP, zamknięcie sesji OTA, zwolnienie operacji; bez ponowienia transferu |
+| reboot_wait/failed → ble_connect/ble_retry → ready/failed | Tylko recovery połączenia w aktualnej generacji; nigdy automatyczne ON/HOME/PLAY |
+| dowolny → shutdown | Unieważnia późne podłączenia/statusy recovery; odmawia nowych operacji |
+
+Firmware USB i BLE przechodzą przez `_prepare_firmware` i `_flash`. Rozgałęzienie
+transportu zachowuje różne zasady portu i własności BLE; sama budowa/transfer nie
+decydują o POWER ani właścicielu Playera. `FirmwareSession.close` odpowiada za
+link OTA odłączony od wyjścia. Klucz jest zmienną lokalną transferu i nie trafia
+do statusu ani tej sesji. Awaryjny POWER OFF ma osobną ścieżkę dopuszczającą
+próbę OFF po niepotwierdzonym STOP; firmware nie korzysta z tego wyjątku.
+
+Testy [cyklu życia](../host/tests/test_service_lifecycle.py) obejmują bariery
+wątkowe, callbacki i spóźnione wyniki. Zamrożone 11 śladów sprzed refaktoryzacji
+sprawdza komendy, kolejność efektów i zdarzenia USB/BLE przy sukcesie i błędach.
+Osobne regresje dotyczą błędu callbacku pozostawiającego busy i shutdown podczas
+ACK; nie są zmianą protokołu ani dowodem elektrycznego bezpieczeństwa.
+
+### Planowanie i wykonanie
 
 [MidiSource](../host/midi_source.py) parsuje nuty, tempo, metrum, programy,
 kontrolery i lyrics. [Runtime Arranger](../host/runtime/arranger.py) przekazuje
