@@ -11,6 +11,7 @@ import time
 from floppy_link import SerialLinkError
 from orchestra_link import OrchestraLink
 from ble_diagnostics import WriteHistory, LoopTiming
+from ble_configuration import validate_configuration, command_groups
 import ble_ota
 
 NAME = 'Electromechanical-MIDI'
@@ -160,16 +161,18 @@ class BleBytes:
         if not data.endswith(b'\n') or any(not line.endswith(b'\n') or len(line)>96
                 or b'\r' in line or any(ch<32 or ch>126 for ch in line[:-1]) for line in lines):
             raise SerialLinkError('BLE: expected complete ASCII protocol lines (max 95 bytes)')
-        # MTU=23: at most 96+16 bytes, six ATT writes, below the 8-slot RX queue.
-        # Wider MTU: one ordinary ATT packet including the longest SYNC footer.
-        capacity = max(96, self.write_size-16)
-        groups, group = [], b''
-        for line in lines:
-            if group and len(group)+len(line)>capacity:
-                groups.append(group); group=b''
-            group += line
-        if group: groups.append(group)
-        return groups
+        # Up to six ordinary ATT fragments, below the eight-slot firmware RX
+        # queue. Reserve the longest SYNC footer; never use a prepared write.
+        return list(command_groups(data, self.command_capacity))
+
+    @property
+    def command_capacity(self):
+        return 6*self.write_size-16 if self._application_ack else self.write_size
+
+    def configure(self, data):
+        validate_configuration(data)
+        for group in command_groups(data, self.command_capacity):
+            self.write(group)
 
     def _check(self):
         if self._error:
@@ -266,6 +269,7 @@ class GatewayBytes:
     """Docker-to-native BLE bridge; plain command bytes after connection header."""
     def __init__(self, address):
         self._error_probe = b''
+        self._configuration_buffer = bytearray()
         self._write_lock = threading.Lock()
         host, port = address.rsplit(':', 1)
         self._socket = socket.create_connection((host, int(port)), timeout=2)
@@ -286,10 +290,16 @@ class GatewayBytes:
 
     @property
     def in_waiting(self):
+        if getattr(self, '_configuration_buffer', None):
+            return len(self._configuration_buffer)
         return 65536 if select.select([self._socket], [], [], 0)[0] else 0
 
     def read(self, count):
-        data = self._socket.recv(count)
+        if getattr(self, '_configuration_buffer', None):
+            data = bytes(self._configuration_buffer[:count])
+            del self._configuration_buffer[:count]
+        else:
+            data = self._socket.recv(count)
         if not data:
             raise SerialLinkError('BLE: disconnected')
         # Gateway errors may span TCP packets. Surface them as transport errors
@@ -307,6 +317,40 @@ class GatewayBytes:
         except OSError as exc:
             raise SerialLinkError(f'BLE bridge write: {exc}') from exc
         return len(data)
+
+    def configure(self, data):
+        """Await setup execution before sending STATUS, HOME or song commands."""
+        validate_configuration(data)
+        with self._write_lock:
+            self._request(f'GATEWAY CONFIG {len(data)}'.encode('ascii'), data, b'BLE CONFIGURED', timeout=5)
+
+    def _request(self, header, data, expected, *, timeout=2):
+        """Called under write ownership; preserve interleaved firmware telemetry."""
+        self._socket.sendall(header+b'\n'+data)
+        deadline = time.monotonic()+timeout
+        try:
+            while True:
+                line = bytearray()
+                while not line.endswith(b'\n'):
+                    remaining = deadline-time.monotonic()
+                    if remaining <= 0:
+                        raise SerialLinkError('BLE gateway execution confirmation timeout')
+                    self._socket.settimeout(min(2, remaining))
+                    chunk = self._socket.recv(1)
+                    if not chunk:
+                        raise SerialLinkError('BLE gateway disconnected before execution confirmation')
+                    line.extend(chunk)
+                    if len(line) > 4096:
+                        raise SerialLinkError('BLE gateway invalid reply')
+                if line == expected+b'\n':
+                    return
+                if line.startswith((b'BLE ERROR ', b'ERR ')):
+                    raise SerialLinkError(line.decode('ascii', errors='replace').strip())
+                if len(self._configuration_buffer)+len(line) > 65536:
+                    raise SerialLinkError('BLE gateway RX overflow')
+                self._configuration_buffer.extend(line)
+        finally:
+            self._socket.settimeout(2)
 
     def upload_firmware(self, image, key, on_progress=None):
         if not getattr(self,'supports_ota',False):raise SerialLinkError('Firmware bez BLE OTA; pierwsze wgranie przez USB')
@@ -358,6 +402,9 @@ class BleOrchestraLink(OrchestraLink):
             raise ValueError('batch entries must be single protocol lines')
         if commands:
             self._serial.write(('\n'.join(commands) + '\n').encode('ascii'))
+
+    def send_configuration(self, commands):
+        self._serial.configure(('\n'.join(commands) + '\n').encode('ascii'))
 
     def __init__(self, byte_transport=None):
         self.port = 'ble://' + NAME

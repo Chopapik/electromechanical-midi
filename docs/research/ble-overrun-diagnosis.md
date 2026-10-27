@@ -171,3 +171,48 @@ odłączony od sieci według użytkownika i logicznie OFF, wcześniej logicznie 
 Nie jest to kontrolowane porównanie A/B ani izolacja wszystkich przyczyn.
 Transfer firmware przez BLE sprawdzono offline; fizycznie wykonano tylko USB.
 [Raport, walidacja OTA i pełne próbki RTT](../../reports/ble-ota-validation-2026-10-27.json).
+
+### Regresja Play i testy muzyki — 2026-10-27
+
+Próby PING nie wykryły błędu przygotowania orkiestry. Logi rzeczywistego Play
+pokazały przekroczenie 250 ms już podczas PROFILE/ENABLE, przed nutami.
+Bramka grupowała 252 bajty, a warstwa BLE ponownie dzieliła je, rezerwując
+miejsce dla SYNC. Kolejne oczekiwania na ACK starzały pozostałą konfigurację.
+
+Konfiguracja ma teraz osobną, ograniczoną transakcję `GATEWAY CONFIG`,
+zakończoną przed STATUS, homingiem i zegarem utworu. Walidacja całego payloadu
+wyklucza komendy ruchu, dźwięku i zasilania. Bramka oraz BLE używają wspólnej
+pojemności okna: maksymalnie sześć fragmentów ATT łącznie z SYNC przy każdym
+MTU, poniżej ośmiu miejsc RX. Przy payloadzie 252 B daje to 1496 B komend.
+Nie zwiększono limitu 250 ms, kolejki firmware ani kolejki komend bramki.
+Zachowano asynchroniczny strumień muzyki i grupowanie wyłącznie już należnych
+komend. Potwierdzenie konfiguracji nie rozcina fragmentowanych linii STATUS.
+
+Nowy test regresji przechodzi od WebSocket Play przez rzeczywisty pipeline MIDI,
+TCP, symulowane BLE do produkcyjnego parsera i core C++. Sprawdza konfigurację,
+homing, nuty, pauzę, seek, ponowne Play i STOP. Stary start odtwarza błąd przy
+symulowanym ACK 95 ms; poprawiona ścieżka przechodzi. Osobna macierz Airbag,
+Bad Apple i Bodysnatchers obejmuje po 15 s przy symulowanym ACK 50 ms.
+W tych większych próbach planowanie odbywa się przed połączeniem, ponieważ
+testowa bramka działa w tym samym procesie; rzeczywista bramka ma osobny proces.
+Są to testy funkcjonalne, nie pomiary przepustowości radia.
+
+Po potwierdzeniu nadzoru użytkownika wykonano także dwie próby **REAL** przez
+przycisk Play w przeglądarce:
+
+| MIDI | Fragment | Rozłączenia / błędy BLE | Nowe przeterminowane komendy | Końcowy STOP |
+| --- | --- | --- | --- | --- |
+| Airbag | 0:00–0:20 | 0 | 0 | potwierdzony |
+| Bad Apple | 0:30–0:50 | 0 | 0 | potwierdzony |
+
+Bad Apple objął wszystkie 8 FDD, 4 DVD i oba speakery. HDD pozostały wyciszone
+zgodnie z wcześniejszym ustawieniem użytkownika. Nie wysyłano POWER ON;
+ATX włączył użytkownik. Dla Airbag maksimum opóźnienia Playera wyniosło 16,3 ms.
+Licznik `maxLag` jest kumulacyjny: przed Bad Apple zawierał już 195,3 ms,
+więc nie jest to maksimum zmierzone wyłącznie w drugiej próbie.
+
+994 testy hosta/C++ i 170 testów frontendu PASS; guard architektury PASS.
+Kontener przebudowany i healthy, bramka przeładowana; potwierdzono zgodność
+uruchomionych modułów ze źródłami. Ta poprawka nie wymagała kolejnego flashowania.
+Krótkie próby nie dowodzą niezawodności przez cały koncert ani jakości brzmienia.
+[Raport testów muzyki](../../reports/ble-playback-validation-2026-10-27.json).

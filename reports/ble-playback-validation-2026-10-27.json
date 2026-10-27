@@ -1,0 +1,315 @@
+{
+  "date": "2026-10-27",
+  "scope": "Music playback regression; not a BLE OTA validation",
+  "cause": {
+    "observed": "Play failed during PROFILE/ENABLE preparation, before notes.",
+    "mechanism": "Gateway batches of 252 bytes were divided again for the SYNC footer. Repeated receipts aged queued preparation beyond 250 ms.",
+    "offlineReproduction": "Old 236-byte command windows and unpaced preparation fail before music with simulated ACK 95 ms."
+  },
+  "fix": {
+    "configuration": "Whitelisted bounded GATEWAY CONFIG transaction, acknowledged before STATUS/HOME/song time.",
+    "music": "Asynchronous streaming, grouping only already-due commands, shared gateway/BLE command capacity.",
+    "window": "At most 6 ordinary ATT fragments including SYNC at every MTU. 1496 command bytes at a 252-byte payload.",
+    "telemetry": "Control replies are inserted between complete NUS lines.",
+    "unchangedGuards": "250 ms deadlines, 8 RX slots, 512 pending lines, STOP priority, watchdog, no musical retries/reconnect resume."
+  },
+  "tests": {
+    "hostPythonAndProductionCppPassed": 994,
+    "frontendPassed": 170,
+    "frontendFiles": 17,
+    "architectureModules": 57,
+    "architecturePassed": true,
+    "diffCheckPassed": true,
+    "endToEnd": "WS load/Play -> real MIDI pipeline/compiler/Player/router -> local TCP gateway -> fake BLE -> production C++ core/protocol; configuration, homing, notes, pause, seek, resume and confirmed STOP."
+  },
+  "offlineMusic": {
+    "scope": "Three 15-second clips with simulated 50 ms ACK and simulated electrical IO; not radio timing measurements.",
+    "planning": "Large files are planned before connection to avoid sharing planner GIL stalls with the in-process fake gateway. CI also covers WS file loading.",
+    "results": [
+      {
+        "file": "0032-01-radiohead_1997-airbag-[k]-16.mid",
+        "position": 0,
+        "playedSeconds": 15.016605457989499,
+        "commands": 539,
+        "timing": {
+          "droppedExpired": 0,
+          "maxLag": 0.013877042037956588
+        },
+        "stopConfirmed": true,
+        "simulatedAckDelayMs": 50.0,
+        "plannedBeforeTransport": true,
+        "ok": true,
+        "wallSeconds": 22.408
+      },
+      {
+        "file": "badapple!!midifull-1.mid",
+        "position": 30,
+        "playedSeconds": 15.00818241701927,
+        "commands": 1902,
+        "timing": {
+          "droppedExpired": 0,
+          "maxLag": 0.02246725002903105
+        },
+        "stopConfirmed": true,
+        "simulatedAckDelayMs": 50.0,
+        "plannedBeforeTransport": true,
+        "ok": true,
+        "wallSeconds": 29.448
+      },
+      {
+        "file": "0080-02-radiohead_2007-bodysnatchers-[k]-21.mid",
+        "position": 135,
+        "playedSeconds": 15.03057641594205,
+        "commands": 1528,
+        "timing": {
+          "droppedExpired": 5,
+          "maxLag": 0.014848124948173336
+        },
+        "stopConfirmed": true,
+        "simulatedAckDelayMs": 50.0,
+        "plannedBeforeTransport": true,
+        "ok": true,
+        "wallSeconds": 25.123
+      }
+    ]
+  },
+  "physicalMusic": {
+    "authorizedAndSupervised": true,
+    "trigger": "Browser Play at http://localhost:5173/",
+    "preset": "universal",
+    "atx": "User switched ON; no POWER ON sent.",
+    "mutedHdd": [
+      "hdd_vcm-1",
+      "hdd_vcm-2",
+      "hdd_vcm-3"
+    ],
+    "hdd4": "disabled",
+    "results": [
+      {
+        "file": "0032-01-radiohead_1997-airbag-[k]-16.mid",
+        "fromSeconds": 0,
+        "musicSeconds": 20.09432349994313,
+        "error": null,
+        "stopConfirmed": true,
+        "samples": 325,
+        "activeDevicesFromSchedule": [
+          "DVD_STEPPER_1",
+          "DVD_STEPPER_2",
+          "DVD_STEPPER_3",
+          "DVD_STEPPER_4",
+          "fdd-1",
+          "fdd-2",
+          "pc-speaker-fx"
+        ],
+        "droppedExpiredBefore": 0,
+        "droppedExpiredAfter": 0,
+        "droppedExpiredDelta": 0,
+        "cumulativeMaxPlayerLagMsBefore": 0.0,
+        "cumulativeMaxPlayerLagMsAfter": 16.300836937020335,
+        "lagCounterNote": "maxLag is cumulative across songs. Only Airbag started from zero. The earlier 195 ms is not a measurement of the Bad Apple test.",
+        "firstPlayingSample": {
+          "elapsed": 19.1795469999779,
+          "state": "playing",
+          "homing": false,
+          "position": 0.08384108392056078,
+          "error": null,
+          "output": {
+            "mode": "REAL",
+            "connected": true,
+            "unknown": false,
+            "message": "ESP32 BLE connected",
+            "muted": [
+              "hdd_vcm-1",
+              "hdd_vcm-2",
+              "hdd_vcm-3"
+            ]
+          },
+          "timing": {
+            "droppedExpired": 0,
+            "maxLag": 0.0
+          },
+          "activeDevices": []
+        },
+        "lastSample": {
+          "elapsed": 39.180975332972594,
+          "state": "playing",
+          "homing": false,
+          "position": 20.08427033794578,
+          "error": null,
+          "output": {
+            "mode": "REAL",
+            "connected": true,
+            "unknown": false,
+            "message": "ESP32 BLE connected",
+            "muted": [
+              "hdd_vcm-1",
+              "hdd_vcm-2",
+              "hdd_vcm-3"
+            ]
+          },
+          "timing": {
+            "droppedExpired": 0,
+            "maxLag": 0.016300836937020335
+          },
+          "activeDevices": [
+            "DVD_STEPPER_1",
+            "DVD_STEPPER_2",
+            "DVD_STEPPER_3",
+            "pc-speaker-fx"
+          ]
+        }
+      },
+      {
+        "file": "badapple!!midifull-1.mid",
+        "fromSeconds": 30.0,
+        "musicSeconds": 20.190438083023764,
+        "error": null,
+        "stopConfirmed": true,
+        "samples": 364,
+        "activeDevicesFromSchedule": [
+          "DVD_STEPPER_1",
+          "DVD_STEPPER_2",
+          "DVD_STEPPER_3",
+          "DVD_STEPPER_4",
+          "fdd-1",
+          "fdd-2",
+          "fdd-3",
+          "fdd-4",
+          "fdd-5",
+          "fdd-6",
+          "fdd-7",
+          "fdd-8",
+          "pc-speaker-fx",
+          "vhs-1"
+        ],
+        "droppedExpiredBefore": 4,
+        "droppedExpiredAfter": 4,
+        "droppedExpiredDelta": 0,
+        "cumulativeMaxPlayerLagMsBefore": 195.2971911279633,
+        "cumulativeMaxPlayerLagMsAfter": 195.2971911279633,
+        "lagCounterNote": "maxLag is cumulative across songs. Only Airbag started from zero. The earlier 195 ms is not a measurement of the Bad Apple test.",
+        "firstPlayingSample": {
+          "elapsed": 21.342123750015162,
+          "state": "playing",
+          "homing": false,
+          "position": 30.053847667062655,
+          "error": null,
+          "output": {
+            "mode": "REAL",
+            "connected": true,
+            "unknown": false,
+            "message": "ESP32 BLE connected",
+            "muted": [
+              "hdd_vcm-1",
+              "hdd_vcm-2",
+              "hdd_vcm-3"
+            ]
+          },
+          "timing": {
+            "droppedExpired": 4,
+            "maxLag": 0.1952971911279633
+          },
+          "activeDevices": [
+            "fdd-1",
+            "fdd-2",
+            "fdd-3",
+            "fdd-4",
+            "fdd-5"
+          ]
+        },
+        "lastSample": {
+          "elapsed": 41.4384816250531,
+          "state": "playing",
+          "homing": false,
+          "position": 50.15172787103802,
+          "error": null,
+          "output": {
+            "mode": "REAL",
+            "connected": true,
+            "unknown": false,
+            "message": "ESP32 BLE connected",
+            "muted": [
+              "hdd_vcm-1",
+              "hdd_vcm-2",
+              "hdd_vcm-3"
+            ]
+          },
+          "timing": {
+            "droppedExpired": 4,
+            "maxLag": 0.1952971911279633
+          },
+          "activeDevices": [
+            "fdd-1",
+            "fdd-2",
+            "fdd-3",
+            "fdd-4",
+            "fdd-5",
+            "fdd-6",
+            "fdd-7",
+            "fdd-8",
+            "vhs-1"
+          ]
+        }
+      }
+    ],
+    "gatewayErrorsSinceDeployment": [],
+    "gatewayLogAfterDeployment": [
+      "2026-10-27 13:28:29,779 INFO:orchestra.ble:BLE connected: payload=252 bytes, delivery=execution-ack, command window=1496 bytes, latency limit=250 ms",
+      "2026-10-27 13:28:32,004 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:29:46,870 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:29:46,914 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:29:52,796 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:30:17,760 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:30:43,889 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:31:42,471 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:32:04,535 INFO:orchestra.ble:STOP priority: discarded 2 queued commands",
+      "2026-10-27 13:32:04,654 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:32:05,019 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:33:16,924 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:34:41,643 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:34:41,705 INFO:orchestra.ble:STOP priority: discarded 0 queued commands",
+      "2026-10-27 13:35:23,072 INFO:orchestra.ble:STOP priority: discarded 13 queued commands"
+    ],
+    "limits": "Two 20-second excerpts, not complete songs or long concert. No acoustic recording, physical frequency, thermal or HDD sound measurements.",
+    "observerNote": "An initial idle observer never started Bad Apple and timed out its own unread WebSocket. It was replaced by a continuously draining observer; a fresh correlated STOP was confirmed before the actual trial."
+  },
+  "deployment": {
+    "sourceHashes": {
+      "host/ble_link.py": "cf0eb9903c84c699db859a970dd0f9511e678d3ffcb64bd251ef7a84eab575cd",
+      "host/ble_gateway.py": "6b9e0e4ed7421a7538f61843943378428c726856405b1bd30c8640fa747e3724",
+      "host/ble_configuration.py": "04370de8e747f2417a7d9a966f16f8969c52941e542c6e82f11fa970dbcb34b6",
+      "host/runtime/outputs.py": "53e2e1780eabe81fd90547b24aa262b604f7a190b6754ca0201743fe5fe31d38"
+    },
+    "containerMatchesLocal": true,
+    "file": "badapple!!midifull-1.mid",
+    "state": "stopped",
+    "output": {
+      "mode": "REAL",
+      "connected": true,
+      "unknown": false,
+      "message": "ESP32 BLE connected",
+      "muted": [
+        "hdd_vcm-1",
+        "hdd_vcm-2",
+        "hdd_vcm-3"
+      ]
+    },
+    "power": {
+      "state": "ON",
+      "available": true,
+      "operation": null,
+      "error": null,
+      "reason": null,
+      "measured": false
+    },
+    "timing": {
+      "droppedExpired": 4,
+      "maxLag": 0.1952971911279633
+    }
+  },
+  "firmware": "No upload for this playback fix; uses already installed execution-ACK firmware.",
+  "remainingLimits": [
+    "Radio/OS stalls exceeding 250 ms still trigger the existing safe stop.",
+    "The previously reviewed BLE OTA client-disconnect lifecycle issue remains outside this music regression fix."
+  ]
+}

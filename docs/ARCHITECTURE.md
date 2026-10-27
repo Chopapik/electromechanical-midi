@@ -135,6 +135,13 @@ i zatrzymuje wykonanie, bez automatycznego wznowienia.
 
 [REAL](../host/runtime/outputs.py) używa ESP32 BLE, bez automatycznego fallbacku
 na Serial. Wysyła profile i ENABLE; ciągłe DVD dostają też DIR FWD.
+Przygotowanie urządzeń jest potwierdzaną transakcją bramki `GATEWAY CONFIG`,
+zakończoną przed uruchomieniem zegara utworu. Przyjmuje wyłącznie ograniczony
+zestaw komend konfiguracji, bez PLAY, HOME, HIT, AMP/FREQ i POWER.
+Każde okno BLE nadal wymaga ACK w 250 ms. Muzyka zachowuje asynchroniczny
+strumień: samo `sendall()` do bramki oznacza zakolejkowanie, a bramka czeka na
+ACK wykonania i łączy już należne komendy bez oczekiwania na przyszłe nuty.
+Potwierdzenie przygotowania jest wysyłane między kompletnymi liniami STATUS.
 Konfiguracja wysyła FDD5–8 PROFILE/ENABLE, pobiera atomowy `DIAG FDD`, a
 automatyczny homing TRACK0 czeka na potwierdzenie FDD5–8 przed PLAY.
 Domyślnie HDD1–2 dostają ENABLE 1 i wykonują HIT; HDD3–4 pozostają wyłączone.
@@ -335,7 +342,7 @@ ERR oraz osobne STOPPED/POWER nadal przechodzą przez istniejący parser NUS.
 
 ACK ma osobną, ograniczoną kolejkę i pierwszeństwo między fragmentami STATUS.
 Nie rozcina linii NUS, nie dotyka GPIO i nie odświeża watchdoga. Jedna grupa
-zajmuje najwyżej sześć fragmentów przy MTU=23, poniżej ośmiu miejsc RX. Utrata
+zajmuje najwyżej sześć fragmentów ATT przy każdym MTU, poniżej ośmiu miejsc RX. Utrata
 pakietu przez RX overflow unieważnia kolejne ACK do reconnect. Brak zgodnego ACK
 przerywa sesję; nie ma automatycznego ponawiania komend muzycznych. Pozostają
 limit wieku 250 ms, priorytet STOP, watchdog i brak odtwarzania po reconnect.

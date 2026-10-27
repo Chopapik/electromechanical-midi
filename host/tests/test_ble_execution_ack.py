@@ -86,9 +86,9 @@ class ExecutionAckTests(unittest.TestCase):
                 raw, client = self.create()
                 client.wrong = wrong; client.drop = not wrong
                 with self.assertRaisesRegex(SerialLinkError, 'execution ACK timeout'):
-                    raw.write(b'PING\n'*100)
+                    raw.write(b'PING\n'*1000)
                 self.assertEqual(client.parsed.count(b'ALL STOP'), 1)
-                self.assertLess(client.parsed.count(b'PING'), 100)
+                self.assertLess(client.parsed.count(b'PING'), 1000)
                 self.assertTrue(raw._closed)
 
     def test_mtu23_fragmentation_and_large_batches_preserve_exact_commands(self):
@@ -132,6 +132,27 @@ class ExecutionAckTests(unittest.TestCase):
         self.assertEqual(raw.write_size, 20)
         self.assertTrue(all(len(packet)<=20 for packet in client.sent))
 
+    def test_gateway_batch_capacity_reserves_sync_and_six_fragment_credit(self):
+        raw, client = self.create()
+        self.assertEqual(raw.command_capacity, 6*252-16)
+        data = b'FDD 1 PROFILE 72 5000 2439\n' * 120
+        from ble_configuration import command_groups
+        for packet in command_groups(data, raw.command_capacity):
+            before = len(client.tokens)
+            fragments = len(client.sent)
+            raw.write(packet)
+            self.assertEqual(len(client.tokens)-before, 1)
+            self.assertLessEqual(len(client.sent)-fragments, 6)
+
+    def test_configuration_missing_ack_aborts_without_sending_remaining_setup(self):
+        raw, client = self.create()
+        client.drop = True
+        with self.assertRaisesRegex(SerialLinkError, 'execution ACK timeout'):
+            raw.configure(b'FDD 1 ENABLE 1\n' * 200)
+        self.assertLess(client.parsed.count(b'FDD 1 ENABLE 1'), 200)
+        self.assertEqual(client.parsed.count(b'ALL STOP'), 1)
+        self.assertTrue(raw._closed)
+
     def test_disconnect_while_waiting_for_ack_fails_without_replaying(self):
         raw, client = self.create()
         class Disconnect:
@@ -140,10 +161,10 @@ class ExecutionAckTests(unittest.TestCase):
                 raw._loop.call_soon(client.disconnect_callback, client)
                 return True
         client.drop = Disconnect()
-        with self.assertRaises(SerialLinkError): raw.write(b'PING\n'*100)
+        with self.assertRaises(SerialLinkError): raw.write(b'PING\n'*1000)
         self.assertTrue(raw._closed)
         self.assertFalse(raw._thread.is_alive())
-        self.assertLess(client.parsed.count(b'PING'), 100)
+        self.assertLess(client.parsed.count(b'PING'), 1000)
 
 
 class AckAtomicTests(unittest.IsolatedAsyncioTestCase):

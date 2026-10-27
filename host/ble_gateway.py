@@ -13,6 +13,7 @@ from pathlib import Path
 from ble_link import BleBytes
 from ble_diagnostics import WriteHistory
 from ble_ota import MAX_IMAGE
+from ble_configuration import MAX_CONFIGURATION, validate_configuration, command_groups
 
 log = logging.getLogger('orchestra.ble')
 
@@ -31,9 +32,10 @@ async def serve_client(reader, writer):
     maintenance_completed = False
     try:
         link = await asyncio.to_thread(BleBytes)
-        log.info('BLE connected: payload=%d bytes, delivery=%s, latency limit=%d ms',
+        log.info('BLE connected: payload=%d bytes, delivery=%s, command window=%d bytes, latency limit=%d ms',
                  getattr(link, 'write_size', 20),
                  'execution-ack' if getattr(link, '_application_ack', False) else 'att-response (legacy)',
+                 getattr(link, 'command_capacity', getattr(link, 'write_size', 20)),
                  MAX_COMMAND_AGE * 1000)
         writer.write(b'BLE CONNECTED ota=1\n' if getattr(link,'supports_ota',False) else b'BLE CONNECTED\n'); await writer.drain()
         command_ready = asyncio.Event()
@@ -44,7 +46,33 @@ async def serve_client(reader, writer):
             # Read independently of slow GATT writes, so STOP can overtake
             # queued notes. Finish one in-flight line, then STOP, never replay it.
             while True:
-                data = await reader.readuntil(b'\n')
+                try:
+                    data = await reader.readuntil(b'\n')
+                except asyncio.IncompleteReadError as error:
+                    if error.partial:
+                        raise
+                    return
+                created = clock()
+                if data.startswith(b'GATEWAY CONFIG '):
+                    size = data[len(b'GATEWAY CONFIG '):-1]
+                    if not size.isdigit() or len(size) > 8 or not 1 <= int(size) <= MAX_CONFIGURATION:
+                        raise ValueError('Invalid BLE configuration size')
+                    payload = await asyncio.wait_for(reader.readexactly(int(size)), 2)
+                    validate_configuration(payload)
+                    # Preparation happens before song time. Drain prior traffic,
+                    # then await each bounded execution window, never queue the
+                    # entire setup burst as already-due musical events.
+                    deadline = clock() + MAX_COMMAND_AGE
+                    while (pending or oldest_inflight is not None) and clock() < deadline:
+                        await asyncio.sleep(.005)
+                    if pending or oldest_inflight is not None:
+                        raise ValueError('BLE configuration requires an idle command queue')
+                    capacity = getattr(link, 'command_capacity', getattr(link, 'write_size', 20))
+                    for group in command_groups(payload, capacity):
+                        await asyncio.to_thread(link.write, group)
+                    writer.write(b'BLE CONFIGURED\n')
+                    await writer.drain()
+                    continue
                 if data.startswith(b'GATEWAY OTA '):
                     # Exclusive maintenance only, never mix binary image/key
                     # bytes with the line-oriented musical command queue.
@@ -73,7 +101,7 @@ async def serve_client(reader, writer):
                     log.info('STOP priority: discarded %d queued commands', discarded)
                 if len(pending) >= MAX_PENDING:
                     raise ValueError('BLE realtime overrun: command queue full; playback stopped')
-                pending.append((clock(), data))
+                pending.append((created, data))
                 command_ready.set()
         async def send():
             nonlocal oldest_inflight, inflight
@@ -82,11 +110,12 @@ async def serve_client(reader, writer):
                 oldest_inflight, data = pending.popleft()
                 if clock() - oldest_inflight > MAX_COMMAND_AGE:
                     raise ValueError('BLE realtime overrun: stale commands; playback stopped')
-                # Batch complete, already-due lines into one acknowledged ATT
-                # packet. Do not wait for future notes or change their ordering.
-                capacity = getattr(link, 'write_size', 20)
+                # Batch already-due lines into one bounded execution window.
+                # Do not wait for future notes or change their ordering.
+                capacity = getattr(link, 'command_capacity', getattr(link, 'write_size', 20))
                 while pending and len(data) + len(pending[0][1]) <= capacity:
-                    data += pending.popleft()[1]
+                    _, line = pending.popleft()
+                    data += line
                 if not pending:
                     command_ready.clear()
                 inflight = history.add(data, created=oldest_inflight)
@@ -118,10 +147,20 @@ async def serve_client(reader, writer):
                     delay = (clock() - oldest) * 1000
                     raise ValueError(f'BLE realtime overrun: {delay:.0f} ms delivery lag, {len(pending)} queued; playback stopped')
         async def transmit():
+            telemetry = bytearray()
             while True:
                 count = link.in_waiting
                 if count:
-                    writer.write(link.read(count)); await writer.drain()
+                    telemetry.extend(link.read(count))
+                    if len(telemetry) > 65536:
+                        raise ValueError('BLE gateway telemetry overflow')
+                    # Firmware STATUS arrives in 20-byte notifications. Gateway
+                    # receipts must go BETWEEN lines, never inside a partial one.
+                    while b'\n' in telemetry:
+                        line, _, rest = telemetry.partition(b'\n')
+                        telemetry[:] = rest
+                        writer.write(line+b'\n')
+                    await writer.drain()
                 await asyncio.sleep(.005)
         tasks = [asyncio.create_task(receive()), asyncio.create_task(send()), asyncio.create_task(transmit()), asyncio.create_task(watch_latency())]
         done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)

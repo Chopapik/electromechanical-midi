@@ -78,10 +78,11 @@ class RealOutput:
         return {'connected':self.link is not None, 'unknown':self.unknown,
                 'message':self.error or ('ESP32 BLE connected' if self.link else 'Brak połączenia z ESP32')}
 
-    def write(self, lines):
+    def write(self, lines, *, configuration=False):
         if not self.link: raise OutputError('Brak połączenia z ESP32')
         try:
-            self.link.send_batch(lines)
+            send = getattr(self.link, 'send_configuration', self.link.send_batch) if configuration else self.link.send_batch
+            send(lines)
             self.sent.extend(lines)
             self.sent[:] = self.sent[-200:]
         except Exception as exc:
@@ -162,7 +163,7 @@ class RealOutput:
         if strict:
             if self.link.controller_status.get('strict_tracks')!='1': raise OutputError('Firmware bez STRICT TRACKS')
             lines.append('TRACKS SET '+' '.join(str(t if t is not None else -1) for t in routing['tracks']))
-        self.write(lines)
+        self.write(lines, configuration=True)
         base_generation = self.link.status_generation
         extended_generation = getattr(self.link, 'extended_status_generation', 0)
         extended = any(d['enabled'] and d.get('realEnabled', d['enabled'])
