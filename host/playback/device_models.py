@@ -59,7 +59,7 @@ PROFILES = {
         'maxPosition': _p(72, 'RESEARCHED', 'firmware/controller/src/main.cpp MAX_TRACK'),
         'minHz': _p(40, 'RESEARCHED', 'config/hardware-profiles/theoretical.json: fddProtocolMinHz'),
         'maxHz': _p(500, 'RESEARCHED', 'firmware MAX_PLAY_HZ'),
-        'preferredMinHz': _p(40, 'ESTIMATED', 'User-requested working lower limit matching the existing firmware protocol'),
+        'preferredMinHz': _p(80, 'ESTIMATED', 'User-requested musical lower limit; firmware input minimum remains 40 Hz'),
         'preferredMaxHz': _p(COMFORT_MAX_HZ, 'MEASURED', 'README.md: Fizyczna kalibracja FDD; 410 Hz = 38/40, normal orientation'),
         'maxStepRate': _p(1000, 'RESEARCHED', 'firmware MIN_STEP_INTERVAL_US'),
     }, overflow='fold'),

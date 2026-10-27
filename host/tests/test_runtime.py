@@ -143,7 +143,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(set(self.app.registry.by_id),
             {f'fdd-{i}' for i in range(1,9)}|{f'DVD_STEPPER_{i}' for i in range(1,5)}|
             {f'hdd_vcm-{i}' for i in range(1,5)}|{'vhs-1','pc-speaker-fx'})
-        self.assertEqual(self.app.registry.profile('fdd-1').get('musicalHz'),[40,410])
+        self.assertEqual(self.app.registry.profile('fdd-1').get('musicalHz'),[80,410])
         self.assertEqual(self.app.registry.profile('DVD_STEPPER_1').get('allowedBandsHz'),[[50.0,120.0],[180.0,190.0],[270.0,300.0],[340.0,470.0]])
     def test_compilation_is_deterministic_and_contains_only_device_ids(self):
         plan=arrange(MidiSource(ROOT/'midi/test.mid'),self.app.registry)

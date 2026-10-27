@@ -130,7 +130,7 @@ class LaboratoryTests(unittest.TestCase):
 
     def test_low_fdd_frequencies_reach_real_output_after_homing(self):
         for ident, lane in [('fdd-1', 1), ('fdd-8', 8)]:
-            for hz in (40, 50, 75, 100):
+            for hz in (80, 81, 100):
                 with self.subTest(ident=ident, hz=hz):
                     self.start('a', ident, hz, None)
                     self.player.tick()
@@ -147,14 +147,14 @@ class LaboratoryTests(unittest.TestCase):
                 self.app.virtual.acknowledge('a', packet['token'])
         self.app.virtual.emit = emit
         self.app.virtual.owner = 'a'
-        for hz in (40, 50, 75, 100):
+        for hz in (80, 81, 100):
             self.start('a', 'fdd-1', hz, None)
             self.player.tick()
             tones = [c for packet in packets if packet['type'] == 'audio'
                      for c in packet['commands'] if c['kind'] == 'tone']
             self.assertEqual(tones[-1]['hz'], hz)
             self.lab.stop_device('a', 'fdd-1')
-        for hz in (0, 25, 39.99):
+        for hz in (0, 25, 40, 50, 75, 79.99):
             with self.assertRaises(ValueError):
                 self.start('a', 'fdd-1', hz, None)
 
@@ -249,7 +249,7 @@ class LaboratoryTests(unittest.TestCase):
 
     def test_catalog_exposes_laboratory_ranges_without_changing_arrangement(self):
         devices = {d['id']:d for d in self.app.registry.catalog()}
-        self.assertEqual(devices['fdd-1']['labBands'], [[40,410]])
+        self.assertEqual(devices['fdd-1']['labBands'], [[80,410]])
         self.assertEqual(devices['DVD_STEPPER_1']['bands'], [])
         self.assertGreater(devices['DVD_STEPPER_1']['labBands'][0][1], 600)
 

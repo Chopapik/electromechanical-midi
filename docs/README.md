@@ -48,7 +48,7 @@ bez zmiany firmware, algorytmów aranżacji ani aktywnych ustawień.
 | Temat | Wynik audytu | Źródło implementacji |
 | --- | --- | --- |
 | Skład hosta | 18 wpisów, 16 aktywnych: 8 FDD + 4 DVD + HDD1–2 + 2 speakery; HDD3–4 wyłączone | [devices.json](../config/devices.json) |
-| FDD | Aranżacja −12 / 40–205 Hz; profil 40–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
+| FDD | Aranżacja −12 / 80–200 Hz; profil 80–410 Hz; wejście firmware 40–500 Hz; osobny STEP ≥2439 µs | [profile](../config/hardware-profiles/instances.json), [stałe firmware](../firmware/controller/include/hardware_profiles_generated.h) |
 | DVD | Ciągły obrót, bez dawnego limitu 140 kroków i whitelisty; końcowy rejestr muzyczny 200–800 Hz, preferowane +1 oktawa frazy | [interpretacja profili](../host/playback/hardware_profiles.py), [rejestr DVD](../host/playback/dvd_register.py), [aranżacja](ARRANGEMENT.md) |
 | Zasilanie DVD i HDD | Aktualne zgłoszenie: **VM 5 V z dobrym odprowadzaniem ciepła**, np. do metalowej obudowy VHS pełniącej też rolę rezonatora; brak liczbowej kwalifikacji termicznej | [zasilanie](HARDWARE_WIRING.md#zasilanie), [obserwacje DVD](research/hardware-measurements.md#dvd), [HDD](research/hardware-measurements.md#hdd-vcm) |
 | HDD | Fizyczny profil HDD_PERCUSSION i 40/40/4 ms; nazwa profilu brzmienia nie oznacza innego impulsu REAL | [profile](../config/hardware-profiles/theoretical.json), [firmware](../firmware/controller/include/orchestra_core.h) |

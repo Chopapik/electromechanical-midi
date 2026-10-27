@@ -18,12 +18,12 @@
         },
         "musicalHz": {
           "value": [
-            40,
+            80,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         },
@@ -163,12 +163,12 @@
         },
         "musicalHz": {
           "value": [
-            40,
+            80,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -209,12 +209,12 @@
         },
         "musicalHz": {
           "value": [
-            40,
+            80,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -255,12 +255,12 @@
         },
         "musicalHz": {
           "value": [
-            40,
+            80,
             410
           ],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "FACT",
           "confidence": "LOW"
         }
@@ -380,10 +380,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [40, 410],
+          "value": [80, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -418,10 +418,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [40, 410],
+          "value": [80, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -456,10 +456,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [40, 410],
+          "value": [80, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }
@@ -494,10 +494,10 @@
           "confidence": "LOW"
         },
         "musicalHz": {
-          "value": [40, 410],
+          "value": [80, 410],
           "unit": "Hz",
           "uncertainty": null,
-          "source": "User-requested working range 40-410 Hz; lower bound matches the existing firmware protocol, not a measured mechanical minimum. Upper STEP and travel limits retained.",
+          "source": "User-requested FDD working range 80-410 Hz; lower bound is musical policy, not a measured mechanical minimum. Firmware input range and separate STEP/travel limits remain unchanged.",
           "evidenceType": "HYPOTHESIS",
           "confidence": "LOW"
         }

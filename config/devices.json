@@ -15,14 +15,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -39,14 +39,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -63,14 +63,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -87,14 +87,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -112,14 +112,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -137,14 +137,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -162,14 +162,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },
@@ -187,14 +187,14 @@
       "transpose": -12,
       "overrides": {
         "preferredMinHz": {
-          "value": 40,
+          "value": 80,
           "provenance": "ESTIMATED",
-          "source": "User-requested FDD working lower limit 40 Hz, matching the existing firmware protocol; not a measured actuator minimum"
+          "source": "User-requested FDD working lower limit 80 Hz; musical policy, not a measured actuator minimum"
         },
         "preferredMaxHz": {
-          "value": 205,
+          "value": 200,
           "provenance": "ESTIMATED",
-          "source": "User-requested octave-down listening experiment; musical range, not a measured actuator limit"
+          "source": "User-requested FDD working upper limit 200 Hz; musical policy, not a measured actuator maximum"
         }
       }
     },

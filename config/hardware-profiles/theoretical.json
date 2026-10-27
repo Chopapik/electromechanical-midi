@@ -28,12 +28,12 @@
       },
       "musicalHz": {
         "value": [
-          40,
+          80,
           500
         ],
         "unit": "Hz",
         "uncertainty": null,
-        "source": "User-requested working lower limit 40 Hz matches the firmware protocol; not measured low-frequency qualification",
+        "source": "User-requested FDD working lower limit 80 Hz; musical policy, not measured low-frequency qualification. Firmware input range remains 40-500 Hz",
         "evidenceType": "HYPOTHESIS",
         "confidence": "LOW"
       },

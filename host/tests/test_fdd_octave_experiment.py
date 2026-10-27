@@ -18,7 +18,7 @@ class FddOctaveExperimentTests(unittest.TestCase):
         from arrangement_presets import PRESET_IDS
         with tempfile.TemporaryDirectory() as directory:
             source = MidiSource(write_tracks(Path(directory)/'low-register.mid',
-                [('Riff', 0, [(i*.8, i*.8+.5, 48) for i in range(4)])]))
+                [('Riff', 0, [(i*.8, i*.8+.5, 52) for i in range(4)])]))
             for preset in PRESET_IDS:
                 for strict in (False, True):
                     with self.subTest(preset=preset, strict=strict):
@@ -31,7 +31,7 @@ class FddOctaveExperimentTests(unittest.TestCase):
                         tones = [c for c in compile_plan(arrange(source, registry)).commands
                                  if c.kind == 'tone']
                         self.assertTrue(tones)
-                        self.assertTrue(all(abs(c.hz-midi_to_hz(36)) < 1e-6 for c in tones))
+                        self.assertTrue(all(abs(c.hz-midi_to_hz(40)) < 1e-6 for c in tones))
 
     def test_all_eight_drives_shift_source_and_working_register(self):
         r = DeviceRegistry()
@@ -39,18 +39,18 @@ class FddOctaveExperimentTests(unittest.TestCase):
         self.assertEqual([d['id'] for d in active], [f'fdd-{i}' for i in range(1,9)])
         for d in active:
             self.assertEqual(d['transpose'], -12)
-            self.assertEqual(d['overrides']['preferredMinHz']['value'], 40)
-            self.assertEqual(d['overrides']['preferredMaxHz']['value'], 205)
+            self.assertEqual(d['overrides']['preferredMinHz']['value'], 80)
+            self.assertEqual(d['overrides']['preferredMaxHz']['value'], 200)
             p = r.profile(d['id'])
-            self.assertEqual(p.get('musicalHz'), [40, 410])
+            self.assertEqual(p.get('musicalHz'), [80, 410])
             self.assertEqual(p.get('executionMinStepUs'), 2439)
             self.assertEqual(p.get('travelSteps'), 72)
             for mode in ('auto', 'low', 'high'):
                 for note in range(24, 109):
-                    after = fold_note(note-12, 40, 205, mode)
-                    self.assertTrue(40 <= after.hz <= 205)
+                    after = fold_note(note-12, 80, 200, mode)
+                    self.assertTrue(80 <= after.hz <= 200)
                     original = midi_to_hz(note-12)
-                    if mode == 'auto' and 40 <= original <= 205:
+                    if mode == 'auto' and 80 <= original <= 200:
                         self.assertAlmostEqual(after.hz, original)
 
     def test_all_presets_strict_unison_and_expression_use_lower_register(self):
@@ -71,7 +71,7 @@ class FddOctaveExperimentTests(unittest.TestCase):
                         tones = [c for c in compile_plan(p).commands if c.kind == 'tone']
                         self.assertTrue(tones)
                         for c in tones:
-                            self.assertAlmostEqual(c.hz, midi_to_hz(36 if preset=='dvd_lead_low_fdd' and not strict else 48))
+                            self.assertAlmostEqual(c.hz, midi_to_hz(48))
                             if c.articulation:
                                 self.assertTrue(all(abs(hz-c.hz)<1e-6 for hz in c.articulation['frequency']['values']))
                         self.assertTrue(all(e.note == 60 for e in p.events))
