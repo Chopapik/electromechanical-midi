@@ -3,6 +3,7 @@ import asyncio
 import contextlib
 import argparse
 import logging
+import json
 import os
 import plistlib
 import subprocess
@@ -10,6 +11,7 @@ import sys
 from collections import deque
 from pathlib import Path
 from ble_link import BleBytes
+from ble_diagnostics import WriteHistory
 
 log = logging.getLogger('orchestra.ble')
 
@@ -21,12 +23,17 @@ MAX_PENDING = 512
 async def serve_client(reader, writer):
     link = None
     tasks = []
+    history = WriteHistory()
+    latest_loop_lag = max_loop_lag = 0.
+    inflight = None
+    pending = deque()
     try:
         link = await asyncio.to_thread(BleBytes)
-        log.info('BLE connected: acknowledged write payload=%d bytes, latency limit=%d ms',
-                 getattr(link, 'write_size', 20), MAX_COMMAND_AGE * 1000)
+        log.info('BLE connected: payload=%d bytes, delivery=%s, latency limit=%d ms',
+                 getattr(link, 'write_size', 20),
+                 'execution-ack' if getattr(link, '_application_ack', False) else 'att-response (legacy)',
+                 MAX_COMMAND_AGE * 1000)
         writer.write(b'BLE CONNECTED\n'); await writer.drain()
-        pending = deque()
         command_ready = asyncio.Event()
         oldest_inflight = None
         clock = asyncio.get_running_loop().time
@@ -47,7 +54,7 @@ async def serve_client(reader, writer):
                 pending.append((clock(), data))
                 command_ready.set()
         async def send():
-            nonlocal oldest_inflight
+            nonlocal oldest_inflight, inflight
             while True:
                 await command_ready.wait()
                 oldest_inflight, data = pending.popleft()
@@ -60,11 +67,28 @@ async def serve_client(reader, writer):
                     data += pending.popleft()[1]
                 if not pending:
                     command_ready.clear()
-                await asyncio.to_thread(link.write, data)
+                inflight = history.add(data, created=oldest_inflight)
+                inflight.mark('dispatch')
+                trace = inflight
+                def write():
+                    trace.mark('worker_started')
+                    try: return link.write(data)
+                    finally: trace.mark('worker_finished')
+                try:
+                    await asyncio.to_thread(write)
+                except Exception as error:
+                    trace.fail(error)
+                    raise
+                trace.mark('completed')
+                inflight = None
                 oldest_inflight = None
         async def watch_latency():
+            nonlocal latest_loop_lag, max_loop_lag
             while True:
+                scheduled = clock()+.01
                 await asyncio.sleep(.01)
+                latest_loop_lag = max(0., clock()-scheduled)*1000
+                max_loop_lag = max(max_loop_lag, latest_loop_lag)
                 oldest = oldest_inflight
                 if oldest is None and pending:
                     oldest = pending[0][0]
@@ -81,6 +105,14 @@ async def serve_client(reader, writer):
         done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         for task in done: task.result()
     except Exception as exc:
+        if link:
+            with contextlib.suppress(Exception):
+                evidence = {'schema':1, 'reason':str(exc), 'queuedLines':len(pending),
+                            'gatewayLoopLagMs':round(latest_loop_lag,3),
+                            'maxGatewayLoopLagMs':round(max_loop_lag,3),
+                            'gatewayWrites':history.snapshot(),
+                            'transportWrites':link.timing_snapshot() if hasattr(link,'timing_snapshot') else None}
+                log.warning('BLE_TIMING %s', json.dumps(evidence, separators=(',',':')))
         log.info('BLE disconnected / connect failed: %s', exc)
         writer.write(('BLE ERROR ' + str(exc).replace('\n', ' ') + '\n').encode())
         with contextlib.suppress(Exception): await writer.drain()
@@ -122,7 +154,7 @@ def install_macos_service(port=8766):
     print('Installed native BLE gateway:', path)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(name)s:%(message)s')
     parser = argparse.ArgumentParser(); parser.add_argument('--port', type=int, default=8766)
     parser.add_argument('--install-macos-service', action='store_true')
     args = parser.parse_args()

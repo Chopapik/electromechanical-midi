@@ -33,6 +33,30 @@ int main(int argc,char** argv){
   p.execute(Transport::Usb,"TEST STATUS");assert(led.on&&led.writes==writes&&sink.replies.back().text=="TEST ON");
   size_t frames=io.edges.size();p.execute(Transport::Usb,"TEST INVALID");
   assert(led.on&&led.writes==writes&&sink.replies.back().text=="ERR COMMAND"&&io.edges.size()==frames);
+ }else if(c=="sync"){
+  uint32_t previous=ctrl.lastCommand;size_t edges=io.edges.size();io.now+=1000;
+  feed(p,Transport::Ble,"SYNC 1234567890\n");
+  assert(sink.replies.back().text=="SYNCED 1234567890"&&sink.replies.back().session==1);
+  feed(p,Transport::Usb,"SYNC 0\n");
+  assert(sink.replies.back().text=="SYNCED 0"&&sink.replies.back().origin==Transport::Usb);
+  assert(ctrl.lastCommand==previous&&io.edges.size()==edges);
+  for(const char* bad:{"SYNC ","SYNC invalid","SYNC -1","SYNC 12345678901","SYNC 1 EXTRA"}){
+   p.execute(Transport::Ble,bad);assert(sink.replies.back().text=="ERR VALUE");
+  }
+  ctrl.fdd[0].homed=true;
+  feed(p,Transport::Ble,"FDD 1 PLAY 220\nSYNC 23\n");
+  assert(ctrl.fdd[0].playing&&sink.replies.back().text=="SYNCED 23");
+  feed(p,Transport::Ble,"ALL STOP 9\nSYNC 24\n");
+  assert(!ctrl.fdd[0].playing&&sink.replies[sink.replies.size()-2].text=="STOPPED 9"&&sink.replies.back().text=="SYNCED 24");
+  feed(p,Transport::Ble,"FDD 1 PLAY 220\n");assert(ctrl.fdd[0].playing);
+  for(int i=0;i<31;++i){io.now+=100000;feed(p,Transport::Ble,"SYNC 24\n");ctrl.tick();}
+  assert(!ctrl.fdd[0].playing); // SYNC receipts cannot keep old motion alive.
+  feed(p,Transport::Ble,"SY");p.newBleSession(2);feed(p,Transport::Ble,"NC 25\n");
+  assert(sink.replies.back().text=="ERR COMMAND");
+  p.bleOverflow();feed(p,Transport::Ble,"\nSYNC 26\n");
+  assert(sink.replies.back().text=="ERR RX_OVERFLOW");
+  p.newBleSession(3);feed(p,Transport::Ble,"SYNC 27\n");
+  assert(sink.replies.back().text=="SYNCED 27"&&sink.replies.back().session==3);
  }else if(c=="ping"){
   feed(p,Transport::Usb,"PING\n");feed(p,Transport::Ble,"PING\n");
   assert(sink.replies.size()==2&&sink.replies[0].origin==Transport::Usb&&sink.replies[1].origin==Transport::Ble);
@@ -151,7 +175,7 @@ class Esp32ProtocolTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.directory.cleanup()
 
-for case in ('power','led', 'led_status', 'ping', 'status','status_bounds', 'fragment', 'separate_lines',
+for case in ('power','led', 'led_status', 'ping', 'sync', 'status','status_bounds', 'fragment', 'separate_lines',
              'line_overflow', 'rx_overflow', 'session', 'nul', 'shared_motor', 'error_routing', 'extended_status', 'four_sled_status', 'extended_error_routing', 'diag', 'stop_ack'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)

@@ -89,9 +89,19 @@ class BleGatewayRealtimeTests(unittest.IsolatedAsyncioTestCase):
                 if len(self.sent) == 1: time.sleep(.15)
             def close(self): pass
         link = Link()
-        data = await self.run_session(link, [b'FDD 1 PLAY 220\n', b'FDD 1 PLAY 330\n'], budget=.05)
+        with self.assertLogs('orchestra.ble', level='WARNING') as logs:
+            data = await self.run_session(link, [b'FDD 1 PLAY 220\n', b'FDD 1 PLAY 330\n'], budget=.05)
         self.assertIn(b'BLE ERROR BLE realtime overrun:', data)
         self.assertEqual(link.sent, [b'FDD 1 PLAY 220\n', b'ALL STOP\n'])
+        import json
+        evidence = json.loads(next(row.split('BLE_TIMING ',1)[1]
+                                  for row in logs.output if 'BLE_TIMING ' in row))
+        self.assertEqual(evidence['schema'], 1)
+        self.assertEqual(evidence['queuedLines'], 1)
+        active = evidence['gatewayWrites']['active'][0]
+        self.assertEqual(active['phase'], 'worker_started')
+        self.assertLess(active['workerQueueMs'], active['ageMs'])
+        self.assertIn('gatewayLoopLagMs', evidence)
 
     async def test_due_commands_batched_without_changing_order(self):
         class Link:

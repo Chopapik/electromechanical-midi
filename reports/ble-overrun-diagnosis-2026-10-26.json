@@ -1,0 +1,1171 @@
+{
+  "schema": 1,
+  "date": "2026-10-26",
+  "baseCommit": "524fb85",
+  "conclusion": "A 5-byte acknowledged PING reproduced a >250 ms GATT completion delay without any musical commands or actuator motion. Root stage isolated; radio vs peripheral stack vs local CoreBluetooth callback scheduling not yet separated.",
+  "hardwareActions": {
+    "instrumentStartCommands": 0,
+    "homingCommands": 0,
+    "powerCommands": 0,
+    "firmwareUploads": 0,
+    "initialCorrelatedStopConfirmed": true,
+    "finalCorrelatedStopConfirmed": false,
+    "note": "Probe aborted on first BLE error without retry. Gateway attempted its existing best-effort ALL STOP; no correlated final confirmation is inferred. No instrument was started.",
+    "scope": "quiet probe only; application recovery separately restores paused state through existing STOP barriers"
+  },
+  "quietProbe": {
+    "requestedSeconds": 120,
+    "requestedPings": 1200,
+    "intervalSeconds": 0.1,
+    "negotiatedWritePayloadBytes": 252,
+    "scope": "PING RTT through native gateway; no instrument or POWER commands",
+    "initialStopConfirmed": true,
+    "finalStopConfirmed": false,
+    "samplesMs": [
+      60.494,
+      76.16,
+      61.045,
+      77.645,
+      89.22,
+      46.943,
+      63.376,
+      47.913,
+      64.19,
+      47.358,
+      93.753,
+      56.839,
+      66.367,
+      54.718,
+      70.373,
+      52.763,
+      77.301,
+      87.147,
+      78.81,
+      66.541,
+      56.065,
+      100.459,
+      60.743,
+      48.034,
+      123.856,
+      60.53,
+      48.335,
+      60.821,
+      168.768,
+      59.658,
+      228.236,
+      92.896,
+      78.901,
+      65.194,
+      114.308,
+      60.032,
+      132.537,
+      91.81,
+      81.946,
+      69.57,
+      84.647,
+      73.809,
+      83.483,
+      42.864,
+      59.699,
+      49.863,
+      65.834,
+      170.131,
+      93.513,
+      52.938,
+      124.429,
+      59.988,
+      76.651,
+      62.613,
+      51.393,
+      69.766,
+      81.326,
+      64.026,
+      55.142,
+      43.619,
+      55.338,
+      38.68,
+      87.939,
+      44.965,
+      60.601,
+      79.562,
+      72.008,
+      142.241,
+      65.81,
+      50.55,
+      66.84,
+      54.15,
+      44.155,
+      59.244,
+      41.896,
+      60.699,
+      49.434,
+      120.549,
+      61.474,
+      49.858,
+      67.765,
+      49.743,
+      67.888,
+      55.245,
+      47.453,
+      62.954,
+      48.023,
+      66.18,
+      50.139,
+      70.57,
+      89.275,
+      47.713,
+      97.359,
+      57.482,
+      41.103,
+      85.8,
+      70.316,
+      66.945,
+      55.584,
+      65.456,
+      57.116,
+      39.206,
+      91.535,
+      50.488,
+      69.005,
+      52.845,
+      40.914,
+      55.749,
+      39.658,
+      55.0,
+      45.93,
+      60.043,
+      49.772,
+      91.714,
+      51.236,
+      66.763,
+      50.71,
+      67.256,
+      59.999,
+      43.796,
+      60.359,
+      42.835,
+      86.197,
+      49.394,
+      64.775,
+      48.659,
+      64.934,
+      112.002,
+      58.505,
+      109.995,
+      58.68,
+      50.225,
+      68.563,
+      51.104,
+      37.927,
+      59.24,
+      43.736,
+      64.543,
+      47.592,
+      64.093,
+      49.346,
+      64.796,
+      108.414,
+      60.622,
+      45.671,
+      65.783,
+      55.031,
+      65.858,
+      53.585,
+      41.706,
+      59.493,
+      43.987,
+      95.367,
+      49.98,
+      65.89,
+      49.436,
+      65.582,
+      58.076,
+      40.304,
+      59.903,
+      47.219,
+      60.935,
+      78.384,
+      59.688,
+      50.473,
+      62.047,
+      54.879,
+      73.785,
+      63.111,
+      51.025,
+      66.313,
+      49.613,
+      93.363,
+      51.12,
+      38.335,
+      55.496,
+      42.679,
+      59.264,
+      48.924,
+      66.831,
+      57.957,
+      41.752,
+      58.394,
+      42.179,
+      60.299,
+      49.92,
+      64.797,
+      47.415,
+      64.206,
+      49.012,
+      68.011,
+      52.617,
+      37.532,
+      54.8,
+      43.581,
+      59.124,
+      44.272,
+      59.805,
+      105.655,
+      59.57,
+      43.807,
+      62.744,
+      48.769,
+      64.363,
+      50.687,
+      67.384,
+      50.498,
+      69.773,
+      53.088,
+      44.146,
+      58.557,
+      51.309,
+      60.516,
+      78.792,
+      63.818,
+      54.533,
+      44.627,
+      60.903,
+      47.901,
+      66.62,
+      49.917,
+      41.466,
+      56.534,
+      72.368,
+      88.197,
+      46.972,
+      61.56,
+      80.573,
+      68.493,
+      54.175,
+      46.4,
+      57.053,
+      47.05,
+      93.513,
+      51.692,
+      45.123,
+      54.909,
+      42.793,
+      60.535,
+      75.689,
+      58.45,
+      47.013,
+      64.905,
+      50.865,
+      69.649,
+      57.585,
+      39.864,
+      59.478
+    ],
+    "error": "RuntimeError: BLE ERROR BLE realtime overrun: 252 ms delivery lag, 0 queued; playback stopped",
+    "elapsedSeconds": 26.372,
+    "summary": {
+      "samples": 248,
+      "meanMs": 63.86,
+      "p50Ms": 59.658,
+      "p95Ms": 105.655,
+      "p99Ms": 168.768,
+      "maxMs": 228.236,
+      "rttOver100Ms": 14,
+      "rttOver250Ms": 0
+    }
+  },
+  "failureEvidence": {
+    "schema": 1,
+    "reason": "BLE realtime overrun: 252 ms delivery lag, 0 queued; playback stopped",
+    "queuedLines": 0,
+    "gatewayLoopLagMs": 0.421,
+    "maxGatewayLoopLagMs": 2.013,
+    "gatewayWrites": {
+      "scope": "last 64 writes; host clocks, not firmware execution ACK",
+      "sampleCount": 63,
+      "meanMs": 53.322,
+      "p95Ms": 78.098,
+      "maxMs": 99.687,
+      "active": [
+        {
+          "phase": "worker_finished",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 252.903,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.089,
+            "worker_started": 0.221,
+            "worker_finished": 251.556
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.132,
+          "gatewayResumeMs": null,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        }
+      ],
+      "recent": [
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 40.429,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.117,
+            "worker_started": 0.254,
+            "worker_finished": 40.257,
+            "completed": 40.429
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.137,
+          "gatewayResumeMs": 0.173,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 59.311,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.086,
+            "worker_started": 0.208,
+            "worker_finished": 59.226,
+            "completed": 59.311
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.122,
+          "gatewayResumeMs": 0.085,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 48.705,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.092,
+            "worker_started": 0.224,
+            "worker_finished": 48.487,
+            "completed": 48.705
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.132,
+          "gatewayResumeMs": 0.218,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 63.723,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.107,
+            "worker_started": 0.229,
+            "worker_finished": 63.494,
+            "completed": 63.723
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.122,
+          "gatewayResumeMs": 0.229,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 52.11,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.082,
+            "worker_started": 0.203,
+            "worker_finished": 52.008,
+            "completed": 52.11
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.121,
+          "gatewayResumeMs": 0.102,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 37.618,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.06,
+            "worker_started": 0.151,
+            "worker_finished": 37.43,
+            "completed": 37.618
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.091,
+          "gatewayResumeMs": 0.188,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 56.083,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.067,
+            "worker_started": 0.164,
+            "worker_finished": 55.96,
+            "completed": 56.083
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.096,
+          "gatewayResumeMs": 0.123,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "worker_finished",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 252.903,
+          "eventsMs": {
+            "submitted": 0.0,
+            "dispatch": 0.089,
+            "worker_started": 0.221,
+            "worker_finished": 251.556
+          },
+          "bleLoopDelayMs": null,
+          "lockWaitMs": null,
+          "workerQueueMs": 0.132,
+          "gatewayResumeMs": null,
+          "fragments": 0,
+          "gattTotalMs": 0.0,
+          "gattMaxMs": 0.0,
+          "currentGattMs": 0.0
+        }
+      ]
+    },
+    "transportWrites": {
+      "scope": "last 64 writes; host clocks, not firmware execution ACK",
+      "sampleCount": 64,
+      "meanMs": 55.969,
+      "p95Ms": 83.923,
+      "maxMs": 251.191,
+      "active": [],
+      "recent": [
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 39.817,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.193,
+            "lock_acquired": 0.2,
+            "gatt_started": 0.202,
+            "gatt_completed": 39.805,
+            "completed": 39.817
+          },
+          "bleLoopDelayMs": 0.193,
+          "lockWaitMs": 0.007,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 39.602,
+          "gattMaxMs": 39.602,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 58.917,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.208,
+            "lock_acquired": 0.215,
+            "gatt_started": 0.217,
+            "gatt_completed": 58.909,
+            "completed": 58.917
+          },
+          "bleLoopDelayMs": 0.208,
+          "lockWaitMs": 0.007,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 58.692,
+          "gattMaxMs": 58.692,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 48.108,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.216,
+            "lock_acquired": 0.224,
+            "gatt_started": 0.226,
+            "gatt_completed": 48.097,
+            "completed": 48.108
+          },
+          "bleLoopDelayMs": 0.216,
+          "lockWaitMs": 0.007,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 47.871,
+          "gattMaxMs": 47.871,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 63.155,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.215,
+            "lock_acquired": 0.222,
+            "gatt_started": 0.224,
+            "gatt_completed": 63.144,
+            "completed": 63.155
+          },
+          "bleLoopDelayMs": 0.215,
+          "lockWaitMs": 0.006,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 62.92,
+          "gattMaxMs": 62.92,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 51.727,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.184,
+            "lock_acquired": 0.191,
+            "gatt_started": 0.193,
+            "gatt_completed": 51.719,
+            "completed": 51.727
+          },
+          "bleLoopDelayMs": 0.184,
+          "lockWaitMs": 0.007,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 51.526,
+          "gattMaxMs": 51.526,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 37.158,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.151,
+            "lock_acquired": 0.156,
+            "gatt_started": 0.157,
+            "gatt_completed": 37.148,
+            "completed": 37.158
+          },
+          "bleLoopDelayMs": 0.151,
+          "lockWaitMs": 0.005,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 36.991,
+          "gattMaxMs": 36.991,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 55.709,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.158,
+            "lock_acquired": 0.163,
+            "gatt_started": 0.164,
+            "gatt_completed": 55.7,
+            "completed": 55.709
+          },
+          "bleLoopDelayMs": 0.158,
+          "lockWaitMs": 0.005,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 55.536,
+          "gattMaxMs": 55.536,
+          "currentGattMs": 0.0
+        },
+        {
+          "phase": "completed",
+          "bytes": 5,
+          "commandCount": 1,
+          "commands": [
+            "PING"
+          ],
+          "error": null,
+          "ageMs": 251.191,
+          "eventsMs": {
+            "submitted": 0.0,
+            "ble_loop": 0.213,
+            "lock_acquired": 0.22,
+            "gatt_started": 0.222,
+            "gatt_completed": 251.181,
+            "completed": 251.191
+          },
+          "bleLoopDelayMs": 0.213,
+          "lockWaitMs": 0.007,
+          "workerQueueMs": null,
+          "gatewayResumeMs": null,
+          "fragments": 1,
+          "gattTotalMs": 250.959,
+          "gattMaxMs": 250.959,
+          "currentGattMs": 0.0
+        }
+      ]
+    }
+  },
+  "badAppleOfflineLoad": {
+    "midiSHA256": "faec8a53f8ef66b3e63623bff41fac8e134ed7a2ab2fec3581fa1295fa30343e",
+    "file": "badapple!!midifull-1.mid",
+    "preset": "fdd_legato",
+    "positionSeconds": 102.29187647905201,
+    "scope": "offline wire-line expansion of already loaded timeline; current mutes/levels; excludes periodic PING and TCP/GATT scheduling",
+    "muted": [
+      "fdd-2",
+      "fdd-3",
+      "fdd-4",
+      "fdd-5",
+      "fdd-6",
+      "fdd-7",
+      "fdd-8"
+    ],
+    "totalWireLines": 10385,
+    "peaks": [
+      {
+        "lines": 14,
+        "windowSeconds": 0.01,
+        "endSeconds": 48.696
+      },
+      {
+        "lines": 15,
+        "windowSeconds": 0.1,
+        "endSeconds": 48.696
+      },
+      {
+        "lines": 95,
+        "windowSeconds": 1.0,
+        "endSeconds": 54.475
+      }
+    ],
+    "aroundFailure": [
+      {
+        "time": 101.30443899999999,
+        "lines": [
+          "VHS2 STOP"
+        ]
+      },
+      {
+        "time": 101.30443899999999,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 101.30443899999999,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 349.23"
+        ]
+      },
+      {
+        "time": 101.41313474999998,
+        "lines": [
+          "SLED 2 PLAY 415.30"
+        ]
+      },
+      {
+        "time": 101.5218305,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 277.18"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "SLED 2 STOP"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "FDD 1 STOP"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "FDD 2 STOP"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "VHS2 AMP 128",
+          "VHS2 FREQ 311.13"
+        ]
+      },
+      {
+        "time": 101.73922199999998,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 622.25"
+        ]
+      },
+      {
+        "time": 101.84791775,
+        "lines": [
+          "VHS2 STOP"
+        ]
+      },
+      {
+        "time": 101.84791775,
+        "lines": [
+          "HDD 2 HIT"
+        ]
+      },
+      {
+        "time": 101.95661349999999,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 102.06530924999998,
+        "lines": [
+          "FDD 1 PLAY 155.56"
+        ]
+      },
+      {
+        "time": 102.06530924999998,
+        "lines": [
+          "HDD 2 HIT"
+        ]
+      },
+      {
+        "time": 102.06530924999998,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 311.13"
+        ]
+      },
+      {
+        "time": 102.174005,
+        "lines": [
+          "SLED 3 PLAY 311.13"
+        ]
+      },
+      {
+        "time": 102.174005,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 102.174005,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 277.18"
+        ]
+      },
+      {
+        "time": 102.28270074999999,
+        "lines": [
+          "SLED 2 PLAY 415.30"
+        ]
+      },
+      {
+        "time": 102.39139649999998,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 102.39139649999998,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 311.13"
+        ]
+      },
+      {
+        "time": 102.60578799999999,
+        "lines": [
+          "FDD 1 STOP"
+        ]
+      },
+      {
+        "time": 102.60578799999999,
+        "lines": [
+          "FDD 2 STOP"
+        ]
+      },
+      {
+        "time": 102.60878799999999,
+        "lines": [
+          "SLED 3 STOP"
+        ]
+      },
+      {
+        "time": 102.60878799999999,
+        "lines": [
+          "SLED 2 PLAY 415.30"
+        ]
+      },
+      {
+        "time": 102.60878799999999,
+        "lines": [
+          "FDD 1 PLAY 77.78"
+        ]
+      },
+      {
+        "time": 102.60878799999999,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 102.60878799999999,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 349.23"
+        ]
+      },
+      {
+        "time": 102.82617949999998,
+        "lines": [
+          "SLED 2 STOP"
+        ]
+      },
+      {
+        "time": 102.82617949999998,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 102.82617949999998,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 369.99"
+        ]
+      },
+      {
+        "time": 102.93487524999999,
+        "lines": [
+          "HDD 2 HIT"
+        ]
+      },
+      {
+        "time": 102.93487524999999,
+        "lines": [
+          "VHS2 AMP 128",
+          "VHS2 FREQ 1244.51"
+        ]
+      },
+      {
+        "time": 103.04357099999999,
+        "lines": [
+          "VHS2 STOP"
+        ]
+      },
+      {
+        "time": 103.04357099999999,
+        "lines": [
+          "HDD 1 HIT"
+        ]
+      },
+      {
+        "time": 103.04357099999999,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 415.30"
+        ]
+      },
+      {
+        "time": 103.15226674999998,
+        "lines": [
+          "HDD 2 HIT"
+        ]
+      },
+      {
+        "time": 103.15226674999998,
+        "lines": [
+          "VHS2 AMP 128",
+          "VHS2 FREQ 311.13"
+        ]
+      },
+      {
+        "time": 103.26096249999999,
+        "lines": [
+          "VHS AMP 128",
+          "VHS FREQ 466.16"
+        ]
+      }
+    ]
+  },
+  "historicalLog": {
+    "lagOverruns": 101,
+    "zeroQueueOverruns": 86,
+    "recent": [
+      {
+        "lagMs": 253,
+        "queued": 4
+      },
+      {
+        "lagMs": 252,
+        "queued": 0
+      },
+      {
+        "lagMs": 256,
+        "queued": 0
+      },
+      {
+        "lagMs": 252,
+        "queued": 0
+      },
+      {
+        "lagMs": 250,
+        "queued": 0
+      },
+      {
+        "lagMs": 257,
+        "queued": 0
+      },
+      {
+        "lagMs": 259,
+        "queued": 0
+      },
+      {
+        "lagMs": 321,
+        "queued": 0
+      },
+      {
+        "lagMs": 251,
+        "queued": 0
+      },
+      {
+        "lagMs": 252,
+        "queued": 0
+      }
+    ],
+    "scope": "Accumulated log from multiple runs/versions; old rows lack timestamps, so this is not a current failure rate."
+  },
+  "changes": {
+    "gatewayDeadlineSeconds": 0.25,
+    "gatewayQueueLimit": 512,
+    "acknowledgedGattWrites": true,
+    "boundedWriteHistory": 64,
+    "boundedCommandPreview": 8,
+    "logs": "one BLE_TIMING evidence record on session error; timestamped native logs",
+    "bleLoopObserver": "20 ms lightweight host-loop monitor added after the measured trial, for future discrimination; not measured in that trial",
+    "noMusicalChanges": true,
+    "noFirmwareChanges": true
+  },
+  "limitations": [
+    "PING/PONG includes notification return delay; it is not one-way delivery time.",
+    "RTT percentiles include only the 248 successful pings; the failing 249th is censored and recorded separately.",
+    "GATT wait includes CoreBluetooth/OS callback dispatch and the wireless/peripheral transaction; it is not a direct radio measurement.",
+    "Gateway loop lag was measured; BLE-thread loop liveness during GATT was not yet instrumented in the physical trial.",
+    "No music or motors were run; effects of actuator load, EMI, RSSI and negotiated connection interval remain unmeasured.",
+    "This diagnosis does not fix or guarantee live-performance reliability; the 250 ms fail-stop remains in force."
+  ],
+  "references": {
+    "appleConnectionGuidance": "https://developer.apple.com/library/archive/qa/qa1931/index.html",
+    "centralControlsParameters": "https://developer.apple.com/forums/thread/822187",
+    "nimbleServerAPI": "https://h2zero.github.io/NimBLE-Arduino/class_nim_b_l_e_server.html"
+  },
+  "validation": {
+    "hostTests": 931,
+    "focusedBleTests": 25,
+    "architectureGuardModules": 57,
+    "firmwareChanged": false,
+    "pythonVersion": "3.14.8",
+    "bleakVersion": "3.0.2",
+    "frontendCodeChanged": false,
+    "deployment": {
+      "containerHealthy": true,
+      "bundledSourceSHA256": {
+        "host/ble_gateway.py": "5415d6cf2ac5df702fe4bffca5230126fbcbc4a375fb9b20a960d5f124a7c1e2",
+        "host/ble_link.py": "d4e1ab687ec8ececb335f1d42560ecd32436f5db5ca95c25719912c9322b3bf2",
+        "host/ble_diagnostics.py": "a58c53e44c916c192b9a1241841c8b77cde187d5a09b7b5da080b380129b3607",
+        "scripts/probe_ble_ping.py": "1920b3259fa48f9f0de551d6a0d95776e52821ecc2f893e97be4208866adddab"
+      },
+      "matchesLocalSource": true
+    }
+  },
+  "applicationRecovery": {
+    "file": "badapple!!midifull-1.mid",
+    "preset": "fdd_legato",
+    "state": "paused",
+    "position": 102.29187647905201,
+    "muted": [
+      "fdd-2",
+      "fdd-3",
+      "fdd-4",
+      "fdd-5",
+      "fdd-6",
+      "fdd-7",
+      "fdd-8"
+    ],
+    "output": {
+      "mode": "REAL",
+      "connected": true,
+      "unknown": false,
+      "message": "ESP32 BLE connected",
+      "muted": [
+        "fdd-2",
+        "fdd-3",
+        "fdd-4",
+        "fdd-5",
+        "fdd-6",
+        "fdd-7",
+        "fdd-8"
+      ]
+    },
+    "power": "ON",
+    "timelineUnchanged": true,
+    "timelineSHA256": "e8b82b50ea58f6365f479bd2cf047a2b09236cd11cd438435eb20c0f38a32990",
+    "restorationActions": [
+      "arrangement_preset",
+      "mute",
+      "pause",
+      "seek",
+      "set_file"
+    ]
+  }
+}

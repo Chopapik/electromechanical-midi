@@ -89,6 +89,14 @@ class BleTests(unittest.TestCase):
         command='FDD 1 PLAY 220.123456789'
         link.send(command)
         self.assertEqual(b''.join(raw._client.sent),(command+'\n').encode())
+        timing = raw.timing_snapshot()
+        self.assertEqual(timing['sampleCount'], 1)
+        trace = timing['recent'][0]
+        self.assertEqual(trace['phase'], 'completed')
+        self.assertEqual(trace['fragments'], 2)
+        self.assertEqual(trace['commands'], [command])
+        self.assertIsNotNone(trace['bleLoopDelayMs'])
+        self.assertIsNotNone(trace['lockWaitMs'])
     def test_disconnect_is_transport_error(self):
         raw,link=self.create()
         raw._loop.call_soon_threadsafe(raw._client.disconnect_callback,raw._client)

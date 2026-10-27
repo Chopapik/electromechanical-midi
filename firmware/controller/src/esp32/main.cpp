@@ -59,10 +59,12 @@ void drainTx(){size_t available=Serial.availableForWrite();while(available--&&tx
 
 struct BleInput { uint32_t session; uint16_t length; uint8_t bytes[512]; };
 struct BleReply { uint32_t session; uint16_t length; uint8_t bytes[160]; };
-QueueHandle_t bleRxQueue, bleTxQueue;
+QueueHandle_t bleRxQueue, bleTxQueue, bleAckQueue;
 NimBLECharacteristic* bleTx = nullptr;
+NimBLECharacteristic* bleAck = nullptr;
 std::atomic<uint32_t> bleEpoch{0}, bleRxOverflow{0}, bleTxOverflow{0};
 std::atomic<bool> bleConnected{false}, bleSubscribed{false};
+std::atomic<bool> bleAckSubscribed{false};
 std::atomic<int> notifyCode{-1};
 
 // These callbacks only copy input/update transport flags. No parser, GPIO,
@@ -85,12 +87,18 @@ class BleTxCallbacks : public NimBLECharacteristicCallbacks {
  }
  void onStatus(NimBLECharacteristic*, Status, int code) override { notifyCode.store(code); }
 } bleTxCallbacks;
+class BleAckCallbacks : public NimBLECharacteristicCallbacks {
+ void onSubscribe(NimBLECharacteristic*, ble_gap_conn_desc*, uint16_t value) override {
+  bleAckSubscribed.store((value & 1)!=0);
+ }
+ void onStatus(NimBLECharacteristic*, Status, int code) override { notifyCode.store(code); }
+} bleAckCallbacks;
 class BleServerCallbacks : public NimBLEServerCallbacks {
  void onConnect(NimBLEServer*) override {
-  bleSubscribed.store(false); bleEpoch.fetch_add(1); bleConnected.store(true);
+  bleSubscribed.store(false); bleAckSubscribed.store(false); bleEpoch.fetch_add(1); bleConnected.store(true);
  }
  void onDisconnect(NimBLEServer*) override {
-  bleConnected.store(false); bleSubscribed.store(false); bleEpoch.fetch_add(1);
+  bleConnected.store(false); bleSubscribed.store(false); bleAckSubscribed.store(false); bleEpoch.fetch_add(1);
  }
 } bleServerCallbacks;
 
@@ -105,7 +113,10 @@ public:
   size_t count=strlen(line);
   if (count>=sizeof(packet.bytes)) { bleTxOverflow.store(epoch); return; }
   memcpy(packet.bytes,line,count);packet.bytes[count]='\n';packet.length=count+1;
-  if (xQueueSend(bleTxQueue,&packet,0)!=pdTRUE) bleTxOverflow.store(epoch);
+  // Bounded priority mailbox. Old clients without the new subscription still
+  // receive SYNCED via NUS; existing STOPPED/POWER confirmations stay on NUS.
+  auto target=(!strncmp(line,"SYNCED ",7) && bleAckSubscribed.load())?bleAckQueue:bleTxQueue;
+  if (xQueueSend(target,&packet,0)!=pdTRUE) bleTxOverflow.store(epoch);
  }
 } replies;
 class TestLed : public TestOutput {
@@ -119,11 +130,22 @@ CommandProtocol protocol(ctrl,replies,testLed);
 bool currentBleSession(uint32_t epoch) {
  return bleConnected.load() && bleSubscribed.load() && epoch==bleEpoch.load();
 }
-void bleNotify(const BleReply& packet) {
+void bleNotify(const BleReply& packet, NimBLECharacteristic* output=nullptr);
+void drainBleAcks() {
+ BleReply ack{};
+ while(xQueueReceive(bleAckQueue,&ack,0)==pdTRUE) {
+  if(bleAckSubscribed.load()) bleNotify(ack,bleAck);
+ }
+}
+void bleNotify(const BleReply& packet, NimBLECharacteristic* output) {
+ if(!output) output=bleTx;
  for(size_t offset=0;offset<packet.length && currentBleSession(packet.session);) {
+  // Run only on core-0 TX worker, between telemetry fragments. ACK has its own
+  // characteristic so a partial STATUS line remains byte-for-byte intact.
+  if(output==bleTx) drainBleAcks();
   size_t count=packet.length-offset; if(count>20) count=20; // Works with MTU=23.
   notifyCode.store(-1);
-  bleTx->notify(packet.bytes+offset,count);
+  output->notify(packet.bytes+offset,count);
   // The stack reports completion asynchronously from its own task. Do not
   // retransmit a fragment just because that callback has not run yet.
   uint32_t started=millis();
@@ -136,6 +158,7 @@ void bleNotify(const BleReply& packet) {
 }
 void bleTransmitTask(void*) {
  for(;;) {
+  drainBleAcks();
   BleReply packet{};
   if(xQueueReceive(bleTxQueue,&packet,pdMS_TO_TICKS(20))==pdTRUE) bleNotify(packet);
   uint32_t epoch=bleEpoch.load();
@@ -149,7 +172,8 @@ void bleTransmitTask(void*) {
 void beginBle() {
  bleRxQueue=xQueueCreate(8,sizeof(BleInput));
  bleTxQueue=xQueueCreate(32,sizeof(BleReply));
- if(!bleRxQueue || !bleTxQueue) { queue("ERR BLE_INIT"); return; }
+ bleAckQueue=xQueueCreate(8,sizeof(BleReply));
+ if(!bleRxQueue || !bleTxQueue || !bleAckQueue) { queue("ERR BLE_INIT"); return; }
  NimBLEDevice::init(ble::name);
  auto* server=NimBLEDevice::createServer();server->setCallbacks(&bleServerCallbacks,false);
  server->advertiseOnDisconnect(true);
@@ -158,6 +182,8 @@ void beginBle() {
  rx->setCallbacks(&bleRxCallbacks);
  bleTx=service->createCharacteristic(ble::tx,NIMBLE_PROPERTY::NOTIFY,160);
  bleTx->setCallbacks(&bleTxCallbacks);
+ bleAck=service->createCharacteristic(ble::ack,NIMBLE_PROPERTY::NOTIFY,20);
+ bleAck->setCallbacks(&bleAckCallbacks);
  service->start();
  if(xTaskCreatePinnedToCore(bleTransmitTask,"ble-tx",4096,nullptr,1,nullptr,0)!=pdPASS) {
   queue("ERR BLE_INIT");return;

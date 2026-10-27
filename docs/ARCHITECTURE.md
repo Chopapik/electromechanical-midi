@@ -282,6 +282,30 @@ Bramka nie zamienia BLE na Serial. Można zainstalować LaunchAgent:
 Plik usługi i logi wskazuje instalator; nie uruchamiaj drugiej instancji na tym
 samym porcie. Kod instalatora: [ble_gateway.py](../host/ble_gateway.py).
 
+Nowe firmware udostępnia obok NUS RX/TX charakterystykę notify
+`6E400004-B5A3-F393-E0A9-E50E24DCCA9E` dla barier `SYNC <token>` →
+`SYNCED <token>`. Host najpierw sprawdza jej obecność i potwierdza pustą barierę.
+Następnie wysyła ograniczoną grupę pełnych komend przez write without response,
+dopisuje SYNC i czeka na właściwy token przed następną grupą. Potwierdzenie
+powstaje w loopTask po parsowaniu wcześniejszych bajtów, nie w callbacku GATT.
+To usuwa oczekiwanie na ATT Write Response w CoreBluetooth; **nie oznacza**
+potwierdzenia poprawności każdej komendy, ukończenia ruchu ani pomiaru napięcia.
+ERR oraz osobne STOPPED/POWER nadal przechodzą przez istniejący parser NUS.
+
+ACK ma osobną, ograniczoną kolejkę i pierwszeństwo między fragmentami STATUS.
+Nie rozcina linii NUS, nie dotyka GPIO i nie odświeża watchdoga. Jedna grupa
+zajmuje najwyżej sześć fragmentów przy MTU=23, poniżej ośmiu miejsc RX. Utrata
+pakietu przez RX overflow unieważnia kolejne ACK do reconnect. Brak zgodnego ACK
+przerywa sesję; nie ma automatycznego ponawiania komend muzycznych. Pozostają
+limit wieku 250 ms, priorytet STOP, watchdog i brak odtwarzania po reconnect.
+
+Starszy firmware bez nowej charakterystyki używa dotychczasowych zapisów ATT
+z odpowiedzią. Bramka loguje `delivery=execution-ack` lub `att-response (legacy)`.
+Sama aktualizacja kontenera nie aktywuje nowego transportu w ESP32: potrzebne
+są osobno autoryzowany safe upload i restart natywnej bramki. Charakterystyka
+obecna, ale niedziałająca, kończy połączenie błędem zamiast cichego fallbacku.
+[Diagnoza i zakres weryfikacji](research/ble-overrun-diagnosis.md).
+
 Bez prób łączenia ze sprzętem:
 
 ```sh

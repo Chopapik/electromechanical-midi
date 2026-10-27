@@ -324,6 +324,41 @@ Telemetria `/api/monitor/raw` pokazuje ruch komend; nie jest analizatorem STEP
 ani pomiarem prądu. Zapisuj wersję kodu, profil, kanał, zasilanie, czas, temperaturę,
 prąd i metodę pomiaru przy każdej nowej kwalifikacji sprzętu.
 
+### Cichy test BLE PING/PONG
+
+[probe_ble_ping.py](../scripts/probe_ble_ping.py) nie uruchamia instrumentów:
+akceptuje wyłącznie `PING` i skorelowany `ALL STOP`. Nie wysyła HOME, PLAY,
+HIT ani POWER. Test wymaga wyłącznej sesji bramki, dlatego zatrzymaj aplikację
+przed jego uruchomieniem; nie wykonuj procedury w trakcie odtwarzania.
+
+```sh
+docker compose stop orchestra
+.venv/bin/python scripts/probe_ble_ping.py --seconds 120 --output /tmp/ble-ping.json
+docker compose up -d --build orchestra
+```
+
+Raport nie jest nadpisywany. Brak początkowego STOP ACK lub pierwszy błąd
+komunikacji przerywa test bez ponawiania; brak końcowego ACK jest jawnie zapisany.
+RTT zawiera drogę powrotną notify i nie jest tym samym co guard 250 ms.
+Po zmianie kodu natywnej bramki przeładuj jej usługę przy zatrzymanej aplikacji;
+sam rebuild Dockera nie przeładowuje procesu macOS. Log `.runtime/ble-gateway.log`
+zawiera przy błędzie `BLE_TIMING`: worker/pętle/mutex/GATT i ograniczoną historię.
+[Wynik rzeczywistej cichej próby i ograniczenia pomiaru](research/ble-overrun-diagnosis.md).
+
+Po osobno autoryzowanym safe uploadzie firmware z charakterystyką ACK i restarcie
+natywnej bramki sprawdź w jej logu `delivery=execution-ack`. Dopiero ten wpis
+potwierdza wybór nowej ścieżki; `att-response (legacy)` oznacza stary firmware
+lub brak nowej charakterystyki w odkrytych usługach. Nie traktuj samego builda
+PlatformIO ani obrazu Dockera jako aktualizacji fizycznego ESP32. W razie
+utrzymującego się starego cache usług sprawdź ponowne odkrycie usług po reconnect.
+
+W nowym trybie wewnętrzny transport dodaje wyłącznie read-only `SYNC <token>`
+i czeka na `SYNCED <token>` z osobnego notify. Probe nadal nie wysyła PLAY,
+HOME, HIT ani POWER. Brak potwierdzenia przerywa próbę bez automatycznego retry;
+`SYNCED` nie zastępuje wymaganego `STOPPED <token>`. Pierwszą ocenę wykonaj
+tym samym cichym PING/PONG, bez muzyki i bez zmiany ATX. Porównuj osobno
+czas oczekiwania na ACK (`executionAckWaitMs`) i zakończenie samego GATT.
+
 ## Weryfikacja zmiany mapy
 
 Procedura offline (bez flashowania i obciążeń):

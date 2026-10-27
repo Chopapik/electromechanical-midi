@@ -8,6 +8,8 @@ constexpr const char* name = "Electromechanical-MIDI";
 constexpr const char* service = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr const char* rx = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr const char* tx = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
+// Separate ACK stream: never insert a receipt in a fragmented STATUS line.
+constexpr const char* ack = "6E400004-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr uint8_t testPin = 27;
 }
 
@@ -53,15 +55,16 @@ struct CommandProtocol {
  bool testOn = false;
  CommandLine usbLine, bleLine;
  uint32_t bleSession = 0;
+ bool bleInputHealthy = true;
  uint32_t homeSession[map::fddCount] = {};
  Transport homeOwner[map::fddCount] = {};
  CommandProtocol(Controller& c, ResponseSink& s, TestOutput& t): ctrl(c), sink(s), led(t) {}
  void reply(Transport origin, const char* line) { sink.send(origin, line, origin == Transport::Ble ? bleSession : 0); }
  void beginTest() { testOn = false; led.set(false); }
  void newBleSession(uint32_t session) {
-  if (bleSession != session) { bleSession = session; bleLine.reset(); }
+  if (bleSession != session) { bleSession = session; bleLine.reset(); bleInputHealthy=true; }
  }
- void bleOverflow() { bleLine.discardUntilNewline(); reply(Transport::Ble, "ERR RX_OVERFLOW"); }
+ void bleOverflow() { bleInputHealthy=false;bleLine.discardUntilNewline(); reply(Transport::Ble, "ERR RX_OVERFLOW"); }
  void input(Transport origin, uint8_t ch) {
   CommandLine& line = origin == Transport::Usb ? usbLine : bleLine;
   switch (line.push(ch)) {
@@ -73,6 +76,18 @@ struct CommandProtocol {
  }
  void execute(Transport origin, const char* line) {
   if (strlen(line) >= sizeof(usbLine.text)) { reply(origin, "ERR LINE_TOO_LONG"); return; }
+  // Read-only barrier, reached only after preceding bytes have been parsed on
+  // loopTask. It neither drives instruments nor refreshes the motor watchdog.
+  if (!strncmp(line,"SYNC ",5)) {
+   // A dropped RX packet invalidates every following receipt in this epoch.
+   // A later SYNC must not conceal a gap; reconnect is required for new credit.
+   if(origin==Transport::Ble && !bleInputHealthy) {reply(origin,"ERR RX_OVERFLOW");return;}
+   const char* token=line+5;size_t length=strlen(token);
+   if (!length || length>10 || strspn(token,"0123456789")!=length) {
+    reply(origin,"ERR VALUE");return;
+   }
+   char ack[24];snprintf(ack,sizeof(ack),"SYNCED %s",token);reply(origin,ack);return;
+  }
   if (!strncmp(line, "TEST", 4) && (line[4] == ' ' || line[4] == 0)) {
    if (!strcmp(line, "TEST ON")) testOn = true;
    else if (!strcmp(line, "TEST OFF")) testOn = false;

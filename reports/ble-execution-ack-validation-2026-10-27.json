@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "date": "2026-10-27",
+  "scope": "offline transport fix validation; no physical execution-ACK trial yet",
+  "implementation": {
+    "deliveryMode": "execution-ack after advertised characteristic and verified SYNC",
+    "ackCharacteristic": "6E400004-B5A3-F393-E0A9-E50E24DCCA9E",
+    "command": "SYNC <1..10 decimal digits>",
+    "receipt": "SYNCED <same token>",
+    "receiptMeaning": "preceding bytes processed by dispatcher, not command success, movement completion or voltage measurement",
+    "maxCommandAgeMs": 250,
+    "executionAckTimeoutMs": 250,
+    "pendingLimitLines": 512,
+    "maxInflightGroups": 1,
+    "maxFragmentsAtMtu23": 6,
+    "firmwareRxSlots": 8,
+    "musicalRetry": false,
+    "legacyFallback": "ATT response only if ACK characteristic is absent",
+    "advertisedButBrokenAck": "fail connection, no silent fallback",
+    "firmwareRxOverflow": "invalidate further SYNC ACK until new BLE epoch",
+    "motorTimingChanged": false,
+    "arrangementChanged": false,
+    "gpioChanged": false
+  },
+  "validation": {
+    "hostTests": {
+      "count": 944,
+      "result": "PASS",
+      "log": "/tmp/ble-fix-host-tests-2026-10-27.log"
+    },
+    "focusedBleTests": {
+      "count": 34,
+      "result": "PASS",
+      "log": "/tmp/ble-fix-focused-tests-2026-10-27.log"
+    },
+    "architecture": {
+      "modules": 57,
+      "result": "PASS"
+    },
+    "platformioEsp32": {
+      "result": "PASS",
+      "flashBytes": 619241,
+      "ramBytes": 39188,
+      "log": "/tmp/ble-fix-platformio-2026-10-27.log"
+    },
+    "simulationCases": [
+      "delayed ATT response with timely peripheral receipt",
+      "missing/wrong/duplicate ACK",
+      "no fallback after failed capability verification",
+      "MTU 23 fragmentation and independent NR capacity",
+      "atomic concurrent batches",
+      "disconnect while waiting for receipt",
+      "ACK interleaved with STATUS fragments on separate characteristic",
+      "bounded ACK queue",
+      "RX overflow invalidates credit",
+      "SYNC does not refresh motor watchdog",
+      "legacy PING/STATUS/STOP unchanged"
+    ],
+    "newTransportPhysicalTrial": false,
+    "esp32Flashed": false,
+    "instrumentsStartedByVerification": false,
+    "powerOnSent": false
+  },
+  "additionalObservation": {
+    "source": "existing application heartbeat, legacy mode before native gateway reload; not a new physical probe",
+    "reason": "BLE realtime overrun: 264 ms delivery lag, 0 queued; playback stopped",
+    "command": [
+      "PING"
+    ],
+    "bleLoopDelayMs": 168.57,
+    "gattTotalMs": 86.598,
+    "maxBleLoopLagMs": 162.696,
+    "interpretation": "Local BLE-thread scheduling can also contribute. New receipts remove ATT-response dependency but do not guarantee immunity to OS stalls or radio loss."
+  },
+  "deployment": {
+    "containerRebuilt": true,
+    "containerHealth": "healthy",
+    "nativeGatewayReloaded": true,
+    "runningDeliveryMode": "att-response (legacy); ESP32 firmware not uploaded",
+    "sourceSha256": {
+      "host/ble_gateway.py": "2bc8a1bd59e457f3c7549f2c2d6377d3338f483e39d5029bd322f86b5b03ae7c",
+      "host/ble_link.py": "0168f06454b38249dbcaf1dcc18fb401c7767b759596a41a1df229d2f142ac69",
+      "host/ble_diagnostics.py": "6db5fad25f6a05a62444ef0a1cf69e44ee5195a254d4053cf0bb9eb27a6adea0",
+      "firmware/controller/include/orchestra_protocol.h": "f7557952643564f365239b2878232755c2b4abe6950c8c494115e993368bd5ae",
+      "firmware/controller/src/esp32/main.cpp": "07199ff5a40f5ec91de4f6038044c785753d90309a47719d09f4fe02a9aa00ec"
+    },
+    "containerSourceHashesMatch": true,
+    "recovery": {
+      "file": "0032-01-radiohead_1997-airbag-[k]-16.mid",
+      "arrangementPreset": "universal",
+      "state": "paused",
+      "position": 0.4589928740169853,
+      "output": {
+        "mode": "REAL",
+        "connected": true,
+        "unknown": false,
+        "message": "ESP32 BLE connected",
+        "muted": [
+          "hdd_vcm-1",
+          "hdd_vcm-2",
+          "hdd_vcm-3"
+        ]
+      }
+    },
+    "logicalAtx": "ON, unchanged by verification; not a voltage measurement",
+    "uploadDecision": "User explicitly requested leaving the prepared fix without upload"
+  },
+  "nextRequiredStep": "Connect USB, authorize safe_upload.py; verify delivery=execution-ack; compare quiet PING/PONG without actuators. Do not claim physical resolution before this test."
+}

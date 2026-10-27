@@ -1,18 +1,23 @@
 """NUS byte transport beneath the existing OrchestraLink command/status parser."""
 import asyncio
+import contextlib
 import os
 import select
 import socket
+import secrets
 import threading
 import time
 
 from floppy_link import SerialLinkError
 from orchestra_link import OrchestraLink
+from ble_diagnostics import WriteHistory, LoopTiming
 
 NAME = 'Electromechanical-MIDI'
 SERVICE = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E'
 RX = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E'
 TX = '6E400003-B5A3-F393-E0A9-E50E24DCCA9E'
+ACK = '6E400004-B5A3-F393-E0A9-E50E24DCCA9E'
+APPLICATION_ACK_TIMEOUT = .250
 
 
 class BleBytes:
@@ -27,6 +32,7 @@ class BleBytes:
         self._error = None
         self._ready = threading.Event()
         self._closed = False
+        self._write_history = WriteHistory()
         self._loop = asyncio.new_event_loop()
         self._thread = threading.Thread(target=self._run, name='orchestra-ble', daemon=True)
         self._thread.start()
@@ -47,6 +53,12 @@ class BleBytes:
         finally:
             self._closed = True
             self._ready.set()
+            # Disconnect may happen while a writer waits for an execution ACK.
+            # Resolve/cancel those futures before closing their owning loop.
+            pending = asyncio.all_tasks(self._loop)
+            for task in pending: task.cancel()
+            if pending:
+                self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
             self._loop.close()
 
     async def _session(self):
@@ -65,9 +77,34 @@ class BleBytes:
             # One ordinary ATT write, never a long/prepared write. Keep the
             # conservative 20-byte fallback for clients reporting MTU=23.
             self.write_size = max(20, min(512, getattr(client, 'mtu_size', 23) - 3))
+            self._application_ack = False
             await client.start_notify(TX, self._notification)
+            services = getattr(client, 'services', None)
+            if services is not None and services.get_characteristic(ACK) is not None:
+                # New firmware advertises a separate execution-barrier stream.
+                # Do not just switch to unconfirmed writes on legacy firmware.
+                self._ack_buffer = bytearray()
+                self._pending_ack = None
+                self._ack_sequence = secrets.randbelow(1_000_000_000)+1
+                rx = services.get_characteristic(RX)
+                self.write_size = min(self.write_size, rx.max_write_without_response_size)
+                if self.write_size < 20:
+                    raise SerialLinkError('BLE: invalid write-without-response capacity')
+                await client.start_notify(ACK, self._ack_notification)
+                await self._ack_exchange(b'')  # Read-only capability verification.
+                self._application_ack = True
+            self._loop_timing = LoopTiming()
+            async def monitor_loop():
+                while True:
+                    await asyncio.sleep(self._loop_timing.interval)
+                    self._loop_timing.tick()
+            monitor = asyncio.create_task(monitor_loop())
             self._ready.set()
-            await self._end.wait()
+            try:
+                await self._end.wait()
+            finally:
+                monitor.cancel()
+                with contextlib.suppress(asyncio.CancelledError): await monitor
 
     def _notification(self, _characteristic, data):
         with self._lock:
@@ -76,6 +113,61 @@ class BleBytes:
                 self._end.set()
                 return
             self._buffer.extend(data)
+
+    def _ack_notification(self, _characteristic, data):
+        self._ack_buffer.extend(data)
+        if len(self._ack_buffer) > 128:
+            self._error = SerialLinkError('BLE: execution ACK overflow')
+            self._end.set()
+            return
+        while b'\n' in self._ack_buffer:
+            line, _, rest = self._ack_buffer.partition(b'\n')
+            self._ack_buffer[:] = rest
+            pending = self._pending_ack
+            # A duplicate/old/wrong token never releases the next packet.
+            if pending and line.rstrip(b'\r') == b'SYNCED '+pending[0]:
+                if not pending[1].done(): pending[1].set_result(None)
+
+    async def _ack_exchange(self, data, trace=None):
+        self._ack_sequence += 1
+        if self._ack_sequence > 9_999_999_999:
+            raise SerialLinkError('BLE: execution ACK sequence exhausted')
+        token = str(self._ack_sequence).encode('ascii')
+        future = asyncio.get_running_loop().create_future()
+        self._pending_ack = (token, future)
+        async def exchange():
+            framed = data+b'SYNC '+token+b'\n'
+            for offset in range(0, len(framed), self.write_size):
+                if trace: trace.mark('gatt_started')
+                await self._client.write_gatt_char(RX, framed[offset:offset+self.write_size], response=False)
+                if trace: trace.fragment_finished()
+            if trace: trace.mark('ack_wait')
+            await future
+            if trace: trace.mark('ack_received')
+        try:
+            await asyncio.wait_for(exchange(), APPLICATION_ACK_TIMEOUT)
+        except asyncio.TimeoutError as exc:
+            raise SerialLinkError('BLE realtime overrun: execution ACK timeout (250 ms); playback stopped') from exc
+        finally:
+            self._pending_ack = None
+
+    def _ack_groups(self, data):
+        # Validate the entire write before sending anything. Each group ends at
+        # a command boundary; SYNC must never become part of a fragmented line.
+        lines = data.splitlines(keepends=True)
+        if not data.endswith(b'\n') or any(not line.endswith(b'\n') or len(line)>96
+                or b'\r' in line or any(ch<32 or ch>126 for ch in line[:-1]) for line in lines):
+            raise SerialLinkError('BLE: expected complete ASCII protocol lines (max 95 bytes)')
+        # MTU=23: at most 96+16 bytes, six ATT writes, below the 8-slot RX queue.
+        # Wider MTU: one ordinary ATT packet including the longest SYNC footer.
+        capacity = max(96, self.write_size-16)
+        groups, group = [], b''
+        for line in lines:
+            if group and len(group)+len(line)>capacity:
+                groups.append(group); group=b''
+            group += line
+        if group: groups.append(group)
+        return groups
 
     def _check(self):
         if self._error:
@@ -95,20 +187,46 @@ class BleBytes:
             data = bytes(self._buffer[:count]); del self._buffer[:count]
             return data
 
-    async def _write(self, data):
+    async def _write(self, data, trace=None):
+        if trace: trace.mark('ble_loop')
         async with self._write_lock:
+            if trace: trace.mark('lock_acquired')
+            if getattr(self, '_application_ack', False):
+                groups = self._ack_groups(data)
+                try:
+                    for group in groups:
+                        await self._ack_exchange(group, trace)
+                except Exception:
+                    # One best-effort safety STOP, no replay of musical data.
+                    # Missing ACK is still a failed/unknown session, never success.
+                    with contextlib.suppress(Exception):
+                        await asyncio.wait_for(self._client.write_gatt_char(
+                            RX, b'ALL STOP\n', response=False), .1)
+                    raise
+                if trace: trace.mark('completed')
+                return
             # Use negotiated capacity; retain acknowledged writes and framing.
             for offset in range(0, len(data), self.write_size):
+                if trace: trace.mark('gatt_started')
                 await self._client.write_gatt_char(RX, data[offset:offset+self.write_size], response=True)
+                if trace: trace.fragment_finished()
+        if trace: trace.mark('completed')
+
+    def timing_snapshot(self):
+        return {**self._write_history.snapshot(),
+                'deliveryMode':'execution-ack' if getattr(self,'_application_ack',False) else 'att-response',
+                'bleLoop':self._loop_timing.snapshot() if hasattr(self,'_loop_timing') else None}
 
     def write(self, data):
         self._check()
-        coroutine = self._write(data)
+        trace = self._write_history.add(data)
+        coroutine = self._write(data, trace)
         future = None
         try:
             future = asyncio.run_coroutine_threadsafe(coroutine, self._loop)
             future.result(timeout=2)
         except Exception as exc:
+            trace.fail(exc)
             if future is not None: future.cancel()
             else: coroutine.close()
             self._error = SerialLinkError(f'BLE write: {exc}')

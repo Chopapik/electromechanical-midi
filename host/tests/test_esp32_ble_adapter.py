@@ -18,6 +18,7 @@ ARDUINO = r'''
 #include <deque>
 #include <utility>
 #include <cassert>
+#include <functional>
 constexpr int LOW=0,HIGH=1,INPUT=2,OUTPUT=3;
 uint32_t fakeUs=10000; int gpio[40]={}, modes[40]={}, taskCore=-1;
 std::vector<std::pair<int,int>> writes;
@@ -66,6 +67,8 @@ struct FakeSPI {
 '''
 NIMBLE = r'''
 #pragma once
+std::function<void()> onNotifyHook;
+std::vector<std::string> notifyOrder;
 struct ble_gap_conn_desc {};
 class NimBLECharacteristic;
 class NimBLEServer;
@@ -90,7 +93,9 @@ struct NimBLECharacteristic {
  void notify(const uint8_t* bytes,size_t n){
   if(failOnce){failOnce=false;callbacks->onStatus(this,NimBLECharacteristicCallbacks::SUCCESS_NOTIFY,1);return;}
   notifications.emplace_back(reinterpret_cast<const char*>(bytes),n);
+  notifyOrder.push_back(uuid);
   callbacks->onStatus(this,NimBLECharacteristicCallbacks::SUCCESS_NOTIFY,0);
+  if(onNotifyHook){auto hook=onNotifyHook;onNotifyHook=nullptr;hook();}
  }
 };
 struct NimBLEService {
@@ -222,6 +227,39 @@ int main(int argc,char** argv){
   writeBle("ALL STOP 42\n");drainInput();
   assert(!ctrl.fdd[0].playing&&uxQueueMessagesWaiting(bleTxQueue)==1);
   assert(drainBle()=="STOPPED 42\n");
+ }else if(c=="execution_ack"){
+  assert(bleAck->uuid==orchestra::ble::ack&&bleAck->properties==NIMBLE_PROPERTY::NOTIFY&&bleAck->maxLength==20);
+  bleAck->callbacks->onSubscribe(bleAck,nullptr,1);
+  assert(bleAckSubscribed.load()&&bleSubscribed.load());
+  writeBle("STATUS\nSYNC 1234567890\n");
+  assert(uxQueueMessagesWaiting(bleAckQueue)==0); // Never ACK from onWrite.
+  drainInput();assert(uxQueueMessagesWaiting(bleAckQueue)==1&&uxQueueMessagesWaiting(bleTxQueue)==17);
+  auto text=drainBle();assert(text.find("STATUS BEGIN\n")==0&&text.substr(text.size()-11)=="STATUS END\n");
+  assert(bleAck->notifications.size()==1&&bleAck->notifications[0]=="SYNCED 1234567890\n");
+  writeBle("FDD 1 ENABLE 1\nFDD 1 PLAY 220\nSYNC 2\n");ctrl.fdd[0].homed=true;drainInput();
+  assert(ctrl.fdd[0].playing);drainBleAcks();
+  assert(bleAck->notifications.back()=="SYNCED 2\n");
+  writeBle("ALL STOP 43\nSYNC 3\n");drainInput();assert(!ctrl.fdd[0].playing);
+  drainBleAcks();assert(bleAck->notifications.back()=="SYNCED 3\n");
+  bleTx->notifications.clear();assert(drainBle()=="STOPPED 43\n");
+  writeBle("SYNC 4\n");drainInput();size_t before=bleAck->notifications.size();
+  fakeServer.callbacks->onDisconnect(&fakeServer);connectBle();
+  bleAck->callbacks->onSubscribe(bleAck,nullptr,1);drainBleAcks();
+  assert(bleAck->notifications.size()==before); // Old epoch never confirms new data.
+  bleAck->callbacks->onSubscribe(bleAck,nullptr,0);assert(bleSubscribed.load());
+  writeBle("SYNC 5\n");drainInput();bleTx->notifications.clear();assert(drainBle()=="SYNCED 5\n");
+ }else if(c=="ack_during_status"){
+  bleAck->callbacks->onSubscribe(bleAck,nullptr,1);
+  writeBle("STATUS\n");drainInput();
+  onNotifyHook=[](){writeBle("SYNC 28\n");drainInput();};
+  auto text=drainBle();
+  assert(notifyOrder[0]==orchestra::ble::tx&&notifyOrder[1]==orchestra::ble::ack&&notifyOrder[2]==orchestra::ble::tx);
+  assert(text.find("STATUS BEGIN\nSTATUS CTRL ")==0&&text.substr(text.size()-11)=="STATUS END\n");
+  assert(text.find("SYNCED")==std::string::npos&&bleAck->notifications.back()=="SYNCED 28\n");
+ }else if(c=="ack_queue_bound"){
+  bleAck->callbacks->onSubscribe(bleAck,nullptr,1);
+  for(int i=0;i<9;++i){writeBle("SYNC 1\n");drainInput();}
+  assert(uxQueueMessagesWaiting(bleAckQueue)==8&&bleTxOverflow.load()==bleEpoch.load());
  }else if(c=="empty_write"){
   writeBle("");assert(uxQueueMessagesWaiting(bleRxQueue)==0);writeBle("PING\n");drainInput();assert(drainBle()=="PONG\n");
  }else assert(false);
@@ -252,7 +290,7 @@ class Esp32BleAdapterTests(unittest.TestCase):
         cls.directory.cleanup()
 
 for case in ('speaker_pnp','power','serial_boot_once', 'boot', 'callback_deferred', 'four_sleds', 'motor_deferred', 'routing', 'reconnect',
-             'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority'):
+             'stale_reply', 'overflow', 'notify', 'empty_write', 'stop_ack_priority', 'execution_ack', 'ack_during_status', 'ack_queue_bound'):
     def run(self, case=case):
         subprocess.run([str(self.binary), case], check=True, capture_output=True)
     setattr(Esp32BleAdapterTests, 'test_'+case, run)

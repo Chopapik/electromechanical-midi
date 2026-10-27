@@ -79,6 +79,7 @@ mają osobne miejsce poniżej. AGENTS.md pozostaje instrukcją pracy w repozytor
 - [Model teoretyczny i źródła producentów](research/orkiestra-model-teoretyczny.md)
 - [Dryf wykonania: diagnoza](research/diagnostics/mechanical-drift/REPORT.md)
   i [raport poprawki](research/diagnostics/mechanical-drift/FIX_REPORT.md)
+- [BLE realtime overrun: cichy test PING/PONG i pomiar etapów zapisu](research/ble-overrun-diagnosis.md)
 - [Source Continuity / Creep](research/benchmarks/SOURCE_CONTINUITY_CREEP.md)
 - [Artykulacja tonalna](research/benchmarks/TONAL_ARTICULATION_REPORT.md),
   [Extreme](research/benchmarks/TONAL_EXTREME_DIAGNOSTIC.md),
