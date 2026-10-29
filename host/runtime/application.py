@@ -1,5 +1,7 @@
 """Application composition; musical planning stays pure and offline."""
 import contextlib
+import copy
+import threading
 import time
 from midi_source import MidiSource
 from arrangement_presets import is_preset
@@ -25,6 +27,9 @@ class Application:
         self.plan=None
         self.timeline=None
         self.revision=0
+        self.planning=None
+        self._planning_lock=threading.Lock()
+        self._planning_generation=0
 
     def require_available(self):
         if self.service.busy:
@@ -32,6 +37,7 @@ class Application:
 
     def play(self, session):
         self.require_available()
+        if self.planning: raise ValueError('Trwa przygotowanie aranżacji')
         if self.router.mode=='VIRTUAL':
             self.virtual.claim_owner(session,exclusive=True)
         if self.player.owner!='orchestra' or self.player.timeline is not self.timeline:
@@ -44,7 +50,9 @@ class Application:
 
     def stop(self):
         self.require_available()
-        self.player.stop()
+        with self.player.lock:
+            self._planning_generation+=1
+            self.player.stop()
 
     def seek(self, position):
         self.require_available()
@@ -120,44 +128,68 @@ class Application:
                 self.lab.leave(session)
 
     def close(self):
+        with self.player.lock: self._planning_generation+=1
         with contextlib.suppress(Exception):
             self.player.close()
         self.service.shutdown()
         self.real.detach()
 
     def load(self, path):
-        source=MidiSource(path)
-        plan=arrange(source,self.registry)
-        timeline=compile_plan(plan)
-        with self.player.lock:
-            self.player.load(timeline)
-            self.lab.session=None
-            self.source=source
-            self.plan=plan
-            self.timeline=timeline
-            self.revision+=1
+        self._prepare(path=path)
+
     def set_preset(self, preset):
         if not is_preset(preset):
             raise ValueError('Unknown arrangement preset')
-        with self.player.lock:
-            if self.service.busy:
-                raise ValueError('DeviceService jest zajęty')
-            self.player.stop()  # STOP confirmation/cancellation precedes any planning.
-            parameters=self.registry.document.setdefault('parameters',{})
-            old=parameters.get('arrangementPreset','balanced')
-            parameters['arrangementPreset']=preset
+        self._prepare(preset=preset)
+
+    def _prepare(self, *, path=None, preset=None):
+        # Planning is CPU work: never hold the playback/telemetry lock for it.
+        # Work on a private registry, publishing only a complete successful plan.
+        with self._planning_lock:
+            with self.player.lock:
+                self.require_available()
+                self.planning={'stage':'stopping','label':'Zatrzymywanie przed przygotowaniem aranżacji'}
+                generation=self._planning_generation
             try:
-                if self.source:
-                    plan=arrange(self.source,self.registry)
-                    timeline=compile_plan(plan)
-                    self.player.load(timeline)
-                    self.plan=plan
-                    self.timeline=timeline
-                    self.lab.session=None
-                self.revision+=1
-            except Exception:
-                parameters['arrangementPreset']=old
-                raise
+                with self.player.lock:
+                    self.player.stop()
+                    registry=copy.copy(self.registry)
+                    registry.document=copy.deepcopy(self.registry.document)
+                    registry.devices=registry.document['devices']
+                    registry.by_id={d['id']:d for d in registry.devices}
+                    source=self.source
+                    if preset is not None:
+                        registry.document.setdefault('parameters',{})['arrangementPreset']=preset
+                    self.planning={'stage':'planning','label':'Obliczanie aranżacji'}
+                if path is not None: source=MidiSource(path)
+                plan=arrange(source,registry) if source else None
+                with self.player.lock:
+                    if generation!=self._planning_generation:
+                        raise ValueError('Przygotowanie anulowane przez STOP; poprzedni plan zachowany')
+                    self.planning={'stage':'compiling','label':'Budowanie osi czasu'}
+                timeline=compile_plan(plan) if plan else None
+                with self.player.lock:
+                    if generation!=self._planning_generation:
+                        raise ValueError('Przygotowanie anulowane przez STOP; poprzedni plan zachowany')
+                    self.require_available()
+                    if timeline is not None:
+                        self.player.load(timeline)
+                        self.lab.session=None
+                        self.source=source
+                        self.plan=plan
+                        self.timeline=timeline
+                    if preset is not None:
+                        self.registry.document.setdefault('parameters',{})['arrangementPreset']=preset
+                    self.player.context={'file':source.path.name if source else None,
+                        'preset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced')}
+                    self.revision+=1
+            finally:
+                with self.player.lock: self.planning=None
+
+    def mute_group(self, identifiers, muted):
+        self.require_available()
+        self.player.mute_group(identifiers, muted)
+
     def set_speaker_volume(self, ident, output, value):
         with self.player.lock:
             if self.service.busy:
@@ -183,6 +215,7 @@ class Application:
         if self.timeline:
             self.player.load(self.timeline)
     def snapshot(self):
-        return {**self.player.snapshot(),'file':self.source.path.name if self.source else None,
-                'revision':self.revision,'arrangementPreset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced'),'devices':self.registry.catalog(),'service':self.service.status(),
+        with self.player.lock:
+            return {**self.player.snapshot(),'file':self.source.path.name if self.source else None,
+                'diagnostics':self.player.diagnostics.status(),'planning':self.planning,'revision':self.revision,'arrangementPreset':self.registry.document.get('parameters',{}).get('arrangementPreset','balanced'),'devices':self.registry.catalog(),'service':self.service.status(),
                 'audioOwner':self.virtual.owner,'laboratory':self.lab.snapshot()}

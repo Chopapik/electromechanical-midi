@@ -46,6 +46,12 @@ class MuteCommand(Request):
     muted: bool
 
 
+class MuteGroupCommand(Request):
+    action: Literal['mute_group']
+    deviceIds: list[str]
+    muted: bool
+
+
 class WaveformCommand(Request):
     action: Literal['speaker_waveform']
     deviceId: str
@@ -90,6 +96,14 @@ class AudioErrorCommand(Request):
     message: NotRequired[str]
 
 
+class ClientErrorCommand(Request):
+    action: Literal['client_error']
+    kind: str
+    message: str
+    stack: NotRequired[str]
+    occurredAt: NotRequired[str]
+
+
 class AudioAckCommand(Request):
     action: Literal['audio_ack']
     token: str
@@ -101,15 +115,15 @@ class SyncCommand(Request):
 
 
 ClientCommand = (SimpleCommand | FileCommand | PresetCommand | SeekCommand |
-                 OutputCommand | MuteCommand | WaveformCommand | VolumeCommand |
+                 OutputCommand | MuteCommand | MuteGroupCommand | WaveformCommand | VolumeCommand |
                  LabCommand | LabStopCommand | ServiceCommand | AudioErrorCommand |
-                 AudioAckCommand | SyncCommand)
+                 AudioAckCommand | SyncCommand | ClientErrorCommand)
 
 COMMAND_ACTIONS = frozenset((
     'play', 'pause', 'stop', 'lab_enter', 'lab_leave', 'set_file',
-    'arrangement_preset', 'seek', 'output', 'mute', 'speaker_waveform',
+    'arrangement_preset', 'seek', 'output', 'mute', 'mute_group', 'speaker_waveform',
     'speaker_volume', 'lab_test', 'lab_update', 'lab_stop', 'service',
-    'audio_error', 'audio_ack', 'sync',
+    'audio_error', 'audio_ack', 'sync', 'client_error',
 ))
 
 
@@ -147,6 +161,9 @@ def validate_command(raw: object) -> ClientCommand:
         _field(raw, 'position', _number, 'position')
     elif action == 'output':
         _field(raw, 'mode', lambda value:isinstance(value, str) and value in ('REAL', 'VIRTUAL'), 'output', 'Unknown output')
+    elif action == 'mute_group':
+        _field(raw, 'deviceIds', lambda value:isinstance(value,list) and 0<len(value)<=32 and all(isinstance(item,str) for item in value), 'deviceIds')
+        _field(raw, 'muted', lambda value:isinstance(value,bool), 'mute', 'mute must be boolean')
     elif action == 'mute':
         _field(raw, 'muted', lambda value:isinstance(value, bool), 'mute', 'mute must be boolean')
     elif action == 'speaker_waveform':
@@ -177,6 +194,11 @@ def validate_command(raw: object) -> ClientCommand:
         _field(raw, 'epoch', lambda value:isinstance(value, int) and not isinstance(value, bool), 'epoch')
         if 'message' in raw:
             _field(raw, 'message', lambda value:isinstance(value, str), 'audio error')
+    elif action == 'client_error':
+        for field in ('kind','message'):
+            _field(raw,field,lambda value:isinstance(value,str) and len(value)<=4000,field)
+        if 'occurredAt' in raw:_field(raw,'occurredAt',lambda value:isinstance(value,str) and len(value)<=100,'occurredAt')
+        if 'stack' in raw:_field(raw,'stack',lambda value:isinstance(value,str) and len(value)<=4000,'stack')
     elif action == 'audio_ack':
         _field(raw, 'token', lambda value:isinstance(value, str), 'audio token')
     elif action == 'sync':

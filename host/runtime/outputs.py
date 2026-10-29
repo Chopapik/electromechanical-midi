@@ -257,7 +257,7 @@ class RealOutput:
             return True
         now=time.monotonic()
         if now>=self.homing_deadline:
-            raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.homing_devices))
+            raise OutputError('Homing TRACK0 nie został potwierdzony: '+', '.join(self.registry.by_id[ident]['name'] for ident in self.homing_devices))
         generations=(self.link.status_generation,
                      getattr(self.link, 'extended_status_generation', 0))
         require_base,require_extended=self.homing_status_requirements
@@ -266,8 +266,9 @@ class RealOutput:
         if self.homing_status_pending and complete:
             self.homing_status_pending=False
             states=[self.link.device_status.get(self.registry.by_id[ident]['lane'].upper(),{}) for ident in self.homing_devices]
-            if all(s.get('enabled')=='1' and s.get('homed')=='1' and s.get('homing')=='0' for s in states):
-                self.homing_devices=()
+            self.homing_devices=tuple(ident for ident,state in zip(self.homing_devices,states)
+                if not (state.get('enabled')=='1' and state.get('homed')=='1' and state.get('homing')=='0'))
+            if not self.homing_devices:
                 return True
         # Never overlap fragmented BLE STATUS transactions. Player ticks keep
         # STOP responsive and retain watchdog PING while waiting for TRACK0.

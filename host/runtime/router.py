@@ -27,6 +27,19 @@ class Router:
             self.muted.add(ident)  # Fail closed even when physical STOP fails.
             self.output.stop_device(ident)
         else: self.muted.discard(ident)
+    def mute_group(self, identifiers, muted):
+        if not isinstance(identifiers,list) or not identifiers or any(
+                not isinstance(ident,str) or ident not in self.registry.by_id for ident in identifiers):
+            raise ValueError('Unknown device group')
+        if not isinstance(muted,bool): raise ValueError('mute must be boolean')
+        identifiers=list(dict.fromkeys(identifiers))
+        if muted:
+            # Close every gate before the first physical STOP. A partial failure
+            # must never leave the rest of the requested group playing later.
+            self.muted.update(identifiers)
+            for ident in identifiers: self.output.stop_device(ident)
+        else: self.muted.difference_update(identifiers)
+
     def dispatch(self, commands, **clock):
         accepted=self.accepted(commands)
         if accepted: self.output.dispatch(accepted,**clock)

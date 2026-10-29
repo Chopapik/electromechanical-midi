@@ -11,15 +11,17 @@ import threading
 import time
 from .compiler import ExecutionTimeline
 from .outputs import OutputError
+from diagnostics import NullDiagnostics
 
 class Player:
     def __init__(self, router, clock=time.monotonic):
         self.router=router; self.clock=clock
         self.lock=threading.RLock()
-        self.timeline=ExecutionTimeline(); self.lanes={}
+        self.timeline=ExecutionTimeline(); self.lanes={}; self.command_times=[]; self.lane_times={}
         self.state='stopped'; self.owner='orchestra'
         self.base=0.; self.origin=0.; self.index=0; self.epoch=0
-        self.error=None; self.dropped=0; self.max_lag=0.
+        self.diagnostics=NullDiagnostics()
+        self.error=None; self.failure=None; self.context={}; self.dropped=0; self.max_lag=0.
         self.running=False
         self.homing=False
         self.laboratory=None
@@ -49,6 +51,8 @@ class Player:
             self.select_owner(owner); self.timeline=timeline; self.base=0.; self.index=0
             self.lanes={}
             for c in timeline.commands: self.lanes.setdefault(c.device_id,[]).append(c)
+            self.command_times=[c.time for c in timeline.commands]
+            self.lane_times={ident:[c.time for c in commands] for ident,commands in self.lanes.items()}
     def play(self):
         with self.lock:
             if self.owner=='service': raise OutputError('Sprzęt jest zajęty przez DeviceService')
@@ -58,7 +62,7 @@ class Player:
                 self.homing=True;self.error=None;self.epoch+=1
                 return
             if self.base>=self.timeline.duration: self.base=0.
-            self.index=bisect.bisect_left([c.time for c in self.timeline.commands],self.base)
+            self.index=bisect.bisect_left(self.command_times,self.base)
             self.epoch+=1; self.error=None
             # Browser receives a short preparation window, with no shift of MIDI timing.
             self.origin=self.clock()-self.base+(.12 if self.router.mode=='VIRTUAL' else 0.)
@@ -99,6 +103,17 @@ class Player:
                 self.router.mute(ident,muted)
             except Exception as exc:
                 self.invalidate(); self.error=str(exc); raise
+    def mute_group(self, identifiers, muted):
+        with self.lock:
+            try:
+                if self.homing: self.stop(reset=False)
+                self.router.mute_group(identifiers, muted)
+            except Exception as exc:
+                self.invalidate(); self.error=str(exc)
+                try: self.router.stop()
+                except Exception: pass
+                raise
+
     def tick(self):
         with self.lock:
             try:
@@ -132,7 +147,15 @@ class Player:
                 if position>=self.timeline.duration:
                     self.stop(reset=False)
             except Exception as exc:
-                self.invalidate(); self.state='paused'; self.error=str(exc)
+                message=str(exc)
+                self.failure={'message':message,'code':('ble_overrun' if 'overrun' in message.lower()
+                    else 'homing_failed' if 'HOME_FAILED' in message or 'TRACK0' in message
+                    else 'execution_failed'),'position':self.position(),'epoch':self.epoch,
+                    'output':self.router.mode,'context':dict(self.context),
+                    'homingDevices':list(self.router.real.homing_devices),
+                    'timing':{'droppedExpired':self.dropped,'maxLag':self.max_lag}}
+                self.failure['incidentId']=self.diagnostics.incident('playback_failure',context={**self.failure,'recentCommands':list(self.router.real.sent[-40:])},error=exc)
+                self.invalidate(); self.state='paused'; self.error=message
                 try: self.router.stop()
                 except Exception: pass
     def snapshot(self):
@@ -140,14 +163,14 @@ class Player:
             position=self.position(); activity={}
             if self.state=='playing':
                 for ident,commands in self.lanes.items():
-                    i=bisect.bisect_right([c.time for c in commands],position)-1
+                    i=bisect.bisect_right(self.lane_times[ident],position)-1
                     if i>=0:
                         c=commands[i]
                         if c.kind!='stop' and c.time+c.duration>position and ident not in self.router.muted:
                             activity[ident]=c.as_dict()
-            return {'activity':activity,'homing':self.homing,'state':self.state,'position':self.position(),'duration':self.timeline.duration,
+            return {'activity':activity,'homing':self.homing,'homingDevices':list(self.router.real.homing_devices),'state':self.state,'position':self.position(),'duration':self.timeline.duration,
                     'owner':self.owner,'epoch':self.epoch,'origin':self.origin,'serverTime':self.clock(),
-                    'output':self.router.status(),'error':self.error,
+                    'output':self.router.status(),'error':self.error,'lastFailure':self.failure,
                     'timing':{'droppedExpired':self.dropped,'maxLag':self.max_lag}}
     def start(self):
         self.running=True
