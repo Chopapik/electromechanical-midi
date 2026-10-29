@@ -14,11 +14,13 @@ services:
       ORCHESTRA_SPEAKER_SETTINGS: /app/settings/speaker-volumes.json
       # Private OTA installation key persists across container rebuilds.
       ORCHESTRA_OTA_KEY: /app/settings/ble-ota-key
+      ORCHESTRA_DIAGNOSTICS_DIR: /app/diagnostics/backend
       ORCHESTRA_OFFLINE: ${ORCHESTRA_OFFLINE:-0}
       ORCHESTRA_SERIAL_DIR: /host-dev
       # Native macOS BLE gateway; never substitutes Serial if unavailable.
       ORCHESTRA_BLE_GATEWAY: ${ORCHESTRA_BLE_GATEWAY:-host.docker.internal:8766}
     volumes:
+      - ./.runtime/diagnostics:/app/diagnostics
       - ./midi:/app/midi
       - platformio:/root/.platformio
       - speaker-settings:/app/settings

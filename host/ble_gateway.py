@@ -22,6 +22,11 @@ MAX_COMMAND_AGE = .250
 MAX_PENDING = 512
 
 
+from diagnostics import Diagnostics, NullDiagnostics
+
+gateway_diagnostics=NullDiagnostics()
+
+
 async def serve_client(reader, writer):
     link = None
     tasks = []
@@ -173,6 +178,7 @@ async def serve_client(reader, writer):
                             'maxGatewayLoopLagMs':round(max_loop_lag,3),
                             'gatewayWrites':history.snapshot(),
                             'transportWrites':link.timing_snapshot() if hasattr(link,'timing_snapshot') else None}
+                gateway_diagnostics.incident('ble_transport_failure',context=evidence,error=exc)
                 log.warning('BLE_TIMING %s', json.dumps(evidence, separators=(',',':')))
         log.info('BLE disconnected / connect failed: %s', exc)
         writer.write(('BLE ERROR ' + str(exc).replace('\n', ' ') + '\n').encode())
@@ -192,8 +198,17 @@ async def serve_client(reader, writer):
 
 
 async def main(port=8766):
-    server = await asyncio.start_server(serve_client, '127.0.0.1', port, limit=4096)
-    async with server: await server.serve_forever()
+    global gateway_diagnostics
+    gateway_diagnostics=Diagnostics(os.getenv('ORCHESTRA_GATEWAY_DIAGNOSTICS_DIR',
+        str(Path(__file__).resolve().parents[1]/'.runtime/diagnostics/gateway')))
+    gateway_diagnostics.start()
+    try:
+        server = await asyncio.start_server(serve_client, '127.0.0.1', port, limit=4096)
+        async with server: await server.serve_forever()
+    except BaseException as exc:
+        gateway_diagnostics.incident('gateway_exit',error=exc)
+        raise
+    finally: await asyncio.to_thread(gateway_diagnostics.close)
 
 
 def install_macos_service(port=8766):
