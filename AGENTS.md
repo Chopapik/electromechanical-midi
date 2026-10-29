@@ -7,6 +7,15 @@ were tested only offline or in VIRTUAL rather than on physical devices.
 Keep the description specific and self-contained so a person or AI can understand
 the commit without reading its diff. Avoid vague summaries and exhaustive file lists.
 
+Treat commit history as a potential source for the master's thesis documenting
+the project's evolution. Preserve the motivation for changes, relevant design
+decisions and tradeoffs, and observed before/after behavior when supported by
+evidence. Reference relevant tests or measurement artifacts when available.
+Clearly distinguish measured results from informal observations, hypotheses,
+and intended improvements; never invent findings or imply unperformed validation.
+Keep this context proportional to the change so the history remains useful
+for reconstructing the development process without relying on chat history.
+
 # Local application deployment
 
 After implementing changes to the web application, backend, configuration, or
