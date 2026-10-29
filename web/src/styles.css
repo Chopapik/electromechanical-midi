@@ -1004,3 +1004,6 @@ select:disabled {
 @media(max-width:479px){.lab-layout{grid-template-columns:1fr;}.lab-device-list{max-height:240px;overflow-y:auto;border:0;padding-bottom:12px;}.lab-device-row .lab-device-pitch{width:auto;margin-left:auto;padding-left:0;}.lab-family{margin-bottom:12px;}.lab-top h1{font-size:16px;}.lab-top .lab-eyebrow{font-size:8px;}}
 .lab-layout {grid-auto-rows:max-content;align-content:start;}
 .lab-inspector > .lab-transport {margin:8px 0 20px;}
+
+.mute-groups { display:flex; flex-wrap:wrap; gap:.5rem; padding:.75rem 0; }
+.mute-groups .button[aria-pressed="true"] { opacity:.65; border-color:currentColor; }

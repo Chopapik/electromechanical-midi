@@ -6,6 +6,9 @@ import {isArrangementPreset,type ArrangementPreset} from './generated/arrangemen
 export interface Device {id:string;name:string;type:string;enabled:boolean;realEnabled?:boolean;volume:number;realAmplitude?:number;waveform?:SpeakerWaveform;bands:number[][];labBands?:number[][];reason:string|null;continuousRotation?:boolean}
 export interface LabTest {homing?:boolean;hz:number;currentHz:number;duration:number|null;mode:'off'|'sine'|'triangle';depth:number;period:number;elapsed:number;remaining:number|null}
 export interface State {
+  diagnostics?:{enabled:boolean;error:string|null;lastIncident:string|null;droppedEvents:number;droppedIncidents:number;session?:string};
+  lastFailure?:{message:string;code:string;position:number;context:{file?:string|null;preset?:string}}|null;
+  planning?:{stage:string;label:string}|null; homingDevices?:string[];
   laboratory?:{active:Record<string,LabTest>};
   activity?:Record<string,Command>; homing?:boolean; state:'playing'|'stopped'|'paused'; position:number;duration:number;file:string|null;epoch:number;owner:string;
   arrangementPreset?:ArrangementPreset;revision:number;error:string|null;audioOwner:string|null;devices:Device[];
@@ -21,10 +24,12 @@ export interface ClientPayloads {
   play:Record<never,never>;pause:Record<never,never>;stop:Record<never,never>;
   lab_enter:Record<never,never>;lab_leave:Record<never,never>;
   set_file:{file:string};arrangement_preset:{preset:ArrangementPreset};seek:{position:number};output:{mode:'REAL'|'VIRTUAL'};
+  mute_group:{deviceIds:string[];muted:boolean};
   mute:{deviceId:string;muted:boolean};speaker_waveform:{deviceId:string;waveform:SpeakerWaveform};
   speaker_volume:{deviceId:string;output:'REAL'|'VIRTUAL';value:number};
   lab_test:LabPayload;lab_update:LabPayload;lab_stop:{deviceId:string};
   service:{operation:'home'|'firmware'|'firmware_ble'|'power_on'|'power_off'|'power_status'|'reset';confirmed?:boolean};
+  client_error:{kind:string;message:string;stack?:string;occurredAt?:string};
   audio_error:{epoch:number;message?:string};audio_ack:{token:string};sync:{sent:number};
 }
 export type ClientAction=keyof ClientPayloads
@@ -91,6 +96,7 @@ function snapshot(value:unknown):value is State{
     optional(service.firmware,'transport',value=>value==='USB'||value==='BLE')&&
     optional(service.firmware,'progress',nullableNumber)&&optional(service.firmware,'error',nullableString)&&optional(service,'power',power)&&
     optional(value,'arrangementPreset',isArrangementPreset)&&optional(value,'homing',boolean)&&
+    optional(value,'diagnostics',item=>record(item)&&boolean(item.enabled)&&nullableString(item.error)&&nullableString(item.lastIncident)&&number(item.droppedEvents)&&number(item.droppedIncidents))&&optional(value,'lastFailure',item=>item===null||(record(item)&&string(item.message)&&string(item.code)&&number(item.position)&&record(item.context)&&optional(item.context,'file',nullableString)&&optional(item.context,'preset',string)))&&optional(value,'homingDevices',strings)&&optional(value,'planning',item=>item===null||(record(item)&&string(item.stage)&&string(item.label)))&&
     optional(value,'activity',items=>dictionary(items,command))&&
     optional(value,'laboratory',items=>record(items)&&dictionary(items.active,labTest))
 }

@@ -4,6 +4,7 @@ import {useEffect,useRef} from 'react'
 import {Link,useNavigate} from 'react-router-dom'
 import {useRuntime} from './runtime'
 import {ArrangementPreview} from './components/ArrangementPreview'
+import {MuteGroups} from './components/MuteGroups'
 import {StatusFooter} from './components/StatusFooter'
 
 type Runtime=ReturnType<typeof useRuntime>
@@ -11,7 +12,7 @@ type Runtime=ReturnType<typeof useRuntime>
 export function SettingsPage({app}:{app:Runtime}){
   const navigate=useNavigate(),s=app.state
   const virtual=s?.output.mode==='VIRTUAL'
-  const disabled=!s||!app.connected||s.service.busy||!!app.midiLoading
+  const disabled=!!s?.planning||!!app.pendingActions?.length||!s||!app.connected||s.service.busy||!!app.midiLoading
   const outputDisabled=!s||!app.connected||s.service.busy
   const events=app.firmwareEvents??[]
   const reverseStart=[...events].reverse().findIndex(event=>event.kind==='status'&&event.stage==='prepare')
@@ -118,8 +119,16 @@ export function SettingsPage({app}:{app:Runtime}){
         </section>
         <section className="settings-section">
           <h2>Mute</h2>
+          <MuteGroups app={app}/>
           {s?.devices.map(d=><label key={d.id}><input type="checkbox" checked={s.output.muted.includes(d.id)} disabled={disabled} onChange={e=>void app.send('mute',{deviceId:d.id,muted:e.target.checked})}/> Mute {d.name}</label>)}
         </section>
+    <section className="settings-section" aria-label="Diagnostyka awarii">
+      <h2>Diagnostyka awarii</h2>
+      <p>{s?.diagnostics?.enabled?'Zdarzenia i incydenty są zapisywane lokalnie.':'Trwałe logowanie nie jest aktywne.'}</p>
+      {s?.diagnostics?.error&&<p role="alert">Błąd zapisu diagnostyki: {s.diagnostics.error}</p>}
+      {!!((s?.diagnostics?.droppedEvents??0)+(s?.diagnostics?.droppedIncidents??0))&&<p role="alert">Pominięte zdarzenia: {s?.diagnostics?.droppedEvents}; incydenty: {s?.diagnostics?.droppedIncidents}. Log może być niepełny.</p>}
+      {s?.diagnostics?.lastIncident&&<a href={`/api/diagnostics/incidents/${s.diagnostics.lastIncident}`} target="_blank" rel="noreferrer">Ostatni incydent · {s.diagnostics.lastIncident}</a>}
+    </section>
       </div>
     </main>
     <StatusFooter app={app} settings issue={issue}/>

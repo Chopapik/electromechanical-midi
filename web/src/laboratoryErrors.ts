@@ -33,9 +33,12 @@ const profileErrors:Record<string,string>={
  ACCELERATION_UNKNOWN:'Brakuje parametrów przyspieszenia silnika',
 }
 export function laboratoryError(message:string,devices:Device[]):string{
- let description=message.replace(/ERR HOME_FAILED FDD=(\d+)\b/g,(_,id:string)=>{
+ let description=message.replace(/BLE realtime overrun: execution ACK timeout \(250 ms\)/g, 'ESP32 nie potwierdziło wykonania pakietu w ciągu 250 ms. Odtwarzanie zatrzymano; przyczyna opóźnienia wymaga diagnostyki')
+ .replace(/BLE realtime overrun: command queue full/g, 'Kolejka komend BLE jest pełna. Odtwarzanie zatrzymano, aby nie wykonywać zaległych nut')
+ .replace(/BLE realtime overrun: stale commands/g, 'Komendy w kolejce BLE przekroczyły dopuszczalny wiek. Odtwarzanie zatrzymano')
+ .replace(/ERR HOME_FAILED FDD=(\d+)\b/g,(_,id:string)=>{
   const name=devices.find(d=>d.id===`fdd-${id}`)?.name??`FDD ${id}`
-  return `${name}: nie udało się zaparkować głowicy. Test tonu nie wystartował. Sprawdź TRACK0 i połączenia stacji.`
+  return `${name}: nie udało się zaparkować głowicy. Wykonanie przerwane. Sprawdź TRACK0 i połączenia stacji.`
  })
  description=description.replace(/\bERR ([A-Z_]+)\b/g,(original,code:string)=>firmwareErrors[code]??original)
  description=description.replace(/BLE realtime overrun:\s*([\d.]+) ms delivery lag/g,

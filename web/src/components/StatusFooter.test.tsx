@@ -38,3 +38,11 @@ describe('Laboratory footer',()=>{
   expect(screen.getByRole('status').textContent).toContain('Brak połączenia z aplikacją')
  })
 })
+
+it('explains the failed station outside Laboratory and displays preparation',()=>{
+ const a=app();a.state!.owner='orchestra';a.state!.error='ERR HOME_FAILED FDD=8'
+ a.state!.planning={stage:'planning',label:'Obliczanie aranżacji'}
+ mount(a)
+ expect(screen.getByRole('alert').textContent).toContain('FDD 8: nie udało się zaparkować')
+ expect(screen.getByRole('status').textContent).toContain('Obliczanie aranżacji')
+})

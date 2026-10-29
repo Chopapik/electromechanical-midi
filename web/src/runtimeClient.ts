@@ -60,7 +60,7 @@ export class RuntimeClient {
       const requestId=crypto.randomUUID()
       const timer=setTimeout(()=>{
         this.pending.delete(requestId)
-        reject(new Error('Przekroczono czas oczekiwania na załadowanie MIDI'))
+        reject(new Error(`Przekroczono czas oczekiwania na odpowiedź: ${action}. Stan operacji jest niepotwierdzony; sprawdź połączenie lub użyj STOP.`))
       },120000)
       this.pending.set(requestId,{resolve:()=>{clearTimeout(timer);resolve()},reject:error=>{clearTimeout(timer);reject(error)}})
       try{this.send({action,...(args[0]??{}),requestId} as ClientCommand)}

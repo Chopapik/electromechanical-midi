@@ -60,7 +60,13 @@ describe('runtime lifecycle',()=>{
   expect(result.current.state?.epoch).toBe(4)
   expect(current.sent.filter(m=>m.action==='sync')).toHaveLength(1)
   expect(stale.sent).toHaveLength(0)
-  await act(async()=>result.current.send('play'))
+  await act(async()=>{
+   const done=result.current.send('play')
+   await Promise.resolve()
+   const socket=Socket.instances.at(-1)!
+   socket.deliver({type:'ack',requestId:[...socket.sent].reverse().find(m=>m.action==='play')!.requestId})
+   await done
+  })
   expect(current.sent.filter(m=>m.action==='play')).toHaveLength(1)
   unmount()
   await act(async()=>vi.advanceTimersByTimeAsync(2000))
@@ -71,14 +77,26 @@ describe('runtime lifecycle',()=>{
  it('accepts new backend epochs after reconnect and rejects packets from an old owner/socket',async()=>{
   const {result}=renderHook(()=>useRuntime());const old=Socket.instances[0]
   await act(async()=>{old.open();old.deliver({type:'hello',session:'browser'});old.deliver({type:'state',state:snapshot(20)})})
-  await act(async()=>result.current.send('play'))
+  await act(async()=>{
+   const done=result.current.send('play')
+   await Promise.resolve()
+   const socket=Socket.instances.at(-1)!
+   socket.deliver({type:'ack',requestId:[...socket.sent].reverse().find(m=>m.action==='play')!.requestId})
+   await done
+  })
   await act(async()=>old.deliver(packet(20)))
   expect(audio.instances.flatMap(instance=>instance.accepted)).toContain(20)
   await act(async()=>{old.close();await vi.advanceTimersByTimeAsync(1000)})
   const current=Socket.instances[1]
   await act(async()=>{current.open();current.deliver({type:'hello',session:'restarted'});current.deliver({type:'state',state:snapshot(0,'restarted')})})
   expect(result.current.state?.epoch).toBe(0)
-  await act(async()=>result.current.send('play'))
+  await act(async()=>{
+   const done=result.current.send('play')
+   await Promise.resolve()
+   const socket=Socket.instances.at(-1)!
+   socket.deliver({type:'ack',requestId:[...socket.sent].reverse().find(m=>m.action==='play')!.requestId})
+   await done
+  })
   await act(async()=>{current.deliver(packet(1,'restarted'));current.deliver(packet(99,'browser'));old.deliver(packet(100));old.deliver({type:'state',state:snapshot(100)})})
   expect(audio.instances.flatMap(instance=>instance.accepted)).toEqual([20,1])
   expect(audio.instances.reduce((count,instance)=>count+instance.resetSession.mock.calls.length,0)).toBe(2)
@@ -106,4 +124,21 @@ describe('runtime lifecycle',()=>{
   await act(async()=>{finish?.({ok:true,json:async()=>({name:'late.mid'})});await upload})
   expect(socket.sent.some(m=>m.action==='set_file')).toBe(false)
  })
+})
+
+it('shows pending Play immediately, rejects duplicates, and clears it on ACK/error',async()=>{
+ const {result}=renderHook(()=>useRuntime());const socket=Socket.instances[0]
+ await act(async()=>{socket.open();socket.deliver({type:'state',state:{...snapshot(0),state:'stopped'}})})
+ let done:Promise<void>|undefined
+ act(()=>{done=result.current.send('play')})
+ expect(result.current.pendingActions).toContain('play')
+ await act(async()=>{await result.current.send('play');await Promise.resolve()})
+ expect(socket.sent.filter(m=>m.action==='play')).toHaveLength(1)
+ await act(async()=>{socket.deliver({type:'ack',requestId:socket.sent.find(m=>m.action==='play')!.requestId});await done})
+ expect(result.current.pendingActions).not.toContain('play')
+ act(()=>{done=result.current.send('arrangement_preset',{preset:'fdd_legato'})})
+ expect(result.current.pendingActions).toContain('arrangement_preset')
+ await act(async()=>{socket.deliver({type:'error',requestId:socket.sent.at(-1)!.requestId,message:'Plan failed'});await done})
+ expect(result.current.pendingActions).toHaveLength(0)
+ expect(result.current.error).toContain('Plan failed')
 })

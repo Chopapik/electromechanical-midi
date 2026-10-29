@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react'
 import {VirtualOutput} from './virtualOutput'
+import {BrowserDiagnostics} from './browserDiagnostics'
 import {RuntimeClient} from './runtimeClient'
 import {MidiImportProcess} from './midiImport'
 import {FirmwareEvents} from './firmwareEvents'
@@ -12,12 +13,15 @@ export function useRuntime(){
   const [connected,setConnected]=useState(false),[files,setFiles]=useState<FileEntry[]>([])
   const [firmwareEvents,setFirmwareEvents]=useState<FirmwareEvent[]>([])
   const [midiLoading,setMidiLoading]=useState<MidiLoading|null>(null)
+  const [pendingActions,setPendingActions]=useState<ClientAction[]>([])
+  const pending=useRef(new Set<ClientAction>())
   const client=useRef<RuntimeClient|null>(null),importer=useRef<MidiImportProcess|null>(null),history=useRef<FirmwareEvents|null>(null)
   const audio=useRef(new VirtualOutput()),session=useRef(''),latest=useRef<State|null>(null)
   useEffect(()=>{
     const firmware=new FirmwareEvents(setFirmwareEvents);history.current=firmware
+    let browserDiagnostics:BrowserDiagnostics|undefined
     const transport=new RuntimeClient({
-      connection:setConnected,disconnected:()=>audio.current.stop(),error:setError,
+      connection:value=>{setConnected(value);if(value)void browserDiagnostics?.flush()},disconnected:()=>audio.current.stop(),error:setError,
       message:msg=>{
         firmware.accept(msg)
         if(msg.type==='hello'){audio.current.resetSession();session.current=msg.session;latest.current=null}
@@ -39,16 +43,23 @@ export function useRuntime(){
         }
       },
     })
+    browserDiagnostics=new BrowserDiagnostics(transport)
+    const onError=(event:ErrorEvent)=>browserDiagnostics?.capture('window_error',event.message,event.error instanceof Error?event.error.stack:undefined)
+    const onRejection=(event:PromiseRejectionEvent)=>browserDiagnostics?.capture('unhandled_rejection',String(event.reason),event.reason instanceof Error?event.reason.stack:undefined)
+    window.addEventListener('error',onError);window.addEventListener('unhandledrejection',onRejection)
     const imports=new MidiImportProcess(transport,{loading:setMidiLoading,files:setFiles,error:setError})
     client.current=transport;importer.current=imports;transport.start();void imports.refresh()
     return()=>{
-      imports.dispose();transport.dispose();audio.current.close()
+      window.removeEventListener('error',onError);window.removeEventListener('unhandledrejection',onRejection)
+      browserDiagnostics?.dispose();imports.dispose();transport.dispose();audio.current.close()
       if(client.current===transport){client.current=null;importer.current=null;history.current=null}
     }
   },[])
   async function send<A extends ClientAction>(action:A,...args:CommandArguments<A>){
     const payload=args[0]??{}
+    if(pending.current.has(action)&&['play','pause','seek','arrangement_preset','output'].includes(action))return
     setError(null)
+    pending.current.add(action);setPendingActions([...pending.current])
     try{
       const transport=client.current
       if(!transport?.connected)throw new Error('Brak połączenia z backendem')
@@ -57,12 +68,14 @@ export function useRuntime(){
       if(action==='service'&&'operation' in payload&&(payload.operation==='firmware'||payload.operation==='firmware_ble')){
         requestId=crypto.randomUUID();history.current?.prepare(requestId,payload.operation==='firmware_ble'?'BLE':undefined)
       }
-      transport.send({action,...payload,...(requestId?{requestId}:{})} as ClientCommand)
+      if(requestId)transport.send({action,...payload,requestId} as ClientCommand)
+      else await transport.command(action,...args)
     }catch(error){setError(String(error))}
+    finally{pending.current.delete(action);setPendingActions([...pending.current])}
   }
   async function upload(file:File){
     if(importer.current)await importer.current.upload(file)
     else setError('Brak połączenia z backendem')
   }
-  return {state,error,connected,files,send,upload,firmwareEvents,midiLoading}
+  return {state,error,connected,files,send,upload,firmwareEvents,midiLoading,...({pendingActions} as {pendingActions?:ClientAction[]})}
 }
